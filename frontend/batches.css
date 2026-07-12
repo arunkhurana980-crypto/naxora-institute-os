@@ -1,0 +1,235 @@
+.batch-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.batch-stats article {
+  background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.025));
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 24px 80px rgba(0,0,0,.32);
+}
+
+.batch-stats strong {
+  display: block;
+  font-size: 34px;
+  color: #ffe978;
+}
+
+.batch-stats span {
+  color: rgba(255,255,255,.68);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.manager-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  margin-bottom: 22px;
+}
+
+.manager-form label {
+  display: grid;
+  gap: 8px;
+  color: rgba(255,255,255,.75);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.form-grid.compact {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.manager-form input,
+.manager-form select,
+.manager-form textarea,
+.filters input,
+.filters select {
+  width: 100%;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.35);
+  color: #fff;
+  border-radius: 16px;
+  padding: 14px 16px;
+  outline: none;
+  font: inherit;
+}
+
+.manager-form input:focus,
+.manager-form select:focus,
+.manager-form textarea:focus,
+.filters input:focus,
+.filters select:focus {
+  border-color: rgba(255,232,120,.55);
+  box-shadow: 0 0 0 4px rgba(255,232,120,.08);
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 18px;
+}
+
+.form-actions .primary {
+  flex: 1;
+}
+
+.list-panel {
+  margin-bottom: 22px;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: 1.5fr .7fr .7fr;
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.filters.two {
+  grid-template-columns: 1.5fr .7fr;
+}
+
+.cards-list {
+  display: grid;
+  gap: 14px;
+}
+
+.data-card {
+  border: 1px solid rgba(255,255,255,.11);
+  background: rgba(255,255,255,.045);
+  border-radius: 22px;
+  padding: 18px;
+}
+
+.data-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.data-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.data-avatar {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ffe76e, #d4af37);
+  color: #080808;
+  font-size: 24px;
+  box-shadow: 0 12px 40px rgba(212,175,55,.23);
+}
+
+.data-title h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.data-title p,
+.data-note {
+  margin: 5px 0 0;
+  color: rgba(255,255,255,.62);
+  line-height: 1.6;
+}
+
+.data-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  color: rgba(255,255,255,.82);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: capitalize;
+}
+
+.tag.gold {
+  background: rgba(255,232,120,.16);
+  color: #ffe978;
+}
+
+.tag.blue {
+  background: rgba(0,212,255,.15);
+  color: #83eaff;
+}
+
+.data-details {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.data-details div {
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.18);
+  border-radius: 14px;
+  padding: 12px;
+  color: rgba(255,255,255,.82);
+  font-size: 13px;
+}
+
+.data-details span {
+  display: block;
+  color: rgba(255,255,255,.48);
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.edit-btn,
+.delete-btn {
+  border: 0;
+  border-radius: 14px;
+  padding: 11px 14px;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.edit-btn { background: #ffe978; color: #050505; }
+.delete-btn { background: rgba(255,75,75,.14); color: #ffb0b0; border: 1px solid rgba(255,75,75,.25); }
+
+.empty-state {
+  padding: 22px;
+  border-radius: 18px;
+  border: 1px dashed rgba(255,255,255,.16);
+  color: rgba(255,255,255,.72);
+  background: rgba(255,255,255,.035);
+}
+
+@media (max-width: 980px) {
+  .batch-stats,
+  .manager-grid,
+  .data-details,
+  .filters,
+  .filters.two {
+    grid-template-columns: 1fr;
+  }
+}

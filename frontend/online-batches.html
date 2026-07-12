@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>NAXORA Online Batch Access</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="online-batches.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <div class="orb orb-one"></div><div class="orb orb-two"></div>
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="students.html">Students</a>
+      <a href="parents.html">Parents</a>
+      <a href="progress.html">Progress</a>
+      <a href="teachers.html">Teachers</a>
+      <a href="staff.html">Staff</a>
+      <a href="batches.html">Batches</a>
+      <a class="active" href="online-batches.html">Online Batch Access</a>
+      <a href="attendance.html">Attendance</a>
+      <a href="fees.html">Fees</a>
+      <a href="finance.html">Finance</a>
+      <a href="doubts.html">AI Doubts</a>
+      <a href="ai-notes.html">AI Notes</a>
+      <a href="ai-mock-tests.html">AI Mock Tests</a>
+      <a href="ai-roadmaps.html">AI Roadmaps</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="notifications.html">WhatsApp/SMS</a>
+      <a href="email-notifications.html">Email</a>
+      <a href="assignments.html">Assignments</a>
+      <a href="tests.html">Tests</a>
+      <a href="test-builder.html">Test Builder</a>
+      <a href="question-bank.html">Question Bank</a>
+      <a href="timetable.html">Timetable</a>
+      <a href="branches.html">Branches</a>
+      <a href="enquiries.html">Enquiries</a>
+      <a href="followups.html">Follow-ups</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="payments.html">Payments</a>
+      <a href="security.html">Security</a>
+      <a href="super-admin.html">Super Admin</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a href="demo-mode.html">Sales Demo Mode</a>
+      <a href="system-debug.html">System Debug</a>
+      <a href="settings.html">Settings</a>
+      <a href="theme.html">Theme</a>
+      <a href="reports.html">Reports</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="certificates.html">Certificates</a>
+      <a href="library.html">Library</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow mini">NAXORA ONLINE BATCH GATE</p>
+        <h1>Online Batch Access Management</h1>
+        <p class="lead small">Institute apne online batch ki fees set karega. Student tabhi live classes, recordings aur comments access karega jab uska batch enrollment paid + active hoga.</p>
+      </div>
+      <div class="profile-pill" id="profilePill">🔐 Batch Access</div>
+    </header>
+
+    <section class="stats-mini access-stats" id="accessStats"></section>
+
+    <section class="dashboard-section split">
+      <div class="panel access-form-panel">
+        <div class="section-head"><h2 id="batchFormTitle">Create Online Batch Access</h2><p>Batch fee, duration aur live class access rules set karo.</p></div>
+        <form id="batchForm" class="smart-form">
+          <input type="hidden" id="batchId" />
+          <div class="form-row"><label>Batch Name<input id="batchName" required placeholder="AI Web Dev Online Batch A" /></label><label>Course Name<input id="courseName" required placeholder="AI Website Masterclass" /></label></div>
+          <div class="form-row"><label>Subject<input id="subject" placeholder="Web Development" /></label><label>Teacher<input id="teacherName" placeholder="Arun Sir" /></label></div>
+          <div class="form-row"><label>Fee Amount<input id="feeAmount" type="number" value="999" min="0" /></label><label>Billing Cycle<select id="billingCycle"><option value="monthly">Monthly</option><option value="one_time">One Time</option><option value="quarterly">Quarterly</option><option value="yearly">Yearly</option></select></label></div>
+          <div class="form-row"><label>Access Days<input id="accessDurationDays" type="number" value="30" min="1" /></label><label>Max Students<input id="maxStudents" type="number" value="100" min="1" /></label></div>
+          <div class="form-row"><label>Mode<select id="mode"><option value="online">Online</option><option value="hybrid">Hybrid</option><option value="offline_plus_online">Offline + Online</option></select></label><label>Status<select id="status"><option value="open">Open</option><option value="draft">Draft</option><option value="full">Full</option><option value="closed">Closed</option><option value="archived">Archived</option></select></label></div>
+          <div class="form-row"><label>Payment Mode<select id="paymentMode"><option value="razorpay">Razorpay</option><option value="upi">UPI</option><option value="cash">Cash</option><option value="bank">Bank</option><option value="card">Card</option><option value="other">Other</option></select></label><label>Tags<input id="tags" placeholder="coding, online, beginner" /></label></div>
+          <label>Description<textarea id="description" rows="4" placeholder="Batch details, timings, benefits, rules"></textarea></label>
+          <div class="toggle-row"><label><input id="liveClassAccess" type="checkbox" checked /> Live class access</label><label><input id="commentsAccess" type="checkbox" checked /> Comments access</label><label><input id="recordingAccess" type="checkbox" checked /> Recording access</label><label><input id="notesAccess" type="checkbox" checked /> Notes access</label><label><input id="certificateAccess" type="checkbox" /> Certificate access</label><label><input id="publicVisible" type="checkbox" checked /> Public visible</label></div>
+          <div class="form-actions"><button class="primary" type="submit">Save Online Batch</button><button class="ghost-btn" type="button" id="clearBatchBtn">Clear</button></div>
+          <p class="message" id="batchMessage"></p>
+        </form>
+      </div>
+
+      <div class="panel enrollment-panel">
+        <div class="section-head"><h2>Enroll Student & Give Access</h2><p>Payment paid hote hi student ka access active karo.</p></div>
+        <form id="enrollmentForm" class="smart-form compact-form">
+          <label>Select Batch<select id="enrollBatchId" required><option value="">Select online batch</option></select></label>
+          <div class="form-row"><label>Student Name<input id="studentName" required placeholder="Student name" /></label><label>Phone<input id="studentPhone" required placeholder="9876543210" /></label></div>
+          <div class="form-row"><label>Email<input id="studentEmail" placeholder="student@email.com" /></label><label>Parent Phone<input id="parentPhone" placeholder="Optional" /></label></div>
+          <div class="form-row"><label>Paid Amount<input id="paidAmount" type="number" value="0" min="0" /></label><label>Fee Status<select id="feeStatus"><option value="pending">Pending</option><option value="partial">Partial</option><option value="paid">Paid</option><option value="refunded">Refunded</option><option value="expired">Expired</option></select></label></div>
+          <div class="form-row"><label>Access Status<select id="accessStatus"><option value="pending">Pending</option><option value="active">Active</option><option value="blocked">Blocked</option><option value="expired">Expired</option><option value="completed">Completed</option></select></label><label>Payment Ref<input id="paymentReference" placeholder="Razorpay/UPI ID" /></label></div>
+          <label>Notes<textarea id="enrollmentNotes" rows="3" placeholder="Student access notes"></textarea></label>
+          <button class="primary" type="submit">Enroll / Activate Access</button>
+          <p class="message" id="enrollmentMessage"></p>
+        </form>
+      </div>
+    </section>
+
+    <section class="dashboard-section panel">
+      <div class="section-head"><h2>Online Batch Board</h2><p>Batch fee, seats aur access rules manage karo.</p></div>
+      <div class="filters"><input id="batchSearch" placeholder="Search batch / course / teacher" /><select id="statusFilter"><option value="">All Status</option><option value="open">Open</option><option value="draft">Draft</option><option value="full">Full</option><option value="closed">Closed</option></select><button id="refreshBatches" class="ghost-btn">Refresh</button></div>
+      <div id="batchList" class="batch-access-grid"></div>
+    </section>
+
+    <section class="dashboard-section split">
+      <div class="panel">
+        <div class="section-head"><h2 id="enrollmentTitle">Batch Enrollments</h2><p>Select batch, enrollments yahan dikhenge.</p></div>
+        <div id="enrollmentList" class="enrollment-list"><p class="empty-state">Pehle kisi batch ka Enrollments button click karo.</p></div>
+      </div>
+      <div class="panel">
+        <div class="section-head"><h2>Access Checker</h2><p>Student phone/email se check karo ki live class join allowed hai ya nahi.</p></div>
+        <form id="accessCheckForm" class="smart-form compact-form">
+          <label>Batch<select id="checkBatchId" required><option value="">Select online batch</option></select></label>
+          <div class="form-row"><label>Phone<input id="checkPhone" placeholder="Student phone" /></label><label>Email<input id="checkEmail" placeholder="student@email.com" /></label></div>
+          <button class="primary" type="submit">Check Access</button>
+        </form>
+        <div id="accessResult" class="access-result"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="online-batches.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

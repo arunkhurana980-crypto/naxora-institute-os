@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Email Notifications — NAXORA Institute OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="email-notifications.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <div class="orb orb-one"></div><div class="orb orb-two"></div>
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="students.html">Students</a>
+      <a href="parents.html">Parents</a>
+      <a href="progress.html">Progress</a>
+      <a href="teachers.html">Teachers</a>
+      <a href="staff.html">Staff</a>
+      <a href="batches.html">Batches</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="attendance.html">Attendance</a>
+      <a href="fees.html">Fees</a>
+      <a href="finance.html">Finance</a>
+      <a href="doubts.html">AI Doubts</a>
+      <a href="ai-notes.html">AI Notes</a>
+      <a href="ai-mock-tests.html">AI Mock Tests</a>
+      <a href="ai-roadmaps.html">AI Roadmaps</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="notifications.html">WhatsApp/SMS</a>
+      <a class="active" href="email-notifications.html">Email</a>
+      <a href="assignments.html">Assignments</a>
+      <a href="tests.html">Tests</a>
+      <a href="test-builder.html">Test Builder</a>
+      <a href="question-bank.html">Question Bank</a>
+      <a href="timetable.html">Timetable</a>
+      <a href="branches.html">Branches</a>
+      <a href="enquiries.html">Enquiries</a>
+      <a href="followups.html">Follow-ups</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="payments.html">Payments</a>
+      <a href="security.html">Security</a>
+      <a href="super-admin.html">Super Admin</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a href="demo-mode.html">Sales Demo Mode</a>
+      <a href="system-debug.html">System Debug</a>
+      <a href="settings.html">Settings</a>
+      <a href="theme.html">Theme</a>
+      <a href="reports.html">Reports</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="certificates.html">Certificates</a>
+      <a href="library.html">Library</a>
+      <a href="dashboard.html#profile">Profile</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+  <main class="dashboard-main">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow mini">PART 35 • EMAIL NOTIFICATION SYSTEM</p>
+        <h1>Email Notification Center</h1>
+        <p class="lead small">Fees, results, admission, homework aur announcements ke professional email campaigns banao.</p>
+      </div>
+      <button id="refreshConfigBtn" class="ghost-btn">Refresh Config</button>
+    </header>
+
+    <section class="stats-grid email-stats">
+      <article><span>Total Campaigns</span><strong id="totalEmails">0</strong></article>
+      <article><span>Sent Campaigns</span><strong id="sentEmails">0</strong></article>
+      <article><span>Scheduled</span><strong id="scheduledEmails">0</strong></article>
+      <article><span>Failed</span><strong id="failedEmails">0</strong></article>
+    </section>
+
+    <section class="dashboard-section panel email-config">
+      <div class="section-head">
+        <h2>Email Provider Status</h2>
+        <p>SMTP keys blank hain to mock mode chalega. App crash nahi karega.</p>
+      </div>
+      <div id="configBox" class="config-grid"></div>
+    </section>
+
+    <section class="dashboard-section split">
+      <form id="emailForm" class="panel email-panel">
+        <div class="section-head">
+          <h2 id="emailFormHeading">Create Email Campaign</h2>
+          <p>Subject, body, audience aur schedule set karo.</p>
+        </div>
+        <input type="hidden" id="emailId" />
+        <div class="form-grid email-grid">
+          <label>Title<input id="title" placeholder="Monthly fees reminder" required /></label>
+          <label>Subject<input id="subject" placeholder="Fees reminder from NAXORA" required /></label>
+          <label>Provider<select id="provider"><option value="mock">Mock</option><option value="smtp">SMTP</option><option value="sendgrid">SendGrid Ready</option><option value="mailgun">Mailgun Ready</option><option value="other">Other</option></select></label>
+          <label>Template Type<select id="templateType"><option value="general">General</option><option value="fees">Fees</option><option value="attendance">Attendance</option><option value="exam">Exam</option><option value="holiday">Holiday</option><option value="homework">Homework</option><option value="admission">Admission</option><option value="followup">Follow-up</option><option value="payment">Payment</option><option value="certificate">Certificate</option><option value="result">Result</option></select></label>
+          <label>Audience<select id="targetAudience"><option value="students">Students</option><option value="parents">Parents</option><option value="teachers">Teachers</option><option value="staff">Staff</option><option value="batch">Batch</option><option value="single">Single Email</option><option value="all">All</option></select></label>
+          <label>Target Name<input id="targetName" placeholder="Parent / student / group name" /></label>
+          <label>Target Email<input id="targetEmail" type="email" placeholder="student@example.com" /></label>
+          <label>Target Batch<input id="targetBatch" placeholder="Web Batch A" /></label>
+          <label>From Name<input id="fromName" placeholder="NAXORA Institute OS" /></label>
+          <label>From Email<input id="fromEmail" type="email" placeholder="no-reply@yourdomain.com" /></label>
+          <label>Reply To<input id="replyTo" type="email" placeholder="support@yourdomain.com" /></label>
+          <label>Estimated Recipients<input id="estimatedRecipients" type="number" min="1" value="25" /></label>
+          <label>Priority<select id="priority"><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select></label>
+          <label>Status<select id="status"><option value="draft">Draft</option><option value="scheduled">Scheduled</option><option value="queued">Queued</option><option value="sent">Sent</option><option value="failed">Failed</option><option value="cancelled">Cancelled</option></select></label>
+          <label>Scheduled At<input id="scheduledAt" type="datetime-local" /></label>
+          <label>Tags<input id="tags" placeholder="fees, parents, reminder" /></label>
+        </div>
+        <label>Email Body<textarea id="body" rows="8" placeholder="Namaste {parent_name}, {student_name} ki monthly fees pending hai..." required></textarea></label>
+        <label>Notes<textarea id="notes" rows="3" placeholder="Internal notes"></textarea></label>
+        <div class="form-actions">
+          <button class="primary" type="submit">Save Email Campaign</button>
+          <button class="ghost-btn" id="testSendBtn" type="button">Send Test</button>
+          <button class="ghost-btn" id="sampleEmailBtn" type="button">Sample Fill</button>
+          <button class="ghost-btn" id="clearEmailBtn" type="button">Clear</button>
+        </div>
+        <p id="emailMessage" class="message"></p>
+      </form>
+
+      <section class="panel email-preview-panel">
+        <div class="section-head">
+          <h2>Latest Email Preview</h2>
+          <p>Copy / print karne ke liye clean preview.</p>
+        </div>
+        <pre id="latestEmail" class="email-preview">Abhi koi email campaign select/generate nahi hua.</pre>
+        <div class="form-actions">
+          <button class="ghost-btn" id="copyLatestEmailBtn">Copy Latest</button>
+          <button class="ghost-btn" onclick="window.print()">Print</button>
+        </div>
+      </section>
+    </section>
+
+    <section class="dashboard-section panel">
+      <div class="section-head">
+        <h2>Email Campaign Library</h2>
+        <p>Search, filter, edit, send test aur delete yahin se karo.</p>
+      </div>
+      <button id="refreshEmailsBtn" class="ghost-btn">Refresh</button>
+      <div class="filters-grid">
+        <input id="emailSearch" placeholder="Search title, subject, email, batch..." />
+        <select id="providerFilter"><option value="">All providers</option><option value="mock">Mock</option><option value="smtp">SMTP</option><option value="sendgrid">SendGrid</option><option value="mailgun">Mailgun</option></select>
+        <select id="statusFilter"><option value="">All status</option><option value="draft">Draft</option><option value="scheduled">Scheduled</option><option value="sent">Sent</option><option value="failed">Failed</option><option value="cancelled">Cancelled</option></select>
+        <select id="templateFilter"><option value="">All templates</option><option value="fees">Fees</option><option value="exam">Exam</option><option value="homework">Homework</option><option value="admission">Admission</option><option value="result">Result</option></select>
+      </div>
+      <div id="emailList" class="data-list"></div>
+      <p id="emailListMessage" class="message"></p>
+    </section>
+  </main>
+  <script src="email-notifications.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

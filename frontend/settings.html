@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Institute Settings — NAXORA Institute OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="batches.css" />
+  <link rel="stylesheet" href="settings.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="students.html">Students</a>
+      <a href="parents.html">Parents</a>
+      <a href="progress.html">Progress</a>
+      <a href="teachers.html">Teachers</a>
+      <a href="staff.html">Staff</a>
+      <a href="batches.html">Batches</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="attendance.html">Attendance</a>
+      <a href="fees.html">Fees</a>
+      <a href="finance.html">Finance</a>
+      <a href="doubts.html">AI Doubts</a>
+      <a href="ai-notes.html">AI Notes</a>
+      <a href="ai-mock-tests.html">AI Mock Tests</a>
+      <a href="ai-roadmaps.html">AI Roadmaps</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="notifications.html">WhatsApp/SMS</a>
+      <a href="email-notifications.html">Email</a>
+      <a href="assignments.html">Assignments</a>
+      <a href="tests.html">Tests</a>
+      <a href="test-builder.html">Test Builder</a>
+      <a href="question-bank.html">Question Bank</a>
+      <a href="timetable.html">Timetable</a>
+      <a href="branches.html">Branches</a>
+      <a href="enquiries.html">Enquiries</a>
+      <a href="followups.html">Follow-ups</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="payments.html">Payments</a>
+      <a href="security.html">Security</a>
+      <a href="super-admin.html">Super Admin</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a href="demo-mode.html">Sales Demo Mode</a>
+      <a href="system-debug.html">System Debug</a>
+      <a class="active" href="settings.html">Settings</a>
+      <a href="theme.html">Theme</a>
+      <a href="reports.html">Reports</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="certificates.html">Certificates</a>
+      <a href="library.html">Library</a>
+      <a href="dashboard.html#profile">Profile</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main settings-main">
+    <header class="topbar settings-hero">
+      <div>
+        <p class="eyebrow mini">PART 27 • INSTITUTE SETTINGS</p>
+        <h1>Brand, Rules & Academic Settings</h1>
+        <p class="lead small">Logo, institute profile, receipt, certificate, academic year, fees rules aur default IDs ek jagah set karo.</p>
+      </div>
+      <div class="settings-actions">
+        <button class="primary small-btn" id="refreshSettingsBtn">Refresh</button>
+        <button class="ghost-inline" id="resetSettingsBtn" type="button">Reset Default</button>
+        <a class="back-link" href="dashboard.html">← Dashboard</a>
+      </div>
+    </header>
+
+    <section class="settings-preview-grid">
+      <article class="brand-preview-card" id="brandPreview">
+        <div class="preview-logo" id="previewLogo">N</div>
+        <div>
+          <h2 id="previewInstituteName">NAXORA Institute</h2>
+          <p id="previewTagline">AI-powered coaching management</p>
+          <span id="previewAddress">Address not set</span>
+        </div>
+      </article>
+      <article class="mini-preview"><strong id="receiptSampleNo">NXR-RCPT-0001</strong><span>Receipt Sample</span></article>
+      <article class="mini-preview"><strong id="certificateSampleNo">NXR-CERT-0001</strong><span>Certificate Sample</span></article>
+      <article class="mini-preview"><strong id="studentSampleId">NXR-STU-001</strong><span>Student ID Sample</span></article>
+      <article class="mini-preview"><strong id="teacherSampleId">NXR-TCH-001</strong><span>Teacher ID Sample</span></article>
+    </section>
+
+    <form id="settingsForm" class="settings-form">
+      <section class="panel">
+        <div class="section-head"><h2>Brand Identity</h2><p>Institute ka public look, logo aur theme.</p></div>
+        <div class="form-grid compact settings-grid">
+          <label>Institute Name<input id="instituteName" name="instituteName" placeholder="NAXORA Institute" required /></label>
+          <label>Legal Name<input id="legalName" name="legalName" placeholder="Registered legal name" /></label>
+          <label>Tagline<input id="tagline" name="tagline" placeholder="AI-powered coaching management" /></label>
+          <label>Logo URL<input id="logoUrl" name="logoUrl" placeholder="https://.../logo.png" /></label>
+          <label>Brand Color<input id="brandColor" name="brandColor" type="color" value="#D4AF37" /></label>
+          <label>Accent Color<input id="accentColor" name="accentColor" type="color" value="#00D4FF" /></label>
+          <label>Theme Mode<select id="themeMode" name="themeMode"><option value="dark">Dark</option><option value="light">Light</option><option value="system">System</option></select></label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head"><h2>Contact & Address</h2><p>Owner, support aur address details.</p></div>
+        <div class="form-grid compact settings-grid">
+          <label>Owner Name<input id="ownerName" name="ownerName" placeholder="Arun Khurana" /></label>
+          <label>Owner Phone<input id="ownerPhone" name="ownerPhone" placeholder="Mobile number" /></label>
+          <label>Owner Email<input id="ownerEmail" name="ownerEmail" type="email" placeholder="owner@example.com" /></label>
+          <label>Support Phone<input id="supportPhone" name="supportPhone" placeholder="Support number" /></label>
+          <label>Support Email<input id="supportEmail" name="supportEmail" type="email" placeholder="support@example.com" /></label>
+          <label>Website URL<input id="websiteUrl" name="websiteUrl" placeholder="https://naxora.in" /></label>
+          <label>Address Line 1<input id="addressLine1" name="addressLine1" placeholder="Building / street" /></label>
+          <label>Address Line 2<input id="addressLine2" name="addressLine2" placeholder="Area / landmark" /></label>
+          <label>City<input id="city" name="city" placeholder="Shahabad" /></label>
+          <label>District<input id="district" name="district" placeholder="Kurukshetra" /></label>
+          <label>State<input id="state" name="state" placeholder="Haryana" /></label>
+          <label>Pin Code<input id="pinCode" name="pinCode" placeholder="136135" /></label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head"><h2>Academic Year & Timings</h2><p>Default year, working days aur institute timings.</p></div>
+        <div class="form-grid compact settings-grid">
+          <label>Academic Year<input id="academicYearName" name="academicYearName" placeholder="2026-27" /></label>
+          <label>Start Date<input id="academicStartDate" name="academicStartDate" type="date" /></label>
+          <label>End Date<input id="academicEndDate" name="academicEndDate" type="date" /></label>
+          <label>Working Days<input id="workingDays" name="workingDays" placeholder="mon,tue,wed,thu,fri,sat" /></label>
+          <label>Opening Time<input id="openingTime" name="openingTime" type="time" /></label>
+          <label>Closing Time<input id="closingTime" name="closingTime" type="time" /></label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head"><h2>Receipt, Certificate & ID Rules</h2><p>Print documents ke prefixes aur default notes.</p></div>
+        <div class="form-grid compact settings-grid">
+          <label>Receipt Prefix<input id="receiptPrefix" name="receiptPrefix" placeholder="NXR-RCPT" /></label>
+          <label>Tax Enabled<select id="taxEnabled" name="taxEnabled"><option value="false">No</option><option value="true">Yes</option></select></label>
+          <label>Tax Name<input id="taxName" name="taxName" placeholder="GST" /></label>
+          <label>Tax Percent<input id="taxPercent" name="taxPercent" type="number" min="0" max="100" /></label>
+          <label>Certificate Prefix<input id="certificatePrefix" name="certificatePrefix" placeholder="NXR-CERT" /></label>
+          <label>Certificate Authority<input id="certificateAuthority" name="certificateAuthority" placeholder="Director" /></label>
+          <label>Signature URL<input id="certificateSignatureUrl" name="certificateSignatureUrl" placeholder="https://.../signature.png" /></label>
+          <label>Seal URL<input id="certificateSealUrl" name="certificateSealUrl" placeholder="https://.../seal.png" /></label>
+          <label>Student ID Prefix<input id="studentIdPrefix" name="studentIdPrefix" placeholder="NXR-STU" /></label>
+          <label>Teacher ID Prefix<input id="teacherIdPrefix" name="teacherIdPrefix" placeholder="NXR-TCH" /></label>
+          <label>Branch Code Prefix<input id="branchCodePrefix" name="branchCodePrefix" placeholder="NXR-BR" /></label>
+        </div>
+        <label>Receipt Footer<textarea id="receiptFooter" name="receiptFooter" rows="3" placeholder="Thank you for choosing NAXORA Institute."></textarea></label>
+        <label>Invoice Note<textarea id="invoiceNote" name="invoiceNote" rows="3" placeholder="Fees policy note..."></textarea></label>
+      </section>
+
+      <section class="panel">
+        <div class="section-head"><h2>Default Rules & Automation</h2><p>Attendance, due fees aur notification defaults.</p></div>
+        <div class="form-grid compact settings-grid">
+          <label>Attendance Rule<select id="defaultAttendanceRule" name="defaultAttendanceRule"><option value="normal">Normal</option><option value="strict">Strict</option><option value="flexible">Flexible</option></select></label>
+          <label>Minimum Attendance %<input id="minimumAttendancePercent" name="minimumAttendancePercent" type="number" min="0" max="100" /></label>
+          <label>Fee Due Day<input id="feeDueDay" name="feeDueDay" type="number" min="1" max="31" /></label>
+          <label>Late Fee Enabled<select id="lateFeeEnabled" name="lateFeeEnabled"><option value="false">No</option><option value="true">Yes</option></select></label>
+          <label>Late Fee Amount<input id="lateFeeAmount" name="lateFeeAmount" type="number" min="0" /></label>
+          <label>WhatsApp Enabled<select id="whatsappEnabled" name="whatsappEnabled"><option value="false">No</option><option value="true">Yes</option></select></label>
+          <label>Email Enabled<select id="emailEnabled" name="emailEnabled"><option value="false">No</option><option value="true">Yes</option></select></label>
+          <label>SMS Enabled<select id="smsEnabled" name="smsEnabled"><option value="false">No</option><option value="true">Yes</option></select></label>
+          <label>Auto Backup<select id="autoBackupEnabled" name="autoBackupEnabled"><option value="false">No</option><option value="true">Yes</option></select></label>
+        </div>
+        <label>Internal Notes<textarea id="notes" name="notes" rows="4" placeholder="Institute rules, print instructions, admin notes..."></textarea></label>
+        <button class="primary" type="submit">Save Institute Settings</button>
+        <p class="message" id="settingsMessage"></p>
+      </section>
+    </form>
+  </main>
+
+  <script src="settings.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

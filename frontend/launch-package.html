@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA Final Launch Package</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+  <link rel="stylesheet" href="launch-package.css" />
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><span class="logo">N</span><strong>NAXORA</strong></div>
+    <a href="dashboard.html">Overview</a>
+    <a href="demo-mode.html">Sales Demo</a>
+    <a href="client-pitch.html">Client Pitch</a>
+    <a href="final-testing.html">Final Testing</a>
+    <a href="deployment.html">Deployment</a>
+    <a href="razorpay-final.html">Razorpay Final</a>
+    <a href="system-debug.html">System Debug</a>
+    <a class="active" href="launch-package.html">Launch Package</a>
+  </aside>
+
+  <main class="main">
+    <section class="heroLaunch">
+      <div>
+        <p class="eyebrow">PART 50 · FINAL LAUNCH PACKAGE</p>
+        <h1>NAXORA Institute OS launch-ready room</h1>
+        <p class="muted big">Final master ZIP, demo flow, WhatsApp pitch, client onboarding, free-first deployment aur sales material ek jagah.</p>
+        <div class="actions">
+          <button id="loadBtn">Refresh launch package</button>
+          <button id="copyPitchBtn" class="secondary">Copy WhatsApp pitch</button>
+          <button id="printBtn" class="secondary">Print launch checklist</button>
+        </div>
+      </div>
+      <div class="launchCard">
+        <h3>Status</h3>
+        <p id="statusText">Loading...</p>
+        <div id="statusPills" class="pills"></div>
+      </div>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h2>Launch checklist</h2>
+        <div id="checklist" class="list"></div>
+      </article>
+      <article class="panel">
+        <h2>Free-first deployment plan</h2>
+        <div id="freePlan" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h2>WhatsApp pitch</h2>
+        <pre id="whatsappPitch" class="pitchBox">Loading...</pre>
+      </article>
+      <article class="panel">
+        <h2>5-minute demo video script</h2>
+        <div id="videoScript" class="timeline"></div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h2>Client onboarding checklist</h2>
+        <div id="onboarding" class="list"></div>
+      </article>
+      <article class="panel">
+        <h2>Final links</h2>
+        <div id="links" class="linkGrid"></div>
+      </article>
+    </section>
+
+    <p id="message" class="message"></p>
+  </main>
+
+  <script src="theme-system.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="launch-package.js"></script>
+</body>
+</html>

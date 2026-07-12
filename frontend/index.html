@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>NAXORA Institute OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body>
+  <div class="orb orb-one"></div><div class="orb orb-two"></div>
+  <main class="shell">
+    <section class="hero">
+      <div class="logo"><span>N</span><b>NAXORA</b></div>
+      <p class="eyebrow">AI-POWERED INSTITUTE OPERATING SYSTEM</p>
+      <h1>Manage. Teach. Grow.<br><em>All in one place.</em></h1>
+      <p class="lead">Students, teachers, attendance, fees, courses, tests, AI tools and analytics—one premium dashboard.</p>
+      <div class="people" aria-label="Animated students">
+        <div class="person boy"><div class="head">👨‍💻</div><span>Student</span></div>
+        <div class="person girl"><div class="head">👩‍🏫</div><span>Teacher</span></div>
+        <div class="person boy delay"><div class="head">🧑‍🎓</div><span>Achiever</span></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="tabs"><button class="active" data-mode="login">Login</button><button data-mode="signup">Create account</button></div>
+      <h2 id="formTitle">Welcome back</h2><p id="formText">Continue to your NAXORA dashboard.</p>
+      <form id="authForm">
+        <div id="signupFields" hidden>
+          <label>Full name<input id="name" placeholder="Arun Khurana" /></label>
+          <label>Role<select id="role"><option value="student">Student</option><option value="teacher">Teacher</option><option value="parent">Parent</option></select></label>
+        </div>
+        <label>Email<input id="email" type="email" placeholder="you@example.com" required /></label>
+        <label>Password<input id="password" type="password" minlength="8" placeholder="Minimum 8 characters" required /></label>
+        <button class="primary" id="submitBtn">Login securely</button>
+        <p class="message" id="message"></p>
+      </form>
+    </section>
+  </main>
+  <script src="app.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

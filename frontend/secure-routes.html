@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA Secure Route Policy</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+  <style>
+    .wrap{max-width:1100px;margin:0 auto;padding:48px 20px;color:#fff}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}.box{border:1px solid rgba(255,255,255,.14);border-radius:22px;padding:22px;background:rgba(255,255,255,.06)}.pill{display:inline-flex;padding:8px 12px;border-radius:999px;background:rgba(255,214,80,.16);color:#ffe88a;font-weight:800;margin:4px 6px 4px 0}.bad{background:rgba(255,76,76,.14);color:#ffb0b0}.ok{background:rgba(60,255,200,.14);color:#9fffe5}code{color:#ffe88a}.hero{padding:38px 0}.hero h1{font-size:clamp(34px,7vw,72px);line-height:1;margin:0 0 12px}.hero p{color:#cfd3df;font-size:18px;max-width:780px}.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:16px;padding:13px 18px;margin:6px;background:linear-gradient(135deg,#f3c84b,#24d8e8);font-weight:900;color:#090b10;text-decoration:none}.muted{color:#aeb3c4}.list{line-height:1.9}.status{white-space:pre-wrap;color:#d9e6ff;background:rgba(0,0,0,.35);padding:16px;border-radius:14px;overflow:auto}</style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <span class="pill ok">Part 51 Final Secure Build</span>
+      <h1>Public / Private Route Cleanup</h1>
+      <p>Final live deployment me public users ko landing, login aur role dashboard hi dikhega. Demo, debug, launch package, final testing aur deployment pages founder/internal use ke liye hidden rahenge.</p>
+      <a class="btn" href="/">Public Landing</a>
+      <a class="btn" href="/login">Login</a>
+      <a class="btn" href="/dashboard">Dashboard</a>
+    </section>
+    <div class="grid">
+      <div class="box">
+        <h2>✅ Public URLs</h2>
+        <div class="list">
+          <div><code>/</code> Landing page</div>
+          <div><code>/login</code> Login</div>
+          <div><code>/signup</code> Signup</div>
+          <div><code>/dashboard</code> Institute dashboard after login</div>
+          <div><code>/student</code> Student portal</div>
+          <div><code>/parent</code> Parent portal</div>
+          <div><code>/admin</code> Super admin route</div>
+        </div>
+      </div>
+      <div class="box">
+        <h2>🔒 Private/Internal</h2>
+        <div class="list muted">
+          <div>Launch package</div>
+          <div>Final testing</div>
+          <div>System debug</div>
+          <div>Client pitch</div>
+          <div>Demo mode</div>
+          <div>Deployment status</div>
+          <div>Route check and demo seeder APIs</div>
+        </div>
+      </div>
+      <div class="box">
+        <h2>Production Rule</h2>
+        <p class="muted">Live deploy ke liye <code>NODE_ENV=production</code> aur <code>INTERNAL_TOOLS_ENABLED=false</code> rakho. Local testing me internal tools visible reh sakte hain.</p>
+        <button class="btn" id="checkBtn">Check Policy</button>
+      </div>
+    </div>
+    <h2>Policy Status</h2>
+    <pre class="status" id="status">Loading...</pre>
+  </div>
+  <script>
+    async function loadStatus(){
+      const out = document.getElementById('status');
+      try{
+        const res = await fetch('/api/public-route-policy/status');
+        const data = await res.json();
+        out.textContent = JSON.stringify(data,null,2);
+      }catch(e){ out.textContent = 'Failed to load policy: '+e.message; }
+    }
+    document.getElementById('checkBtn').addEventListener('click', loadStatus);
+    loadStatus();
+  </script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>System Debug — NAXORA Institute OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="system-debug.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <div class="orb orb-one"></div><div class="orb orb-two"></div>
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="students.html">Students</a>
+      <a href="parents.html">Parents</a>
+      <a href="progress.html">Progress</a>
+      <a href="teachers.html">Teachers</a>
+      <a href="staff.html">Staff</a>
+      <a href="batches.html">Batches</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="attendance.html">Attendance</a>
+      <a href="fees.html">Fees</a>
+      <a href="finance.html">Finance</a>
+      <a href="doubts.html">AI Doubts</a>
+      <a href="ai-notes.html">AI Notes</a>
+      <a href="ai-mock-tests.html">AI Mock Tests</a>
+      <a href="ai-roadmaps.html">AI Roadmaps</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="notifications.html">WhatsApp/SMS</a>
+      <a href="email-notifications.html">Email</a>
+      <a href="assignments.html">Assignments</a>
+      <a href="tests.html">Tests</a>
+      <a href="test-builder.html">Test Builder</a>
+      <a href="question-bank.html">Question Bank</a>
+      <a href="timetable.html">Timetable</a>
+      <a href="branches.html">Branches</a>
+      <a href="enquiries.html">Enquiries</a>
+      <a href="followups.html">Follow-ups</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="payments.html">Payments</a>
+      <a href="security.html">Security</a>
+      <a href="super-admin.html">Super Admin</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a class="active" href="system-debug.html">System Debug</a>
+      <a href="settings.html">Settings</a>
+      <a href="theme.html">Theme</a>
+      <a href="reports.html">Reports</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="certificates.html">Certificates</a>
+      <a href="library.html">Library</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+  <main class="dashboard-main">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow mini">PART 44 • MASTER FIX</p>
+        <h1>System Debug + Demo Seeder</h1>
+        <p class="lead small">Route not found, Failed to fetch, MongoDB crash aur old backend confusion ko yahin se diagnose karo.</p>
+      </div>
+      <div class="profile-pill">🛠️ Debug Mode</div>
+    </header>
+
+    <section class="stats-grid debug-grid" id="debugCards"></section>
+
+    <section class="dashboard-section split">
+      <div class="panel">
+        <div class="section-head"><h2>Quick Fix Buttons</h2><p>Backend ke important health routes yahin se test karo.</p></div>
+        <div class="actions-grid debug-actions">
+          <button class="primary" data-action="health">Check Health</button>
+          <button class="primary" data-action="routes">Check Routes</button>
+          <button class="primary" data-action="features">Check Features</button>
+          <button class="primary" data-action="demoStatus">Demo Data Status</button>
+          <button class="ghost-btn" data-action="seedDemo">Seed Demo Data</button>
+        </div>
+        <p class="message" id="debugMessage"></p>
+      </div>
+      <div class="panel">
+        <div class="section-head"><h2>Common Error Fix</h2><p>Arun ke repeat errors ka direct solution.</p></div>
+        <div class="fix-list">
+          <div><b>Route not found</b><span>Wrong/old backend run ho raha hai. taskkill karke correct Part 44 backend run karo.</span></div>
+          <div><b>Failed to fetch</b><span>Pehle /api/health open karo. Agar health nahi chalti to backend off/crash hai.</span></div>
+          <div><b>MongoDB crash</b><span>Is build me crash nahi hoga; mock mode start hoga. Atlas IP/user/password check karo.</span></div>
+          <div><b>Feature missing</b><span>Part 44 integrated frontend + Part 44 backend dono same folder se chalao.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="dashboard-section panel">
+      <div class="section-head"><h2>Live API Output</h2><p>Response copy karke mujhe bhej sakte ho.</p></div>
+      <pre id="outputBox" class="debug-output">Click any check button…</pre>
+    </section>
+  </main>
+  <script src="system-debug.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

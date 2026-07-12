@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Super Admin — NAXORA Institute OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="batches.css" />
+  <link rel="stylesheet" href="subscriptions.css" />
+  <link rel="stylesheet" href="super-admin.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="students.html">Students</a>
+      <a href="parents.html">Parents</a>
+      <a href="progress.html">Progress</a>
+      <a href="teachers.html">Teachers</a>
+      <a href="staff.html">Staff</a>
+      <a href="batches.html">Batches</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="attendance.html">Attendance</a>
+      <a href="fees.html">Fees</a>
+      <a href="finance.html">Finance</a>
+      <a href="doubts.html">AI Doubts</a>
+      <a href="ai-notes.html">AI Notes</a>
+      <a href="ai-mock-tests.html">AI Mock Tests</a>
+      <a href="ai-roadmaps.html">AI Roadmaps</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="notifications.html">WhatsApp/SMS</a>
+      <a href="email-notifications.html">Email</a>
+      <a href="assignments.html">Assignments</a>
+      <a href="tests.html">Tests</a>
+      <a href="test-builder.html">Test Builder</a>
+      <a href="question-bank.html">Question Bank</a>
+      <a href="timetable.html">Timetable</a>
+      <a href="branches.html">Branches</a>
+      <a href="enquiries.html">Enquiries</a>
+      <a href="followups.html">Follow-ups</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="payments.html">Payments</a>
+      <a href="security.html">Security</a>
+      <a class="active" href="super-admin.html">Super Admin</a>
+      <a href="settings.html">Settings</a>
+      <a href="theme.html">Theme</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a href="demo-mode.html">Sales Demo Mode</a>
+      <a href="system-debug.html">System Debug</a>
+      <a href="reports.html">Reports</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="certificates.html">Certificates</a>
+      <a href="library.html">Library</a>
+      <a href="dashboard.html#profile">Profile</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main super-admin-main">
+    <header class="topbar super-admin-hero">
+      <div>
+        <p class="eyebrow mini">PART 26 • SUPER ADMIN PANEL</p>
+        <h1>SaaS Control Room</h1>
+        <p class="lead small">All institutes, subscriptions, revenue, active/expired accounts, alerts aur admin actions ek jagah control karo.</p>
+      </div>
+      <div class="hero-actions">
+        <button class="primary small-btn" id="refreshSuperAdminBtn">Refresh Data</button>
+        <a class="back-link" href="dashboard.html">← Dashboard</a>
+      </div>
+    </header>
+
+    <section class="batch-stats super-stats" id="superStats">
+      <article><strong id="totalInstitutes">0</strong><span>Total Institutes</span></article>
+      <article><strong id="activeInstitutes">0</strong><span>Active Institutes</span></article>
+      <article><strong id="estimatedMRR">₹0</strong><span>Estimated MRR</span></article>
+      <article><strong id="expiring7">0</strong><span>Expiring 7 Days</span></article>
+      <article><strong id="pastDueInstitutes">0</strong><span>Past Due</span></article>
+      <article><strong id="totalUsers">0</strong><span>Users</span></article>
+    </section>
+
+    <section class="super-grid">
+      <div class="panel">
+        <div class="section-head list-head">
+          <div>
+            <h2>Alerts</h2>
+            <p>Payment, expiry aur conversion priority yahan dikhengi.</p>
+          </div>
+        </div>
+        <div id="alertList" class="alert-list"></div>
+      </div>
+
+      <div class="panel">
+        <div class="section-head list-head">
+          <div>
+            <h2>Plan Breakdown</h2>
+            <p>Free, Starter, Pro, Premium, Enterprise ka split.</p>
+          </div>
+        </div>
+        <div id="planBreakdown" class="plan-breakdown"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head list-head">
+        <div>
+          <h2>All Institutes</h2>
+          <p>Search, status filter, plan control aur block/unblock yahin se karo.</p>
+        </div>
+        <button class="ghost-inline" id="seedDemoBtn" type="button">Add Demo Note</button>
+      </div>
+
+      <div class="list-filters super-filters">
+        <input id="superSearch" placeholder="Search institute, owner, phone, city..." />
+        <select id="superStatusFilter">
+          <option value="">All status</option>
+          <option value="trial">Trial</option>
+          <option value="active">Active</option>
+          <option value="past_due">Past Due</option>
+          <option value="paused">Paused</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="expired">Expired</option>
+        </select>
+        <select id="superPlanFilter">
+          <option value="">All plans</option>
+          <option value="free">Free</option>
+          <option value="starter">Starter</option>
+          <option value="pro">Pro</option>
+          <option value="premium">Premium</option>
+          <option value="enterprise">Enterprise</option>
+        </select>
+      </div>
+      <div id="instituteList" class="data-list super-list"></div>
+      <p class="message" id="superListMessage"></p>
+    </section>
+
+    <section class="panel action-panel">
+      <div class="section-head">
+        <h2>Super Admin Note</h2>
+        <p>Payment follow-up, support note ya internal admin decision save karo.</p>
+      </div>
+      <form id="superNoteForm" class="manager-form">
+        <input type="hidden" id="noteInstituteId" />
+        <div class="form-grid compact note-grid">
+          <label>Institute Name
+            <input id="noteInstituteName" placeholder="Optional institute name" />
+          </label>
+          <label>Action Type
+            <select id="actionType"><option value="note">Note</option><option value="payment_note">Payment Note</option><option value="support_note">Support Note</option></select>
+          </label>
+          <label>Priority
+            <select id="priority"><option value="normal">Normal</option><option value="low">Low</option><option value="high">High</option><option value="urgent">Urgent</option></select>
+          </label>
+          <label>Title
+            <input id="noteTitle" placeholder="Follow-up required" />
+          </label>
+        </div>
+        <label>Note
+          <textarea id="noteBody" rows="4" placeholder="Admin note, billing update, support issue..."></textarea>
+        </label>
+        <button class="primary" type="submit">Save Note</button>
+        <p class="message" id="noteMessage"></p>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="section-head list-head">
+        <div>
+          <h2>Recent Admin Actions</h2>
+          <p>Status change, plan change aur notes ki history.</p>
+        </div>
+      </div>
+      <div id="actionList" class="data-list action-list"></div>
+    </section>
+  </main>
+
+  <script src="super-admin.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

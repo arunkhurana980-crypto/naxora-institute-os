@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Batches & Courses — NAXORA Institute OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="batches.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="students.html">Students</a>
+      <a href="parents.html">Parents</a>
+      <a href="progress.html">Progress</a>
+      <a href="teachers.html">Teachers</a>
+      <a href="staff.html">Staff</a>
+      <a class="active" href="batches.html">Batches</a>
+      <a href="attendance.html">Attendance</a>
+      <a href="fees.html">Fees</a>
+      <a href="finance.html">Finance</a>
+      <a href="doubts.html">AI Doubts</a>
+      <a href="ai-notes.html">AI Notes</a>
+      <a href="ai-mock-tests.html">AI Mock Tests</a>
+      <a href="ai-roadmaps.html">AI Roadmaps</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="notifications.html">WhatsApp/SMS</a>
+      <a href="email-notifications.html">Email</a>
+      <a href="assignments.html">Assignments</a>
+      <a href="tests.html">Tests</a>
+      <a href="test-builder.html">Test Builder</a>
+      <a href="question-bank.html">Question Bank</a>
+      <a href="timetable.html">Timetable</a>
+      <a href="branches.html">Branches</a>
+      <a href="enquiries.html">Enquiries</a>
+      <a href="followups.html">Follow-ups</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="payments.html">Payments</a>
+      <a href="security.html">Security</a>
+      <a href="super-admin.html">Super Admin</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a href="demo-mode.html">Sales Demo Mode</a>
+      <a href="system-debug.html">System Debug</a>
+      <a href="settings.html">Settings</a>
+      <a href="theme.html">Theme</a>
+      <a href="reports.html">Reports</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="certificates.html">Certificates</a>
+      <a href="library.html">Library</a>
+      <a href="dashboard.html#profile">Profile</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow mini">PART 5 • BATCH & COURSE MANAGEMENT</p>
+        <h1>Batches & Courses</h1>
+        <p class="lead small">Course banao, batch banao, teacher assign karo, timing/fees/status manage karo — sab MongoDB me save hoga.</p>
+      </div>
+      <a class="back-link" href="dashboard.html">← Dashboard</a>
+    </header>
+
+    <section class="batch-stats">
+      <article><strong id="totalCourses">0</strong><span>Total Courses</span></article>
+      <article><strong id="activeCourses">0</strong><span>Active Courses</span></article>
+      <article><strong id="totalBatches">0</strong><span>Total Batches</span></article>
+      <article><strong id="activeBatches">0</strong><span>Active Batches</span></article>
+    </section>
+
+    <section class="manager-grid">
+      <form class="panel manager-form" id="courseForm">
+        <div class="section-head">
+          <h2 id="courseFormHeading">Add New Course</h2>
+          <p>Example: Web Development, AI Tools, Cyber Security, Python.</p>
+        </div>
+        <input type="hidden" id="courseId" />
+        <div class="form-grid compact">
+          <label>Course Name *
+            <input id="courseNameInput" placeholder="Example: Full Stack Web Development" required />
+          </label>
+          <label>Course Code
+            <input id="courseCode" placeholder="WEB-101" />
+          </label>
+          <label>Category
+            <input id="courseCategory" placeholder="Technology / Coding" />
+          </label>
+          <label>Level
+            <select id="courseLevel">
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+              <option value="not_set">Not set</option>
+            </select>
+          </label>
+          <label>Duration
+            <input id="courseDuration" placeholder="3 months / 6 months" />
+          </label>
+          <label>Mode
+            <select id="courseMode">
+              <option value="offline">Offline</option>
+              <option value="online">Online</option>
+              <option value="hybrid">Hybrid</option>
+              <option value="not_set">Not set</option>
+            </select>
+          </label>
+          <label>Total Fees
+            <input id="courseFees" type="number" min="0" placeholder="4999" />
+          </label>
+          <label>Status
+            <select id="courseStatus">
+              <option value="active">Active</option>
+              <option value="upcoming">Upcoming</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </label>
+        </div>
+        <label>Description
+          <textarea id="courseDescription" rows="3" placeholder="Course me kya-kya cover hoga..."></textarea>
+        </label>
+        <div class="form-actions">
+          <button class="primary" type="submit" id="saveCourseBtn">Save Course</button>
+          <button class="ghost-inline" type="button" id="clearCourseBtn">Clear</button>
+        </div>
+        <p class="message" id="courseMessage"></p>
+      </form>
+
+      <form class="panel manager-form" id="batchForm">
+        <div class="section-head">
+          <h2 id="batchFormHeading">Add New Batch</h2>
+          <p>Batch timing, teacher, course, capacity aur fees manage karo.</p>
+        </div>
+        <input type="hidden" id="batchId" />
+        <div class="form-grid compact">
+          <label>Batch Name *
+            <input id="batchNameInput" placeholder="Morning Batch A" required />
+          </label>
+          <label>Course Name
+            <input id="batchCourseName" placeholder="Full Stack Web Development" />
+          </label>
+          <label>Teacher Name
+            <input id="batchTeacherName" placeholder="Priya Sharma" />
+          </label>
+          <label>Timing
+            <input id="batchTiming" placeholder="6:00 AM - 7:30 AM" />
+          </label>
+          <label>Days
+            <input id="batchDays" placeholder="Mon, Wed, Fri" />
+          </label>
+          <label>Start Date
+            <input id="batchStartDate" type="date" />
+          </label>
+          <label>End Date
+            <input id="batchEndDate" type="date" />
+          </label>
+          <label>Max Students
+            <input id="maxStudents" type="number" min="0" placeholder="30" />
+          </label>
+          <label>Enrolled Students
+            <input id="enrolledStudents" type="number" min="0" placeholder="12" />
+          </label>
+          <label>Batch Fees
+            <input id="batchFees" type="number" min="0" placeholder="4999" />
+          </label>
+          <label>Status
+            <select id="batchStatus">
+              <option value="active">Active</option>
+              <option value="upcoming">Upcoming</option>
+              <option value="completed">Completed</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </label>
+          <label>Location
+            <input id="batchLocation" placeholder="Room 1 / Online / Lab" />
+          </label>
+        </div>
+        <label>Notes
+          <textarea id="batchNotes" rows="3" placeholder="Batch rules, special note, follow-up..."></textarea>
+        </label>
+        <div class="form-actions">
+          <button class="primary" type="submit" id="saveBatchBtn">Save Batch</button>
+          <button class="ghost-inline" type="button" id="clearBatchBtn">Clear</button>
+        </div>
+        <p class="message" id="batchMessage"></p>
+      </form>
+    </section>
+
+    <section class="panel list-panel" id="coursesPanel">
+      <div class="section-head list-head">
+        <div>
+          <h2>All Courses</h2>
+          <p>Search, filter, edit aur delete yahin se karo.</p>
+        </div>
+        <button class="ghost-inline" id="refreshCoursesBtn">Refresh Courses</button>
+      </div>
+      <div class="filters">
+        <input id="courseSearch" placeholder="Search course, code, category..." />
+        <select id="courseStatusFilter">
+          <option value="">All status</option>
+          <option value="active">Active</option>
+          <option value="upcoming">Upcoming</option>
+          <option value="inactive">Inactive</option>
+        </select>
+        <select id="courseModeFilter">
+          <option value="">All modes</option>
+          <option value="offline">Offline</option>
+          <option value="online">Online</option>
+          <option value="hybrid">Hybrid</option>
+          <option value="not_set">Not set</option>
+        </select>
+      </div>
+      <div class="cards-list" id="courseList"></div>
+      <p class="message" id="courseListMessage"></p>
+    </section>
+
+    <section class="panel list-panel" id="batchesPanel">
+      <div class="section-head list-head">
+        <div>
+          <h2>All Batches</h2>
+          <p>Batch timing, assigned teacher, capacity aur fees dekh sakte ho.</p>
+        </div>
+        <button class="ghost-inline" id="refreshBatchesBtn">Refresh Batches</button>
+      </div>
+      <div class="filters two">
+        <input id="batchSearch" placeholder="Search batch, course, teacher, timing..." />
+        <select id="batchStatusFilter">
+          <option value="">All status</option>
+          <option value="active">Active</option>
+          <option value="upcoming">Upcoming</option>
+          <option value="completed">Completed</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+      <div class="cards-list" id="batchList"></div>
+      <p class="message" id="batchListMessage"></p>
+    </section>
+  </main>
+
+  <script src="batches.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+.doubt-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.ai-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-panel::before {
+  content: "🤖";
+  position: absolute;
+  right: 28px;
+  top: 28px;
+  font-size: 86px;
+  opacity: .08;
+}
+
+.doubt-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.doubt-filters {
+  grid-template-columns: 1.3fr .8fr .65fr .65fr;
+}
+
+.ai-answer {
+  white-space: pre-wrap;
+  word-break: break-word;
+  border: 1px solid rgba(255, 232, 120, .18);
+  background: radial-gradient(circle at top left, rgba(255, 232, 120, .12), rgba(0,0,0,.25) 36%, rgba(255,255,255,.035));
+  color: rgba(255,255,255,.9);
+  line-height: 1.8;
+  border-radius: 22px;
+  padding: 20px;
+  min-height: 180px;
+  font-family: inherit;
+}
+
+.answer-panel {
+  margin-top: 22px;
+  margin-bottom: 22px;
+}
+
+.answer-preview {
+  margin-top: 14px;
+  white-space: pre-wrap;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.24);
+  border-radius: 16px;
+  padding: 14px;
+  color: rgba(255,255,255,.78);
+  line-height: 1.7;
+  max-height: 260px;
+  overflow: auto;
+}
+
+.status-solved { color: #a9ffcf; }
+.status-pending { color: #ffe978; }
+.status-teacher-review { color: #83eaff; }
+.priority-high { color: #ffb0b0; }
+.priority-normal { color: #ffe978; }
+.priority-low { color: #a9ffcf; }
+
+@media(max-width: 1050px) {
+  .doubt-stats,
+  .doubt-grid,
+  .doubt-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media(max-width: 720px) {
+  .doubt-stats,
+  .doubt-grid,
+  .doubt-filters {
+    grid-template-columns: 1fr;
+  }
+}

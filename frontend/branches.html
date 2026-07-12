@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Branches — NAXORA Institute OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="teachers.css" />
+  <link rel="stylesheet" href="branches.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <div class="orb orb-one"></div><div class="orb orb-two"></div>
+
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="students.html">Students</a>
+      <a href="parents.html">Parents</a>
+      <a href="progress.html">Progress</a>
+      <a href="teachers.html">Teachers</a>
+      <a href="staff.html">Staff</a>
+      <a href="batches.html">Batches</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="attendance.html">Attendance</a>
+      <a href="fees.html">Fees</a>
+      <a href="finance.html">Finance</a>
+      <a href="payments.html">Payments</a>
+      <a href="security.html">Security</a>
+      <a href="doubts.html">AI Doubts</a>
+      <a href="ai-notes.html">AI Notes</a>
+      <a href="ai-mock-tests.html">AI Mock Tests</a>
+      <a href="ai-roadmaps.html">AI Roadmaps</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="notifications.html">WhatsApp/SMS</a>
+      <a href="email-notifications.html">Email</a>
+      <a href="assignments.html">Assignments</a>
+      <a href="tests.html">Tests</a>
+      <a href="test-builder.html">Test Builder</a>
+      <a href="question-bank.html">Question Bank</a>
+      <a href="timetable.html">Timetable</a>
+      <a class="active" href="branches.html">Branches</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a href="demo-mode.html">Sales Demo Mode</a>
+      <a href="system-debug.html">System Debug</a>
+      <a href="reports.html">Reports</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="certificates.html">Certificates</a>
+      <a href="library.html">Library</a>
+      <a href="settings.html">Settings</a>
+      <a href="theme.html">Theme</a>
+      <a href="dashboard.html#profile">Profile</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main branch-main">
+    <header class="topbar branch-hero">
+      <div>
+        <p class="eyebrow mini">PART 22 • BRANCH MANAGEMENT</p>
+        <h1>Multi-Branch Control Center</h1>
+        <p class="lead small">Main branch, franchise, online center aur partner branches ko ek dashboard me manage karo.</p>
+      </div>
+      <div class="profile-pill" id="profilePill">🏢 Branches</div>
+    </header>
+
+    <section class="stats-grid" id="branchStats"></section>
+
+    <section class="branch-layout">
+      <form class="panel branch-form" id="branchForm">
+        <div class="section-head">
+          <h2 id="formTitle">Add Branch</h2>
+          <p>Branch details, manager, capacity aur monthly finance track karo.</p>
+        </div>
+
+        <input type="hidden" id="branchId" />
+
+        <div class="form-grid compact">
+          <label>Branch Name *<input id="branchName" required placeholder="NAXORA Ambala Cantt" /></label>
+          <label>Branch Code *<input id="branchCode" required placeholder="AMB-001" /></label>
+          <label>Branch Type
+            <select id="branchType"><option value="main">Main</option><option value="franchise">Franchise</option><option value="online">Online</option><option value="partner">Partner</option><option value="temporary">Temporary</option></select>
+          </label>
+          <label>Status
+            <select id="status"><option value="active">Active</option><option value="planning">Planning</option><option value="inactive">Inactive</option><option value="closed">Closed</option></select>
+          </label>
+          <label>City<input id="city" placeholder="Ambala / Shahabad / Panchkula" /></label>
+          <label>District<input id="district" placeholder="Kurukshetra" /></label>
+          <label>State<input id="state" value="Haryana" /></label>
+          <label>PIN Code<input id="pinCode" placeholder="136135" /></label>
+          <label>Manager Name<input id="managerName" placeholder="Branch Manager" /></label>
+          <label>Manager Phone<input id="managerPhone" placeholder="98765xxxxx" /></label>
+          <label>Manager Email<input id="managerEmail" type="email" placeholder="manager@naxora.com" /></label>
+          <label>Contact Phone<input id="contactPhone" placeholder="92534xxxxx" /></label>
+          <label>Contact Email<input id="contactEmail" type="email" placeholder="branch@naxora.com" /></label>
+          <label>Opening Date<input id="openingDate" type="date" /></label>
+          <label>Capacity<input id="capacity" type="number" min="0" value="50" /></label>
+          <label>Current Students<input id="currentStudents" type="number" min="0" value="0" /></label>
+          <label>Current Teachers<input id="currentTeachers" type="number" min="0" value="0" /></label>
+          <label>Monthly Revenue ₹<input id="monthlyRevenue" type="number" min="0" value="0" /></label>
+          <label>Monthly Expense ₹<input id="monthlyExpense" type="number" min="0" value="0" /></label>
+          <label>Facilities<input id="facilities" placeholder="Computer Lab, AC Room, Projector" /></label>
+        </div>
+
+        <label>Full Address
+          <textarea id="address" rows="3" placeholder="Building, street, landmark..."></textarea>
+        </label>
+        <label>Notes
+          <textarea id="notes" rows="3" placeholder="Rent, local marketing, branch opening plan, staff note..."></textarea>
+        </label>
+
+        <div class="form-actions sticky-actions">
+          <button class="primary" type="submit">Save Branch</button>
+          <button class="ghost-btn" type="button" id="clearBtn">Clear</button>
+          <button class="ghost-btn" type="button" id="sampleBtn">Sample</button>
+        </div>
+        <p class="message" id="message"></p>
+      </form>
+
+      <section class="panel branch-list-panel">
+        <div class="section-head list-head">
+          <div>
+            <h2>All Branches</h2>
+            <p>Search, filter, edit aur status update yahin se karo.</p>
+          </div>
+          <button class="ghost-btn" id="refreshBtn" type="button">Refresh</button>
+        </div>
+
+        <div class="filters branch-filters">
+          <input id="searchInput" placeholder="Search name, code, city, manager..." />
+          <input id="cityFilter" placeholder="City filter" />
+          <select id="typeFilter"><option value="">All type</option><option value="main">Main</option><option value="franchise">Franchise</option><option value="online">Online</option><option value="partner">Partner</option><option value="temporary">Temporary</option></select>
+          <select id="statusFilter"><option value="">All status</option><option value="active">Active</option><option value="planning">Planning</option><option value="inactive">Inactive</option><option value="closed">Closed</option></select>
+        </div>
+
+        <div id="branchesList" class="cards-list branch-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="branches.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

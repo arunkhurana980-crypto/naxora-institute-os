@@ -1,0 +1,66 @@
+.timetable-main { padding-bottom: 60px; }
+.timetable-hero {
+  border: 1px solid rgba(255, 220, 105, 0.18);
+  background: radial-gradient(circle at top right, rgba(0, 212, 255, 0.13), transparent 38%), rgba(15, 15, 15, 0.72);
+}
+.timetable-layout {
+  display: grid;
+  grid-template-columns: minmax(330px, 0.9fr) minmax(420px, 1.35fr);
+  gap: 22px;
+  align-items: start;
+}
+.timetable-form, .timetable-list-panel { min-width: 0; }
+.timetable-filters { grid-template-columns: repeat(3, minmax(140px, 1fr)); }
+.weekly-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(150px, 1fr));
+  gap: 12px;
+  margin: 18px 0 22px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.day-column {
+  min-height: 210px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.035);
+  border-radius: 18px;
+  padding: 12px;
+}
+.day-column h3 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: #ffe680;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.mini-slot {
+  border: 1px solid rgba(255, 220, 105, 0.18);
+  background: linear-gradient(135deg, rgba(255, 215, 90, 0.09), rgba(0, 212, 255, 0.06));
+  border-radius: 14px;
+  padding: 10px;
+  margin-bottom: 9px;
+}
+.mini-slot b { display: block; font-size: 13px; color: #fff; margin-bottom: 4px; }
+.mini-slot span { display: block; font-size: 12px; color: rgba(255,255,255,0.68); }
+.timetable-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #ffe680;
+  font-weight: 800;
+}
+.timetable-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.empty-day { font-size: 12px; color: rgba(255,255,255,.44); }
+@media (max-width: 1100px) {
+  .timetable-layout { grid-template-columns: 1fr; }
+  .weekly-grid { grid-template-columns: repeat(2, minmax(180px, 1fr)); }
+}
+@media (max-width: 680px) {
+  .timetable-filters { grid-template-columns: 1fr; }
+  .weekly-grid { grid-template-columns: 1fr; }
+}

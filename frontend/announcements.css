@@ -1,0 +1,110 @@
+.announcements-main .announcement-hero {
+  background: linear-gradient(135deg, rgba(255, 215, 106, 0.14), rgba(0, 212, 255, 0.08));
+  border-color: rgba(255, 215, 106, 0.25);
+}
+
+.announcement-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.announcement-filters {
+  grid-template-columns: 1.5fr repeat(4, minmax(130px, 1fr)) auto;
+}
+
+.announcement-card {
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 26px;
+  background: radial-gradient(circle at top left, rgba(255, 215, 106, 0.12), transparent 32%), rgba(255, 255, 255, 0.035);
+  margin-bottom: 16px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+}
+
+.announcement-card.high {
+  border-color: rgba(255, 215, 106, 0.42);
+}
+
+.announcement-card.urgent {
+  border-color: rgba(255, 80, 120, 0.55);
+  background: radial-gradient(circle at top left, rgba(255, 80, 120, 0.14), transparent 34%), rgba(255, 255, 255, 0.035);
+}
+
+.announcement-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.announcement-card h3 {
+  font-size: 1.25rem;
+  margin: 8px 0;
+}
+
+.announcement-card p {
+  color: rgba(255, 255, 255, 0.76);
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.announcement-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.88rem;
+  margin: 14px 0;
+}
+
+.badge.high,
+.badge.urgent {
+  color: #0a0a0a;
+  background: linear-gradient(135deg, #ffd76a, #fff2a8);
+}
+
+.notice-link {
+  display: inline-flex;
+  margin: 8px 0 12px;
+  color: #ffe681;
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.card-actions button {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.card-actions button:hover {
+  transform: translateY(-1px);
+}
+
+.card-actions .danger {
+  color: #ff7a9b;
+  border-color: rgba(255, 122, 155, 0.35);
+}
+
+@media (max-width: 900px) {
+  .announcement-grid,
+  .announcement-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .announcement-top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

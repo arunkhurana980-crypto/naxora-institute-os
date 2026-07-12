@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Admin Analytics — NAXORA Institute OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="admin-analytics.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <div class="orb orb-one"></div><div class="orb orb-two"></div>
+
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="students.html">Students</a>
+      <a href="parents.html">Parents</a>
+      <a href="progress.html">Progress</a>
+      <a href="teachers.html">Teachers</a>
+      <a href="staff.html">Staff</a>
+      <a href="batches.html">Batches</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="attendance.html">Attendance</a>
+      <a href="fees.html">Fees</a>
+      <a href="finance.html">Finance</a>
+      <a href="doubts.html">AI Doubts</a>
+      <a href="ai-notes.html">AI Notes</a>
+      <a href="ai-mock-tests.html">AI Mock Tests</a>
+      <a href="ai-roadmaps.html">AI Roadmaps</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="notifications.html">WhatsApp/SMS</a>
+      <a href="email-notifications.html">Email</a>
+      <a href="assignments.html">Assignments</a>
+      <a href="tests.html">Tests</a>
+      <a href="test-builder.html">Test Builder</a>
+      <a href="question-bank.html">Question Bank</a>
+      <a href="timetable.html">Timetable</a>
+      <a href="branches.html">Branches</a>
+      <a href="enquiries.html">Enquiries</a>
+      <a href="followups.html">Follow-ups</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="payments.html">Payments</a>
+      <a href="security.html">Security</a>
+      <a href="super-admin.html">Super Admin</a>
+      <a class="active" href="admin-analytics.html">Admin Analytics</a>
+      <a href="settings.html">Settings</a>
+      <a href="theme.html">Theme</a>
+      <a href="reports.html">Reports</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="certificates.html">Certificates</a>
+      <a href="library.html">Library</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main analytics-main">
+    <header class="topbar analytics-hero">
+      <div>
+        <p class="eyebrow mini">PART 43 • GROWTH CONTROL ROOM</p>
+        <h1>Admin Analytics Charts</h1>
+        <p class="lead small">Revenue, leads, students, live classes, discovery marketplace aur SaaS subscription growth ek jagah.</p>
+      </div>
+      <div class="profile-pill" id="analyticsMode">Loading…</div>
+    </header>
+
+    <section class="analytics-toolbar panel">
+      <div>
+        <h2>Growth Snapshot</h2>
+        <p>Mock mode me bhi dashboard crash nahi karega. MongoDB connected ho to live data cards update honge.</p>
+      </div>
+      <div class="toolbar-actions">
+        <button class="ghost-btn" id="refreshAnalytics">Refresh analytics</button>
+        <button class="primary small-btn" id="printAnalytics">Print dashboard</button>
+      </div>
+    </section>
+
+    <section id="kpiGrid" class="analytics-kpis"></section>
+
+    <section class="analytics-grid">
+      <article class="analytics-card wide">
+        <div class="section-head">
+          <h2>Revenue Growth</h2>
+          <p>Fees, SaaS subscriptions aur Live Classes revenue ka month-wise trend.</p>
+        </div>
+        <div id="revenueChart" class="chart chart-line"></div>
+      </article>
+
+      <article class="analytics-card">
+        <div class="section-head">
+          <h2>Lead Funnel</h2>
+          <p>Discovery + admission leads ka conversion funnel.</p>
+        </div>
+        <div id="leadFunnel" class="funnel"></div>
+      </article>
+
+      <article class="analytics-card">
+        <div class="section-head">
+          <h2>Student Growth</h2>
+          <p>Weekly student growth view.</p>
+        </div>
+        <div id="studentGrowth" class="bar-chart"></div>
+      </article>
+
+      <article class="analytics-card">
+        <div class="section-head">
+          <h2>SaaS Plan Breakdown</h2>
+          <p>Institutes kis plan par hain.</p>
+        </div>
+        <div id="planBreakdown" class="donut-list"></div>
+      </article>
+
+      <article class="analytics-card">
+        <div class="section-head">
+          <h2>Live Classes Usage</h2>
+          <p>Batch access gated live learning stats.</p>
+        </div>
+        <div id="liveStats" class="mini-metrics"></div>
+      </article>
+
+      <article class="analytics-card wide">
+        <div class="section-head">
+          <h2>Discovery Marketplace Analytics</h2>
+          <p>Students institute search karte hain, active NAXORA institutes show hote hain, aur qualified leads institute dashboard me aati hain.</p>
+        </div>
+        <div id="discoveryStats" class="discovery-strip"></div>
+      </article>
+
+      <article class="analytics-card wide alert-card">
+        <div class="section-head">
+          <h2>Founder Alerts</h2>
+          <p>Kin cheezon par aaj attention deni hai.</p>
+        </div>
+        <div id="alerts" class="alert-list"></div>
+      </article>
+    </section>
+
+    <p class="message" id="analyticsMessage"></p>
+  </main>
+
+  <script src="admin-analytics.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

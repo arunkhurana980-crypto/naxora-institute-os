@@ -1,0 +1,23 @@
+
+.razorpay-hero { border: 1px solid rgba(250, 204, 21, .25); background: radial-gradient(circle at top right, rgba(34,211,238,.18), transparent 32%), linear-gradient(135deg, rgba(12,12,16,.96), rgba(27,24,13,.92)); }
+.razorpay-grid { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:16px; margin: 18px 0; }
+.rzp-stat, .rzp-card, .rzp-plan { background: rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12); border-radius:22px; padding:18px; box-shadow: 0 18px 50px rgba(0,0,0,.22); }
+.rzp-stat span { color:#bfc3d9; font-weight:700; font-size:.82rem; display:block; margin-bottom:8px; }
+.rzp-stat strong { font-size:1.45rem; color:#fff; display:block; }
+.rzp-pill { display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; background:rgba(34,211,238,.12); border:1px solid rgba(34,211,238,.25); color:#67e8f9; font-weight:800; }
+.rzp-pill.warn { background:rgba(251,191,36,.13); border-color:rgba(251,191,36,.3); color:#fde68a; }
+.rzp-pill.good { background:rgba(34,197,94,.13); border-color:rgba(34,197,94,.3); color:#86efac; }
+.rzp-layout { display:grid; grid-template-columns: 1.05fr .95fr; gap:18px; align-items:start; }
+.rzp-plans { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:14px; }
+.rzp-plan h3 { margin:.2rem 0; color:#fff; }
+.rzp-plan .price { font-size:1.6rem; font-weight:900; color:#fde68a; margin:10px 0; }
+.rzp-plan ul { margin: 12px 0 0; padding-left:18px; color:#d1d5db; }
+.rzp-checklist { display:grid; gap:10px; padding:0; list-style:none; }
+.rzp-checklist li { padding:12px 14px; border-radius:16px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1); color:#dbeafe; }
+.rzp-form-grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:12px; }
+.rzp-form-grid label { display:grid; gap:7px; color:#cbd5e1; font-weight:700; }
+.rzp-form-grid input, .rzp-form-grid select { width:100%; border-radius:14px; border:1px solid rgba(255,255,255,.14); padding:13px 14px; background:rgba(0,0,0,.24); color:#fff; }
+.payload-box { white-space:pre-wrap; word-break:break-word; background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.12); padding:14px; border-radius:16px; color:#d1fae5; min-height:120px; }
+.warning-box { border:1px solid rgba(248,113,113,.35); background:rgba(127,29,29,.16); color:#fecaca; padding:14px; border-radius:16px; }
+@media (max-width: 980px){ .razorpay-grid { grid-template-columns: repeat(2,1fr); } .rzp-layout, .rzp-plans { grid-template-columns:1fr; } }
+@media (max-width: 640px){ .razorpay-grid { grid-template-columns:1fr; } .rzp-form-grid { grid-template-columns:1fr; } }

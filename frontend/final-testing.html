@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Final Testing — NAXORA Institute OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="final-testing.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="client-pitch.html">Client Pitch</a>
+      <a href="demo-mode.html">Sales Demo Mode</a>
+      <a href="razorpay-final.html">Razorpay Final</a>
+      <a href="deployment.html">Deployment</a>
+      <a href="system-debug.html">System Debug</a>
+      <a class="active" href="final-testing.html">Final Testing</a>
+      <a href="payments.html">Payments</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="settings.html">Settings</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main">
+    <header class="topbar final-hero">
+      <div>
+        <p class="eyebrow mini">PART 49 • FINAL TESTING + BUG FIX BUILD</p>
+        <h1>Final Testing Control Room</h1>
+        <p class="lead small">Part 48 Razorpay final setup ke baad ab yahan se routes, pages, MongoDB, Razorpay, mobile aur free deployment readiness check karo.</p>
+      </div>
+      <div class="hero-actions">
+        <button class="primary small-btn" id="refreshBtn">Refresh</button>
+        <button class="ghost-inline" id="runBtn">Run Final Report</button>
+      </div>
+    </header>
+
+    <section class="final-summary" id="summaryCards"></section>
+
+    <section class="dashboard-section final-layout">
+      <div class="panel">
+        <div class="section-head">
+          <h2>Environment & Bug Fix Status</h2>
+          <p>MongoDB, JWT, CORS, frontend hosting aur Razorpay readiness.</p>
+        </div>
+        <div class="check-list" id="envChecks"></div>
+      </div>
+      <div class="panel">
+        <div class="section-head">
+          <h2>Common Error Fixes</h2>
+          <p>Jo errors tumhe baar-baar aa rahe the, unka direct fix.</p>
+        </div>
+        <div class="error-fixes" id="errorFixes"></div>
+      </div>
+    </section>
+
+    <section class="dashboard-section final-layout">
+      <div class="panel">
+        <div class="section-head">
+          <h2>Final Checklist</h2>
+          <p>Demo se pehle ye steps complete karo.</p>
+        </div>
+        <ol class="final-checklist" id="checklist"></ol>
+      </div>
+      <div class="panel">
+        <div class="section-head">
+          <h2>Important Pages</h2>
+          <p>Critical pages ko click karke manual test karo.</p>
+        </div>
+        <div class="page-grid" id="pageGrid"></div>
+      </div>
+    </section>
+
+    <section class="dashboard-section">
+      <div class="panel">
+        <div class="section-head">
+          <h2>Final Run Report</h2>
+          <p>Run button dabane ke baad routes/pages report yahan dikhegi.</p>
+        </div>
+        <pre class="report-box" id="reportBox">Abhi report run nahi hui.</pre>
+      </div>
+    </section>
+  </main>
+
+  <script src="theme-system.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="final-testing.js"></script>
+</body>
+</html>

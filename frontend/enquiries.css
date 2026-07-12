@@ -1,0 +1,68 @@
+.enquiry-main { padding-bottom: 70px; }
+.enquiry-hero {
+  border: 1px solid rgba(255, 220, 105, 0.18);
+  background: radial-gradient(circle at top right, rgba(255, 215, 90, 0.16), transparent 34%), radial-gradient(circle at bottom left, rgba(0, 212, 255, 0.13), transparent 32%), rgba(15, 15, 15, 0.72);
+}
+.enquiry-layout {
+  display: grid;
+  grid-template-columns: minmax(340px, 0.95fr) minmax(460px, 1.3fr);
+  gap: 22px;
+  align-items: start;
+}
+.enquiry-form, .enquiry-list-panel { min-width: 0; }
+.enquiry-filters { grid-template-columns: repeat(5, minmax(115px, 1fr)); }
+.enquiry-temp {
+  display: inline-flex;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  border: 1px solid rgba(255,255,255,.12);
+  text-transform: uppercase;
+}
+.enquiry-temp.hot { color:#ffef9a; background:rgba(255, 204, 64, .16); border-color:rgba(255, 204, 64, .35); }
+.enquiry-temp.warm { color:#9eefff; background:rgba(0, 212, 255, .13); border-color:rgba(0, 212, 255, .28); }
+.enquiry-temp.cold { color:#d6d6d6; background:rgba(255,255,255,.07); }
+.enquiry-timeline {
+  margin: 12px 0;
+  display: grid;
+  gap: 8px;
+}
+.enquiry-timeline div {
+  border-left: 2px solid rgba(255, 220, 105, .38);
+  padding-left: 10px;
+  color: rgba(255,255,255,.74);
+  font-size: 13px;
+}
+.enquiry-money {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 14px 0;
+}
+.enquiry-money span {
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.04);
+  border-radius: 14px;
+  padding: 10px;
+  color: rgba(255,255,255,.7);
+  font-size: 12px;
+}
+.enquiry-money b { display:block; color:#ffe680; font-size: 16px; margin-top: 4px; }
+.follow-dialog {
+  border: 0;
+  padding: 0;
+  border-radius: 24px;
+  background: transparent;
+  color: white;
+  width: min(560px, calc(100vw - 32px));
+}
+.follow-dialog::backdrop { background: rgba(0,0,0,.75); backdrop-filter: blur(8px); }
+.follow-panel { margin: 0; }
+@media (max-width: 1150px) {
+  .enquiry-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 800px) {
+  .enquiry-filters { grid-template-columns: 1fr; }
+  .enquiry-money { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>AI Notes — NAXORA Institute OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="batches.css" />
+  <link rel="stylesheet" href="ai-notes.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="students.html">Students</a>
+      <a href="parents.html">Parents</a>
+      <a href="progress.html">Progress</a>
+      <a href="teachers.html">Teachers</a>
+      <a href="staff.html">Staff</a>
+      <a href="batches.html">Batches</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="attendance.html">Attendance</a>
+      <a href="fees.html">Fees</a>
+      <a href="finance.html">Finance</a>
+      <a href="doubts.html">AI Doubts</a>
+      <a class="active" href="ai-notes.html">AI Notes</a>
+      <a href="ai-mock-tests.html">AI Mock Tests</a>
+      <a href="ai-roadmaps.html">AI Roadmaps</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="notifications.html">WhatsApp/SMS</a>
+      <a href="email-notifications.html">Email</a>
+      <a href="assignments.html">Assignments</a>
+      <a href="tests.html">Tests</a>
+      <a href="test-builder.html">Test Builder</a>
+      <a href="question-bank.html">Question Bank</a>
+      <a href="timetable.html">Timetable</a>
+      <a href="branches.html">Branches</a>
+      <a href="enquiries.html">Enquiries</a>
+      <a href="followups.html">Follow-ups</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="payments.html">Payments</a>
+      <a href="security.html">Security</a>
+      <a href="super-admin.html">Super Admin</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a href="demo-mode.html">Sales Demo Mode</a>
+      <a href="system-debug.html">System Debug</a>
+      <a href="settings.html">Settings</a>
+      <a href="theme.html">Theme</a>
+      <a href="reports.html">Reports</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="certificates.html">Certificates</a>
+      <a href="library.html">Library</a>
+      <a href="dashboard.html#profile">Profile</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow mini">PART 31 • AI NOTES GENERATOR</p>
+        <h1>NAXORA AI Notes Generator</h1>
+        <p class="lead small">Topic do, AI-style premium class notes generate karo, copy/print karo aur MongoDB me save rakho.</p>
+      </div>
+      <a class="back-link" href="dashboard.html">← Dashboard</a>
+    </header>
+
+    <section class="batch-stats notes-stats">
+      <article><strong id="totalNotes">0</strong><span>Total Notes</span></article>
+      <article><strong id="publishedNotes">0</strong><span>Published</span></article>
+      <article><strong id="draftNotes">0</strong><span>Drafts</span></article>
+      <article><strong id="pinnedNotes">0</strong><span>Pinned</span></article>
+    </section>
+
+    <section class="panel notes-panel">
+      <div class="section-head list-head">
+        <div>
+          <h2 id="noteFormHeading">Generate New Notes</h2>
+          <p>Topic, subject, level aur source material bhar do. Notes local NAXORA AI template se banenge, API key ki zaroorat nahi.</p>
+        </div>
+        <button class="ghost-inline" id="clearNoteBtn" type="button">Clear</button>
+      </div>
+
+      <form id="notesForm" class="manager-form">
+        <input type="hidden" id="noteId" />
+        <div class="form-grid compact notes-grid">
+          <label>Title
+            <input id="title" placeholder="JWT Authentication Complete Notes" />
+          </label>
+          <label>Subject *
+            <input id="subject" placeholder="Web Development / Chemistry / Maths" required />
+          </label>
+          <label>Topic *
+            <input id="topic" placeholder="JWT Auth / Nernst Equation / CSS Grid" required />
+          </label>
+          <label>Class / Level
+            <input id="classLevel" placeholder="Class 12 / Beginner / Advanced" />
+          </label>
+          <label>Course
+            <input id="courseName" placeholder="Full Stack Web Development" />
+          </label>
+          <label>Batch
+            <input id="batchName" placeholder="Morning Batch A" />
+          </label>
+          <label>Note Type
+            <select id="noteType">
+              <option value="class_notes">Class Notes</option>
+              <option value="revision">Revision Notes</option>
+              <option value="short_notes">Short Notes</option>
+              <option value="deep_notes">Deep Notes</option>
+              <option value="cheat_sheet">Cheat Sheet</option>
+              <option value="youtube_script_notes">YouTube Teaching Notes</option>
+            </select>
+          </label>
+          <label>Language
+            <select id="language">
+              <option value="hinglish" selected>Hinglish</option>
+              <option value="hindi">Hindi</option>
+              <option value="english">English</option>
+            </select>
+          </label>
+          <label>Difficulty
+            <select id="difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </label>
+          <label>Exam / Goal Focus
+            <select id="examFocus">
+              <option value="coding" selected>Coding</option>
+              <option value="boards">Boards</option>
+              <option value="jee">JEE</option>
+              <option value="neet">NEET</option>
+              <option value="nda">NDA</option>
+              <option value="upsc">UPSC</option>
+              <option value="school">School</option>
+              <option value="general">General</option>
+            </select>
+          </label>
+          <label>Status
+            <select id="status">
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+              <option value="archived">Archived</option>
+            </select>
+          </label>
+          <label>Tags
+            <input id="tags" placeholder="jwt, backend, auth" />
+          </label>
+        </div>
+
+        <label>Teacher Input / Source Material
+          <textarea id="sourceInput" rows="5" placeholder="Yahan apna rough content, class points, book paragraph ya YouTube script points paste karo..."></textarea>
+        </label>
+        <label>Key Points
+          <textarea id="keyPoints" rows="3" placeholder="Har point new line me likho. Blank chhoda to AI template khud points bana dega."></textarea>
+        </label>
+        <label>Generated Notes Preview / Manual Edit
+          <textarea id="generatedNotes" rows="12" placeholder="Generate karne ke baad notes yahan show honge. Tum manually edit bhi kar sakte ho."></textarea>
+        </label>
+
+        <div class="form-actions">
+          <button class="primary" type="submit" id="generateBtn">Generate & Save Notes</button>
+          <button class="ghost-inline" type="button" id="sampleNoteBtn">Fill Sample</button>
+          <button class="ghost-inline" type="button" id="printLatestBtn">Print Latest</button>
+        </div>
+        <p class="message" id="noteMessage"></p>
+      </form>
+    </section>
+
+    <section class="panel answer-panel" id="latestPanel">
+      <div class="section-head list-head">
+        <div>
+          <h2>Latest Generated Notes</h2>
+          <p>Copy, print ya edit karke premium class material banao.</p>
+        </div>
+        <button class="ghost-inline" id="copyLatestBtn" type="button">Copy Notes</button>
+      </div>
+      <pre id="latestNotes" class="ai-notes-output">Abhi koi notes generate nahi hue.</pre>
+    </section>
+
+    <section class="panel list-panel">
+      <div class="section-head list-head">
+        <div>
+          <h2>Notes Library</h2>
+          <p>Search, filter, edit, publish, pin aur delete yahin se karo.</p>
+        </div>
+        <button class="ghost-inline" id="refreshNotesBtn">Refresh</button>
+      </div>
+      <div class="filters notes-filters">
+        <input id="notesSearch" placeholder="Search title, subject, topic, tags..." />
+        <input id="subjectFilter" placeholder="Subject filter" />
+        <select id="noteTypeFilter">
+          <option value="">All types</option>
+          <option value="class_notes">Class Notes</option>
+          <option value="revision">Revision</option>
+          <option value="short_notes">Short</option>
+          <option value="deep_notes">Deep</option>
+          <option value="cheat_sheet">Cheat Sheet</option>
+          <option value="youtube_script_notes">YouTube</option>
+        </select>
+        <select id="statusFilter">
+          <option value="">All status</option>
+          <option value="draft">Draft</option>
+          <option value="published">Published</option>
+          <option value="archived">Archived</option>
+        </select>
+      </div>
+      <div class="cards-list" id="notesList"></div>
+      <p class="message" id="notesListMessage"></p>
+    </section>
+  </main>
+
+  <script src="ai-notes.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

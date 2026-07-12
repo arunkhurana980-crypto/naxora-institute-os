@@ -1,0 +1,73 @@
+.subscription-hero {
+  background: radial-gradient(circle at top left, rgba(255, 215, 106, 0.20), transparent 30%), radial-gradient(circle at bottom right, rgba(0, 212, 255, 0.18), transparent 36%), linear-gradient(135deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+  border-color: rgba(255, 215, 106, 0.22);
+}
+.subscription-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.subscription-filters { grid-template-columns: 1.5fr repeat(3, minmax(130px, 1fr)); }
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  margin: 22px 0;
+}
+.plan-card {
+  border: 1px solid rgba(255,255,255,.10);
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.025));
+  border-radius: 22px;
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+}
+.plan-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, #ffe76e, #00d4ff);
+}
+.plan-card h3 { margin: 0 0 8px; }
+.plan-price { font-size: 22px; font-weight: 900; color: #ffe76e; margin: 8px 0; }
+.plan-card p, .plan-card li { color: rgba(255,255,255,.66); font-size: 12px; line-height: 1.55; }
+.plan-card ul { padding-left: 18px; margin: 10px 0 0; }
+.addon-box {
+  border: 1px solid rgba(0, 212, 255, .18);
+  background: radial-gradient(circle at top left, rgba(0, 212, 255, .12), transparent 34%), rgba(0,0,0,.22);
+  border-radius: 20px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 1.4fr auto minmax(160px, .5fr) minmax(140px, .5fr);
+  gap: 14px;
+  align-items: center;
+  margin: 16px 0;
+}
+.addon-box h3 { margin: 0 0 4px; }
+.addon-box p { margin: 0; color: rgba(255,255,255,.62); font-size: 13px; line-height: 1.5; }
+.switch-line { display: flex !important; align-items: center; gap: 10px; font-weight: 800; }
+.switch-line input { width: 18px; height: 18px; accent-color: #ffe76e; }
+.subscription-card::before { background: linear-gradient(180deg, #ffe76e, #00d4ff); }
+.subscription-usage {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.usage-pill {
+  border: 1px solid rgba(255,255,255,.09);
+  background: rgba(0,0,0,.22);
+  border-radius: 14px;
+  padding: 10px;
+}
+.usage-pill span { display:block; color: rgba(255,255,255,.55); font-size: 11px; margin-bottom: 6px; }
+.usage-bar { height: 6px; background: rgba(255,255,255,.08); border-radius: 99px; overflow: hidden; margin-top: 7px; }
+.usage-bar i { display:block; height: 100%; background: linear-gradient(90deg, #ffe76e, #00d4ff); border-radius: 99px; }
+.subscription-badges { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+.status-trial { color: #ffe76e; }
+.status-active { color: #8df5b5; }
+.status-past_due, .status-expired { color: #ffb1b1; }
+.status-paused, .status-cancelled { color: #b9b9c8; }
+.vani-badge { border-color: rgba(0,212,255,.35) !important; color: #9eeeff !important; }
+@media (max-width: 1180px) {
+  .plan-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .subscription-grid, .subscription-filters, .addon-box, .subscription-usage { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) { .plan-grid { grid-template-columns: 1fr; } }

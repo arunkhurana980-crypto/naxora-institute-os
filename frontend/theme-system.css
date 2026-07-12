@@ -1,0 +1,245 @@
+/* NAXORA Institute OS - Part 37 Dark / Light / System Theme System */
+:root {
+  --nx-bg: #050505;
+  --nx-bg-2: #090b12;
+  --nx-surface: rgba(255, 255, 255, 0.07);
+  --nx-surface-2: rgba(255, 255, 255, 0.10);
+  --nx-card: rgba(14, 16, 24, 0.86);
+  --nx-border: rgba(255, 255, 255, 0.14);
+  --nx-text: #f7f7fb;
+  --nx-muted: #aeb5c7;
+  --nx-soft: rgba(255, 255, 255, 0.68);
+  --nx-gold: #d4af37;
+  --nx-gold-2: #ffe08a;
+  --nx-blue: #00d4ff;
+  --nx-danger: #ff6b6b;
+  --nx-success: #35d07f;
+  --nx-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+  --nx-gradient: radial-gradient(circle at 10% 10%, rgba(212, 175, 55, 0.22), transparent 28%), radial-gradient(circle at 90% 0%, rgba(0, 212, 255, 0.18), transparent 30%), linear-gradient(135deg, #050505, #10131f 60%, #050505);
+  color-scheme: dark;
+}
+
+html[data-theme="light"], body[data-theme="light"] {
+  --nx-bg: #f5f7fb;
+  --nx-bg-2: #ffffff;
+  --nx-surface: rgba(255, 255, 255, 0.86);
+  --nx-surface-2: rgba(255, 255, 255, 0.94);
+  --nx-card: rgba(255, 255, 255, 0.92);
+  --nx-border: rgba(18, 25, 38, 0.12);
+  --nx-text: #101828;
+  --nx-muted: #526071;
+  --nx-soft: rgba(16, 24, 40, 0.70);
+  --nx-gold: #b88712;
+  --nx-gold-2: #d59d20;
+  --nx-blue: #087ea4;
+  --nx-danger: #d92d20;
+  --nx-success: #079455;
+  --nx-shadow: 0 24px 70px rgba(15, 23, 42, 0.14);
+  --nx-gradient: radial-gradient(circle at 10% 10%, rgba(212, 175, 55, 0.18), transparent 28%), radial-gradient(circle at 90% 0%, rgba(0, 160, 210, 0.13), transparent 30%), linear-gradient(135deg, #f7f8fc, #eef4ff 60%, #ffffff);
+  color-scheme: light;
+}
+
+html[data-theme="dark"], body[data-theme="dark"] { color-scheme: dark; }
+
+body {
+  background: var(--nx-gradient) !important;
+  color: var(--nx-text) !important;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+.dashboard-body,
+.shell,
+.dashboard-main,
+.settings-main,
+.mobile-polish-active .dashboard-main {
+  color: var(--nx-text) !important;
+}
+
+.card,
+.panel,
+.sidebar,
+.topbar,
+.stat-card,
+.module-list > *,
+.class-card,
+.profile-panel,
+.table-wrap,
+.brand-preview-card,
+.mini-preview,
+.theme-card,
+.theme-preview,
+form,
+.list-card,
+.record-card,
+.payment-card,
+.security-card,
+.ai-card,
+.notification-card,
+.email-card {
+  background: var(--nx-card) !important;
+  border-color: var(--nx-border) !important;
+  color: var(--nx-text) !important;
+  box-shadow: var(--nx-shadow);
+}
+
+.sidebar {
+  backdrop-filter: blur(22px);
+}
+
+.sidebar a,
+.back-link,
+.ghost-inline,
+.ghost-btn,
+.lead,
+.small,
+.section-head p,
+.card p,
+label,
+td,
+th,
+span,
+.muted {
+  color: var(--nx-muted) !important;
+}
+
+.sidebar a.active,
+.sidebar a:hover,
+.logo b,
+.eyebrow,
+h1,
+h2,
+h3,
+h4,
+strong,
+.profile-pill,
+.topbar h1 {
+  color: var(--nx-text) !important;
+}
+
+.sidebar a.active,
+.primary,
+.small-btn.primary,
+button.primary {
+  background: linear-gradient(135deg, var(--nx-gold), var(--nx-blue)) !important;
+  color: #061018 !important;
+  border: 0 !important;
+}
+
+input,
+select,
+textarea {
+  background: var(--nx-surface-2) !important;
+  border-color: var(--nx-border) !important;
+  color: var(--nx-text) !important;
+}
+
+input::placeholder,
+textarea::placeholder { color: var(--nx-muted) !important; }
+
+table,
+thead,
+tbody,
+tr {
+  border-color: var(--nx-border) !important;
+  color: var(--nx-text) !important;
+}
+
+.orb-one { background: rgba(212, 175, 55, 0.26) !important; }
+.orb-two { background: rgba(0, 212, 255, 0.20) !important; }
+
+body[data-theme="light"] .orb-one { background: rgba(212, 175, 55, 0.18) !important; }
+body[data-theme="light"] .orb-two { background: rgba(8, 126, 164, 0.14) !important; }
+
+.nx-theme-switcher {
+  position: fixed;
+  right: 18px;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--nx-border);
+  border-radius: 999px;
+  background: var(--nx-card);
+  box-shadow: var(--nx-shadow);
+  backdrop-filter: blur(18px);
+}
+
+.nx-theme-switcher button {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--nx-border);
+  background: var(--nx-surface);
+  color: var(--nx-text);
+  cursor: pointer;
+  font-size: 16px;
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+
+.nx-theme-switcher button:hover { transform: translateY(-2px); }
+.nx-theme-switcher button.active {
+  background: linear-gradient(135deg, var(--nx-gold), var(--nx-blue));
+  color: #061018;
+  border-color: transparent;
+}
+
+.theme-page-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.theme-card {
+  padding: 22px;
+  border: 1px solid var(--nx-border);
+  border-radius: 24px;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-card:hover { transform: translateY(-4px); }
+.theme-card.active { border-color: var(--nx-gold) !important; }
+
+.theme-preview {
+  min-height: 150px;
+  border-radius: 22px;
+  border: 1px solid var(--nx-border);
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.preview-dark { background: linear-gradient(135deg, #050505, #141827); color: #fff; }
+.preview-light { background: linear-gradient(135deg, #ffffff, #eef4ff); color: #101828; }
+.preview-system { background: linear-gradient(135deg, #050505 0 50%, #ffffff 50% 100%); color: #101828; }
+
+.preview-bar,
+.preview-line,
+.preview-pill {
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--nx-gold), var(--nx-blue));
+}
+.preview-bar { height: 18px; width: 68%; }
+.preview-line { height: 10px; width: 100%; opacity: 0.55; }
+.preview-pill { height: 34px; width: 52%; align-self: end; }
+
+.theme-status-panel {
+  margin-top: 22px;
+  padding: 22px;
+  border-radius: 24px;
+  border: 1px solid var(--nx-border);
+  background: var(--nx-card);
+}
+
+@media (max-width: 760px) {
+  .nx-theme-switcher {
+    right: 14px;
+    bottom: calc(82px + env(safe-area-inset-bottom));
+    padding: 6px;
+  }
+  .nx-theme-switcher button { width: 34px; height: 34px; }
+  .theme-page-grid { grid-template-columns: 1fr; }
+}

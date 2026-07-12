@@ -1,0 +1,23 @@
+
+.debug-grid .kpi-card { min-height: 120px; }
+.debug-actions { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.debug-output {
+  white-space: pre-wrap;
+  overflow: auto;
+  max-height: 520px;
+  padding: 18px;
+  border: 1px solid rgba(255, 224, 118, 0.18);
+  border-radius: 18px;
+  background: rgba(0,0,0,0.38);
+  color: #f7f3e8;
+  line-height: 1.5;
+}
+.fix-list { display: grid; gap: 12px; }
+.fix-list div {
+  border: 1px solid rgba(255,255,255,0.11);
+  background: rgba(255,255,255,0.045);
+  border-radius: 16px;
+  padding: 14px;
+}
+.fix-list b { display: block; color: #ffe477; margin-bottom: 6px; }
+.fix-list span { color: rgba(255,255,255,0.72); }

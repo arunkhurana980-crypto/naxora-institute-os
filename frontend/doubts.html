@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>AI Doubts — NAXORA Institute OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="batches.css" />
+  <link rel="stylesheet" href="doubts.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="students.html">Students</a>
+      <a href="parents.html">Parents</a>
+      <a href="progress.html">Progress</a>
+      <a href="teachers.html">Teachers</a>
+      <a href="staff.html">Staff</a>
+      <a href="batches.html">Batches</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="attendance.html">Attendance</a>
+      <a href="fees.html">Fees</a>
+      <a href="finance.html">Finance</a>
+      <a class="active" href="doubts.html">AI Doubts</a>
+      <a href="ai-notes.html">AI Notes</a>
+      <a href="ai-mock-tests.html">AI Mock Tests</a>
+      <a href="ai-roadmaps.html">AI Roadmaps</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="notifications.html">WhatsApp/SMS</a>
+      <a href="email-notifications.html">Email</a>
+      <a href="assignments.html">Assignments</a>
+      <a href="tests.html">Tests</a>
+      <a href="test-builder.html">Test Builder</a>
+      <a href="question-bank.html">Question Bank</a>
+      <a href="timetable.html">Timetable</a>
+      <a href="branches.html">Branches</a>
+      <a href="enquiries.html">Enquiries</a>
+      <a href="followups.html">Follow-ups</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="payments.html">Payments</a>
+      <a href="security.html">Security</a>
+      <a href="super-admin.html">Super Admin</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a href="demo-mode.html">Sales Demo Mode</a>
+      <a href="system-debug.html">System Debug</a>
+      <a href="settings.html">Settings</a>
+      <a href="theme.html">Theme</a>
+      <a href="reports.html">Reports</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="certificates.html">Certificates</a>
+      <a href="library.html">Library</a>
+      <a href="dashboard.html#profile">Profile</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow mini">PART 8 • AI DOUBT SOLVER</p>
+        <h1>NAXORA AI Doubt Solver</h1>
+        <p class="lead small">Student ka doubt likho, AI answer generate karo, teacher review add karo aur doubt history MongoDB me save rakho.</p>
+      </div>
+      <a class="back-link" href="dashboard.html">← Dashboard</a>
+    </header>
+
+    <section class="batch-stats doubt-stats">
+      <article><strong id="totalDoubts">0</strong><span>Total Doubts</span></article>
+      <article><strong id="solvedDoubts">0</strong><span>Solved</span></article>
+      <article><strong id="reviewDoubts">0</strong><span>Teacher Review</span></article>
+      <article><strong id="subjectCount">0</strong><span>Subjects</span></article>
+    </section>
+
+    <section class="panel ai-panel">
+      <div class="section-head list-head">
+        <div>
+          <h2 id="doubtFormHeading">Ask New Doubt</h2>
+          <p>Question ko detail me likho. AI answer instant generate hoga aur database me save bhi ho jayega.</p>
+        </div>
+        <button class="ghost-inline" id="clearDoubtBtn" type="button">Clear</button>
+      </div>
+
+      <form id="doubtForm" class="manager-form">
+        <input type="hidden" id="doubtId" />
+        <div class="form-grid compact doubt-grid">
+          <label>Student Name *
+            <input id="studentName" placeholder="Arun Khurana" required />
+          </label>
+          <label>Class / Batch
+            <input id="studentClass" placeholder="Batch A / Class 12 / Web Dev" />
+          </label>
+          <label>Subject *
+            <input id="subject" placeholder="Web Development / Chemistry / Math" required />
+          </label>
+          <label>Topic
+            <input id="topic" placeholder="JWT Auth / Nernst Equation / Trigonometry" />
+          </label>
+          <label>Difficulty
+            <select id="difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </label>
+          <label>Priority
+            <select id="priority">
+              <option value="low">Low</option>
+              <option value="normal" selected>Normal</option>
+              <option value="high">High</option>
+            </select>
+          </label>
+        </div>
+
+        <label>Student Question *
+          <textarea id="question" rows="5" placeholder="Student ka exact doubt likho... Example: JWT token login ke baad localStorage me save kyu karte hain?" required></textarea>
+        </label>
+
+        <label>Status
+          <select id="status">
+            <option value="solved">Solved</option>
+            <option value="pending">Pending</option>
+            <option value="teacher-review">Teacher Review</option>
+          </select>
+        </label>
+
+        <label>Teacher Reply / Final Note
+          <textarea id="teacherReply" rows="3" placeholder="Teacher ka final note ya extra explanation..."></textarea>
+        </label>
+
+        <div class="form-actions">
+          <button class="primary" type="submit" id="askDoubtBtn">Generate AI Answer</button>
+          <button class="ghost-inline" type="button" id="sampleDoubtBtn">Fill Sample</button>
+        </div>
+        <p class="message" id="doubtMessage"></p>
+      </form>
+    </section>
+
+    <section class="panel answer-panel" id="answerPanel">
+      <div class="section-head">
+        <h2>Latest AI Answer</h2>
+        <p>Ye answer local NAXORA AI template se generate hota hai, isliye API key ki zaroorat nahi hai.</p>
+      </div>
+      <pre id="latestAnswer" class="ai-answer">Abhi koi answer generate nahi hua.</pre>
+    </section>
+
+    <section class="panel list-panel">
+      <div class="section-head list-head">
+        <div>
+          <h2>Doubt History</h2>
+          <p>Search, filter, edit, teacher reply aur delete yahin se karo.</p>
+        </div>
+        <button class="ghost-inline" id="refreshDoubtsBtn">Refresh</button>
+      </div>
+      <div class="filters doubt-filters">
+        <input id="doubtSearch" placeholder="Search student, subject, topic, question..." />
+        <input id="subjectFilter" placeholder="Subject filter" />
+        <select id="statusFilter">
+          <option value="">All status</option>
+          <option value="solved">Solved</option>
+          <option value="pending">Pending</option>
+          <option value="teacher-review">Teacher Review</option>
+        </select>
+        <select id="difficultyFilter">
+          <option value="">All difficulty</option>
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+      <div class="cards-list" id="doubtsList"></div>
+      <p class="message" id="doubtsListMessage"></p>
+    </section>
+  </main>
+
+  <script src="doubts.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

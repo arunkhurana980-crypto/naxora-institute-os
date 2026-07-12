@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Parents — NAXORA Institute OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="teachers.css" />
+  <link rel="stylesheet" href="parents.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="students.html">Students</a>
+      <a class="active" href="parents.html">Parents</a>
+      <a href="progress.html">Progress</a>
+      <a href="teachers.html">Teachers</a>
+      <a href="staff.html">Staff</a>
+      <a href="batches.html">Batches</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="attendance.html">Attendance</a>
+      <a href="fees.html">Fees</a>
+      <a href="finance.html">Finance</a>
+      <a href="doubts.html">AI Doubts</a>
+      <a href="ai-notes.html">AI Notes</a>
+      <a href="ai-mock-tests.html">AI Mock Tests</a>
+      <a href="ai-roadmaps.html">AI Roadmaps</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="notifications.html">WhatsApp/SMS</a>
+      <a href="email-notifications.html">Email</a>
+      <a href="assignments.html">Assignments</a>
+      <a href="tests.html">Tests</a>
+      <a href="test-builder.html">Test Builder</a>
+      <a href="question-bank.html">Question Bank</a>
+      <a href="timetable.html">Timetable</a>
+      <a href="branches.html">Branches</a>
+      <a href="enquiries.html">Enquiries</a>
+      <a href="followups.html">Follow-ups</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="payments.html">Payments</a>
+      <a href="security.html">Security</a>
+      <a href="super-admin.html">Super Admin</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a href="demo-mode.html">Sales Demo Mode</a>
+      <a href="system-debug.html">System Debug</a>
+      <a href="settings.html">Settings</a>
+      <a href="theme.html">Theme</a>
+      <a href="reports.html">Reports</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="certificates.html">Certificates</a>
+      <a href="library.html">Library</a>
+      <a href="dashboard.html#profile">Profile</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main parent-main">
+    <header class="topbar parent-hero">
+      <div>
+        <p class="eyebrow mini">PART 17 • PARENT PORTAL</p>
+        <h1>Parent Portal Control Room</h1>
+        <p class="lead small">Parent profile, child linking, fees, attendance, result snapshot aur follow-up status — sab ek premium panel me.</p>
+      </div>
+      <a class="back-link" href="dashboard.html">← Dashboard</a>
+    </header>
+
+    <section class="teacher-stats parent-stats">
+      <article><strong id="totalParents">0</strong><span>Total Parents</span></article>
+      <article><strong id="totalChildren">0</strong><span>Linked Children</span></article>
+      <article><strong id="portalEnabled">0</strong><span>Portal Enabled</span></article>
+      <article><strong id="followupParents">0</strong><span>Follow-up Needed</span></article>
+    </section>
+
+    <section class="teacher-layout parent-layout">
+      <form class="panel teacher-form parent-form" id="parentForm">
+        <div class="section-head">
+          <h2 id="formHeading">Add Parent Profile</h2>
+          <p>Parent aur child progress snapshot ko yahin se create/update karo.</p>
+        </div>
+
+        <input type="hidden" id="parentId" />
+
+        <div class="form-grid">
+          <label>Parent Name *
+            <input id="parentName" placeholder="Example: Rajesh Kumar" required />
+          </label>
+          <label>Relation
+            <select id="relation">
+              <option value="father">Father</option>
+              <option value="mother">Mother</option>
+              <option value="guardian">Guardian</option>
+              <option value="brother">Brother</option>
+              <option value="sister">Sister</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+          <label>Phone *
+            <input id="phone" placeholder="9876543210" />
+          </label>
+          <label>Alternate Phone
+            <input id="alternatePhone" placeholder="Family contact" />
+          </label>
+          <label>Email
+            <input id="email" type="email" placeholder="parent@example.com" />
+          </label>
+          <label>Occupation
+            <input id="occupation" placeholder="Business / Service / Farmer" />
+          </label>
+          <label>Contact Mode
+            <select id="preferredContactMode">
+              <option value="phone">Phone</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="email">Email</option>
+              <option value="in_person">In Person</option>
+              <option value="not_set">Not set</option>
+            </select>
+          </label>
+          <label>Portal Access
+            <select id="portalAccess">
+              <option value="pending">Pending</option>
+              <option value="enabled">Enabled</option>
+              <option value="disabled">Disabled</option>
+            </select>
+          </label>
+          <label>Status
+            <select id="status">
+              <option value="active">Active</option>
+              <option value="needs_followup">Needs Follow-up</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </label>
+          <label>Last Meeting
+            <input id="lastMeetingDate" type="date" />
+          </label>
+          <label>Next Follow-up
+            <input id="nextFollowUpDate" type="date" />
+          </label>
+          <label>Address
+            <input id="address" placeholder="Village / city / area" />
+          </label>
+        </div>
+
+        <div class="section-head compact">
+          <h2>Linked Child / Student</h2>
+          <p>Abhi ek ya multiple child rows add kar sakte ho.</p>
+        </div>
+        <div id="childrenBox"></div>
+        <button class="ghost-inline" type="button" id="addChildBtn">+ Add Child Row</button>
+
+        <label>Notes
+          <textarea id="notes" rows="3" placeholder="Parent meeting notes, concern, promise, follow-up... "></textarea>
+        </label>
+
+        <div class="form-actions">
+          <button class="primary" type="submit" id="saveBtn">Save Parent</button>
+          <button class="ghost-inline" type="button" id="resetBtn">Clear</button>
+          <button class="ghost-inline" type="button" id="sampleBtn">Sample</button>
+        </div>
+        <p class="message" id="formMessage"></p>
+      </form>
+
+      <section class="panel teacher-list-panel parent-list-panel">
+        <div class="section-head list-head">
+          <div>
+            <h2>All Parents</h2>
+            <p>Search, filter, edit/delete, portal enable aur follow-up status yahin manage karo.</p>
+          </div>
+          <button class="ghost-inline" id="refreshBtn">Refresh</button>
+        </div>
+
+        <div class="filters parent-filters">
+          <input id="searchInput" placeholder="Search parent, child, phone, batch..." />
+          <select id="relationFilter"><option value="">All relations</option><option value="father">Father</option><option value="mother">Mother</option><option value="guardian">Guardian</option><option value="brother">Brother</option><option value="sister">Sister</option><option value="other">Other</option></select>
+          <select id="statusFilter"><option value="">All status</option><option value="active">Active</option><option value="needs_followup">Needs Follow-up</option><option value="inactive">Inactive</option></select>
+          <select id="portalFilter"><option value="">All portal</option><option value="pending">Pending</option><option value="enabled">Enabled</option><option value="disabled">Disabled</option></select>
+          <select id="feeFilter"><option value="">All fees</option><option value="paid">Paid</option><option value="pending">Pending</option><option value="partial">Partial</option><option value="overdue">Overdue</option><option value="not_set">Not Set</option></select>
+        </div>
+
+        <div class="teacher-list parent-list" id="parentList"></div>
+        <p class="message" id="listMessage"></p>
+      </section>
+    </section>
+  </main>
+
+  <script src="parents.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

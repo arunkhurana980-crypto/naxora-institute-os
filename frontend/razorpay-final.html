@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Razorpay Final — NAXORA Institute OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="payments.css" />
+  <link rel="stylesheet" href="razorpay-final.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="payments.html">Payments</a>
+      <a class="active" href="razorpay-final.html">Razorpay Final</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="client-pitch.html">Client Pitch</a>
+      <a href="deployment.html">Deployment</a>
+      <a href="system-debug.html">System Debug</a>
+      <a href="final-testing.html">Final Testing</a>
+      <a href="settings.html">Settings</a>
+      <a href="dashboard.html#profile">Profile</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main">
+    <header class="topbar razorpay-hero">
+      <div>
+        <p class="eyebrow mini">PART 48 • RAZORPAY LIVE PAYMENT FINAL SETUP</p>
+        <h1>Razorpay, Receipts & Paid Access Final Control</h1>
+        <p class="lead small">SaaS subscription, Live Classes add-on, Online Batch fee, Student fees aur VANI AI add-on ke payments ko ek final setup me connect karo.</p>
+      </div>
+      <div class="hero-actions">
+        <button class="primary small-btn" id="refreshBtn">Refresh Status</button>
+        <a class="back-link" href="payments.html">Open Payments →</a>
+      </div>
+    </header>
+
+    <section class="razorpay-grid" id="statusGrid"></section>
+
+    <section class="dashboard-section rzp-layout">
+      <div class="panel">
+        <div class="section-head">
+          <h2>Payment Buckets</h2>
+          <p>Har revenue stream ke liye Razorpay flow ready rakho.</p>
+        </div>
+        <div class="rzp-plans" id="plansGrid"></div>
+      </div>
+
+      <div class="panel">
+        <div class="section-head">
+          <h2>Quick Payment Payload</h2>
+          <p>Plan select karke payment payload ready karo; phir Payments page me save karke order create karo.</p>
+        </div>
+        <form id="quickForm" class="rzp-form-grid">
+          <label>Plan
+            <select name="planCode" id="planCode"></select>
+          </label>
+          <label>Payer Name
+            <input name="payerName" value="Demo Institute" />
+          </label>
+          <label>Phone
+            <input name="payerPhone" value="9000000000" />
+          </label>
+          <label>Email
+            <input name="payerEmail" value="demo@naxora.local" />
+          </label>
+          <button class="primary" type="submit">Generate Payload</button>
+          <a class="ghost-inline" href="payments.html">Go to Payments</a>
+        </form>
+        <pre class="payload-box" id="payloadBox">Payload yahan dikhega.</pre>
+      </div>
+    </section>
+
+    <section class="dashboard-section rzp-layout">
+      <div class="panel">
+        <div class="section-head">
+          <h2>Final Checklist</h2>
+          <p>Live payment se pehle ye steps complete karo.</p>
+        </div>
+        <ul class="rzp-checklist" id="checklist"></ul>
+      </div>
+      <div class="panel">
+        <div class="section-head">
+          <h2>Security Warning</h2>
+          <p>Payment keys private rakho.</p>
+        </div>
+        <div class="warning-box">
+          <b>RAZORPAY_KEY_SECRET kabhi share mat karna.</b>
+          <p>Screenshot, YouTube recording, WhatsApp, GitHub public repo ya chat me secret expose nahi hona chahiye. Test/live keys alag hoti hain.</p>
+        </div>
+        <p class="message" id="pageMessage"></p>
+      </div>
+    </section>
+  </main>
+
+  <script src="theme-system.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="razorpay-final.js"></script>
+</body>
+</html>

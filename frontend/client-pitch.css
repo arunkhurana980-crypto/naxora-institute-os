@@ -1,0 +1,32 @@
+.client-pitch-body { color: #f8fafc; }
+.pitch-main { gap: 22px; }
+.pitch-hero { border: 1px solid rgba(250, 204, 21, 0.25); background: linear-gradient(135deg, rgba(15,23,42,.92), rgba(88,28,135,.42)); }
+.pitch-badge { padding: 14px 18px; border: 1px solid rgba(250,204,21,.35); border-radius: 999px; background: rgba(250,204,21,.12); font-weight: 900; color: #fde68a; }
+.pitch-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.pitch-card, .pricing-card, .comparison-card, .flow-card, .objection-card { border: 1px solid rgba(148,163,184,.18); background: rgba(15,23,42,.72); border-radius: 22px; padding: 18px; box-shadow: 0 20px 60px rgba(0,0,0,.22); }
+.pitch-card strong { display:block; font-size: 26px; margin-top: 8px; color:#fde68a; }
+.pitch-card span { color:#cbd5e1; font-size:13px; }
+.pitch-section { margin-top: 4px; }
+.split { display:grid; grid-template-columns: 1fr 1fr; gap:18px; }
+.roi-form { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+.roi-form label { font-weight:800; color:#e2e8f0; font-size:13px; display:grid; gap:7px; }
+.roi-form input { border:1px solid rgba(148,163,184,.26); background:rgba(2,6,23,.52); color:white; border-radius:14px; padding:12px 13px; outline:none; }
+.roi-form button { grid-column: 1 / -1; }
+.roi-result .big-money { font-size: 36px; font-weight: 900; color:#86efac; margin:12px 0; }
+.roi-result .roi-line { color:#cbd5e1; line-height:1.7; }
+.pricing-grid { display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap:16px; }
+.pricing-card.featured { border-color: rgba(250,204,21,.55); background: linear-gradient(180deg, rgba(250,204,21,.12), rgba(15,23,42,.78)); }
+.pricing-card h3 { margin: 0 0 8px; }
+.pricing-card .price { font-size:30px; font-weight:900; color:#fde68a; margin:8px 0; }
+.pricing-card ul { padding-left:18px; color:#cbd5e1; line-height:1.65; }
+.comparison-list, .flow-list, .objection-list { display:grid; gap:12px; }
+.comparison-card { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; }
+.comparison-card b { color:#fde68a; }
+.flow-card { display:flex; gap:14px; align-items:flex-start; }
+.flow-step { width:42px; height:42px; border-radius:14px; display:grid; place-items:center; background:rgba(250,204,21,.14); color:#fde68a; font-weight:900; flex:none; }
+.objection-card b { color:#fca5a5; }
+.objection-card p, .flow-card p, .comparison-card p, .pricing-card p { color:#cbd5e1; }
+.actions-grid a { text-decoration:none; color:inherit; }
+.demo-link { display:block; padding:16px; border-radius:18px; border:1px solid rgba(148,163,184,.18); background:rgba(15,23,42,.72); font-weight:900; }
+.demo-link span { display:block; color:#94a3b8; font-size:12px; margin-top:5px; }
+@media (max-width: 980px){ .pitch-grid,.pricing-grid,.split{grid-template-columns:1fr;} .roi-form{grid-template-columns:1fr;} .comparison-card{grid-template-columns:1fr;} }

@@ -1,0 +1,22 @@
+.demo-body .demo-hero { align-items: center; }
+.demo-badge { padding: 14px 18px; border: 1px solid rgba(255,255,255,.14); border-radius: 999px; background: rgba(255,255,255,.08); font-weight: 900; box-shadow: 0 20px 60px rgba(0,0,0,.24); }
+.persona-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.persona-card { border: 1px solid rgba(255,255,255,.12); border-radius: 24px; padding: 20px; background: linear-gradient(145deg, rgba(255,255,255,.09), rgba(255,255,255,.035)); box-shadow: 0 25px 80px rgba(0,0,0,.25); position: relative; overflow: hidden; }
+.persona-card:before { content: ""; position: absolute; inset: -80px -90px auto auto; width: 170px; height: 170px; border-radius: 50%; background: rgba(255, 197, 73, .12); filter: blur(2px); }
+.persona-top { display: flex; gap: 14px; align-items: center; margin-bottom: 10px; }
+.persona-icon { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 18px; background: rgba(255,255,255,.1); font-size: 28px; }
+.persona-card h3 { margin: 0; font-size: 20px; }
+.persona-card p { color: rgba(255,255,255,.72); line-height: 1.65; }
+.persona-pages { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.persona-pages span { font-size: 12px; padding: 7px 10px; border-radius: 999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.1); }
+.demo-login-btn { width: 100%; border: 0; border-radius: 16px; padding: 13px 14px; font-weight: 900; cursor: pointer; color: #111; background: linear-gradient(135deg, #ffd56a, #ffffff); }
+.walkthrough-list { display: grid; gap: 12px; }
+.walk-step { display: grid; grid-template-columns: 52px 1fr auto; gap: 14px; align-items: center; padding: 14px; border-radius: 18px; background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.1); }
+.step-number { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 14px; background: rgba(255,255,255,.1); font-weight: 900; }
+.walk-step h3 { margin: 0 0 5px; font-size: 16px; }
+.walk-step p { margin: 0; color: rgba(255,255,255,.7); line-height: 1.55; }
+.walk-step a { color: #ffd56a; text-decoration: none; font-weight: 800; }
+.script-card { display: grid; gap: 14px; }
+.script-card h3 { margin: 0; }
+.script-card p { margin: 0; padding: 16px; border-radius: 18px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); line-height: 1.7; }
+@media (max-width: 900px) { .persona-grid { grid-template-columns: 1fr; } .walk-step { grid-template-columns: 42px 1fr; } .walk-step a { grid-column: 2; } }

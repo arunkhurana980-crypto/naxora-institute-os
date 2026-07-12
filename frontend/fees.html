@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Fees — NAXORA Institute OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="batches.css" />
+  <link rel="stylesheet" href="fees.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="students.html">Students</a>
+      <a href="parents.html">Parents</a>
+      <a href="progress.html">Progress</a>
+      <a href="teachers.html">Teachers</a>
+      <a href="staff.html">Staff</a>
+      <a href="batches.html">Batches</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="attendance.html">Attendance</a>
+      <a class="active" href="fees.html">Fees</a>
+      <a href="finance.html">Finance</a>
+      <a href="doubts.html">AI Doubts</a>
+      <a href="ai-notes.html">AI Notes</a>
+      <a href="ai-mock-tests.html">AI Mock Tests</a>
+      <a href="ai-roadmaps.html">AI Roadmaps</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="notifications.html">WhatsApp/SMS</a>
+      <a href="email-notifications.html">Email</a>
+      <a href="assignments.html">Assignments</a>
+      <a href="tests.html">Tests</a>
+      <a href="test-builder.html">Test Builder</a>
+      <a href="question-bank.html">Question Bank</a>
+      <a href="timetable.html">Timetable</a>
+      <a href="branches.html">Branches</a>
+      <a href="enquiries.html">Enquiries</a>
+      <a href="followups.html">Follow-ups</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="payments.html">Payments</a>
+      <a href="security.html">Security</a>
+      <a href="super-admin.html">Super Admin</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a href="demo-mode.html">Sales Demo Mode</a>
+      <a href="system-debug.html">System Debug</a>
+      <a href="settings.html">Settings</a>
+      <a href="theme.html">Theme</a>
+      <a href="reports.html">Reports</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="certificates.html">Certificates</a>
+      <a href="library.html">Library</a>
+      <a href="dashboard.html#profile">Profile</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow mini">PART 7 • FEES & PAYMENT MANAGEMENT</p>
+        <h1>Fees Collection System</h1>
+        <p class="lead small">Student fees, paid/pending amount, discount, payment mode aur receipt record MongoDB me manage karo.</p>
+      </div>
+      <a class="back-link" href="dashboard.html">← Dashboard</a>
+    </header>
+
+    <section class="batch-stats fees-stats">
+      <article><strong id="totalFees">₹0</strong><span>Total Fees</span></article>
+      <article><strong id="paidFees">₹0</strong><span>Collected</span></article>
+      <article><strong id="pendingFees">₹0</strong><span>Pending</span></article>
+      <article><strong id="overdueRecords">0</strong><span>Overdue Records</span></article>
+    </section>
+
+    <section class="panel fees-form-panel">
+      <div class="section-head list-head">
+        <div>
+          <h2 id="feeFormHeading">Add Fee Record</h2>
+          <p>Student ka monthly/course fee record भरो. Status automatic calculate hoga: paid, partial, pending ya overdue.</p>
+        </div>
+        <button class="ghost-inline" id="clearFeeBtn" type="button">Clear Form</button>
+      </div>
+
+      <form id="feeForm" class="manager-form">
+        <input type="hidden" id="feeId" />
+        <div class="form-grid compact fee-grid">
+          <label>Student Name *
+            <input id="studentName" placeholder="Arun Khurana" required />
+          </label>
+          <label>Phone
+            <input id="phone" placeholder="9876543210" />
+          </label>
+          <label>Course Name
+            <input id="courseName" placeholder="Full Stack Web Development" />
+          </label>
+          <label>Batch Name
+            <input id="batchName" placeholder="Morning Batch A" />
+          </label>
+          <label>Fees Month *
+            <input id="month" placeholder="July 2026" required />
+          </label>
+          <label>Due Date
+            <input id="dueDate" type="date" />
+          </label>
+          <label>Total Amount ₹ *
+            <input id="totalAmount" type="number" min="0" placeholder="2000" required />
+          </label>
+          <label>Paid Amount ₹
+            <input id="paidAmount" type="number" min="0" placeholder="1000" />
+          </label>
+          <label>Discount ₹
+            <input id="discount" type="number" min="0" placeholder="0" />
+          </label>
+          <label>Payment Mode
+            <select id="paymentMode">
+              <option value="cash">Cash</option>
+              <option value="upi">UPI</option>
+              <option value="bank">Bank Transfer</option>
+              <option value="card">Card</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+          <label>Payment Date
+            <input id="paymentDate" type="date" />
+          </label>
+          <label>Receipt No.
+            <input id="receiptNo" placeholder="NX-FEE-001" />
+          </label>
+        </div>
+
+        <label>Status
+          <select id="status">
+            <option value="pending">Pending</option>
+            <option value="partial">Partial</option>
+            <option value="paid">Paid</option>
+            <option value="overdue">Overdue</option>
+          </select>
+        </label>
+
+        <label>Notes
+          <textarea id="notes" rows="3" placeholder="Installment promise, parent follow-up, scholarship note..."></textarea>
+        </label>
+
+        <div class="fee-preview" id="feePreview">Pending Amount: ₹0</div>
+
+        <div class="form-actions">
+          <button class="primary" type="submit" id="saveFeeBtn">Save Fee Record</button>
+          <button class="ghost-inline" type="button" id="sampleFeeBtn">Fill Sample</button>
+        </div>
+        <p class="message" id="feeMessage"></p>
+      </form>
+    </section>
+
+    <section class="panel list-panel">
+      <div class="section-head list-head">
+        <div>
+          <h2>Fees Records</h2>
+          <p>Search, status filter, payment mode filter, edit/delete aur receipt preview yahin se karo.</p>
+        </div>
+        <button class="ghost-inline" id="refreshFeesBtn">Refresh</button>
+      </div>
+      <div class="filters fee-filters">
+        <input id="feeSearch" placeholder="Search student, phone, batch, receipt..." />
+        <select id="statusFilter">
+          <option value="">All status</option>
+          <option value="paid">Paid</option>
+          <option value="partial">Partial</option>
+          <option value="pending">Pending</option>
+          <option value="overdue">Overdue</option>
+        </select>
+        <select id="modeFilter">
+          <option value="">All modes</option>
+          <option value="cash">Cash</option>
+          <option value="upi">UPI</option>
+          <option value="bank">Bank</option>
+          <option value="card">Card</option>
+          <option value="other">Other</option>
+        </select>
+        <input id="monthFilter" placeholder="Month filter" />
+      </div>
+      <div class="cards-list" id="feesList"></div>
+      <p class="message" id="feesListMessage"></p>
+    </section>
+  </main>
+
+  <script src="fees.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

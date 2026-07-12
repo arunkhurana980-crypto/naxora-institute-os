@@ -1,0 +1,23 @@
+.access-stats { grid-template-columns: repeat(6, minmax(130px, 1fr)); }
+.batch-access-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px; }
+.batch-card { position:relative; padding:18px; border:1px solid rgba(255,255,255,.12); border-radius:24px; background:rgba(255,255,255,.055); box-shadow:0 20px 60px rgba(0,0,0,.25); overflow:hidden; }
+.batch-card::before { content:""; position:absolute; inset:-70px auto auto -70px; width:160px; height:160px; border-radius:50%; background:rgba(255,205,97,.12); }
+.batch-card h3 { margin:8px 0 8px; font-size:1.15rem; }
+.batch-card p { color:var(--muted); line-height:1.6; }
+.access-badge { display:inline-flex; padding:7px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.08); font-size:.78rem; text-transform:uppercase; letter-spacing:.06em; }
+.batch-card.open .access-badge { background:rgba(64,255,165,.12); }
+.batch-meta { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0; }
+.batch-meta span, .feature-chip { display:inline-flex; padding:7px 9px; border-radius:999px; background:rgba(255,255,255,.08); color:var(--muted); font-size:.82rem; }
+.batch-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.batch-actions button { padding:9px 11px; border-radius:12px; border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.08); color:var(--text); cursor:pointer; }
+.batch-actions .danger { color:#ff9b9b; border-color:rgba(255,100,100,.25); }
+.enrollment-list { display:grid; gap:10px; }
+.enrollment-item { padding:13px; border-radius:16px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); }
+.enrollment-item b { display:block; margin-bottom:5px; }
+.enrollment-item p { margin:0; color:var(--muted); }
+.access-result { margin-top:14px; padding:14px; border-radius:18px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); min-height:72px; }
+.access-result.allowed { border-color:rgba(67,255,170,.35); background:rgba(67,255,170,.08); }
+.access-result.blocked { border-color:rgba(255,99,99,.35); background:rgba(255,99,99,.08); }
+.toggle-row { display:flex; flex-wrap:wrap; gap:10px; margin:10px 0; }
+.toggle-row label { display:inline-flex; gap:8px; align-items:center; padding:8px 10px; border-radius:14px; background:rgba(255,255,255,.06); }
+@media (max-width: 760px){ .access-stats{grid-template-columns:repeat(2,1fr)} .split{grid-template-columns:1fr!important} .batch-actions button{flex:1} }

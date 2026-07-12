@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Security — NAXORA Institute OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="batches.css" />
+  <link rel="stylesheet" href="security.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="students.html">Students</a>
+      <a href="parents.html">Parents</a>
+      <a href="progress.html">Progress</a>
+      <a href="teachers.html">Teachers</a>
+      <a href="staff.html">Staff</a>
+      <a href="batches.html">Batches</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="attendance.html">Attendance</a>
+      <a href="fees.html">Fees</a>
+      <a href="finance.html">Finance</a>
+      <a href="doubts.html">AI Doubts</a>
+      <a href="ai-notes.html">AI Notes</a>
+      <a href="ai-mock-tests.html">AI Mock Tests</a>
+      <a href="ai-roadmaps.html">AI Roadmaps</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="notifications.html">WhatsApp/SMS</a>
+      <a href="email-notifications.html">Email</a>
+      <a href="assignments.html">Assignments</a>
+      <a href="tests.html">Tests</a>
+      <a href="test-builder.html">Test Builder</a>
+      <a href="question-bank.html">Question Bank</a>
+      <a href="timetable.html">Timetable</a>
+      <a href="branches.html">Branches</a>
+      <a href="enquiries.html">Enquiries</a>
+      <a href="followups.html">Follow-ups</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="payments.html">Payments</a>
+      <a class="active" href="security.html">Security</a>
+      <a href="super-admin.html">Super Admin</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a href="demo-mode.html">Sales Demo Mode</a>
+      <a href="system-debug.html">System Debug</a>
+      <a href="settings.html">Settings</a>
+      <a href="theme.html">Theme</a>
+      <a href="reports.html">Reports</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="certificates.html">Certificates</a>
+      <a href="library.html">Library</a>
+      <a href="dashboard.html#profile">Profile</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main security-main">
+    <header class="topbar security-hero">
+      <div>
+        <p class="eyebrow mini">PART 29 • SECURITY, VALIDATION & ERROR FIXING</p>
+        <h1>Security Control & Error Doctor</h1>
+        <p class="lead small">Route-not-found, failed-to-fetch, MongoDB crash, token expiry aur validation issues ke liye ek premium debugging panel.</p>
+      </div>
+      <div class="hero-actions">
+        <button class="primary small-btn" id="refreshSecurityBtn">Refresh Security</button>
+        <button class="ghost-inline" id="clearTokenBtn" type="button">Clear Login Token</button>
+        <a class="back-link" href="dashboard.html">← Dashboard</a>
+      </div>
+    </header>
+
+    <section class="security-grid" id="securityGrid">
+      <article class="security-card"><span>Headers</span><strong id="headersStatus">Checking…</strong><small>X-Frame, nosniff, permissions</small></article>
+      <article class="security-card"><span>Rate Limit</span><strong id="rateLimitStatus">Checking…</strong><small>Basic abuse control</small></article>
+      <article class="security-card"><span>Database</span><strong id="databaseStatus">Checking…</strong><small>MongoDB connection state</small></article>
+      <article class="security-card"><span>Validation</span><strong id="validationStatus">Checking…</strong><small>Email/password/data rules</small></article>
+    </section>
+
+    <section class="dashboard-section split security-split">
+      <section class="panel">
+        <div class="section-head">
+          <h2>Environment Health</h2>
+          <p>Password/secret ko reveal kiye bina config status yahan check hoga.</p>
+        </div>
+        <div id="envList" class="security-list"></div>
+      </section>
+      <section class="panel danger-panel">
+        <div class="section-head">
+          <h2>Quick Error Fix</h2>
+          <p>Jab route/fetch/MongoDB/token error aaye to ye checklist follow karo.</p>
+        </div>
+        <div id="quickFixList" class="security-list"></div>
+      </section>
+    </section>
+
+    <section class="dashboard-section panel">
+      <div class="section-head">
+        <h2>Frontend Debug Helper</h2>
+        <p>Isse check karo ki frontend ka API base, token aur live server port correct hai ya nahi.</p>
+      </div>
+      <div class="debug-actions">
+        <button class="primary small-btn" id="runDebugBtn">Run Debug</button>
+        <button class="ghost-inline" id="openHealthBtn" type="button">Open API Health</button>
+      </div>
+      <pre class="debug-box" id="debugOutput">Debug output yahan aayega…</pre>
+      <p class="message" id="securityMessage"></p>
+    </section>
+  </main>
+
+  <script src="security.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>NAXORA Sales Demo Mode</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="demo-mode.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body demo-body">
+  <div class="orb orb-one"></div><div class="orb orb-two"></div>
+
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a class="active" href="demo-mode.html">Sales Demo Mode</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="payments.html">Payments</a>
+      <a href="system-debug.html">System Debug</a>
+      <a href="landing.html">Landing Page</a>
+    </nav>
+    <button id="clearDemoBtn" class="ghost-btn">Clear Demo</button>
+  </aside>
+
+  <main class="dashboard-main demo-main">
+    <header class="topbar demo-hero">
+      <div>
+        <p class="eyebrow mini">PART 45 • CLIENT PITCH READY</p>
+        <h1>Final Sales Demo Mode</h1>
+        <p class="lead small">Institute owner ko 5–7 minute me NAXORA Institute OS ka full value dikhane ke liye one-click demo personas, walkthrough aur pitch dashboard.</p>
+      </div>
+      <div class="demo-badge">🚀 Beta Client Demo</div>
+    </header>
+
+    <section id="metrics" class="stats-grid demo-metrics"></section>
+
+    <section class="dashboard-section panel">
+      <div class="section-head">
+        <h2>One-click Demo Logins</h2>
+        <p>Client meeting me alag-alag role ka demo instantly start karo. Ye real password login nahi hai, safe demo session hai.</p>
+      </div>
+      <div id="personaGrid" class="persona-grid"></div>
+      <p id="demoMessage" class="message"></p>
+    </section>
+
+    <section class="dashboard-section split">
+      <div class="panel">
+        <div class="section-head">
+          <h2>5–7 Minute Walkthrough</h2>
+          <p>Is order me demo dikhao, client ko clear value samajh aayegi.</p>
+        </div>
+        <div id="walkthroughList" class="walkthrough-list"></div>
+      </div>
+      <div class="panel pitch-panel">
+        <div class="section-head">
+          <h2>Client Pitch Script</h2>
+          <p>WhatsApp ya face-to-face demo me use karne ke liye short pitch.</p>
+        </div>
+        <div class="script-card">
+          <h3>Opening line</h3>
+          <p>“Sir, ye software staff replace nahi karta. Ye fees, attendance, leads, reports aur online classes ko simple banata hai, jisse owner ko daily control milta hai.”</p>
+          <h3>Closing line</h3>
+          <p>“Aap 7 din pilot use karke dekho. Agar daily work simple lage, tabhi monthly plan continue karna.”</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="dashboard-section panel">
+      <div class="section-head">
+        <h2>Demo Flow Buttons</h2>
+        <p>Meeting ke time direct pages open karo.</p>
+      </div>
+      <div class="actions-grid">
+        <a class="action-btn" href="dashboard.html">1. Dashboard</a>
+        <a class="action-btn" href="students.html">2. Students</a>
+        <a class="action-btn" href="fees.html">3. Fees</a>
+        <a class="action-btn" href="discovery.html">4. Discovery Leads</a>
+        <a class="action-btn" href="live-classes.html">5. Live Classes</a>
+        <a class="action-btn" href="online-batches.html">6. Batch Access</a>
+        <a class="action-btn" href="subscriptions.html">7. Pricing Plans</a>
+        <a class="action-btn" href="admin-analytics.html">8. Analytics</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="demo-mode.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

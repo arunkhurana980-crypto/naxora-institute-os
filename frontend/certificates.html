@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Certificates & ID Cards — NAXORA Institute</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="batches.css" />
+  <link rel="stylesheet" href="certificates.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <div class="orb orb-one"></div><div class="orb orb-two"></div>
+
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="students.html">Students</a>
+      <a href="parents.html">Parents</a>
+      <a href="progress.html">Progress</a>
+      <a href="teachers.html">Teachers</a>
+      <a href="staff.html">Staff</a>
+      <a href="batches.html">Batches</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="attendance.html">Attendance</a>
+      <a href="fees.html">Fees</a>
+      <a href="finance.html">Finance</a>
+      <a href="doubts.html">AI Doubts</a>
+      <a href="ai-notes.html">AI Notes</a>
+      <a href="ai-mock-tests.html">AI Mock Tests</a>
+      <a href="ai-roadmaps.html">AI Roadmaps</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="notifications.html">WhatsApp/SMS</a>
+      <a href="email-notifications.html">Email</a>
+      <a href="assignments.html">Assignments</a>
+      <a href="tests.html">Tests</a>
+      <a href="test-builder.html">Test Builder</a>
+      <a href="question-bank.html">Question Bank</a>
+      <a href="timetable.html">Timetable</a>
+      <a href="branches.html">Branches</a>
+      <a href="enquiries.html">Enquiries</a>
+      <a href="followups.html">Follow-ups</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="payments.html">Payments</a>
+      <a href="security.html">Security</a>
+      <a href="super-admin.html">Super Admin</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a href="demo-mode.html">Sales Demo Mode</a>
+      <a href="system-debug.html">System Debug</a>
+      <a href="settings.html">Settings</a>
+      <a href="theme.html">Theme</a>
+      <a href="reports.html">Reports</a>
+      <a href="announcements.html">Announcements</a>
+      <a class="active" href="certificates.html">Certificates</a>
+      <a href="library.html">Library</a>
+      <a href="dashboard.html#profile">Profile</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main certificates-main">
+    <header class="topbar certificate-hero">
+      <div>
+        <p class="eyebrow mini">PART 13 • CERTIFICATES & ID CARDS</p>
+        <h1>Premium certificate aur student ID card generator</h1>
+        <p class="lead small">Course completion certificate, achievement certificate aur institute ID card ko database me save karke print karo.</p>
+      </div>
+      <div class="profile-pill" id="profilePill">🎖️ Certificates</div>
+    </header>
+
+    <section class="stats-grid" id="certificateStats"></section>
+
+    <section class="dashboard-section panel cert-split">
+      <div>
+        <div class="section-head">
+          <h2 id="formTitle">Create Certificate / ID Card</h2>
+          <p>Student data भरो aur live preview ke saath premium document generate karo.</p>
+        </div>
+
+        <form id="certificateForm" class="manager-form">
+          <input type="hidden" id="certificateId" />
+          <div class="form-grid compact certificate-grid">
+            <label>Document type
+              <select id="documentType"><option value="certificate">Certificate</option><option value="id-card">ID Card</option></select>
+            </label>
+            <label>Certificate type
+              <select id="certificateType"><option value="course-completion">Course Completion</option><option value="achievement">Achievement</option><option value="participation">Participation</option><option value="internship">Internship</option><option value="id-card">ID Card</option></select>
+            </label>
+            <label>Title<input id="certificateTitle" required placeholder="Certificate of Completion" /></label>
+            <label>Document number<input id="documentNumber" placeholder="Auto generate if empty" /></label>
+            <label>Student name<input id="studentName" required placeholder="Arun Khurana" /></label>
+            <label>Email<input id="studentEmail" type="email" placeholder="student@example.com" /></label>
+            <label>Roll no<input id="rollNo" placeholder="NAX-2026-001" /></label>
+            <label>Batch<input id="batchName" placeholder="Full Stack AI Batch" /></label>
+            <label>Course<input id="courseName" placeholder="AI Tools + Web Development" /></label>
+            <label>Duration<input id="duration" placeholder="Jan 2026 - June 2026" /></label>
+            <label>Grade<input id="grade" placeholder="A+ / Excellent" /></label>
+            <label>Status<select id="status"><option value="issued">Issued</option><option value="draft">Draft</option><option value="revoked">Revoked</option></select></label>
+            <label>Issue date<input id="issueDate" type="date" /></label>
+            <label>Valid until<input id="validUntil" type="date" /></label>
+            <label>Photo URL<input id="photoUrl" placeholder="https://... optional" /></label>
+            <label>Phone<input id="phone" placeholder="Student phone" /></label>
+            <label>Blood group<input id="bloodGroup" placeholder="B+" /></label>
+            <label>Emergency contact<input id="emergencyContact" placeholder="Parent number" /></label>
+            <label>Authorized by<input id="authorizedBy" placeholder="Institute Director" /></label>
+            <label>Designation<input id="designation" placeholder="Director" /></label>
+            <label>Institute address<input id="instituteAddress" placeholder="Institute address / tagline" /></label>
+          </div>
+          <label>Skills covered<textarea id="skillsCovered" rows="3" placeholder="HTML, CSS, JavaScript, React, AI Tools..."></textarea></label>
+          <label>Address / verification note<textarea id="address" rows="2" placeholder="Address for ID card or verification note..."></textarea></label>
+          <div class="form-actions">
+            <button class="primary" type="submit">Save Document</button>
+            <button class="ghost-btn" type="button" id="clearBtn">Clear</button>
+            <button class="ghost-btn" type="button" id="printPreviewBtn">Print Preview</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="preview-zone">
+        <h2>Live Preview</h2>
+        <div id="printArea" class="print-area">
+          <article id="certificatePreview" class="certificate-preview"></article>
+          <article id="idCardPreview" class="id-card-preview"></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="dashboard-section panel">
+      <div class="section-head">
+        <h2>All Certificates & ID Cards</h2>
+        <p>Search, filter, edit, print, issue/revoke aur delete yahin se karo.</p>
+      </div>
+      <div class="filters certificate-filters">
+        <input id="searchInput" placeholder="Search name, course, roll no, document number..." />
+        <select id="documentTypeFilter"><option value="">All documents</option><option value="certificate">Certificates</option><option value="id-card">ID Cards</option></select>
+        <select id="certificateTypeFilter"><option value="">All types</option><option value="course-completion">Course Completion</option><option value="achievement">Achievement</option><option value="participation">Participation</option><option value="internship">Internship</option><option value="id-card">ID Card</option></select>
+        <select id="statusFilter"><option value="">All status</option><option value="draft">Draft</option><option value="issued">Issued</option><option value="revoked">Revoked</option></select>
+        <button id="refreshBtn" class="ghost-btn" type="button">Refresh</button>
+      </div>
+      <div id="certificatesList" class="cards-list certificate-list"></div>
+    </section>
+
+    <p class="message" id="pageMessage"></p>
+  </main>
+
+  <script src="certificates.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

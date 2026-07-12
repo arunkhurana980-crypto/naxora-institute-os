@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Timetable — NAXORA Institute OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="teachers.css" />
+  <link rel="stylesheet" href="timetable.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <div class="orb orb-one"></div><div class="orb orb-two"></div>
+
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="students.html">Students</a>
+      <a href="parents.html">Parents</a>
+      <a href="progress.html">Progress</a>
+      <a href="teachers.html">Teachers</a>
+      <a href="staff.html">Staff</a>
+      <a href="batches.html">Batches</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="attendance.html">Attendance</a>
+      <a href="fees.html">Fees</a>
+      <a href="finance.html">Finance</a>
+      <a href="doubts.html">AI Doubts</a>
+      <a href="ai-notes.html">AI Notes</a>
+      <a href="ai-mock-tests.html">AI Mock Tests</a>
+      <a href="ai-roadmaps.html">AI Roadmaps</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="notifications.html">WhatsApp/SMS</a>
+      <a href="email-notifications.html">Email</a>
+      <a href="assignments.html">Assignments</a>
+      <a href="tests.html">Tests</a>
+      <a href="test-builder.html">Test Builder</a>
+      <a href="question-bank.html">Question Bank</a>
+      <a class="active" href="timetable.html">Timetable</a>
+      <a href="branches.html">Branches</a>
+      <a href="enquiries.html">Enquiries</a>
+      <a href="followups.html">Follow-ups</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="payments.html">Payments</a>
+      <a href="security.html">Security</a>
+      <a href="super-admin.html">Super Admin</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a href="demo-mode.html">Sales Demo Mode</a>
+      <a href="system-debug.html">System Debug</a>
+      <a href="settings.html">Settings</a>
+      <a href="theme.html">Theme</a>
+      <a href="reports.html">Reports</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="certificates.html">Certificates</a>
+      <a href="library.html">Library</a>
+      <a href="dashboard.html#profile">Profile</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main timetable-main">
+    <header class="topbar timetable-hero">
+      <div>
+        <p class="eyebrow mini">PART 21 • TIMETABLE MANAGEMENT</p>
+        <h1>Weekly Class Timetable</h1>
+        <p class="lead small">Batch, teacher, room aur subject wise schedule manage karo. Conflict warning, filters aur weekly grid included.</p>
+      </div>
+      <div class="profile-pill" id="profilePill">🗓️ Timetable</div>
+    </header>
+
+    <section class="stats-grid" id="timetableStats"></section>
+
+    <section class="timetable-layout">
+      <form class="panel timetable-form" id="slotForm">
+        <div class="section-head">
+          <h2 id="formTitle">Add Timetable Slot</h2>
+          <p>Teacher, batch aur room ka weekly slot save karo. Same time conflict par warning milegi.</p>
+        </div>
+
+        <input type="hidden" id="slotId" />
+
+        <div class="form-grid compact">
+          <label>Class Title *<input id="title" required placeholder="Full Stack Live Class" /></label>
+          <label>Subject *<input id="subject" required placeholder="JavaScript / Python / Chemistry" /></label>
+          <label>Batch Name<input id="batchName" placeholder="Evening Batch A" /></label>
+          <label>Course Name<input id="courseName" placeholder="Full Stack + AI" /></label>
+          <label>Teacher Name<input id="teacherName" placeholder="Arun Sir" /></label>
+          <label>Room / Lab<input id="room" placeholder="Room 1 / Computer Lab" /></label>
+          <label>Day
+            <select id="dayOfWeek">
+              <option value="monday">Monday</option>
+              <option value="tuesday">Tuesday</option>
+              <option value="wednesday">Wednesday</option>
+              <option value="thursday">Thursday</option>
+              <option value="friday">Friday</option>
+              <option value="saturday">Saturday</option>
+              <option value="sunday">Sunday</option>
+            </select>
+          </label>
+          <label>Start Time<input id="startTime" type="time" required value="16:00" /></label>
+          <label>End Time<input id="endTime" type="time" required value="17:00" /></label>
+          <label>Type
+            <select id="timetableType"><option value="batch">Batch</option><option value="teacher">Teacher</option><option value="student">Student</option><option value="room">Room</option><option value="exam">Exam</option><option value="event">Event</option><option value="other">Other</option></select>
+          </label>
+          <label>Mode
+            <select id="classMode"><option value="offline">Offline</option><option value="online">Online</option><option value="hybrid">Hybrid</option></select>
+          </label>
+          <label>Status
+            <select id="status"><option value="active">Active</option><option value="draft">Draft</option><option value="cancelled">Cancelled</option><option value="completed">Completed</option></select>
+          </label>
+          <label>Priority
+            <select id="priority"><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select>
+          </label>
+          <label>From Date<input id="recurringFrom" type="date" /></label>
+          <label>To Date<input id="recurringTo" type="date" /></label>
+          <label>Online Meeting Link<input id="meetingLink" placeholder="https://meet.google.com/..." /></label>
+        </div>
+
+        <label>Notes
+          <textarea id="notes" rows="4" placeholder="Topic, homework check, test discussion, practical lab note..."></textarea>
+        </label>
+
+        <div class="form-actions sticky-actions">
+          <button class="primary" type="submit">Save Slot</button>
+          <button class="ghost-btn" type="button" id="clearBtn">Clear</button>
+          <button class="ghost-btn" type="button" id="sampleBtn">Sample</button>
+        </div>
+        <p class="message" id="message"></p>
+      </form>
+
+      <section class="panel timetable-list-panel">
+        <div class="section-head list-head">
+          <div>
+            <h2>Weekly Schedule</h2>
+            <p>Search, filter, edit, cancel aur delete yahin se karo.</p>
+          </div>
+          <button class="ghost-btn" id="refreshBtn" type="button">Refresh</button>
+        </div>
+
+        <div class="filters timetable-filters">
+          <input id="searchInput" placeholder="Search title, subject, room..." />
+          <input id="teacherFilter" placeholder="Teacher" />
+          <input id="batchFilter" placeholder="Batch" />
+          <select id="dayFilter"><option value="">All days</option><option value="monday">Monday</option><option value="tuesday">Tuesday</option><option value="wednesday">Wednesday</option><option value="thursday">Thursday</option><option value="friday">Friday</option><option value="saturday">Saturday</option><option value="sunday">Sunday</option></select>
+          <select id="modeFilter"><option value="">All mode</option><option value="offline">Offline</option><option value="online">Online</option><option value="hybrid">Hybrid</option></select>
+          <select id="statusFilter"><option value="">All status</option><option value="active">Active</option><option value="draft">Draft</option><option value="cancelled">Cancelled</option><option value="completed">Completed</option></select>
+        </div>
+
+        <div class="weekly-grid" id="weeklyGrid"></div>
+        <div id="slotsList" class="cards-list timetable-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="timetable.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

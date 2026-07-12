@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Library & Study Material — NAXORA Institute</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="batches.css" />
+  <link rel="stylesheet" href="library.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <div class="orb orb-one"></div><div class="orb orb-two"></div>
+
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="students.html">Students</a>
+      <a href="parents.html">Parents</a>
+      <a href="progress.html">Progress</a>
+      <a href="teachers.html">Teachers</a>
+      <a href="staff.html">Staff</a>
+      <a href="batches.html">Batches</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="attendance.html">Attendance</a>
+      <a href="fees.html">Fees</a>
+      <a href="finance.html">Finance</a>
+      <a href="doubts.html">AI Doubts</a>
+      <a href="ai-notes.html">AI Notes</a>
+      <a href="ai-mock-tests.html">AI Mock Tests</a>
+      <a href="ai-roadmaps.html">AI Roadmaps</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="notifications.html">WhatsApp/SMS</a>
+      <a href="email-notifications.html">Email</a>
+      <a href="assignments.html">Assignments</a>
+      <a href="tests.html">Tests</a>
+      <a href="test-builder.html">Test Builder</a>
+      <a href="question-bank.html">Question Bank</a>
+      <a href="timetable.html">Timetable</a>
+      <a href="branches.html">Branches</a>
+      <a href="enquiries.html">Enquiries</a>
+      <a href="followups.html">Follow-ups</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="payments.html">Payments</a>
+      <a href="security.html">Security</a>
+      <a href="super-admin.html">Super Admin</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a href="demo-mode.html">Sales Demo Mode</a>
+      <a href="system-debug.html">System Debug</a>
+      <a href="settings.html">Settings</a>
+      <a href="theme.html">Theme</a>
+      <a href="reports.html">Reports</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="certificates.html">Certificates</a>
+      <a class="active" href="library.html">Library</a>
+      <a href="dashboard.html#profile">Profile</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main library-main">
+    <header class="topbar library-hero">
+      <div>
+        <p class="eyebrow mini">PART 14 • LIBRARY & STUDY MATERIAL</p>
+        <h1>Books, PDFs, notes aur links ka smart library system</h1>
+        <p class="lead small">Study material ko batch/course ke saath assign karo, physical books issue/return track karo aur digital resources manage karo.</p>
+      </div>
+      <div class="profile-pill" id="profilePill">📖 Library</div>
+    </header>
+
+    <section class="stats-grid" id="libraryStats"></section>
+
+    <section class="dashboard-section panel library-split">
+      <div>
+        <div class="section-head">
+          <h2 id="formTitle">Add Study Material</h2>
+          <p>Book, PDF, video link, notes ya assignment material yahan save karo.</p>
+        </div>
+
+        <form id="libraryForm" class="manager-form">
+          <input type="hidden" id="itemId" />
+          <div class="form-grid compact library-grid">
+            <label>Material type
+              <select id="materialType"><option value="book">Book</option><option value="pdf">PDF</option><option value="video">Video</option><option value="link">Link</option><option value="notes">Notes</option><option value="assignment">Assignment</option><option value="other">Other</option></select>
+            </label>
+            <label>Format
+              <select id="format"><option value="digital">Digital</option><option value="physical">Physical</option><option value="both">Both</option></select>
+            </label>
+            <label>Title<input id="title" required placeholder="Complete Web Development Notes" /></label>
+            <label>Subject<input id="subject" required placeholder="Web Development / Chemistry / AI" /></label>
+            <label>Topic<input id="topic" placeholder="HTML Forms, Electrochemistry, AI Tools..." /></label>
+            <label>Author / Source<input id="author" placeholder="NAXORA Faculty / Book author" /></label>
+            <label>Course<input id="courseName" placeholder="Full Stack + AI Course" /></label>
+            <label>Batch<input id="batchName" placeholder="Morning Batch / 12th Batch" /></label>
+            <label>Class level<input id="classLevel" placeholder="10th, 12th, Beginner, Advanced" /></label>
+            <label>Language<select id="language"><option>Hinglish</option><option>Hindi</option><option>English</option><option>Other</option></select></label>
+            <label>Difficulty<select id="difficulty"><option value="basic">Basic</option><option value="medium">Medium</option><option value="advanced">Advanced</option><option value="expert">Expert</option></select></label>
+            <label>Status<select id="status"><option value="active">Active</option><option value="draft">Draft</option><option value="archived">Archived</option></select></label>
+            <label>Access level<select id="accessLevel"><option value="students">Students</option><option value="all">All</option><option value="teachers">Teachers</option><option value="batch-only">Batch Only</option><option value="admin-only">Admin Only</option></select></label>
+            <label>Material URL<input id="materialUrl" placeholder="https://drive.google.com/..." /></label>
+            <label>Storage location<input id="storageLocation" placeholder="Shelf A-2 / Google Drive / YouTube" /></label>
+            <label>Total copies<input id="totalCopies" type="number" min="0" value="1" /></label>
+            <label>Available copies<input id="availableCopies" type="number" min="0" value="1" /></label>
+          </div>
+          <label>Tags<textarea id="tags" rows="2" placeholder="html, css, beginner, neet, board notes..."></textarea></label>
+          <label>Description<textarea id="description" rows="3" placeholder="Material kis student/batch ke liye useful hai, kya cover karta hai..."></textarea></label>
+          <div class="form-actions">
+            <button class="primary" type="submit">Save Material</button>
+            <button class="ghost-btn" type="button" id="clearBtn">Clear</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="issue-panel">
+        <div class="section-head">
+          <h2>Issue / Return Book</h2>
+          <p>Physical book ya printed notes issue karne ke liye material select karke student details भरो.</p>
+        </div>
+        <form id="issueForm" class="manager-form issue-form">
+          <label>Material<select id="issueItemId"><option value="">Select material</option></select></label>
+          <label>Student name<input id="issueStudentName" placeholder="Student name" /></label>
+          <label>Email<input id="issueStudentEmail" type="email" placeholder="student@example.com" /></label>
+          <label>Roll no<input id="issueRollNo" placeholder="Roll number" /></label>
+          <label>Issue date<input id="issueDate" type="date" /></label>
+          <label>Expected return date<input id="returnDate" type="date" /></label>
+          <label>Note<textarea id="issueNote" rows="3" placeholder="Condition, reminder, remark..."></textarea></label>
+          <button class="primary" type="submit">Issue Material</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="dashboard-section panel">
+      <div class="section-head">
+        <h2>All Library Materials</h2>
+        <p>Search, filter, edit, issue, archive aur delete yahin se karo.</p>
+      </div>
+      <div class="filters library-filters">
+        <input id="searchInput" placeholder="Search title, subject, topic, author, batch..." />
+        <select id="typeFilter"><option value="">All types</option><option value="book">Book</option><option value="pdf">PDF</option><option value="video">Video</option><option value="link">Link</option><option value="notes">Notes</option><option value="assignment">Assignment</option><option value="other">Other</option></select>
+        <select id="statusFilter"><option value="">All status</option><option value="active">Active</option><option value="draft">Draft</option><option value="archived">Archived</option></select>
+        <select id="formatFilter"><option value="">All format</option><option value="digital">Digital</option><option value="physical">Physical</option><option value="both">Both</option></select>
+        <select id="difficultyFilter"><option value="">All difficulty</option><option value="basic">Basic</option><option value="medium">Medium</option><option value="advanced">Advanced</option><option value="expert">Expert</option></select>
+        <button id="refreshBtn" class="ghost-btn" type="button">Refresh</button>
+      </div>
+      <div id="libraryList" class="cards-list library-list"></div>
+    </section>
+
+    <p class="message" id="pageMessage"></p>
+  </main>
+
+  <script src="library.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Subscriptions — NAXORA Institute OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="batches.css" />
+  <link rel="stylesheet" href="fees.css" />
+  <link rel="stylesheet" href="subscriptions.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="students.html">Students</a>
+      <a href="parents.html">Parents</a>
+      <a href="progress.html">Progress</a>
+      <a href="teachers.html">Teachers</a>
+      <a href="staff.html">Staff</a>
+      <a href="batches.html">Batches</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="attendance.html">Attendance</a>
+      <a href="fees.html">Fees</a>
+      <a href="finance.html">Finance</a>
+      <a href="doubts.html">AI Doubts</a>
+      <a href="ai-notes.html">AI Notes</a>
+      <a href="ai-mock-tests.html">AI Mock Tests</a>
+      <a href="ai-roadmaps.html">AI Roadmaps</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="notifications.html">WhatsApp/SMS</a>
+      <a href="email-notifications.html">Email</a>
+      <a href="assignments.html">Assignments</a>
+      <a href="tests.html">Tests</a>
+      <a href="test-builder.html">Test Builder</a>
+      <a href="question-bank.html">Question Bank</a>
+      <a href="timetable.html">Timetable</a>
+      <a href="branches.html">Branches</a>
+      <a href="enquiries.html">Enquiries</a>
+      <a href="followups.html">Follow-ups</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="payments.html">Payments</a>
+      <a href="security.html">Security</a>
+      <a href="super-admin.html">Super Admin</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a href="demo-mode.html">Sales Demo Mode</a>
+      <a href="system-debug.html">System Debug</a>
+      <a href="settings.html">Settings</a>
+      <a href="theme.html">Theme</a>
+      <a href="reports.html">Reports</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="certificates.html">Certificates</a>
+      <a href="library.html">Library</a>
+      <a href="dashboard.html#profile">Profile</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main subscription-main">
+    <header class="topbar subscription-hero">
+      <div>
+        <p class="eyebrow mini">PART 25 • SAAS SUBSCRIPTION PLANS</p>
+        <h1>Subscription Control Room</h1>
+        <p class="lead small">Free, Starter, Pro, Premium plans, expiry, limits, billing aur NAXORA VANI AI add-on ko ek jagah manage karo.</p>
+      </div>
+      <a class="back-link" href="dashboard.html">← Dashboard</a>
+    </header>
+
+    <section class="batch-stats subscription-stats" id="subscriptionStats">
+      <article><strong id="totalSubscriptions">0</strong><span>Total Subscriptions</span></article>
+      <article><strong id="activeSubscriptions">0</strong><span>Active</span></article>
+      <article><strong id="expiringSoon">0</strong><span>Expiring Soon</span></article>
+      <article><strong id="estimatedMRR">₹0</strong><span>Estimated Revenue</span></article>
+    </section>
+
+    <section class="plan-grid" id="planGrid"></section>
+
+    <section class="panel subscription-form-panel">
+      <div class="section-head list-head">
+        <div>
+          <h2 id="subscriptionFormHeading">Add Institute Subscription</h2>
+          <p>Institute ka plan, limits, expiry aur add-ons yahin save karo.</p>
+        </div>
+        <button class="ghost-inline" id="clearSubscriptionBtn" type="button">Clear Form</button>
+      </div>
+
+      <form id="subscriptionForm" class="manager-form">
+        <input type="hidden" id="subscriptionId" />
+        <div class="form-grid compact subscription-grid">
+          <label>Institute Name *
+            <input id="instituteName" placeholder="NAXORA Demo Institute" required />
+          </label>
+          <label>Owner Name
+            <input id="ownerName" placeholder="Arun Khurana" />
+          </label>
+          <label>Phone
+            <input id="ownerPhone" placeholder="99999 99999" />
+          </label>
+          <label>Email
+            <input id="ownerEmail" type="email" placeholder="owner@example.com" />
+          </label>
+          <label>City
+            <input id="city" placeholder="Shahabad / Ambala" />
+          </label>
+          <label>Plan
+            <select id="planName">
+              <option value="free">Free Trial</option>
+              <option value="starter">Starter</option>
+              <option value="pro">Pro</option>
+              <option value="premium">Premium</option>
+              <option value="enterprise">Enterprise</option>
+            </select>
+          </label>
+          <label>Billing Cycle
+            <select id="billingCycle"><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select>
+          </label>
+          <label>Status
+            <select id="status"><option value="trial">Trial</option><option value="active">Active</option><option value="past_due">Past Due</option><option value="paused">Paused</option><option value="cancelled">Cancelled</option><option value="expired">Expired</option></select>
+          </label>
+          <label>Base Price ₹
+            <input id="basePrice" type="number" min="0" placeholder="2499" />
+          </label>
+          <label>Discount ₹
+            <input id="discount" type="number" min="0" placeholder="0" />
+          </label>
+          <label>Last Payment ₹
+            <input id="lastPaymentAmount" type="number" min="0" placeholder="0" />
+          </label>
+          <label>Payment Mode
+            <select id="paymentMode"><option value="none">None</option><option value="cash">Cash</option><option value="upi">UPI</option><option value="bank">Bank</option><option value="card">Card</option><option value="razorpay">Razorpay</option><option value="other">Other</option></select>
+          </label>
+          <label>Start Date
+            <input id="startDate" type="date" />
+          </label>
+          <label>Expiry Date
+            <input id="expiryDate" type="date" />
+          </label>
+          <label>Student Limit
+            <input id="studentLimit" type="number" min="0" placeholder="500" />
+          </label>
+          <label>Teacher Limit
+            <input id="teacherLimit" type="number" min="0" placeholder="35" />
+          </label>
+          <label>Branch Limit
+            <input id="branchLimit" type="number" min="0" placeholder="3" />
+          </label>
+          <label>AI Doubt Limit / Month
+            <input id="aiDoubtLimit" type="number" min="0" placeholder="2500" />
+          </label>
+          <label>Storage GB
+            <input id="storageLimit" type="number" min="0" placeholder="25" />
+          </label>
+          <label>Users Limit
+            <input id="userLimit" type="number" min="0" placeholder="25" />
+          </label>
+          <label>Students Used
+            <input id="studentsUsed" type="number" min="0" placeholder="0" />
+          </label>
+          <label>AI Doubts Used
+            <input id="aiDoubtsUsed" type="number" min="0" placeholder="0" />
+          </label>
+          <label>Internal Tag
+            <input id="internalTag" placeholder="Founding institute / hot lead" />
+          </label>
+        </div>
+
+        <div class="addon-box">
+          <div>
+            <h3>NAXORA VANI AI Add-on</h3>
+            <p>Voice search foundation, reports aur secure voice actions ke liye paid add-on. Usage capped rakha gaya hai.</p>
+          </div>
+          <label class="switch-line"><input id="vaniEnabled" type="checkbox" /> Enable VANI AI</label>
+          <label>VANI Billing
+            <select id="vaniBilling"><option value="monthly">Monthly ₹1,499</option><option value="yearly">Yearly ₹14,999</option></select>
+          </label>
+          <label>VANI Usage Cap
+            <input id="vaniUsageCap" type="number" min="0" value="1000" />
+          </label>
+        </div>
+
+        <label>Notes
+          <textarea id="notes" rows="3" placeholder="Plan promise, renewal discussion, special founding offer..."></textarea>
+        </label>
+        <div class="form-actions">
+          <button class="primary" type="submit" id="saveSubscriptionBtn">Save Subscription</button>
+          <button class="ghost-inline" type="button" id="sampleProBtn">Sample Pro</button>
+          <button class="ghost-inline" type="button" id="samplePremiumBtn">Sample Premium + VANI</button>
+        </div>
+        <p class="message" id="subscriptionMessage"></p>
+      </form>
+    </section>
+
+    <section class="panel list-panel">
+      <div class="section-head list-head">
+        <div>
+          <h2>All Subscriptions</h2>
+          <p>Search, filter, upgrade/downgrade, pause/cancel aur VANI add-on yahin manage karo.</p>
+        </div>
+        <button class="ghost-inline" id="refreshSubscriptionsBtn">Refresh</button>
+      </div>
+      <div class="filters subscription-filters">
+        <input id="subscriptionSearch" placeholder="Search institute, owner, phone, city..." />
+        <select id="planFilter"><option value="">All plans</option><option value="free">Free</option><option value="starter">Starter</option><option value="pro">Pro</option><option value="premium">Premium</option><option value="enterprise">Enterprise</option></select>
+        <select id="statusFilter"><option value="">All status</option><option value="trial">Trial</option><option value="active">Active</option><option value="past_due">Past Due</option><option value="paused">Paused</option><option value="cancelled">Cancelled</option><option value="expired">Expired</option></select>
+        <select id="cycleFilter"><option value="">All billing</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select>
+      </div>
+      <div class="cards-list" id="subscriptionList"></div>
+      <p class="message" id="subscriptionListMessage"></p>
+    </section>
+  </main>
+
+  <script src="subscriptions.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

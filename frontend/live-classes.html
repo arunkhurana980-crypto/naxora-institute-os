@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>NAXORA Live Classes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="live-classes.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <div class="orb orb-one"></div><div class="orb orb-two"></div>
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="students.html">Students</a>
+      <a href="parents.html">Parents</a>
+      <a href="progress.html">Progress</a>
+      <a href="teachers.html">Teachers</a>
+      <a href="staff.html">Staff</a>
+      <a href="batches.html">Batches</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="attendance.html">Attendance</a>
+      <a href="fees.html">Fees</a>
+      <a href="finance.html">Finance</a>
+      <a href="doubts.html">AI Doubts</a>
+      <a href="ai-notes.html">AI Notes</a>
+      <a href="ai-mock-tests.html">AI Mock Tests</a>
+      <a href="ai-roadmaps.html">AI Roadmaps</a>
+      <a class="active" href="live-classes.html">Live Classes</a>
+      <a href="notifications.html">WhatsApp/SMS</a>
+      <a href="email-notifications.html">Email</a>
+      <a href="assignments.html">Assignments</a>
+      <a href="tests.html">Tests</a>
+      <a href="test-builder.html">Test Builder</a>
+      <a href="question-bank.html">Question Bank</a>
+      <a href="timetable.html">Timetable</a>
+      <a href="branches.html">Branches</a>
+      <a href="enquiries.html">Enquiries</a>
+      <a href="followups.html">Follow-ups</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="payments.html">Payments</a>
+      <a href="security.html">Security</a>
+      <a href="super-admin.html">Super Admin</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a href="demo-mode.html">Sales Demo Mode</a>
+      <a href="system-debug.html">System Debug</a>
+      <a href="settings.html">Settings</a>
+      <a href="theme.html">Theme</a>
+      <a href="reports.html">Reports</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="certificates.html">Certificates</a>
+      <a href="library.html">Library</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow mini">NAXORA LIVE CLASSROOM</p>
+        <h1>Live Classes + Comments</h1>
+        <p class="lead small">Institute live class schedule karega, students join/comment karenge, aur recording/resources save honge. Ye facility base OS se alag subscription me rahegi.</p>
+      </div>
+      <div class="profile-pill" id="profilePill">🎥 Live Add-on</div>
+    </header>
+
+    <section class="stats-mini live-stats" id="liveStats"></section>
+
+    <section class="dashboard-section split">
+      <div class="panel live-form-panel">
+        <div class="section-head"><h2 id="classFormTitle">Schedule Live Class</h2><p>Zoom/Meet/YouTube/Internal link ke saath class create karo.</p></div>
+        <form id="classForm" class="smart-form">
+          <input type="hidden" id="classId" />
+          <div class="form-row"><label>Title<input id="title" required placeholder="Full Stack AI Batch Live Class" /></label><label>Subject<input id="subject" required placeholder="Web Development" /></label></div>
+          <div class="form-row"><label>Topic<input id="topic" placeholder="React Components" /></label><label>Batch<input id="batchName" required placeholder="Morning Batch A" /></label></div>
+          <div class="form-row"><label>Course<input id="courseName" placeholder="AI Website Masterclass" /></label><label>Teacher<input id="teacherName" required placeholder="Arun Sir" /></label></div>
+          <div class="form-row"><label>Start Date/Time<input id="startAt" type="datetime-local" required /></label><label>Duration Minutes<input id="durationMinutes" type="number" value="60" min="10" max="600" /></label></div>
+          <div class="form-row"><label>Platform<select id="platform"><option value="internal">Internal</option><option value="zoom">Zoom</option><option value="google_meet">Google Meet</option><option value="youtube">YouTube Live</option><option value="other">Other</option></select></label><label>Status<select id="status"><option value="scheduled">Scheduled</option><option value="live">Live Now</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></label></div>
+          <label>Class Join URL<input id="classUrl" placeholder="https://meet.google.com/..." /></label>
+          <label>Recording URL<input id="recordingUrl" placeholder="Recording link after class" /></label>
+          <label>Resources <small>comma separated</small><input id="resources" placeholder="PDF link, notes link, homework link" /></label>
+          <label>Description<textarea id="description" rows="4" placeholder="Class agenda, instructions, topic points"></textarea></label>
+          <div class="form-row"><label>Max Students<input id="maxStudents" type="number" value="100" min="1" /></label><label>Enrolled Students<input id="enrolledStudents" type="number" value="0" min="0" /></label></div>
+          <div class="toggle-row"><label><input id="chatEnabled" type="checkbox" checked /> Chat enabled</label><label><input id="commentsEnabled" type="checkbox" checked /> Comments enabled</label><label><input id="liveSubscriptionRequired" type="checkbox" checked /> Separate subscription required</label></div>
+          <div class="form-actions"><button class="primary" type="submit">Save Live Class</button><button class="ghost-btn" type="button" id="clearClassBtn">Clear</button></div>
+          <p class="message" id="classMessage"></p>
+        </form>
+      </div>
+
+      <div class="panel subscription-panel">
+        <div class="section-head"><h2>Live Classes Subscription</h2><p>Ye add-on NAXORA OS base subscription se alag chalega.</p></div>
+        <div id="planCards" class="plan-grid"></div>
+        <form id="subscriptionForm" class="smart-form compact-form">
+          <div class="form-row"><label>Institute Name<input id="subInstituteName" placeholder="NAXORA Tech Academy" /></label><label>Plan<select id="subPlanName"><option>Live Starter</option><option>Live Pro</option><option>Live Premium</option><option>Live Enterprise</option></select></label></div>
+          <div class="form-row"><label>Status<select id="subStatus"><option value="trial">Trial</option><option value="active">Active</option><option value="past_due">Past Due</option><option value="paused">Paused</option><option value="cancelled">Cancelled</option><option value="expired">Expired</option></select></label><label>Payment Mode<select id="subPaymentMode"><option value="upi">UPI</option><option value="cash">Cash</option><option value="bank">Bank</option><option value="razorpay">Razorpay</option><option value="card">Card</option></select></label></div>
+          <button class="primary" type="submit">Save Live Subscription</button>
+          <p class="message" id="subscriptionMessage"></p>
+        </form>
+        <div id="subscriptionList" class="subscription-list"></div>
+      </div>
+    </section>
+
+    <section class="dashboard-section panel">
+      <div class="section-head"><h2>Live Class Board</h2><p>Scheduled, live aur completed classes manage karo.</p></div>
+      <div class="filters"><input id="classSearch" placeholder="Search class / subject / batch" /><select id="statusFilter"><option value="">All Status</option><option value="scheduled">Scheduled</option><option value="live">Live</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select><button id="refreshClasses" class="ghost-btn">Refresh</button></div>
+      <div id="classList" class="live-class-grid"></div>
+    </section>
+
+    <section class="dashboard-section panel comments-zone">
+      <div class="section-head"><h2 id="commentsTitle">Comments / Class Chat</h2><p>Select class, phir comments add/load karo.</p></div>
+      <form id="commentForm" class="comment-form">
+        <input id="selectedClassId" type="hidden" />
+        <input id="commentText" placeholder="Student/teacher comment likho…" />
+        <button class="primary" type="submit">Add Comment</button>
+      </form>
+      <div id="commentList" class="comment-list"></div>
+    </section>
+  </main>
+
+  <script src="live-classes.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

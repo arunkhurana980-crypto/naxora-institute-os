@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>NAXORA Client Pitch Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="client-pitch.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body client-pitch-body">
+  <div class="orb orb-one"></div><div class="orb orb-two"></div>
+
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html">Overview</a>
+      <a href="demo-mode.html">Sales Demo Mode</a>
+      <a class="active" href="client-pitch.html">Client Pitch</a>
+      <a href="deployment.html">Deployment</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="payments.html">Payments</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="system-debug.html">System Debug</a>
+      <a href="final-testing.html">Final Testing</a>
+      <a href="settings.html">Settings</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main pitch-main">
+    <header class="topbar pitch-hero">
+      <div>
+        <p class="eyebrow mini">PART 46 • CLIENT PITCH CONTROL ROOM</p>
+        <h1>Full Client Pitch Dashboard</h1>
+        <p class="lead small">Institute owner ko pricing, ROI, demo links aur value proof ek hi screen par dikhao.</p>
+      </div>
+      <div class="pitch-badge">🚀 Pitch Ready</div>
+    </header>
+
+    <section class="pitch-grid" id="pitchStats"></section>
+
+    <section class="pitch-section split">
+      <div class="panel roi-panel">
+        <div class="section-head">
+          <h2>ROI Calculator</h2>
+          <p>Client ko dikhao ki software ka monthly cost kaise recover ho sakta hai.</p>
+        </div>
+        <form id="roiForm" class="roi-form">
+          <label>Saved hours/month <input name="savedHoursPerMonth" type="number" value="35" min="0"></label>
+          <label>Staff hour value ₹ <input name="staffHourValue" type="number" value="80" min="0"></label>
+          <label>Extra admissions/month <input name="extraAdmissions" type="number" value="3" min="0"></label>
+          <label>Average fee/admission ₹ <input name="averageFeePerAdmission" type="number" value="2500" min="0"></label>
+          <label>Recovered dues ₹ <input name="missedDuesRecovered" type="number" value="6000" min="0"></label>
+          <label>Software cost ₹ <input name="softwareCost" type="number" value="1999" min="0"></label>
+          <button class="primary" type="submit">Calculate ROI</button>
+        </form>
+      </div>
+      <div class="panel roi-result" id="roiResult">Loading ROI…</div>
+    </section>
+
+    <section class="pitch-section panel">
+      <div class="section-head">
+        <h2>Pricing Pitch Cards</h2>
+        <p>Starter se Growth Bundle tak client ko simple choice do.</p>
+      </div>
+      <div class="pricing-grid" id="pricingGrid"></div>
+    </section>
+
+    <section class="pitch-section panel">
+      <div class="section-head">
+        <h2>Manual vs NAXORA</h2>
+        <p>Owner ko plain comparison me value samjhao.</p>
+      </div>
+      <div class="comparison-list" id="comparisonList"></div>
+    </section>
+
+    <section class="pitch-section split">
+      <div class="panel">
+        <div class="section-head"><h2>7-Minute Pitch Flow</h2><p>Demo ke time isi order me screens open karo.</p></div>
+        <div id="pitchFlow" class="flow-list"></div>
+      </div>
+      <div class="panel">
+        <div class="section-head"><h2>Objection Answers</h2><p>Client ke common doubts ke ready replies.</p></div>
+        <div id="objections" class="objection-list"></div>
+      </div>
+    </section>
+
+    <section class="pitch-section panel">
+      <div class="section-head"><h2>Quick Demo Links</h2><p>Client ke samne direct modules open karo.</p></div>
+      <div id="demoLinks" class="actions-grid"></div>
+    </section>
+
+    <p id="pitchMessage" class="message"></p>
+  </main>
+
+  <script src="client-pitch.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

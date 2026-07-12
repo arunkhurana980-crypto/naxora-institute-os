@@ -1,0 +1,77 @@
+.fees-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.fee-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.fee-preview {
+  margin-top: 16px;
+  border: 1px solid rgba(255, 232, 120, .2);
+  background: linear-gradient(135deg, rgba(255, 232, 120, .12), rgba(0, 212, 255, .06));
+  color: #ffe978;
+  border-radius: 18px;
+  padding: 15px 18px;
+  font-weight: 900;
+}
+
+.fee-filters {
+  grid-template-columns: 1.4fr .65fr .65fr .65fr;
+}
+
+.money-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.money-box {
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.2);
+  border-radius: 15px;
+  padding: 13px;
+}
+
+.money-box span {
+  display: block;
+  color: rgba(255,255,255,.48);
+  font-size: 12px;
+  font-weight: 900;
+  margin-bottom: 5px;
+}
+
+.money-box strong {
+  color: #fff;
+  font-size: 18px;
+}
+
+.receipt-btn {
+  background: rgba(0,212,255,.14);
+  color: #9ff1ff;
+  border: 1px solid rgba(0,212,255,.25) !important;
+}
+
+.status-paid { color: #a9ffcf; }
+.status-partial { color: #83eaff; }
+.status-pending { color: #ffe978; }
+.status-overdue { color: #ffb0b0; }
+
+@media(max-width: 1050px) {
+  .fees-stats,
+  .fee-grid,
+  .fee-filters,
+  .money-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media(max-width: 720px) {
+  .fees-stats,
+  .fee-grid,
+  .fee-filters,
+  .money-row {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Online Test Builder — NAXORA Institute OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="teachers.css" />
+  <link rel="stylesheet" href="test-builder.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <div class="orb orb-one"></div><div class="orb orb-two"></div>
+
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="students.html">Students</a>
+      <a href="parents.html">Parents</a>
+      <a href="progress.html">Progress</a>
+      <a href="teachers.html">Teachers</a>
+      <a href="staff.html">Staff</a>
+      <a href="batches.html">Batches</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="attendance.html">Attendance</a>
+      <a href="fees.html">Fees</a>
+      <a href="finance.html">Finance</a>
+      <a href="doubts.html">AI Doubts</a>
+      <a href="ai-notes.html">AI Notes</a>
+      <a href="ai-mock-tests.html">AI Mock Tests</a>
+      <a href="ai-roadmaps.html">AI Roadmaps</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="notifications.html">WhatsApp/SMS</a>
+      <a href="email-notifications.html">Email</a>
+      <a href="assignments.html">Assignments</a>
+      <a href="tests.html">Tests</a>
+      <a class="active" href="test-builder.html">Test Builder</a>
+      <a href="question-bank.html">Question Bank</a>
+      <a href="timetable.html">Timetable</a>
+      <a href="branches.html">Branches</a>
+      <a href="enquiries.html">Enquiries</a>
+      <a href="followups.html">Follow-ups</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="payments.html">Payments</a>
+      <a href="security.html">Security</a>
+      <a href="super-admin.html">Super Admin</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a href="demo-mode.html">Sales Demo Mode</a>
+      <a href="system-debug.html">System Debug</a>
+      <a href="settings.html">Settings</a>
+      <a href="theme.html">Theme</a>
+      <a href="reports.html">Reports</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="certificates.html">Certificates</a>
+      <a href="library.html">Library</a>
+      <a href="dashboard.html#profile">Profile</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main test-builder-main">
+    <header class="topbar builder-hero">
+      <div>
+        <p class="eyebrow mini">PART 19 • ONLINE TEST BUILDER</p>
+        <h1>Question Paper Builder</h1>
+        <p class="lead small">MCQ, descriptive, practical aur mixed question paper banao. Batch assign karo, marks auto-calculate karo aur paper preview karo.</p>
+      </div>
+      <div class="profile-pill" id="profilePill">🧪 Builder</div>
+    </header>
+
+    <section class="stats-grid" id="builderStats"></section>
+
+    <section class="builder-layout">
+      <form class="panel builder-form" id="paperForm">
+        <div class="section-head">
+          <h2 id="formTitle">Build Question Paper</h2>
+          <p>Paper details + questions add karo. MCQ me options comma ya new line se likh sakte ho.</p>
+        </div>
+
+        <input type="hidden" id="paperId" />
+
+        <div class="form-grid compact">
+          <label>Paper Title *<input id="paperTitle" required placeholder="Example: HTML CSS Final Test" /></label>
+          <label>Paper Type
+            <select id="paperType">
+              <option value="mixed">Mixed</option>
+              <option value="mcq">MCQ</option>
+              <option value="descriptive">Descriptive</option>
+              <option value="practical">Practical</option>
+            </select>
+          </label>
+          <label>Subject *<input id="subject" required placeholder="Web Development / Python" /></label>
+          <label>Topic<input id="topic" placeholder="Forms, Flexbox, Functions..." /></label>
+          <label>Course Name<input id="courseName" placeholder="Full Stack + AI" /></label>
+          <label>Batch Name<input id="batchName" placeholder="Evening Batch A" /></label>
+          <label>Teacher Name<input id="teacherName" placeholder="Teacher / mentor" /></label>
+          <label>Mode
+            <select id="testMode"><option value="online">Online</option><option value="offline">Offline</option><option value="hybrid">Hybrid</option></select>
+          </label>
+          <label>Duration Minutes<input id="durationMinutes" type="number" min="1" value="60" /></label>
+          <label>Total Marks<input id="totalMarks" type="number" min="1" placeholder="Auto from questions" /></label>
+          <label>Passing Marks<input id="passingMarks" type="number" min="0" placeholder="Auto 33%" /></label>
+          <label>Scheduled Date<input id="scheduledDate" type="date" /></label>
+          <label>Start Time<input id="startTime" type="time" /></label>
+          <label>End Time<input id="endTime" type="time" /></label>
+          <label>Attempts Allowed<input id="attemptsAllowed" type="number" min="1" max="10" value="1" /></label>
+          <label>Status
+            <select id="status">
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+              <option value="assigned">Assigned</option>
+              <option value="live">Live</option>
+              <option value="closed">Closed</option>
+              <option value="archived">Archived</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <label><input id="shuffleQuestions" type="checkbox" checked /> Shuffle questions</label>
+          <label><input id="showResultInstant" type="checkbox" /> Show result instantly</label>
+        </div>
+
+        <label>Instructions
+          <textarea id="instructions" rows="3" placeholder="Rules, syllabus, device policy, negative marking..."></textarea>
+        </label>
+
+        <div class="section-head compact">
+          <h2>Questions</h2>
+          <p>Minimum 1 question required. MCQ ke options: A, B, C, D ko new line me likho.</p>
+        </div>
+        <div id="questionBox" class="question-box"></div>
+        <div class="form-actions">
+          <button class="ghost-inline" type="button" id="addQuestionBtn">+ Add Question</button>
+          <button class="ghost-inline" type="button" id="sampleBtn">Sample Paper</button>
+        </div>
+
+        <div class="form-actions sticky-actions">
+          <button class="primary" type="submit">Save Paper</button>
+          <button class="ghost-btn" type="button" id="clearBtn">Clear</button>
+          <button class="ghost-btn" type="button" id="previewBtn">Preview</button>
+        </div>
+        <p class="message" id="message"></p>
+      </form>
+
+      <section class="panel builder-list-panel">
+        <div class="section-head list-head">
+          <div>
+            <h2>All Question Papers</h2>
+            <p>Search, filter, edit, duplicate, publish/live/close yahin se karo.</p>
+          </div>
+          <button class="ghost-btn" id="refreshBtn" type="button">Refresh</button>
+        </div>
+
+        <div class="filters builder-filters">
+          <input id="searchInput" placeholder="Search title, subject, question..." />
+          <input id="subjectFilter" placeholder="Subject" />
+          <input id="batchFilter" placeholder="Batch" />
+          <select id="statusFilter"><option value="">All status</option><option value="draft">Draft</option><option value="published">Published</option><option value="assigned">Assigned</option><option value="live">Live</option><option value="closed">Closed</option><option value="archived">Archived</option></select>
+          <select id="paperTypeFilter"><option value="">All type</option><option value="mcq">MCQ</option><option value="descriptive">Descriptive</option><option value="practical">Practical</option><option value="mixed">Mixed</option></select>
+          <select id="modeFilter"><option value="">All mode</option><option value="online">Online</option><option value="offline">Offline</option><option value="hybrid">Hybrid</option></select>
+        </div>
+
+        <div id="papersList" class="cards-list builder-list"></div>
+      </section>
+    </section>
+
+    <dialog id="previewDialog" class="paper-preview-dialog">
+      <div class="preview-actions">
+        <button class="ghost-btn" id="printPreviewBtn" type="button">Print</button>
+        <button class="ghost-btn" id="closePreviewBtn" type="button">Close</button>
+      </div>
+      <div id="previewContent" class="paper-preview"></div>
+    </dialog>
+  </main>
+
+  <script src="test-builder.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

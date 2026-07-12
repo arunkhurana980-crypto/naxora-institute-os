@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Lead Follow-ups — NAXORA Institute OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="teachers.css" />
+  <link rel="stylesheet" href="enquiries.css" />
+  <link rel="stylesheet" href="followups.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <div class="orb orb-one"></div><div class="orb orb-two"></div>
+
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="students.html">Students</a>
+      <a href="parents.html">Parents</a>
+      <a href="progress.html">Progress</a>
+      <a href="teachers.html">Teachers</a>
+      <a href="staff.html">Staff</a>
+      <a href="batches.html">Batches</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="attendance.html">Attendance</a>
+      <a href="fees.html">Fees</a>
+      <a href="finance.html">Finance</a>
+      <a href="doubts.html">AI Doubts</a>
+      <a href="ai-notes.html">AI Notes</a>
+      <a href="ai-mock-tests.html">AI Mock Tests</a>
+      <a href="ai-roadmaps.html">AI Roadmaps</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="notifications.html">WhatsApp/SMS</a>
+      <a href="email-notifications.html">Email</a>
+      <a href="assignments.html">Assignments</a>
+      <a href="tests.html">Tests</a>
+      <a href="test-builder.html">Test Builder</a>
+      <a href="question-bank.html">Question Bank</a>
+      <a href="timetable.html">Timetable</a>
+      <a href="branches.html">Branches</a>
+      <a href="enquiries.html">Enquiries</a>
+      <a class="active" href="followups.html">Follow-ups</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="payments.html">Payments</a>
+      <a href="security.html">Security</a>
+      <a href="super-admin.html">Super Admin</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a href="demo-mode.html">Sales Demo Mode</a>
+      <a href="system-debug.html">System Debug</a>
+      <a href="settings.html">Settings</a>
+      <a href="theme.html">Theme</a>
+      <a href="reports.html">Reports</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="certificates.html">Certificates</a>
+      <a href="library.html">Library</a>
+      <a href="dashboard.html#profile">Profile</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main followup-main">
+    <header class="topbar followup-hero">
+      <div>
+        <p class="eyebrow mini">PART 24 • LEAD FOLLOW-UP AUTOMATION</p>
+        <h1>Lead Follow-up Automation</h1>
+        <p class="lead small">Aaj ke calls, missed follow-ups, hot leads aur counsellor performance ek jagah track karo.</p>
+      </div>
+      <div class="profile-pill" id="profilePill">⏰ Follow-ups</div>
+    </header>
+
+    <section class="stats-grid" id="followupStats"></section>
+
+    <section class="panel followup-control-panel">
+      <div class="section-head list-head">
+        <div>
+          <h2>Priority Board</h2>
+          <p>View filter se today, missed, hot aur upcoming leads instantly dekho.</p>
+        </div>
+        <button class="ghost-btn" id="refreshBtn" type="button">Refresh</button>
+      </div>
+      <div class="filters followup-filters">
+        <input id="searchInput" placeholder="Search student, phone, course, city..." />
+        <input id="counsellorFilter" placeholder="Counsellor filter" />
+        <select id="viewFilter">
+          <option value="today">Today follow-ups</option>
+          <option value="missed">Missed follow-ups</option>
+          <option value="hot">Hot priority board</option>
+          <option value="upcoming">Upcoming 7 days</option>
+          <option value="unscheduled">No follow-up date</option>
+          <option value="active">All active leads</option>
+          <option value="converted">Converted leads</option>
+          <option value="all">All leads</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="followup-layout">
+      <section class="panel followup-list-panel">
+        <div class="section-head">
+          <h2>Follow-up Queue</h2>
+          <p>Call/WhatsApp notes, snooze aur status update yahin se karo.</p>
+        </div>
+        <div id="followupList" class="cards-list followup-list"></div>
+      </section>
+
+      <aside class="panel counsellor-panel">
+        <div class="section-head">
+          <h2>Counsellor Performance</h2>
+          <p>Lead conversion aur missed follow-ups ka quick report.</p>
+        </div>
+        <div id="performanceList" class="performance-list"></div>
+      </aside>
+    </section>
+
+    <p class="message" id="message"></p>
+  </main>
+
+  <dialog id="logDialog" class="follow-dialog">
+    <form method="dialog" id="logForm" class="panel follow-panel">
+      <h2>Log Follow-up</h2>
+      <p class="small muted" id="leadTitle">Lead</p>
+      <input type="hidden" id="leadId" />
+      <div class="form-grid compact">
+        <label>Mode
+          <select id="followMode"><option value="call">Call</option><option value="whatsapp">WhatsApp</option><option value="visit">Visit</option><option value="demo">Demo</option><option value="email">Email</option><option value="other">Other</option></select>
+        </label>
+        <label>Outcome
+          <select id="followOutcome"><option value="callback">Callback</option><option value="interested">Interested</option><option value="demo_booked">Demo Booked</option><option value="converted">Converted</option><option value="not_interested">Not interested</option><option value="no_response">No response</option></select>
+        </label>
+        <label>Next Follow-up Date<input id="followNextDate" type="date" /></label>
+      </div>
+      <label>Note<textarea id="followNote" rows="4" placeholder="Call summary, parent objection, next step..."></textarea></label>
+      <div class="form-actions">
+        <button class="primary" value="submit">Save Log</button>
+        <button class="ghost-btn" value="cancel" type="button" id="closeLogBtn">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="followups.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

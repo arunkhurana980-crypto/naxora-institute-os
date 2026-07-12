@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Admission Enquiries — NAXORA Institute OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="teachers.css" />
+  <link rel="stylesheet" href="enquiries.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body class="dashboard-body">
+  <div class="orb orb-one"></div><div class="orb orb-two"></div>
+
+  <aside class="sidebar">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+    <nav>
+      <a href="dashboard.html#overview">Overview</a>
+      <a href="students.html">Students</a>
+      <a href="parents.html">Parents</a>
+      <a href="progress.html">Progress</a>
+      <a href="teachers.html">Teachers</a>
+      <a href="staff.html">Staff</a>
+      <a href="batches.html">Batches</a>
+      <a href="online-batches.html">Online Batch Access</a>
+      <a href="attendance.html">Attendance</a>
+      <a href="fees.html">Fees</a>
+      <a href="finance.html">Finance</a>
+      <a href="doubts.html">AI Doubts</a>
+      <a href="ai-notes.html">AI Notes</a>
+      <a href="ai-mock-tests.html">AI Mock Tests</a>
+      <a href="ai-roadmaps.html">AI Roadmaps</a>
+      <a href="live-classes.html">Live Classes</a>
+      <a href="notifications.html">WhatsApp/SMS</a>
+      <a href="email-notifications.html">Email</a>
+      <a href="assignments.html">Assignments</a>
+      <a href="tests.html">Tests</a>
+      <a href="test-builder.html">Test Builder</a>
+      <a href="question-bank.html">Question Bank</a>
+      <a href="timetable.html">Timetable</a>
+      <a href="branches.html">Branches</a>
+      <a class="active" href="enquiries.html">Enquiries</a>
+      <a href="followups.html">Follow-ups</a>
+      <a href="discovery.html">Discovery Leads</a>
+      <a href="subscriptions.html">Subscriptions</a>
+      <a href="payments.html">Payments</a>
+      <a href="security.html">Security</a>
+      <a href="super-admin.html">Super Admin</a>
+      <a href="admin-analytics.html">Admin Analytics</a>
+      <a href="demo-mode.html">Sales Demo Mode</a>
+      <a href="system-debug.html">System Debug</a>
+      <a href="settings.html">Settings</a>
+      <a href="theme.html">Theme</a>
+      <a href="reports.html">Reports</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="certificates.html">Certificates</a>
+      <a href="library.html">Library</a>
+      <a href="dashboard.html#profile">Profile</a>
+    </nav>
+    <button id="logoutBtn" class="ghost-btn">Logout</button>
+  </aside>
+
+  <main class="dashboard-main enquiry-main">
+    <header class="topbar enquiry-hero">
+      <div>
+        <p class="eyebrow mini">PART 23 • ADMISSION ENQUIRY CRM</p>
+        <h1>Admission Enquiry CRM</h1>
+        <p class="lead small">YouTube, Instagram, walk-in aur WhatsApp se aaye leads ko hot/warm/cold track karo.</p>
+      </div>
+      <div class="profile-pill" id="profilePill">📞 Enquiries</div>
+    </header>
+
+    <section class="stats-grid" id="enquiryStats"></section>
+
+    <section class="enquiry-layout">
+      <form class="panel enquiry-form" id="enquiryForm">
+        <div class="section-head">
+          <h2 id="formTitle">Add Enquiry</h2>
+          <p>Student lead, interested course, source aur follow-up date save karo.</p>
+        </div>
+
+        <input type="hidden" id="enquiryId" />
+
+        <div class="form-grid compact">
+          <label>Student Name *<input id="studentName" required placeholder="Student name" /></label>
+          <label>Parent/Guardian Name<input id="parentName" placeholder="Father / Mother / Guardian" /></label>
+          <label>Phone *<input id="phone" required placeholder="98765xxxxx" /></label>
+          <label>Alternate Phone<input id="alternatePhone" placeholder="Optional" /></label>
+          <label>Email<input id="email" type="email" placeholder="student@example.com" /></label>
+          <label>Class Level<input id="classLevel" placeholder="10th / 12th / Graduate" /></label>
+          <label>Interested Course *<input id="interestedCourse" required placeholder="AI Tools / Web Development / Cyber Security" /></label>
+          <label>Preferred Batch<input id="preferredBatch" placeholder="Morning / Evening / Weekend" /></label>
+          <label>Lead Source
+            <select id="leadSource"><option value="youtube">YouTube</option><option value="instagram">Instagram</option><option value="facebook">Facebook</option><option value="friend">Friend/Referral</option><option value="walk_in">Walk-in</option><option value="whatsapp">WhatsApp</option><option value="poster">Poster</option><option value="school">School</option><option value="website">Website</option><option value="other">Other</option></select>
+          </label>
+          <label>Lead Temperature
+            <select id="leadTemperature"><option value="hot">Hot</option><option value="warm" selected>Warm</option><option value="cold">Cold</option></select>
+          </label>
+          <label>Status
+            <select id="status"><option value="new">New</option><option value="contacted">Contacted</option><option value="demo_booked">Demo Booked</option><option value="follow_up">Follow-up</option><option value="converted">Converted</option><option value="rejected">Rejected</option><option value="lost">Lost</option></select>
+          </label>
+          <label>Counsellor<input id="counsellorName" placeholder="Arun Khurana" /></label>
+          <label>Expected Fee ₹<input id="expectedFee" type="number" min="0" value="0" /></label>
+          <label>Offered Discount ₹<input id="offeredDiscount" type="number" min="0" value="0" /></label>
+          <label>Demo Date<input id="demoDate" type="date" /></label>
+          <label>Next Follow-up<input id="nextFollowUpDate" type="date" /></label>
+          <label>City<input id="city" placeholder="Ambala / Shahabad / Yamunanagar" /></label>
+        </div>
+
+        <label>Address
+          <textarea id="address" rows="2" placeholder="Village / city / landmark..."></textarea>
+        </label>
+        <label>Notes
+          <textarea id="notes" rows="3" placeholder="Student interest, parent concern, price discussion, next action..."></textarea>
+        </label>
+
+        <div class="form-actions sticky-actions">
+          <button class="primary" type="submit">Save Enquiry</button>
+          <button class="ghost-btn" type="button" id="clearBtn">Clear</button>
+          <button class="ghost-btn" type="button" id="sampleBtn">Sample</button>
+        </div>
+        <p class="message" id="message"></p>
+      </form>
+
+      <section class="panel enquiry-list-panel">
+        <div class="section-head list-head">
+          <div>
+            <h2>All Enquiries</h2>
+            <p>Search, filter, follow-up aur convert yahin se karo.</p>
+          </div>
+          <button class="ghost-btn" id="refreshBtn" type="button">Refresh</button>
+        </div>
+
+        <div class="filters enquiry-filters">
+          <input id="searchInput" placeholder="Search student, phone, course, city..." />
+          <input id="courseFilter" placeholder="Course filter" />
+          <select id="sourceFilter"><option value="">All source</option><option value="youtube">YouTube</option><option value="instagram">Instagram</option><option value="facebook">Facebook</option><option value="friend">Friend</option><option value="walk_in">Walk-in</option><option value="whatsapp">WhatsApp</option><option value="poster">Poster</option><option value="school">School</option><option value="website">Website</option><option value="other">Other</option></select>
+          <select id="tempFilter"><option value="">All temp</option><option value="hot">Hot</option><option value="warm">Warm</option><option value="cold">Cold</option></select>
+          <select id="statusFilter"><option value="">All status</option><option value="new">New</option><option value="contacted">Contacted</option><option value="demo_booked">Demo Booked</option><option value="follow_up">Follow-up</option><option value="converted">Converted</option><option value="rejected">Rejected</option><option value="lost">Lost</option></select>
+        </div>
+
+        <div id="enquiriesList" class="cards-list enquiry-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="followDialog" class="follow-dialog">
+    <form method="dialog" id="followForm" class="panel follow-panel">
+      <h2>Add Follow-up</h2>
+      <input type="hidden" id="followEnquiryId" />
+      <label>Mode
+        <select id="followMode"><option value="call">Call</option><option value="whatsapp">WhatsApp</option><option value="visit">Visit</option><option value="demo">Demo</option><option value="email">Email</option><option value="other">Other</option></select>
+      </label>
+      <label>Outcome
+        <select id="followOutcome"><option value="callback">Callback</option><option value="interested">Interested</option><option value="demo_booked">Demo Booked</option><option value="converted">Converted</option><option value="not_interested">Not interested</option><option value="no_response">No response</option></select>
+      </label>
+      <label>Next Follow-up Date<input id="followNextDate" type="date" /></label>
+      <label>Note<textarea id="followNote" rows="4" placeholder="Call summary, parent concern, next step..."></textarea></label>
+      <div class="form-actions">
+        <button class="primary" value="submit">Save Follow-up</button>
+        <button class="ghost-btn" value="cancel" type="button" id="closeFollowBtn">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="enquiries.js"></script>
+  <script src="mobile-polish.js"></script>
+  <script src="theme-system.js"></script>
+</body>
+</html>

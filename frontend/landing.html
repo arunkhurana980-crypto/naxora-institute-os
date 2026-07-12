@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA Institute OS — Premium SaaS Landing</title>
+  <link rel="stylesheet" href="landing.css" />
+</head>
+<body>
+  <div class="noise"></div>
+  <header class="nav">
+    <div class="brand"><span class="logo">N</span><span>NAXORA Institute OS</span></div>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#ai">AI</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#demo">Book Demo</a>
+    </nav>
+    <a class="nav-cta" href="index.html">Open App</a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Premium SaaS for coaching institutes</p>
+        <h1>Run your coaching, online batches, leads, payments and AI learning from one luxury dashboard.</h1>
+        <p class="hero-text">NAXORA Institute OS helps institutes manage students, fees, attendance, CRM, live classes, discovery leads, AI notes, mock tests, roadmaps and subscriptions.</p>
+        <div class="hero-actions">
+          <a href="#demo" class="btn primary">Book 60-sec Demo</a>
+          <a href="#pricing" class="btn ghost">View Plans</a>
+        </div>
+        <div class="trust-row">
+          <span>30+ modules</span>
+          <span>Razorpay-ready</span>
+          <span>Live class-ready</span>
+          <span>Leads marketplace</span>
+        </div>
+      </div>
+      <div class="hero-card">
+        <div class="dashboard-preview">
+          <div class="preview-top"><span></span><span></span><span></span></div>
+          <div class="preview-grid">
+            <article><b>₹2.4L</b><small>Monthly revenue</small></article>
+            <article><b>418</b><small>Active students</small></article>
+            <article><b>92%</b><small>Attendance</small></article>
+            <article><b>86</b><small>New leads</small></article>
+          </div>
+          <div class="chart-bars"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="section">
+      <p class="eyebrow">What institutes get</p>
+      <h2>Everything your institute needs to look modern and work professionally.</h2>
+      <div class="cards">
+        <div class="card"><h3>Institute Management</h3><p>Students, teachers, staff, batches, attendance, fees, certificates, library and reports.</p></div>
+        <div class="card"><h3>Lead Engine</h3><p>Students search institutes by area. Only NAXORA subscribed institutes appear and receive leads.</p></div>
+        <div class="card"><h3>Online Batch Access</h3><p>Students can join live classes only after paid/active batch access.</p></div>
+        <div class="card"><h3>Super Admin SaaS</h3><p>Control institutes, subscription plans, status, payments and growth from one panel.</p></div>
+      </div>
+    </section>
+
+    <section id="ai" class="section split">
+      <div>
+        <p class="eyebrow">NAXORA AI layer</p>
+        <h2>AI features that make your institute feel futuristic.</h2>
+        <p>AI Doubt Solver, AI Notes Generator, AI Mock Test Generator, AI Student Roadmaps and VANI AI voice add-on structure.</p>
+      </div>
+      <div class="ai-list">
+        <span>AI Doubts</span><span>AI Notes</span><span>AI Mock Tests</span><span>AI Roadmaps</span><span>VANI AI</span>
+      </div>
+    </section>
+
+    <section id="pricing" class="section">
+      <p class="eyebrow">Pricing structure</p>
+      <h2>Simple plans for offline, online and premium institutes.</h2>
+      <div id="plans" class="pricing"></div>
+    </section>
+
+    <section id="demo" class="section demo-section">
+      <div>
+        <p class="eyebrow">Start selling</p>
+        <h2>Capture institute demo requests directly from the landing page.</h2>
+        <p>This form stores leads in MongoDB when connected, and falls back to mock mode if MongoDB is temporarily down.</p>
+      </div>
+      <form id="demoForm" class="demo-form">
+        <input name="instituteName" placeholder="Institute name" required />
+        <input name="ownerName" placeholder="Owner name" required />
+        <input name="phone" placeholder="Phone / WhatsApp" required />
+        <input name="city" placeholder="City / Area" required />
+        <select name="interestedPlan">
+          <option>Pro</option>
+          <option selected>Premium</option>
+          <option>Live Classes Add-on</option>
+          <option>VANI AI Add-on</option>
+          <option>Enterprise</option>
+        </select>
+        <textarea name="message" placeholder="Message / requirement"></textarea>
+        <button class="btn primary" type="submit">Submit Demo Request</button>
+        <p id="formMsg" class="form-msg"></p>
+      </form>
+    </section>
+  </main>
+
+  <footer>© NAXORA Institute OS — Bhaijaan Tech Academy</footer>
+  <script src="landing.js"></script>
+</body>
+</html>
