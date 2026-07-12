@@ -1719,6 +1719,56 @@ app.get(/^\/app(?!\/api).*/, (req, res) => {
   }
   res.sendFile(path.join(frontendPath, "index.html"));
 });
+const modulePageRoutes = {
+  "/progress": "progress.html",
+  "/teachers": "teachers.html",
+  "/staff": "staff.html",
+  "/batches": "batches.html",
+  "/online-batches": "online-batches.html",
+  "/attendance": "attendance.html",
+  "/fees": "fees.html",
+  "/finance": "finance.html",
+  "/doubts": "doubts.html",
+  "/ai-notes": "ai-notes.html",
+  "/ai-mock-tests": "ai-mock-tests.html",
+  "/ai-roadmaps": "ai-roadmaps.html",
+  "/live-classes": "live-classes.html",
+  "/notifications": "notifications.html",
+  "/email-notifications": "email-notifications.html",
+  "/assignments": "assignments.html",
+  "/tests": "tests.html",
+  "/test-builder": "test-builder.html",
+  "/question-bank": "question-bank.html",
+  "/timetable": "timetable.html",
+  "/branches": "branches.html",
+  "/enquiries": "enquiries.html",
+  "/followups": "followups.html",
+  "/discovery": "discovery.html",
+  "/subscriptions": "subscriptions.html",
+  "/payments": "payments.html",
+  "/security": "security.html",
+  "/settings": "settings.html",
+  "/theme": "theme.html",
+  "/reports": "reports.html",
+  "/announcements": "announcements.html",
+  "/certificates": "certificates.html",
+  "/library": "library.html",
+  "/super-admin": "super-admin.html",
+  "/admin-analytics": "admin-analytics.html"
+};
+
+for (const [route, fileName] of Object.entries(modulePageRoutes)) {
+  app.get(route, (req, res) => sendFileSafe(res, fileName));
+  app.get(`${route}.html`, (req, res) => res.redirect(302, route));
+}
+
+app.get("/api/part52/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 52 - Live Clean Route Fix",
+    status: "active"
+  });
+});
 
 app.use(notFound);
 app.use(errorHandler);
