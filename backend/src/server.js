@@ -101,7 +101,11 @@ const publicRoutes = [
   "/nearby-institutes",
   "/nearby",
   "/institutes-near-me",
-  "/local-institutes"
+  "/local-institutes",
+  "/compare-institutes",
+  "/compare",
+  "/institute-comparison",
+  "/compare-coaching"
 ];
 
 const internalPageFiles = new Set([
@@ -1785,7 +1789,8 @@ const part53PageRegistry = [
   { group: "Leads", label: "Part 58 Enquiry CRM", cleanRoute: "/enquiry-followup-crm", htmlRoute: "/enquiry-followup-crm.html", file: "enquiry-followup-crm.html", critical: true },
   { group: "Discovery", label: "Part 59 Public Institute Profile", cleanRoute: "/public-institute-profile", htmlRoute: "/public-institute-profile.html", file: "public-institute-profile.html", critical: true },
   { group: "Leads", label: "Part 60 Request Callback / Send Enquiry", cleanRoute: "/request-callback", htmlRoute: "/request-callback.html", file: "request-callback.html", critical: true },
-  { group: "Discovery", label: "Part 61 Nearby Institutes", cleanRoute: "/nearby-institutes", htmlRoute: "/nearby-institutes.html", file: "nearby-institutes.html", critical: true }
+  { group: "Discovery", label: "Part 61 Nearby Institutes", cleanRoute: "/nearby-institutes", htmlRoute: "/nearby-institutes.html", file: "nearby-institutes.html", critical: true },
+  { group: "Discovery", label: "Part 62 Compare Institutes", cleanRoute: "/compare-institutes", htmlRoute: "/compare-institutes.html", file: "compare-institutes.html", critical: true }
 ];
 
 const part53ApiRegistry = [
@@ -1833,7 +1838,8 @@ const part53ApiRegistry = [
   { group: "Part 58", label: "Enquiry Follow-Up CRM", prefix: "/api/part58", method: "GET/POST/PATCH", critical: true, collection: "part58leads" },
   { group: "Part 59", label: "Public Institute Profile", prefix: "/api/part59", method: "GET/POST/PATCH", critical: true, collection: "part59publicprofiles" },
   { group: "Part 60", label: "Request Callback / Send Enquiry", prefix: "/api/part60", method: "GET/POST/PATCH", critical: true, collection: "part60callbackenquiries" },
-  { group: "Part 61", label: "Nearby Institutes", prefix: "/api/part61", method: "GET", critical: true, collection: "part59publicprofiles" }
+  { group: "Part 61", label: "Nearby Institutes", prefix: "/api/part61", method: "GET", critical: true, collection: "part59publicprofiles" },
+  { group: "Part 62", label: "Compare Institutes", prefix: "/api/part62", method: "GET/POST", critical: true, collection: "part59publicprofiles" }
 ];
 
 const part53CriticalFlows = [
@@ -4675,6 +4681,303 @@ app.get("/api/part61/demo", async (req, res) => {
 });
 // ================= END PART 61 =================
 
+// ================= PART 62: COMPARE INSTITUTES =================
+// Roadmap goal: fees, distance, courses, results, facilities, ratings and demo availability compare karna.
+// Safe rule: Part 62 reads public institute profiles and demo listings. It does not expose private institute data.
+const part62Checklist = [
+  "Compare Institutes page opens on /compare-institutes.",
+  "Student can search institutes by city/course before comparison.",
+  "Student can compare 2 to 4 institutes side-by-side.",
+  "Comparison includes fees, distance, courses, results, facilities, ratings and demo availability.",
+  "Request Callback link connects comparison to Part 60 enquiry flow.",
+  "API works in MongoDB connected mode and mock fallback mode.",
+  "No private student, fee ledger or admin data is exposed.",
+  "No external paid API key is required for Part 62."
+];
+
+const part62CompareFields = [
+  { key: "fees", label: "Fees Range", weight: 18, type: "lower_range", note: "Lower public fee range gets a better affordability score." },
+  { key: "distance", label: "Distance", weight: 15, type: "lower", note: "Nearby institute gets a better location score when distance is available." },
+  { key: "courses", label: "Courses", weight: 14, type: "coverage", note: "More relevant courses/class levels improve the match." },
+  { key: "results", label: "Results", weight: 14, type: "count_quality", note: "Published achievements/results improve trust score." },
+  { key: "facilities", label: "Facilities", weight: 12, type: "count", note: "Smart classroom, tests, doubts, online support etc. improve score." },
+  { key: "rating", label: "Rating", weight: 12, type: "higher", note: "Public rating/review score if available." },
+  { key: "demo", label: "Demo Availability", weight: 10, type: "boolean", note: "Demo class/callback availability improves conversion." },
+  { key: "verified", label: "Verified Listing", weight: 5, type: "boolean", note: "Verified profile improves trust score." }
+];
+
+const part62Config = {
+  minCompare: 2,
+  maxCompare: 4,
+  defaultCity: "Delhi",
+  defaultRadiusKm: 80,
+  compareFields: part62CompareFields,
+  safeDataRule: "Part 62 sirf public institute profile/listing data compare karta hai. Private institute/students ka data expose nahi hota.",
+  nextPart: "Part 63 - Discovery and Leads Integration"
+};
+
+function part62CleanText(value, max = 180) {
+  return String(value ?? "").trim().slice(0, max);
+}
+
+function part62Number(value, fallback = 0) {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : fallback;
+}
+
+function part62Array(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function part62CourseNames(row = {}) {
+  return part62Array(row.courses).map((course) => part62CleanText(course?.name || course?.title || course?.classLevel, 90)).filter(Boolean);
+}
+
+function part62FeeRange(row = {}) {
+  const courseFees = part62Array(row.courses).flatMap((course) => [course?.minFee, course?.maxFee, course?.fee, course?.price]).map((v) => part62Number(v, 0)).filter((v) => v > 0);
+  const directFees = [row?.feesRange?.min, row?.feesRange?.max, row?.feeMin, row?.feeMax, row?.minFee, row?.maxFee].map((v) => part62Number(v, 0)).filter((v) => v > 0);
+  const all = [...courseFees, ...directFees];
+  if (!all.length) return { min: null, max: null, label: "Ask institute" };
+  const min = Math.min(...all);
+  const max = Math.max(...all);
+  return { min, max, label: min === max ? `₹${min.toLocaleString("en-IN")}` : `₹${min.toLocaleString("en-IN")} - ₹${max.toLocaleString("en-IN")}` };
+}
+
+function part62Rating(row = {}) {
+  const rating = part62Number(row.rating || row.averageRating || row.reviews?.rating, 0);
+  if (rating > 0) return Math.min(Math.max(rating, 0), 5);
+  const resultsCount = part62Array(row.results).length;
+  const verifiedBoost = row.verified ? 0.3 : 0;
+  return Math.min(5, 3.8 + Math.min(resultsCount, 4) * 0.2 + verifiedBoost);
+}
+
+function part62DemoAvailable(row = {}) {
+  if (typeof row.demoAvailable === "boolean") return row.demoAvailable;
+  const text = [row.demoAvailability, row.description, row.tagline, ...part62CourseNames(row)].join(" ").toLowerCase();
+  return text.includes("demo") || text.includes("trial") || text.includes("callback") || true;
+}
+
+function part62ResultLabels(row = {}) {
+  return part62Array(row.results).map((item) => part62CleanText(item?.achievement || item?.title || item?.exam || item, 120)).filter(Boolean).slice(0, 4);
+}
+
+function part62FacilityLabels(row = {}) {
+  return part62Array(row.facilities).map((item) => part62CleanText(item?.name || item?.title || item, 90)).filter(Boolean).slice(0, 8);
+}
+
+function part62NormalizeInstitute(row = {}, origin = null) {
+  const base = typeof part61NearbyView === "function" ? part61NearbyView(row, origin) : row;
+  const fees = part62FeeRange(row);
+  const courses = part62CourseNames(row);
+  const facilities = part62FacilityLabels(row);
+  const results = part62ResultLabels(row);
+  const rating = part62Rating(row);
+  const demoAvailable = part62DemoAvailable(row);
+  const profileId = base.profileId || row.profileId || row.slug || row.id || `profile-${Date.now()}`;
+  return {
+    profileId,
+    name: base.name || row.name || row.instituteName || "Institute",
+    tagline: base.tagline || row.tagline || row.description || "Public institute profile available.",
+    city: base.city || row.address?.city || row.city || "",
+    area: base.area || row.address?.area || row.area || "",
+    state: base.state || row.address?.state || row.state || "",
+    distanceKm: base.distanceKm ?? null,
+    distanceLabel: base.distanceLabel || (base.distanceKm ? `${base.distanceKm} km` : "City based"),
+    verified: Boolean(base.verified ?? row.verified),
+    verificationLabel: base.verificationLabel || (row.verified ? "Verified" : "Unverified"),
+    courses,
+    fees,
+    facilities,
+    results,
+    rating: Number(rating.toFixed(1)),
+    ratingLabel: `${Number(rating.toFixed(1))}/5`,
+    demoAvailable,
+    demoLabel: demoAvailable ? "Available" : "Ask institute",
+    timings: row.timings || row.officeHours || "Ask institute",
+    addressText: [base.area || row.address?.area, base.city || row.address?.city, base.state || row.address?.state].filter(Boolean).join(", "),
+    profileUrl: `/public-institute-profile?profileId=${encodeURIComponent(profileId)}`,
+    callbackUrl: `/request-callback?profileId=${encodeURIComponent(profileId)}&source=compare_institutes`,
+    raw: row
+  };
+}
+
+function part62ScoreInstitute(item = {}, query = {}) {
+  let score = 0;
+  const reasons = [];
+  if (item.verified) { score += 5; reasons.push("Verified profile"); }
+  if (item.demoAvailable) { score += 10; reasons.push("Demo/callback available"); }
+  if (item.rating) score += Math.min(item.rating / 5, 1) * 12;
+  if (item.facilities?.length) score += Math.min(item.facilities.length, 6) / 6 * 12;
+  if (item.results?.length) { score += Math.min(item.results.length, 4) / 4 * 14; reasons.push("Results/achievements published"); }
+  if (item.courses?.length) score += Math.min(item.courses.length, 5) / 5 * 14;
+  if (item.fees?.min) score += Math.max(0, 18 - Math.min(item.fees.min / 10000, 18));
+  if (item.distanceKm !== null && item.distanceKm !== undefined) score += Math.max(0, 15 - Math.min(item.distanceKm, 50) / 50 * 15);
+  const requestedCourse = part62CleanText(query.course || query.q, 120).toLowerCase();
+  if (requestedCourse && item.courses.join(" ").toLowerCase().includes(requestedCourse)) { score += 8; reasons.push("Course match"); }
+  return { score: Math.round(Math.min(score, 100)), reasons: reasons.slice(0, 4) };
+}
+
+function part62BuildComparison(items = [], query = {}) {
+  const normalized = items.map((item) => {
+    const scoring = part62ScoreInstitute(item, query);
+    return { ...item, score: scoring.score, scoreReasons: scoring.reasons };
+  }).sort((a, b) => b.score - a.score);
+  const winner = normalized[0] || null;
+  const matrix = part62CompareFields.map((field) => ({
+    key: field.key,
+    label: field.label,
+    weight: field.weight,
+    note: field.note,
+    values: normalized.map((item) => {
+      const map = {
+        fees: item.fees?.label || "Ask institute",
+        distance: item.distanceLabel || "City based",
+        courses: item.courses?.length ? item.courses.join(", ") : "Ask institute",
+        results: item.results?.length ? item.results.join(", ") : "Not published yet",
+        facilities: item.facilities?.length ? item.facilities.join(", ") : "Ask institute",
+        rating: item.ratingLabel || "Not rated",
+        demo: item.demoLabel || "Ask institute",
+        verified: item.verified ? "Verified" : "Unverified"
+      };
+      return { profileId: item.profileId, value: map[field.key] || "-" };
+    })
+  }));
+  return {
+    institutes: normalized,
+    winner: winner ? { profileId: winner.profileId, name: winner.name, score: winner.score, reasons: winner.scoreReasons } : null,
+    matrix,
+    summary: normalized.length ? `${normalized.length} institute(s) compared. Top match: ${winner.name} (${winner.score}/100).` : "No institutes selected for comparison."
+  };
+}
+
+async function part62LoadRows() {
+  if (typeof part61LoadProfiles === "function") return part61LoadProfiles();
+  const rows = [...(globalThis.NAXORA_PART59_PROFILES || []), ...(globalThis.NAXORA_PART61_EXTRA_LISTINGS || [])];
+  return { mode: "mock", rows };
+}
+
+async function part62CandidateRows(query = {}) {
+  const { mode, rows } = await part62LoadRows();
+  const city = part62CleanText(query.city, 80).toLowerCase();
+  const course = part62CleanText(query.course || query.q, 120).toLowerCase();
+  const verifiedOnly = String(query.verifiedOnly || "").toLowerCase() === "true" || query.verifiedOnly === "on";
+  const radiusKm = Math.min(Math.max(part62Number(query.radiusKm, part62Config.defaultRadiusKm), 1), 150);
+  const origin = typeof part61BuildOrigin === "function" ? part61BuildOrigin(query) : null;
+  const filtered = rows.filter((row) => {
+    const profile = typeof part59PublicProfileView === "function" ? part59PublicProfileView(row) : row;
+    const haystack = typeof part61ProfileText === "function" ? part61ProfileText(row) : JSON.stringify(row).toLowerCase();
+    if (city && !haystack.includes(city)) return false;
+    if (course && !haystack.includes(course)) return false;
+    const verified = profile.verification?.verified === true || row.verified === true;
+    if (verifiedOnly && !verified) return false;
+    if (origin && typeof part61ExtractCoordinates === "function" && typeof part61DistanceKm === "function") {
+      const coords = part61ExtractCoordinates(row);
+      if (coords) {
+        const distance = part61DistanceKm(origin, coords);
+        if (distance > radiusKm) return false;
+      }
+    }
+    return true;
+  });
+  const normalized = filtered.map((row) => part62NormalizeInstitute(row, origin));
+  return { mode, origin, rows: normalized };
+}
+
+function part62SelectedIds(req) {
+  const fromQuery = part62CleanText(req.query.ids || req.query.profileIds || "", 800);
+  const fromBody = Array.isArray(req.body?.profileIds) ? req.body.profileIds.join(",") : part62CleanText(req.body?.ids || req.body?.profileIds || "", 800);
+  return (fromBody || fromQuery).split(",").map((id) => part62CleanText(id, 140)).filter(Boolean).slice(0, part62Config.maxCompare);
+}
+
+app.get("/compare-institutes", (req, res) => sendFileSafe(res, "compare-institutes.html"));
+app.get("/compare", (req, res) => sendFileSafe(res, "compare-institutes.html"));
+app.get("/institute-comparison", (req, res) => sendFileSafe(res, "compare-institutes.html"));
+app.get("/compare-coaching", (req, res) => sendFileSafe(res, "compare-institutes.html"));
+
+app.get("/api/part62/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 62 - Compare Institutes",
+    status: "active",
+    dbMode: mongoose.connection.readyState === 1 ? "mongodb" : "mock",
+    purpose: "Students fees, distance, courses, results, facilities, ratings aur demo availability compare kar sakte hain.",
+    roadmap: "Part 62 milestone: first beta institute ke liye discovery flow usable ban raha hai.",
+    nextPart: part62Config.nextPart,
+    routes: ["/compare-institutes", "/compare", "/api/part62/status", "/api/part62/compare"]
+  });
+});
+
+app.get("/api/part62/config", (req, res) => {
+  res.json({ success: true, part: "Part 62 - Compare Institutes", config: part62Config });
+});
+
+app.get("/api/part62/candidates", async (req, res) => {
+  const { mode, rows, origin } = await part62CandidateRows(req.query || {});
+  const candidates = rows.map((row) => ({ ...row, compareUrl: `/compare-institutes?ids=${encodeURIComponent(row.profileId)}` }));
+  res.json({ success: true, mode, part: "Part 62 - Compare Institutes", count: candidates.length, origin, candidates });
+});
+
+async function part62CompareHandler(req, res) {
+  const ids = part62SelectedIds(req);
+  const { mode, rows, origin } = await part62CandidateRows({ ...(req.query || {}), ...(req.body || {}) });
+  let selected = ids.length ? rows.filter((row) => ids.includes(row.profileId) || ids.includes(row.slug) || ids.includes(row.id)) : rows.slice(0, part62Config.maxCompare);
+  if (selected.length < part62Config.minCompare && rows.length >= part62Config.minCompare) {
+    const missing = rows.filter((row) => !selected.some((item) => item.profileId === row.profileId)).slice(0, part62Config.minCompare - selected.length);
+    selected = [...selected, ...missing];
+  }
+  selected = selected.slice(0, part62Config.maxCompare).map((row) => row.raw ? row : part62NormalizeInstitute(row, origin));
+  const comparison = part62BuildComparison(selected, { ...(req.query || {}), ...(req.body || {}) });
+  res.json({
+    success: true,
+    mode,
+    part: "Part 62 - Compare Institutes",
+    selectedCount: selected.length,
+    minCompare: part62Config.minCompare,
+    maxCompare: part62Config.maxCompare,
+    comparison,
+    note: selected.length < part62Config.minCompare ? "Compare ke liye kam se kam 2 institutes chahiye." : "Comparison ready."
+  });
+}
+
+app.get("/api/part62/compare", part62CompareHandler);
+app.post("/api/part62/compare", part62CompareHandler);
+
+app.get("/api/part62/matrix", async (req, res) => {
+  const { mode, rows, origin } = await part62CandidateRows(req.query || {});
+  const selected = rows.slice(0, part62Config.maxCompare).map((row) => row.raw ? row : part62NormalizeInstitute(row, origin));
+  const comparison = part62BuildComparison(selected, req.query || {});
+  res.json({ success: true, mode, part: "Part 62 - Compare Institutes", matrix: comparison.matrix, institutes: comparison.institutes, winner: comparison.winner });
+});
+
+app.get("/api/part62/recommendations", async (req, res) => {
+  const { mode, rows, origin } = await part62CandidateRows(req.query || {});
+  const scored = rows.map((row) => {
+    const item = row.raw ? row : part62NormalizeInstitute(row, origin);
+    const scoring = part62ScoreInstitute(item, req.query || {});
+    return { ...item, score: scoring.score, scoreReasons: scoring.reasons };
+  }).sort((a, b) => b.score - a.score).slice(0, 6);
+  res.json({ success: true, mode, part: "Part 62 - Compare Institutes", count: scored.length, recommendations: scored });
+});
+
+app.get("/api/part62/checklist", (req, res) => {
+  res.json({ success: true, part: "Part 62 - Compare Institutes", checklist: part62Checklist });
+});
+
+app.get("/api/part62/export", async (req, res) => {
+  const { mode, rows, origin } = await part62CandidateRows(req.query || {});
+  const selected = rows.slice(0, part62Config.maxCompare).map((row) => row.raw ? row : part62NormalizeInstitute(row, origin));
+  const comparison = part62BuildComparison(selected, req.query || {});
+  res.json({ success: true, mode, part: "Part 62 - Compare Institutes", exportedAt: new Date().toISOString(), comparison, config: part62Config });
+});
+
+app.get("/api/part62/demo", async (req, res) => {
+  const { rows, origin } = await part62CandidateRows({ city: "Delhi", radiusKm: 80 });
+  const comparison = part62BuildComparison(rows.slice(0, part62Config.maxCompare), { city: "Delhi" });
+  res.json({ success: true, part: "Part 62 - Compare Institutes", comparison, config: part62Config, checklist: part62Checklist });
+});
+// ================= END PART 62 =================
+
+
 // Same-server frontend hosting for Render/Railway/VPS deployment.
 app.use("/landing", express.static(frontendPath));
 
@@ -4773,7 +5076,11 @@ const modulePageRoutes = {
   "/nearby-institutes": "nearby-institutes.html",
   "/nearby": "nearby-institutes.html",
   "/institutes-near-me": "nearby-institutes.html",
-  "/local-institutes": "nearby-institutes.html"
+  "/local-institutes": "nearby-institutes.html",
+  "/compare-institutes": "compare-institutes.html",
+  "/compare": "compare-institutes.html",
+  "/institute-comparison": "compare-institutes.html",
+  "/compare-coaching": "compare-institutes.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -4871,6 +5178,7 @@ const server = app.listen(port, () => {
   console.log("✅ Public institute profile frontend: /public-institute-profile");
   console.log("✅ Part 60 request callback active: /api/part60/status + /request-callback");
   console.log("✅ Part 61 nearby institutes active: /api/part61/status + /nearby-institutes");
+  console.log("✅ Part 62 compare institutes active: /api/part62/status + /compare-institutes");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");

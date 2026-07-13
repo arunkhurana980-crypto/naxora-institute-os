@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA OS | Compare Institutes</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/compare-institutes.css" />
+</head>
+<body>
+  <main class="part62-shell">
+    <section class="part62-hero">
+      <div class="part62-brand-row">
+        <img src="/assets/naxora-logo.svg" alt="NAXORA" onerror="this.style.display='none'" />
+        <span>Part 62 · Compare Institutes</span>
+      </div>
+      <h1>Students ko institutes side-by-side compare karne ka clear system</h1>
+      <p>
+        Fees, distance, courses, results, facilities, ratings aur demo availability ko ek table me compare karo.
+        Ye Part 59 public profiles + Part 61 nearby results ko admission decision ke useful comparison me convert karta hai.
+      </p>
+      <div class="part62-pill-row">
+        <span>Fees</span>
+        <span>Distance</span>
+        <span>Courses</span>
+        <span>Results</span>
+        <span>Facilities</span>
+        <span>Demo</span>
+      </div>
+    </section>
+
+    <section class="part62-grid">
+      <div class="part62-card">
+        <div class="part62-card-head">
+          <h2>Search candidates</h2>
+          <p>City/course ke basis par institutes load karo, phir 2–4 institutes select karke compare karo.</p>
+        </div>
+        <form id="part62SearchForm" class="part62-form">
+          <label>
+            City
+            <input name="city" value="Delhi" placeholder="Delhi / Noida / Gurugram" />
+          </label>
+          <label>
+            Course / Class
+            <input name="course" placeholder="Class 10 / JEE / NEET" />
+          </label>
+          <label>
+            Radius KM
+            <select name="radiusKm">
+              <option value="25">25 km</option>
+              <option value="50">50 km</option>
+              <option value="80" selected>80 km</option>
+              <option value="150">150 km</option>
+            </select>
+          </label>
+          <label class="part62-check">
+            <input type="checkbox" name="verifiedOnly" />
+            Verified only
+          </label>
+          <div class="part62-actions">
+            <button type="submit">Load Institutes</button>
+            <button type="button" id="compareSelected" class="part62-secondary">Compare Selected</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="part62-card part62-status-card">
+        <div class="part62-card-head">
+          <h2>Live Status</h2>
+          <p>Part 62 backend aur comparison config.</p>
+        </div>
+        <div id="part62Status" class="part62-status">Loading...</div>
+        <div id="part62Meta" class="part62-meta"></div>
+      </div>
+    </section>
+
+    <section class="part62-card">
+      <div class="part62-card-head part62-results-head">
+        <div>
+          <h2>Institute candidates</h2>
+          <p id="part62CandidateSummary">Nearby/public profiles yahan load honge.</p>
+        </div>
+        <a href="/nearby-institutes" class="part62-link">Nearby Institutes</a>
+      </div>
+      <div id="part62Candidates" class="part62-candidates">Loading institutes...</div>
+    </section>
+
+    <section class="part62-card">
+      <div class="part62-card-head part62-results-head">
+        <div>
+          <h2>Comparison Result</h2>
+          <p id="part62CompareSummary">2–4 institutes select karke compare karo.</p>
+        </div>
+        <a href="/request-callback" class="part62-link">Request Callback</a>
+      </div>
+      <div id="part62Comparison" class="part62-comparison">Comparison yahan dikhega.</div>
+    </section>
+
+    <section class="part62-card">
+      <div class="part62-card-head">
+        <h2>Part 62 Checklist</h2>
+        <p>Compare Institutes module ka testing checklist.</p>
+      </div>
+      <ul id="part62Checklist" class="part62-checklist"></ul>
+    </section>
+  </main>
+
+  <script src="/brand-system.js"></script>
+  <script src="/compare-institutes.js"></script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 {
-  "name": "naxora-institute-os-part59-public-institute-profile",
+  "name": "naxora-institute-os-part62-compare-institutes",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -14,7 +14,10 @@
     "check:part54": "node --check src/server.js",
     "check:part57": "node --check src/server.js",
     "check:part58": "node --check src/server.js",
-    "check:part59": "node --check src/server.js"
+    "check:part59": "node --check src/server.js",
+    "check:part60": "node --check src/server.js",
+    "check:part61": "node --check src/server.js",
+    "check:part62": "node --check src/server.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
