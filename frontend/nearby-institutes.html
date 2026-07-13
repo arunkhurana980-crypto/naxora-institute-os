@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA OS | Nearby Institutes</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/nearby-institutes.css" />
+</head>
+<body>
+  <main class="part61-shell">
+    <section class="part61-hero">
+      <div class="part61-brand-row">
+        <img src="/assets/naxora-logo.svg" alt="NAXORA" onerror="this.style.display='none'" />
+        <span>Part 61 · Nearby Institutes</span>
+      </div>
+      <h1>Students ko aas-paas ke suitable institutes dikhana</h1>
+      <p>
+        Part 59 public profiles ko city, course, distance aur verified filters ke saath searchable banao.
+        Student yahin se profile dekhega aur Part 60 callback/enquiry bhej payega.
+      </p>
+      <div class="part61-pill-row">
+        <span>Location Search</span>
+        <span>City Filter</span>
+        <span>Course Filter</span>
+        <span>Verified Listings</span>
+      </div>
+    </section>
+
+    <section class="part61-panel">
+      <div class="part61-card">
+        <div class="part61-card-head">
+          <h2>Search Filters</h2>
+          <p>City ya course enter karo. Browser location only tumhare click/permission par use hogi.</p>
+        </div>
+        <form id="part61SearchForm" class="part61-form">
+          <label>
+            City
+            <input name="city" placeholder="Delhi / Noida / Gurugram" value="Delhi" />
+          </label>
+          <label>
+            Course / Class
+            <input name="course" placeholder="Class 10 / JEE / NEET / Science" />
+          </label>
+          <label>
+            Radius KM
+            <select name="radiusKm">
+              <option value="10">10 km</option>
+              <option value="25" selected>25 km</option>
+              <option value="50">50 km</option>
+              <option value="80">80 km</option>
+              <option value="150">150 km</option>
+            </select>
+          </label>
+          <label>
+            Mode
+            <select name="mode">
+              <option value="">Any</option>
+              <option value="offline">Offline</option>
+              <option value="online">Online</option>
+              <option value="hybrid">Hybrid</option>
+            </select>
+          </label>
+          <label class="part61-check">
+            <input type="checkbox" name="verifiedOnly" />
+            Verified listings only
+          </label>
+          <input type="hidden" name="lat" />
+          <input type="hidden" name="lng" />
+          <div class="part61-actions">
+            <button type="submit">Search Nearby</button>
+            <button type="button" id="useMyLocation" class="part61-secondary">Use My Location</button>
+            <button type="button" id="resetPart61" class="part61-ghost">Reset</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="part61-card part61-status-card">
+        <div class="part61-card-head">
+          <h2>Live Status</h2>
+          <p>Part 61 backend aur filters ka status.</p>
+        </div>
+        <div id="part61Status" class="part61-status">Loading...</div>
+        <div id="part61Meta" class="part61-meta"></div>
+      </div>
+    </section>
+
+    <section class="part61-card">
+      <div class="part61-card-head part61-results-head">
+        <div>
+          <h2>Nearby Results</h2>
+          <p id="part61ResultSummary">Search results yahan dikhenge.</p>
+        </div>
+        <a href="/public-institute-profile" class="part61-link">Public Profile Page</a>
+      </div>
+      <div id="part61Results" class="part61-results">Loading institutes...</div>
+    </section>
+
+    <section class="part61-card">
+      <div class="part61-card-head">
+        <h2>Part 61 Checklist</h2>
+        <p>Nearby institutes module ka testing checklist.</p>
+      </div>
+      <ul id="part61Checklist" class="part61-checklist"></ul>
+    </section>
+  </main>
+
+  <script src="/brand-system.js"></script>
+  <script src="/nearby-institutes.js"></script>
+</body>
+</html>

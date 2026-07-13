@@ -97,7 +97,11 @@ const publicRoutes = [
   "/request-callback",
   "/send-enquiry",
   "/callback",
-  "/institute-enquiry"
+  "/institute-enquiry",
+  "/nearby-institutes",
+  "/nearby",
+  "/institutes-near-me",
+  "/local-institutes"
 ];
 
 const internalPageFiles = new Set([
@@ -1780,7 +1784,8 @@ const part53PageRegistry = [
   { group: "Security", label: "Part 55 Role Permissions", cleanRoute: "/role-permissions", htmlRoute: "/role-permissions.html", file: "role-permissions.html", critical: true },
   { group: "Leads", label: "Part 58 Enquiry CRM", cleanRoute: "/enquiry-followup-crm", htmlRoute: "/enquiry-followup-crm.html", file: "enquiry-followup-crm.html", critical: true },
   { group: "Discovery", label: "Part 59 Public Institute Profile", cleanRoute: "/public-institute-profile", htmlRoute: "/public-institute-profile.html", file: "public-institute-profile.html", critical: true },
-  { group: "Leads", label: "Part 60 Request Callback / Send Enquiry", cleanRoute: "/request-callback", htmlRoute: "/request-callback.html", file: "request-callback.html", critical: true }
+  { group: "Leads", label: "Part 60 Request Callback / Send Enquiry", cleanRoute: "/request-callback", htmlRoute: "/request-callback.html", file: "request-callback.html", critical: true },
+  { group: "Discovery", label: "Part 61 Nearby Institutes", cleanRoute: "/nearby-institutes", htmlRoute: "/nearby-institutes.html", file: "nearby-institutes.html", critical: true }
 ];
 
 const part53ApiRegistry = [
@@ -1827,7 +1832,8 @@ const part53ApiRegistry = [
   { group: "Part 57", label: "Student Parent Portal", prefix: "/api/part57", method: "GET", critical: true },
   { group: "Part 58", label: "Enquiry Follow-Up CRM", prefix: "/api/part58", method: "GET/POST/PATCH", critical: true, collection: "part58leads" },
   { group: "Part 59", label: "Public Institute Profile", prefix: "/api/part59", method: "GET/POST/PATCH", critical: true, collection: "part59publicprofiles" },
-  { group: "Part 60", label: "Request Callback / Send Enquiry", prefix: "/api/part60", method: "GET/POST/PATCH", critical: true, collection: "part60callbackenquiries" }
+  { group: "Part 60", label: "Request Callback / Send Enquiry", prefix: "/api/part60", method: "GET/POST/PATCH", critical: true, collection: "part60callbackenquiries" },
+  { group: "Part 61", label: "Nearby Institutes", prefix: "/api/part61", method: "GET", critical: true, collection: "part59publicprofiles" }
 ];
 
 const part53CriticalFlows = [
@@ -4312,6 +4318,363 @@ app.get("/api/part60/demo", (req, res) => {
 });
 // ================= END PART 60 =================
 
+
+// ================= PART 61: NEARBY INSTITUTES =================
+// Roadmap scope: Location search, city filters, distance filters, course filters and verified listings.
+// Safe rule: Part 61 uses public institute profiles from Part 59. No external map/geocoding API, no automatic user tracking.
+const part61DefaultCityCoordinates = {
+  delhi: { lat: 28.6139, lng: 77.2090, label: "Delhi" },
+  mumbai: { lat: 19.0760, lng: 72.8777, label: "Mumbai" },
+  bengaluru: { lat: 12.9716, lng: 77.5946, label: "Bengaluru" },
+  bangalore: { lat: 12.9716, lng: 77.5946, label: "Bengaluru" },
+  jaipur: { lat: 26.9124, lng: 75.7873, label: "Jaipur" },
+  gurugram: { lat: 28.4595, lng: 77.0266, label: "Gurugram" },
+  gurgaon: { lat: 28.4595, lng: 77.0266, label: "Gurugram" },
+  noida: { lat: 28.5355, lng: 77.3910, label: "Noida" },
+  pune: { lat: 18.5204, lng: 73.8567, label: "Pune" },
+  lucknow: { lat: 26.8467, lng: 80.9462, label: "Lucknow" },
+  chandigarh: { lat: 30.7333, lng: 76.7794, label: "Chandigarh" }
+};
+
+const part61Checklist = [
+  "Nearby Institutes page opens on /nearby-institutes.",
+  "City filter works using institute public profile address city.",
+  "Course filter checks profile courses, class level and description.",
+  "Distance filter works when latitude/longitude or known city coordinates are available.",
+  "Verified-only filter hides unverified/demo listings.",
+  "Search results include request callback link from Part 60.",
+  "Search results include public profile link from Part 59.",
+  "MongoDB connected mode reads published Part 59 profiles from part59publicprofiles collection.",
+  "Mock mode fallback shows demo nearby listings without breaking live site.",
+  "No external map/geocoding API and no automatic user tracking in this part."
+];
+
+const part61Config = {
+  filters: ["city", "course", "radiusKm", "verifiedOnly", "lat", "lng", "mode"],
+  defaultRadiusKm: 25,
+  maxRadiusKm: 250,
+  resultLimit: 100,
+  safety: {
+    externalMaps: false,
+    automaticLocationTracking: false,
+    userConsentRequiredForBrowserLocation: true,
+    note: "Part 61 user ke click/permission ke bina exact location track nahi karta. City/search filters safe hain."
+  },
+  handoff: {
+    part59: "Public profile details source",
+    part60: "Request callback/send enquiry action",
+    part62: "Compare institutes next"
+  }
+};
+
+if (!globalThis.NAXORA_PART61_EXTRA_LISTINGS) {
+  globalThis.NAXORA_PART61_EXTRA_LISTINGS = [
+    {
+      profileId: "NX-PROFILE-DEMO-002",
+      slug: "bright-path-academy-demo",
+      status: "published",
+      name: "Bright Path Academy Demo",
+      tagline: "Board exams, foundation and weekly parent reports.",
+      description: "Demo nearby listing for Part 61 city, course and distance filters.",
+      logoUrl: "/assets/naxora-logo.svg",
+      contact: { phone: "9999999999", email: "hello@brightpath.demo", website: "" },
+      courses: [
+        { id: "course-demo-1", name: "Class 9 and 10 Science", classLevel: "Class 10", duration: "9 months", mode: "Offline", feeMin: 10000, feeMax: 22000, highlight: "Weekly tests and parent dashboard." },
+        { id: "course-demo-2", name: "NEET Foundation", classLevel: "Class 11", duration: "12 months", mode: "Hybrid", feeMin: 35000, feeMax: 70000, highlight: "Biology and chemistry foundation." }
+      ],
+      feeRange: { currency: "INR", minimum: 10000, maximum: 70000, note: "Demo fee range." },
+      teachers: [],
+      results: [],
+      facilities: ["Weekly tests", "Doubt support", "Parent reports", "Hybrid classes"],
+      timings: { weekdays: "Mon–Sat, 7 AM – 8 PM", weekend: "Sun demo classes" },
+      address: { line1: "Sector Demo Road", area: "Education Market", city: "Noida", state: "Uttar Pradesh", pincode: "201301", mapUrl: "" },
+      location: { lat: 28.5355, lng: 77.3910 },
+      verification: { verified: true, label: "Verified demo listing" },
+      visibility: { showFees: true, showTeachers: true, showResults: true, showContact: true },
+      part: "Part 61 - Nearby Institutes",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      publishedAt: new Date().toISOString()
+    },
+    {
+      profileId: "NX-PROFILE-DEMO-003",
+      slug: "goal-achiever-classes-demo",
+      status: "published",
+      name: "Goal Achiever Classes Demo",
+      tagline: "JEE foundation, live classes and smart attendance.",
+      description: "Demo listing for course filter, verified listing and callback handoff.",
+      logoUrl: "/assets/naxora-logo.svg",
+      contact: { phone: "8888888888", email: "admissions@goalachiever.demo", website: "" },
+      courses: [
+        { id: "course-demo-3", name: "JEE Foundation", classLevel: "Class 11", duration: "12 months", mode: "Offline + Online", feeMin: 30000, feeMax: 65000, highlight: "JEE concepts with test analysis." },
+        { id: "course-demo-4", name: "Class 12 Physics", classLevel: "Class 12", duration: "8 months", mode: "Online", feeMin: 18000, feeMax: 35000, highlight: "Live classes and revision notes." }
+      ],
+      feeRange: { currency: "INR", minimum: 18000, maximum: 65000, note: "Demo fee range." },
+      teachers: [],
+      results: [],
+      facilities: ["Live classes", "AI notes", "Mock tests", "Progress reports"],
+      timings: { weekdays: "Mon–Sat, 9 AM – 9 PM", weekend: "Sun, 10 AM – 3 PM" },
+      address: { line1: "Main Coaching Street", area: "Sector 14", city: "Gurugram", state: "Haryana", pincode: "122001", mapUrl: "" },
+      location: { lat: 28.4595, lng: 77.0266 },
+      verification: { verified: false, label: "Demo listing" },
+      visibility: { showFees: true, showTeachers: true, showResults: true, showContact: true },
+      part: "Part 61 - Nearby Institutes",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      publishedAt: new Date().toISOString()
+    }
+  ];
+}
+
+function part61CleanText(value, max = 160) {
+  return String(value ?? "").replace(/[<>]/g, "").replace(/\s+/g, " ").trim().slice(0, max);
+}
+
+function part61Number(value, fallback = null) {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : fallback;
+}
+
+function part61CityKey(city) {
+  return part61CleanText(city, 80).toLowerCase();
+}
+
+function part61CoordinatesFromCity(city) {
+  return part61DefaultCityCoordinates[part61CityKey(city)] || null;
+}
+
+function part61ExtractCoordinates(row = {}) {
+  const directLat = part61Number(row?.location?.lat ?? row?.geo?.lat ?? row?.latitude, null);
+  const directLng = part61Number(row?.location?.lng ?? row?.geo?.lng ?? row?.longitude, null);
+  if (directLat !== null && directLng !== null) return { lat: directLat, lng: directLng, source: "profile" };
+  const cityCoords = part61CoordinatesFromCity(row?.address?.city);
+  if (cityCoords) return { lat: cityCoords.lat, lng: cityCoords.lng, source: "city" };
+  return null;
+}
+
+function part61DistanceKm(a, b) {
+  if (!a || !b) return null;
+  const toRad = (value) => (value * Math.PI) / 180;
+  const earthKm = 6371;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const lat1 = toRad(a.lat);
+  const lat2 = toRad(b.lat);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return Number((earthKm * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h))).toFixed(2));
+}
+
+function part61ProfileText(row = {}) {
+  return [
+    row.name,
+    row.tagline,
+    row.description,
+    row.address?.city,
+    row.address?.state,
+    row.address?.area,
+    ...(row.courses || []).flatMap((course) => [course.name, course.classLevel, course.mode, course.highlight]),
+    ...(row.facilities || [])
+  ].join(" ").toLowerCase();
+}
+
+function part61NearbyView(row = {}, origin = null) {
+  const profile = typeof part59PublicProfileView === "function" ? part59PublicProfileView(row) : row;
+  const coordinates = part61ExtractCoordinates(row);
+  const distanceKm = origin && coordinates ? part61DistanceKm(origin, coordinates) : null;
+  const firstCourse = (profile.courses || [])[0] || {};
+  const city = profile.address?.city || "";
+  return {
+    profileId: profile.profileId,
+    slug: profile.slug,
+    name: profile.name,
+    tagline: profile.tagline,
+    description: profile.description,
+    city,
+    state: profile.address?.state || "",
+    area: profile.address?.area || "",
+    address: profile.address || {},
+    logoUrl: profile.logoUrl || "/assets/naxora-logo.svg",
+    courses: profile.courses || [],
+    courseSummary: (profile.courses || []).map((course) => course.name).slice(0, 4),
+    feeRange: profile.feeRange || null,
+    facilities: profile.facilities || [],
+    timings: profile.timings || {},
+    contact: profile.contact || {},
+    verified: profile.verification?.verified === true,
+    verificationLabel: profile.verification?.label || (profile.verification?.verified ? "Verified" : "Unverified"),
+    coordinates,
+    distanceKm,
+    distanceLabel: distanceKm === null ? "Distance unavailable" : `${distanceKm} km`,
+    primaryCourse: firstCourse.name || "Courses available",
+    profileUrl: `/public-institute-profile?profileId=${encodeURIComponent(profile.profileId || profile.slug || "")}`,
+    callbackUrl: `/request-callback?profileId=${encodeURIComponent(profile.profileId || "")}&course=${encodeURIComponent(firstCourse.name || "")}&source=nearby_search`,
+    compareReady: true,
+    updatedAt: profile.updatedAt
+  };
+}
+
+async function part61LoadProfiles() {
+  let rows = [];
+  let mode = "mock";
+  try {
+    const collection = typeof part59GetCollection === "function" ? await part59GetCollection() : null;
+    if (collection) {
+      rows = await collection.find({ status: "published" }).sort({ updatedAt: -1 }).limit(500).toArray();
+      mode = "mongodb";
+    }
+  } catch (error) {
+    rows = [];
+  }
+  if (!rows.length) rows = [...(globalThis.NAXORA_PART59_PROFILES || []), ...(globalThis.NAXORA_PART61_EXTRA_LISTINGS || [])];
+  else rows = [...rows, ...(globalThis.NAXORA_PART61_EXTRA_LISTINGS || [])];
+  const unique = new Map();
+  for (const row of rows) {
+    if (!row || row.status === "hidden") continue;
+    const key = row.profileId || row.slug || row.id || row.name;
+    if (!key || unique.has(key)) continue;
+    unique.set(key, row);
+  }
+  return { mode, rows: [...unique.values()] };
+}
+
+function part61BuildOrigin(query = {}) {
+  const lat = part61Number(query.lat, null);
+  const lng = part61Number(query.lng, null);
+  if (lat !== null && lng !== null) return { lat, lng, label: "Your selected location", source: "coordinates" };
+  const city = part61CleanText(query.city, 80);
+  const coords = part61CoordinatesFromCity(city);
+  if (coords) return { ...coords, source: "city" };
+  return null;
+}
+
+function part61FilterRows(rows = [], query = {}) {
+  const city = part61CleanText(query.city, 80).toLowerCase();
+  const course = part61CleanText(query.course || query.q, 120).toLowerCase();
+  const mode = part61CleanText(query.mode, 50).toLowerCase();
+  const verifiedOnly = String(query.verifiedOnly || query.verified || "false").toLowerCase() === "true";
+  const radiusKm = Math.min(Math.max(part61Number(query.radiusKm, part61Config.defaultRadiusKm), 1), part61Config.maxRadiusKm);
+  const origin = part61BuildOrigin(query);
+
+  let results = rows
+    .filter((row) => row.status !== "draft" && row.status !== "hidden")
+    .filter((row) => {
+      const haystack = part61ProfileText(row);
+      if (city && !(row.address?.city || "").toLowerCase().includes(city)) return false;
+      if (course && !haystack.includes(course)) return false;
+      if (mode && !haystack.includes(mode)) return false;
+      if (verifiedOnly && row.verification?.verified !== true) return false;
+      return true;
+    })
+    .map((row) => part61NearbyView(row, origin));
+
+  if (origin) {
+    results = results.filter((row) => row.distanceKm === null || row.distanceKm <= radiusKm);
+    results.sort((a, b) => (a.distanceKm ?? 999999) - (b.distanceKm ?? 999999));
+  } else {
+    results.sort((a, b) => Number(b.verified) - Number(a.verified) || String(a.name).localeCompare(String(b.name)));
+  }
+
+  return { results: results.slice(0, part61Config.resultLimit), origin, radiusKm };
+}
+
+app.get("/nearby-institutes", (req, res) => sendFileSafe(res, "nearby-institutes.html"));
+app.get("/nearby", (req, res) => sendFileSafe(res, "nearby-institutes.html"));
+app.get("/institutes-near-me", (req, res) => sendFileSafe(res, "nearby-institutes.html"));
+app.get("/local-institutes", (req, res) => sendFileSafe(res, "nearby-institutes.html"));
+
+app.get("/api/part61/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 61 - Nearby Institutes",
+    status: "active",
+    dbMode: mongoose.connection.readyState === 1 ? "mongodb" : "mock",
+    purpose: "Location search, city filters, distance filters, course filters and verified institute listings.",
+    currentVersionPlan: "Part 53–78 = NAXORA OS 1.0 completion. Part 79–110 = NAXORA OS 2.0 development.",
+    nextPart: "Part 62 - Compare Institutes"
+  });
+});
+
+app.get("/api/part61/config", (req, res) => {
+  res.json({ success: true, part: "Part 61 - Nearby Institutes", config: part61Config });
+});
+
+app.get("/api/part61/nearby", async (req, res) => {
+  const { mode, rows } = await part61LoadProfiles();
+  const { results, origin, radiusKm } = part61FilterRows(rows, req.query || {});
+  res.json({
+    success: true,
+    part: "Part 61 - Nearby Institutes",
+    mode,
+    count: results.length,
+    origin,
+    radiusKm,
+    filters: {
+      city: part61CleanText(req.query.city, 80),
+      course: part61CleanText(req.query.course || req.query.q, 120),
+      mode: part61CleanText(req.query.mode, 50),
+      verifiedOnly: String(req.query.verifiedOnly || req.query.verified || "false").toLowerCase() === "true"
+    },
+    institutes: results
+  });
+});
+
+app.get("/api/part61/cities", async (req, res) => {
+  const { rows } = await part61LoadProfiles();
+  const citySet = new Set(rows.map((row) => part61CleanText(row.address?.city, 80)).filter(Boolean));
+  Object.values(part61DefaultCityCoordinates).forEach((city) => citySet.add(city.label));
+  res.json({ success: true, count: citySet.size, cities: [...citySet].sort() });
+});
+
+app.get("/api/part61/courses", async (req, res) => {
+  const { rows } = await part61LoadProfiles();
+  const courseSet = new Set();
+  rows.forEach((row) => (row.courses || []).forEach((course) => {
+    if (course?.name) courseSet.add(part61CleanText(course.name, 120));
+    if (course?.classLevel) courseSet.add(part61CleanText(course.classLevel, 80));
+  }));
+  res.json({ success: true, count: courseSet.size, courses: [...courseSet].filter(Boolean).sort() });
+});
+
+app.get("/api/part61/map-pins", async (req, res) => {
+  const { rows, mode } = await part61LoadProfiles();
+  const pins = rows.map((row) => part61NearbyView(row)).filter((row) => row.coordinates).map((row) => ({
+    profileId: row.profileId,
+    name: row.name,
+    city: row.city,
+    verified: row.verified,
+    lat: row.coordinates.lat,
+    lng: row.coordinates.lng,
+    profileUrl: row.profileUrl,
+    callbackUrl: row.callbackUrl
+  }));
+  res.json({ success: true, mode, count: pins.length, pins });
+});
+
+app.get("/api/part61/profile/:profileId", async (req, res) => {
+  const { rows, mode } = await part61LoadProfiles();
+  const id = part61CleanText(req.params.profileId, 140);
+  const row = rows.find((item) => item.profileId === id || item.slug === id || item.id === id);
+  if (!row) return res.status(404).json({ success: false, message: "Nearby institute profile nahi mila." });
+  res.json({ success: true, mode, institute: part61NearbyView(row) });
+});
+
+app.get("/api/part61/checklist", (req, res) => {
+  res.json({ success: true, part: "Part 61 - Nearby Institutes", checklist: part61Checklist });
+});
+
+app.get("/api/part61/export", async (req, res) => {
+  const { mode, rows } = await part61LoadProfiles();
+  const { results, origin, radiusKm } = part61FilterRows(rows, req.query || {});
+  res.json({ success: true, mode, part: "Part 61 - Nearby Institutes", exportedAt: new Date().toISOString(), count: results.length, origin, radiusKm, institutes: results });
+});
+
+app.get("/api/part61/demo", async (req, res) => {
+  const rows = [...(globalThis.NAXORA_PART59_PROFILES || []), ...(globalThis.NAXORA_PART61_EXTRA_LISTINGS || [])];
+  const { results } = part61FilterRows(rows, { city: "Delhi", radiusKm: 80 });
+  res.json({ success: true, part: "Part 61 - Nearby Institutes", count: results.length, institutes: results, config: part61Config, checklist: part61Checklist });
+});
+// ================= END PART 61 =================
+
 // Same-server frontend hosting for Render/Railway/VPS deployment.
 app.use("/landing", express.static(frontendPath));
 
@@ -4406,7 +4769,11 @@ const modulePageRoutes = {
   "/request-callback": "request-callback.html",
   "/send-enquiry": "request-callback.html",
   "/callback": "request-callback.html",
-  "/institute-enquiry": "request-callback.html"
+  "/institute-enquiry": "request-callback.html",
+  "/nearby-institutes": "nearby-institutes.html",
+  "/nearby": "nearby-institutes.html",
+  "/institutes-near-me": "nearby-institutes.html",
+  "/local-institutes": "nearby-institutes.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -4448,7 +4815,7 @@ await connectDB();
 
 const server = app.listen(port, () => {
   console.log("✅ PART 59 PUBLIC INSTITUTE PROFILE ACTIVE");
-  console.log("✅ All routes Part 1 to Part 59 loaded + Part 60 request callback/send enquiry");
+  console.log("✅ All routes Part 1 to Part 61 loaded + Nearby Institutes");
   console.log("✅ AI Notes route active: /api/ai-notes");
   console.log("✅ AI Mock Tests route active: /api/ai-mock-tests");
   console.log("✅ AI Roadmaps route active: /api/ai-roadmaps");
@@ -4503,6 +4870,7 @@ const server = app.listen(port, () => {
   console.log("✅ Part 59 public institute profile active: /api/part59/status");
   console.log("✅ Public institute profile frontend: /public-institute-profile");
   console.log("✅ Part 60 request callback active: /api/part60/status + /request-callback");
+  console.log("✅ Part 61 nearby institutes active: /api/part61/status + /nearby-institutes");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");
