@@ -1,0 +1,143 @@
+:root {
+  --nx-bg: #070911;
+  --nx-panel: rgba(17, 24, 39, 0.88);
+  --nx-panel-soft: rgba(255, 255, 255, 0.06);
+  --nx-border: rgba(255, 255, 255, 0.12);
+  --nx-text: #f8fafc;
+  --nx-muted: #a7b0c0;
+  --nx-gold: #f4c542;
+  --nx-blue: #2dd4ff;
+  --nx-green: #35d07f;
+  --nx-danger: #ff6678;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  color: var(--nx-text);
+  background:
+    radial-gradient(circle at top left, rgba(45, 212, 255, 0.18), transparent 32rem),
+    radial-gradient(circle at top right, rgba(244, 197, 66, 0.15), transparent 30rem),
+    var(--nx-bg);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.nx-enrol-shell { display: flex; min-height: 100vh; }
+.nx-enrol-sidebar {
+  width: 290px;
+  padding: 24px;
+  border-right: 1px solid var(--nx-border);
+  background: rgba(3, 7, 18, 0.78);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+.nx-logo-wrap { display: flex; gap: 12px; align-items: center; margin-bottom: 26px; }
+.nx-logo { width: 48px; height: 48px; }
+.nx-logo-wrap strong { display: block; font-size: 16px; }
+.nx-logo-wrap span { color: var(--nx-muted); font-size: 12px; }
+.nx-enrol-nav { display: grid; gap: 10px; margin-bottom: 20px; }
+.nx-enrol-nav a {
+  color: var(--nx-text);
+  text-decoration: none;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  background: rgba(255,255,255,0.04);
+}
+.nx-enrol-nav a:hover { border-color: rgba(45,212,255,0.45); color: var(--nx-blue); }
+.nx-note-card, .nx-card, .nx-status-card {
+  border: 1px solid var(--nx-border);
+  background: var(--nx-panel);
+  border-radius: 22px;
+  box-shadow: 0 18px 60px rgba(0,0,0,0.25);
+}
+.nx-note-card { padding: 16px; color: var(--nx-muted); line-height: 1.55; }
+.nx-note-card b { color: var(--nx-gold); }
+.nx-enrol-main { flex: 1; padding: 28px; }
+.nx-hero {
+  display: grid;
+  grid-template-columns: 1.6fr 0.9fr;
+  gap: 22px;
+  align-items: stretch;
+  margin-bottom: 22px;
+}
+.nx-hero > div:first-child, .nx-status-card, .nx-card { padding: 24px; }
+.nx-hero > div:first-child {
+  border: 1px solid var(--nx-border);
+  border-radius: 26px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.09), rgba(255,255,255,0.03));
+}
+.nx-kicker { margin: 0 0 8px; color: var(--nx-gold); text-transform: uppercase; font-size: 12px; letter-spacing: .12em; font-weight: 800; }
+h1, h2, h3 { margin: 0; }
+h1 { font-size: clamp(30px, 4vw, 56px); letter-spacing: -0.04em; }
+h2 { font-size: 22px; letter-spacing: -0.02em; }
+h3 { color: var(--nx-blue); font-size: 15px; margin-bottom: 14px; }
+.nx-subtitle { color: var(--nx-muted); max-width: 760px; line-height: 1.65; }
+.nx-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+.nx-btn {
+  border: 0;
+  padding: 12px 16px;
+  border-radius: 14px;
+  color: #07111f;
+  background: linear-gradient(135deg, var(--nx-gold), #fff1a8);
+  font-weight: 900;
+  cursor: pointer;
+}
+.nx-btn:hover { transform: translateY(-1px); }
+.nx-btn-secondary { background: linear-gradient(135deg, var(--nx-blue), #bfecff); }
+.nx-btn-ghost { background: rgba(255,255,255,0.08); color: var(--nx-text); border: 1px solid var(--nx-border); }
+.nx-status-card { display: grid; gap: 10px; align-content: center; }
+.nx-status-card h2 { color: var(--nx-blue); font-size: 28px; }
+.nx-pill {
+  display: inline-flex;
+  width: fit-content;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(53, 208, 127, 0.12);
+  border: 1px solid rgba(53, 208, 127, 0.35);
+  color: #9ff2c5;
+  font-size: 12px;
+  font-weight: 800;
+}
+.nx-pill-blue { background: rgba(45,212,255,.12); border-color: rgba(45,212,255,.35); color: #baf3ff; }
+.nx-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(320px, .65fr); gap: 22px; align-items: start; }
+.nx-card-head { display: flex; justify-content: space-between; gap: 16px; align-items: start; margin-bottom: 20px; }
+.nx-form-section { padding: 18px 0; border-top: 1px solid var(--nx-border); }
+.nx-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+label { display: grid; gap: 7px; color: var(--nx-muted); font-size: 13px; font-weight: 700; }
+input, select, textarea {
+  width: 100%;
+  color: var(--nx-text);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--nx-border);
+  border-radius: 13px;
+  padding: 12px 13px;
+  outline: none;
+}
+textarea { resize: vertical; }
+input:focus, select:focus, textarea:focus { border-color: rgba(45,212,255,0.75); box-shadow: 0 0 0 4px rgba(45,212,255,0.08); }
+.nx-check { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
+.nx-check input { width: auto; }
+.nx-doc-list { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-bottom: 14px; }
+.nx-doc-item { padding: 12px; border-radius: 14px; background: rgba(255,255,255,0.05); border: 1px solid var(--nx-border); }
+.nx-consent-list { color: var(--nx-muted); line-height: 1.65; margin-top: 0; }
+.nx-consent-main { color: var(--nx-text); }
+.nx-message { margin: 14px 0; min-height: 22px; font-weight: 800; }
+.nx-message.ok { color: var(--nx-green); }
+.nx-message.err { color: var(--nx-danger); }
+.nx-enrolment-list { display: grid; gap: 12px; }
+.nx-enrolment-item { padding: 14px; border-radius: 16px; background: rgba(255,255,255,0.055); border: 1px solid var(--nx-border); }
+.nx-enrolment-item strong { display: block; }
+.nx-enrolment-item small { color: var(--nx-muted); line-height: 1.55; }
+.nx-empty { color: var(--nx-muted); }
+.nx-small-link { color: var(--nx-blue); text-decoration: none; font-weight: 800; }
+.nx-checklist-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+.nx-checklist-grid div { padding: 12px; border-radius: 14px; background: rgba(255,255,255,0.05); color: var(--nx-muted); }
+@media (max-width: 980px) {
+  .nx-enrol-shell { display: block; }
+  .nx-enrol-sidebar { position: relative; width: auto; height: auto; }
+  .nx-hero, .nx-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .nx-enrol-main { padding: 16px; }
+  .nx-form-grid, .nx-doc-list, .nx-checklist-grid { grid-template-columns: 1fr; }
+}

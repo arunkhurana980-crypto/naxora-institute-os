@@ -77,7 +77,11 @@ const publicRoutes = [
   "/branding",
   "/brand",
   "/role-permissions",
-  "/permissions"
+  "/permissions",
+  "/smart-enrolment",
+  "/enrolment",
+  "/admission",
+  "/admissions"
 ];
 
 const internalPageFiles = new Set([
@@ -218,7 +222,7 @@ app.get("/api/health", (req, res) => {
     status: "running",
     dbMode: globalThis.NAXORA_DB_MODE || "starting",
     note: globalThis.NAXORA_DB_MODE === "mock" ? "MongoDB connect nahi hai, par backend crash-free mock mode me chal raha hai." : "MongoDB connected mode.",
-    part: "Part 55 - Security and Role Permissions",
+    part: "Part 56 - Smart Student Enrolment",
     environment: process.env.NODE_ENV || "development",
     timestamp: new Date().toISOString(),
   });
@@ -2332,6 +2336,342 @@ app.get("/api/part55/checklist", (req, res) => {
 // ================= END PART 55 =================
 
 
+// ================= PART 56: SMART STUDENT ENROLMENT =================
+// Goal: Digital admission flow with student details, parent/guardian, document checklist,
+// unique student ID, course/batch assignment, optional verification and consent.
+// Safe approach: actual file uploads are not stored in this part; only document/photo status
+// metadata is saved. Secure file storage can be added later after beta audit.
+const part56EnrolmentStages = [
+  { id: "draft", label: "Draft", description: "Form started, not reviewed yet." },
+  { id: "submitted", label: "Submitted", description: "Admission form submitted for institute review." },
+  { id: "verified", label: "Verified", description: "Documents and guardian details checked." },
+  { id: "admitted", label: "Admitted", description: "Student is ready to convert into active student record." },
+  { id: "rejected", label: "Rejected", description: "Application closed or not accepted." }
+];
+
+const part56Courses = [
+  { id: "web-dev", name: "Web Development", defaultFee: 2999, mode: "offline/online", duration: "3 months" },
+  { id: "ai-tools", name: "AI Tools + Productivity", defaultFee: 1999, mode: "hybrid", duration: "6 weeks" },
+  { id: "school-tuition", name: "School Tuition", defaultFee: 1500, mode: "offline", duration: "monthly" },
+  { id: "spoken-english", name: "Spoken English", defaultFee: 1200, mode: "offline", duration: "monthly" },
+  { id: "exam-prep", name: "Exam Preparation", defaultFee: 2500, mode: "hybrid", duration: "custom" }
+];
+
+const part56Batches = [
+  { id: "morning-a", name: "Morning Batch A", timing: "07:00 AM - 08:30 AM", seats: 25, available: 12 },
+  { id: "evening-b", name: "Evening Batch B", timing: "05:00 PM - 06:30 PM", seats: 30, available: 9 },
+  { id: "weekend-pro", name: "Weekend Pro Batch", timing: "Sat-Sun 10:00 AM - 12:00 PM", seats: 20, available: 6 },
+  { id: "online-live", name: "Online Live Batch", timing: "08:00 PM - 09:00 PM", seats: 50, available: 31 }
+];
+
+const part56DocumentChecklist = [
+  { key: "studentPhoto", label: "Student Photo", required: true, type: "image-status" },
+  { key: "parentGuardianId", label: "Parent/Guardian ID Proof", required: true, type: "document-status" },
+  { key: "previousMarksheet", label: "Previous Marksheet / Academic Proof", required: false, type: "document-status" },
+  { key: "addressProof", label: "Address Proof", required: false, type: "document-status" },
+  { key: "consentSigned", label: "Consent Confirmation", required: true, type: "checkbox" }
+];
+
+const part56ConsentItems = [
+  "Parent/guardian ne admission details verify ki hain.",
+  "Institute student ko attendance, fees, result aur class updates bhej sakta hai.",
+  "Student data ka use sirf institute management aur learning support ke liye hoga.",
+  "Document upload/storage future secure version me cloud storage ke saath enable hoga."
+];
+
+const part56ValidationRules = {
+  requiredFields: ["studentName", "studentPhone", "parentName", "parentPhone", "courseId", "batchId"],
+  phoneLength: "10 digits recommended",
+  consentRequired: true,
+  guardianRequiredForMinor: true,
+  duplicateCheck: "phone + course + batch"
+};
+
+const part56Checklist = [
+  "Admission form opens on /smart-enrolment.",
+  "Student basic details are captured.",
+  "Parent/guardian details are captured.",
+  "Course and batch assignment works.",
+  "Unique student ID is generated.",
+  "Required document checklist status is tracked.",
+  "Consent checkbox is mandatory.",
+  "MongoDB connected mode saves enrolment in smartenrolments collection.",
+  "Mock mode keeps server crash-free for testing.",
+  "Status can move from submitted to verified/admitted/rejected."
+];
+
+globalThis.NAXORA_PART56_ENROLMENTS = globalThis.NAXORA_PART56_ENROLMENTS || [];
+
+function part56CleanText(value, max = 120) {
+  return String(value || "").trim().slice(0, max);
+}
+
+function part56CleanPhone(value) {
+  return String(value || "").replace(/[^0-9+]/g, "").slice(0, 16);
+}
+
+function part56Slug(value) {
+  return String(value || "NAXORA").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6) || "NAXORA";
+}
+
+function part56GenerateStudentId(payload = {}) {
+  const course = part56Courses.find((item) => item.id === payload.courseId);
+  const courseCode = part56Slug(course?.name || payload.courseId || "STD");
+  const year = new Date().getFullYear();
+  const random = Math.floor(1000 + Math.random() * 9000);
+  return `NX-${year}-${courseCode}-${random}`;
+}
+
+function part56ValidatePayload(payload = {}) {
+  const errors = [];
+  for (const field of part56ValidationRules.requiredFields) {
+    if (!part56CleanText(payload[field], 160)) errors.push(`${field} required hai`);
+  }
+  const studentPhone = part56CleanPhone(payload.studentPhone);
+  const parentPhone = part56CleanPhone(payload.parentPhone);
+  if (studentPhone && studentPhone.replace(/\D/g, "").length < 10) errors.push("studentPhone 10 digit ke aas-paas hona chahiye");
+  if (parentPhone && parentPhone.replace(/\D/g, "").length < 10) errors.push("parentPhone 10 digit ke aas-paas hona chahiye");
+  if (!part56Courses.some((item) => item.id === payload.courseId)) errors.push("Valid courseId select karo");
+  if (!part56Batches.some((item) => item.id === payload.batchId)) errors.push("Valid batchId select karo");
+  if (payload.consentAccepted !== true) errors.push("Consent required hai");
+  return errors;
+}
+
+function part56BuildEnrolment(payload = {}, existing = {}) {
+  const course = part56Courses.find((item) => item.id === payload.courseId) || null;
+  const batch = part56Batches.find((item) => item.id === payload.batchId) || null;
+  const now = new Date();
+  const documents = payload.documents && typeof payload.documents === "object" ? payload.documents : {};
+  const requiredDocsReady = part56DocumentChecklist
+    .filter((item) => item.required)
+    .every((item) => item.key === "consentSigned" ? payload.consentAccepted === true : documents[item.key] === true || documents[item.key] === "ready");
+
+  return {
+    ...existing,
+    studentId: existing.studentId || payload.studentId || part56GenerateStudentId(payload),
+    studentName: part56CleanText(payload.studentName, 100),
+    studentPhone: part56CleanPhone(payload.studentPhone),
+    studentEmail: part56CleanText(payload.studentEmail, 120),
+    studentClass: part56CleanText(payload.studentClass, 60),
+    dateOfBirth: part56CleanText(payload.dateOfBirth, 40),
+    parentName: part56CleanText(payload.parentName, 100),
+    parentPhone: part56CleanPhone(payload.parentPhone),
+    parentEmail: part56CleanText(payload.parentEmail, 120),
+    guardianRelation: part56CleanText(payload.guardianRelation || "Parent", 60),
+    address: part56CleanText(payload.address, 240),
+    courseId: course?.id || payload.courseId,
+    courseName: course?.name || part56CleanText(payload.courseName, 100),
+    batchId: batch?.id || payload.batchId,
+    batchName: batch?.name || part56CleanText(payload.batchName, 100),
+    feePlan: {
+      expectedFee: Number(payload.expectedFee || course?.defaultFee || 0),
+      discount: Number(payload.discount || 0),
+      installmentAllowed: payload.installmentAllowed === true
+    },
+    documents: {
+      studentPhoto: documents.studentPhoto === true || documents.studentPhoto === "ready",
+      parentGuardianId: documents.parentGuardianId === true || documents.parentGuardianId === "ready",
+      previousMarksheet: documents.previousMarksheet === true || documents.previousMarksheet === "ready",
+      addressProof: documents.addressProof === true || documents.addressProof === "ready",
+      note: part56CleanText(documents.note, 180)
+    },
+    verification: {
+      identityVerified: payload.identityVerified === true,
+      guardianVerified: payload.guardianVerified === true,
+      requiredDocsReady,
+      verifiedBy: part56CleanText(payload.verifiedBy, 80),
+      verifiedAt: payload.identityVerified || payload.guardianVerified ? now : null
+    },
+    consentAccepted: payload.consentAccepted === true,
+    consentAcceptedAt: payload.consentAccepted === true ? (existing.consentAcceptedAt || now) : null,
+    status: existing.status || "submitted",
+    source: part56CleanText(payload.source || "smart-enrolment", 60),
+    notes: part56CleanText(payload.notes, 240),
+    part: "Part 56 - Smart Student Enrolment",
+    createdAt: existing.createdAt || now,
+    updatedAt: now
+  };
+}
+
+function part56PublicEnrolmentView(row = {}) {
+  return {
+    id: row._id || row.id || row.studentId,
+    studentId: row.studentId,
+    studentName: row.studentName,
+    studentPhone: row.studentPhone,
+    parentName: row.parentName,
+    parentPhone: row.parentPhone,
+    courseName: row.courseName,
+    batchName: row.batchName,
+    status: row.status,
+    documents: row.documents,
+    verification: row.verification,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  };
+}
+
+async function part56GetCollection() {
+  if (globalThis.NAXORA_DB_MODE === "mongodb" && mongoose.connection?.readyState === 1) {
+    return mongoose.connection.collection("smartenrolments");
+  }
+  return null;
+}
+
+app.get("/smart-enrolment", (req, res) => sendFileSafe(res, "smart-enrolment.html"));
+app.get("/enrolment", (req, res) => sendFileSafe(res, "smart-enrolment.html"));
+app.get("/admission", (req, res) => sendFileSafe(res, "smart-enrolment.html"));
+app.get("/admissions", (req, res) => sendFileSafe(res, "smart-enrolment.html"));
+
+app.get("/api/part56/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 56 - Smart Student Enrolment",
+    status: "active",
+    currentVersionPlan: "Part 53–78 = NAXORA OS 1.0 completion. Part 79–110 = NAXORA OS 2.0 development.",
+    goal: "Complete digital admission form with parent/guardian details, document checklist, unique student ID, course and batch assignment, optional verification and consent.",
+    dbMode: globalThis.NAXORA_DB_MODE || "starting",
+    frontend: ["/smart-enrolment", "/enrolment", "/admission"],
+    routes: [
+      "GET /api/part56/status",
+      "GET /api/part56/form-config",
+      "POST /api/part56/preview-student-id",
+      "GET /api/part56/enrolments",
+      "POST /api/part56/enrolments",
+      "GET /api/part56/enrolments/:id",
+      "PATCH /api/part56/enrolments/:id/status",
+      "GET /api/part56/checklist",
+      "GET /api/part56/export"
+    ],
+    safety: "Part 56 actual ID/photo files store nahi karta; only checklist status save hota hai. Secure upload storage beta ke baad add karenge."
+  });
+});
+
+app.get("/api/part56/form-config", (req, res) => {
+  res.json({
+    success: true,
+    courses: part56Courses,
+    batches: part56Batches,
+    documents: part56DocumentChecklist,
+    consentItems: part56ConsentItems,
+    stages: part56EnrolmentStages,
+    validationRules: part56ValidationRules
+  });
+});
+
+app.post("/api/part56/preview-student-id", (req, res) => {
+  res.json({ success: true, studentId: part56GenerateStudentId(req.body || {}), note: "Final ID submit ke time generate/save hoga." });
+});
+
+app.get("/api/part56/enrolments", async (req, res) => {
+  const collection = await part56GetCollection();
+  if (!collection) {
+    return res.json({
+      success: true,
+      mode: "mock",
+      count: globalThis.NAXORA_PART56_ENROLMENTS.length,
+      enrolments: globalThis.NAXORA_PART56_ENROLMENTS.map(part56PublicEnrolmentView)
+    });
+  }
+  const rows = await collection.find({}).sort({ createdAt: -1 }).limit(100).toArray();
+  res.json({ success: true, mode: "mongodb", count: rows.length, enrolments: rows.map(part56PublicEnrolmentView) });
+});
+
+app.post("/api/part56/enrolments", async (req, res) => {
+  const errors = part56ValidatePayload(req.body || {});
+  if (errors.length) {
+    return res.status(400).json({ success: false, message: "Admission form incomplete hai", errors });
+  }
+
+  const enrolment = part56BuildEnrolment(req.body || {});
+  const collection = await part56GetCollection();
+  if (!collection) {
+    const id = `mock-${Date.now()}`;
+    const mockRow = { ...enrolment, id };
+    globalThis.NAXORA_PART56_ENROLMENTS.unshift(mockRow);
+    return res.status(201).json({
+      success: true,
+      mode: "mock",
+      message: "Smart enrolment mock mode me save hua. MongoDB connected hone par collection me save hoga.",
+      enrolment: part56PublicEnrolmentView(mockRow)
+    });
+  }
+
+  const duplicate = await collection.findOne({
+    studentPhone: enrolment.studentPhone,
+    courseId: enrolment.courseId,
+    batchId: enrolment.batchId,
+    status: { $ne: "rejected" }
+  });
+  if (duplicate) {
+    return res.status(409).json({
+      success: false,
+      message: "Same phone/course/batch ke saath existing active enrolment mila.",
+      existing: part56PublicEnrolmentView(duplicate)
+    });
+  }
+
+  const result = await collection.insertOne(enrolment);
+  const saved = await collection.findOne({ _id: result.insertedId });
+  res.status(201).json({
+    success: true,
+    mode: "mongodb",
+    message: "Smart student enrolment MongoDB me save ho gaya.",
+    enrolment: part56PublicEnrolmentView(saved)
+  });
+});
+
+app.get("/api/part56/enrolments/:id", async (req, res) => {
+  const id = part56CleanText(req.params.id, 80);
+  const collection = await part56GetCollection();
+  if (!collection) {
+    const row = globalThis.NAXORA_PART56_ENROLMENTS.find((item) => item.id === id || item.studentId === id);
+    if (!row) return res.status(404).json({ success: false, message: "Enrolment not found" });
+    return res.json({ success: true, mode: "mock", enrolment: part56PublicEnrolmentView(row) });
+  }
+  const query = id.startsWith("NX-") ? { studentId: id } : { studentId: id };
+  const row = await collection.findOne(query);
+  if (!row) return res.status(404).json({ success: false, message: "Enrolment not found" });
+  res.json({ success: true, mode: "mongodb", enrolment: part56PublicEnrolmentView(row) });
+});
+
+app.patch("/api/part56/enrolments/:id/status", async (req, res) => {
+  const id = part56CleanText(req.params.id, 80);
+  const nextStatus = part56CleanText(req.body?.status, 40);
+  const valid = part56EnrolmentStages.some((item) => item.id === nextStatus);
+  if (!valid) return res.status(400).json({ success: false, message: "Valid status do", allowed: part56EnrolmentStages.map((item) => item.id) });
+  const update = { status: nextStatus, updatedAt: new Date(), statusNote: part56CleanText(req.body?.statusNote, 180) };
+  const collection = await part56GetCollection();
+  if (!collection) {
+    const index = globalThis.NAXORA_PART56_ENROLMENTS.findIndex((item) => item.id === id || item.studentId === id);
+    if (index === -1) return res.status(404).json({ success: false, message: "Enrolment not found" });
+    globalThis.NAXORA_PART56_ENROLMENTS[index] = { ...globalThis.NAXORA_PART56_ENROLMENTS[index], ...update };
+    return res.json({ success: true, mode: "mock", enrolment: part56PublicEnrolmentView(globalThis.NAXORA_PART56_ENROLMENTS[index]) });
+  }
+  const result = await collection.findOneAndUpdate({ studentId: id }, { $set: update }, { returnDocument: "after" });
+  const row = result?.value || await collection.findOne({ studentId: id });
+  if (!row) return res.status(404).json({ success: false, message: "Enrolment not found" });
+  res.json({ success: true, mode: "mongodb", enrolment: part56PublicEnrolmentView(row) });
+});
+
+app.get("/api/part56/checklist", (req, res) => {
+  res.json({ success: true, part: "Part 56 - Smart Student Enrolment", checklist: part56Checklist });
+});
+
+app.get("/api/part56/export", async (req, res) => {
+  const collection = await part56GetCollection();
+  const rows = collection ? await collection.find({}).sort({ createdAt: -1 }).limit(500).toArray() : globalThis.NAXORA_PART56_ENROLMENTS;
+  res.json({
+    success: true,
+    part: "Part 56 - Smart Student Enrolment",
+    exportedAt: new Date().toISOString(),
+    count: rows.length,
+    records: rows.map(part56PublicEnrolmentView)
+  });
+});
+// ================= END PART 56 =================
+
+
 // Same-server frontend hosting for Render/Railway/VPS deployment.
 app.use("/landing", express.static(frontendPath));
 
@@ -2406,7 +2746,11 @@ const modulePageRoutes = {
   "/branding": "branding.html",
   "/brand": "branding.html",
   "/role-permissions": "role-permissions.html",
-  "/permissions": "role-permissions.html"
+  "/permissions": "role-permissions.html",
+  "/smart-enrolment": "smart-enrolment.html",
+  "/enrolment": "smart-enrolment.html",
+  "/admission": "smart-enrolment.html",
+  "/admissions": "smart-enrolment.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -2447,8 +2791,8 @@ const port = Number(process.env.PORT) || 5000;
 await connectDB();
 
 const server = app.listen(port, () => {
-  console.log("✅ PART 55 SECURITY AND ROLE PERMISSIONS ACTIVE");
-  console.log("✅ All routes Part 1 to Part 54 loaded + Part 55 role permission foundation");
+  console.log("✅ PART 56 SMART STUDENT ENROLMENT ACTIVE");
+  console.log("✅ All routes Part 1 to Part 55 loaded + Part 56 smart student enrolment");
   console.log("✅ AI Notes route active: /api/ai-notes");
   console.log("✅ AI Mock Tests route active: /api/ai-mock-tests");
   console.log("✅ AI Roadmaps route active: /api/ai-roadmaps");
@@ -2494,6 +2838,8 @@ const server = app.listen(port, () => {
   console.log("✅ System audit frontend: /system-audit");
   console.log("✅ Part 54 branding active: /api/part54/status");
   console.log("✅ Part 55 role permissions active: /api/part55/status");
+  console.log("✅ Part 56 smart enrolment active: /api/part56/status");
+  console.log("✅ Smart enrolment frontend: /smart-enrolment");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");

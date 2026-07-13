@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA Smart Student Enrolment | Part 56</title>
+  <link rel="stylesheet" href="brand-system.css" />
+  <link rel="stylesheet" href="smart-enrolment.css" />
+</head>
+<body>
+  <div class="nx-enrol-shell">
+    <aside class="nx-enrol-sidebar">
+      <div class="nx-logo-wrap">
+        <img src="assets/naxora-logo.svg" alt="NAXORA" class="nx-logo" onerror="this.style.display='none'" />
+        <div>
+          <strong>NAXORA Institute OS</strong>
+          <span>Part 56 · Smart Student Enrolment</span>
+        </div>
+      </div>
+      <nav class="nx-enrol-nav">
+        <a href="/dashboard">Dashboard</a>
+        <a href="/student">Students</a>
+        <a href="/parent">Parents</a>
+        <a href="/batches">Batches</a>
+        <a href="/role-permissions">Role Permissions</a>
+        <a href="/system-audit">System Audit</a>
+      </nav>
+      <div class="nx-note-card">
+        <b>Safe Part 56 rule</b>
+        <p>Actual ID/photo files abhi upload nahi honge. Sirf document checklist status save hoga. Secure upload storage beta ke baad add karenge.</p>
+      </div>
+    </aside>
+
+    <main class="nx-enrol-main">
+      <section class="nx-hero">
+        <div>
+          <p class="nx-kicker">NAXORA OS 1.0 · Part 56</p>
+          <h1>Smart Student Enrolment</h1>
+          <p class="nx-subtitle">Digital admission form with student details, parent/guardian details, course-batch assignment, unique student ID, document checklist and consent.</p>
+          <div class="nx-actions">
+            <button id="previewIdBtn" class="nx-btn nx-btn-secondary" type="button">Preview Student ID</button>
+            <button id="reloadBtn" class="nx-btn nx-btn-ghost" type="button">Reload Enrolments</button>
+          </div>
+        </div>
+        <div class="nx-status-card">
+          <span id="apiStatus" class="nx-pill">Checking API...</span>
+          <h2 id="studentIdPreview">NX-2026-STD-0000</h2>
+          <p>Generated student ID final submit ke time save hoga.</p>
+        </div>
+      </section>
+
+      <section class="nx-grid">
+        <form id="enrolmentForm" class="nx-card nx-form-card">
+          <div class="nx-card-head">
+            <div>
+              <p class="nx-kicker">Admission Form</p>
+              <h2>New Student Details</h2>
+            </div>
+            <span class="nx-pill nx-pill-blue">MongoDB Ready</span>
+          </div>
+
+          <div class="nx-form-section">
+            <h3>1. Student Information</h3>
+            <div class="nx-form-grid">
+              <label>Student Name *<input name="studentName" required placeholder="Aman Sharma" /></label>
+              <label>Student Phone *<input name="studentPhone" required placeholder="9876543210" /></label>
+              <label>Student Email<input name="studentEmail" type="email" placeholder="student@example.com" /></label>
+              <label>Class / Level<input name="studentClass" placeholder="Class 10 / Beginner / Advanced" /></label>
+              <label>Date of Birth<input name="dateOfBirth" type="date" /></label>
+              <label>Address<textarea name="address" rows="2" placeholder="Full address"></textarea></label>
+            </div>
+          </div>
+
+          <div class="nx-form-section">
+            <h3>2. Parent / Guardian</h3>
+            <div class="nx-form-grid">
+              <label>Parent/Guardian Name *<input name="parentName" required placeholder="Rajesh Sharma" /></label>
+              <label>Parent/Guardian Phone *<input name="parentPhone" required placeholder="9876543211" /></label>
+              <label>Parent Email<input name="parentEmail" type="email" placeholder="parent@example.com" /></label>
+              <label>Relation<input name="guardianRelation" placeholder="Father / Mother / Guardian" /></label>
+            </div>
+          </div>
+
+          <div class="nx-form-section">
+            <h3>3. Course + Batch Assignment</h3>
+            <div class="nx-form-grid">
+              <label>Course *<select name="courseId" id="courseSelect" required></select></label>
+              <label>Batch *<select name="batchId" id="batchSelect" required></select></label>
+              <label>Expected Fee<input name="expectedFee" id="expectedFee" type="number" min="0" placeholder="2999" /></label>
+              <label>Discount<input name="discount" type="number" min="0" placeholder="0" /></label>
+            </div>
+            <label class="nx-check"><input name="installmentAllowed" type="checkbox" /> Installment allowed</label>
+          </div>
+
+          <div class="nx-form-section">
+            <h3>4. Document Checklist</h3>
+            <div id="documentChecklist" class="nx-doc-list"></div>
+            <label>Document Note<textarea name="documentNote" rows="2" placeholder="Example: photo received on WhatsApp, parent ID pending"></textarea></label>
+          </div>
+
+          <div class="nx-form-section">
+            <h3>5. Consent</h3>
+            <ul id="consentList" class="nx-consent-list"></ul>
+            <label class="nx-check nx-consent-main"><input name="consentAccepted" type="checkbox" required /> Parent/guardian consent accepted *</label>
+          </div>
+
+          <label>Internal Notes<textarea name="notes" rows="3" placeholder="Counsellor notes, fee discussion, admission remarks"></textarea></label>
+
+          <div id="formMessage" class="nx-message"></div>
+          <button class="nx-btn" type="submit">Save Smart Enrolment</button>
+        </form>
+
+        <aside class="nx-card nx-side-panel">
+          <div class="nx-card-head">
+            <div>
+              <p class="nx-kicker">Live Records</p>
+              <h2>Recent Enrolments</h2>
+            </div>
+            <span id="recordCount" class="nx-pill">0</span>
+          </div>
+          <div id="enrolmentList" class="nx-enrolment-list">
+            <p class="nx-empty">No enrolments loaded yet.</p>
+          </div>
+        </aside>
+      </section>
+
+      <section class="nx-card nx-checklist-card">
+        <div class="nx-card-head">
+          <div>
+            <p class="nx-kicker">Part 56 Checklist</p>
+            <h2>What this part verifies</h2>
+          </div>
+          <a href="/api/part56/checklist" target="_blank" class="nx-small-link">Open API</a>
+        </div>
+        <div id="part56Checklist" class="nx-checklist-grid"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="brand-system.js"></script>
+  <script src="smart-enrolment.js"></script>
+</body>
+</html>
