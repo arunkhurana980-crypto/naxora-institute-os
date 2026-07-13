@@ -1,5 +1,5 @@
 {
-  "name": "naxora-institute-os-part58-enquiry-followup-crm",
+  "name": "naxora-institute-os-part59-public-institute-profile",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -13,7 +13,8 @@
     "check:part53": "node --check src/server.js",
     "check:part54": "node --check src/server.js",
     "check:part57": "node --check src/server.js",
-    "check:part58": "node --check src/server.js"
+    "check:part58": "node --check src/server.js",
+    "check:part59": "node --check src/server.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

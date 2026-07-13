@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA OS | Part 59 Public Institute Profile</title>
+  <link rel="stylesheet" href="brand-system.css" />
+  <link rel="stylesheet" href="public-institute-profile.css" />
+</head>
+<body>
+  <main class="profile-shell">
+    <section class="hero-card" id="profileHero">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="logo-wrap"><img id="profileLogo" src="/assets/naxora-logo.svg" alt="Institute logo" /></div>
+        <div>
+          <span class="part-pill">Part 59 · Public Institute Profile</span>
+          <h1 id="profileName">NAXORA Demo Institute</h1>
+          <p id="profileTagline">Institute logo, courses, teachers, results, facilities, timings and address in one public page.</p>
+          <div class="hero-actions">
+            <button id="loadDemoBtn" class="primary-btn">Load Demo Profile</button>
+            <button id="publishBtn" class="ghost-btn">Publish Draft</button>
+            <a class="ghost-btn" href="/api/part59/status" target="_blank">API Status</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid two-col">
+      <article class="panel">
+        <h2>Create / Update Profile</h2>
+        <p class="muted">Part 59 safe mode: public profile details save honge. Real callback form Part 60 me connect hoga.</p>
+        <form id="profileForm" class="profile-form">
+          <input type="hidden" id="profileId" />
+          <label>Institute Name<input id="name" required placeholder="Example: Bright Future Classes" /></label>
+          <label>Tagline<input id="tagline" placeholder="Best coaching for Class 9–12 and competitive exams" /></label>
+          <label>Description<textarea id="description" required placeholder="Institute ke baare me complete short description..."></textarea></label>
+          <div class="mini-grid">
+            <label>Phone<input id="phone" placeholder="9876543210" /></label>
+            <label>Email<input id="email" placeholder="info@example.com" /></label>
+          </div>
+          <div class="mini-grid">
+            <label>Logo URL<input id="logoUrl" placeholder="/assets/naxora-logo.svg" /></label>
+            <label>Banner URL<input id="bannerUrl" placeholder="https://..." /></label>
+          </div>
+          <label>Facilities comma-separated<textarea id="facilities" placeholder="Smart classrooms, Weekly tests, Parent reports"></textarea></label>
+          <div class="mini-grid">
+            <label>Minimum Fee<input id="minimumFee" type="number" min="0" placeholder="12000" /></label>
+            <label>Maximum Fee<input id="maximumFee" type="number" min="0" placeholder="60000" /></label>
+          </div>
+          <label>Fee Note<input id="feeNote" placeholder="Final fees depend on course and batch." /></label>
+          <div class="mini-grid">
+            <label>Weekday Timing<input id="weekdaysTiming" placeholder="Mon–Sat, 8 AM – 8 PM" /></label>
+            <label>Weekend Timing<input id="weekendTiming" placeholder="Sun, 10 AM – 2 PM" /></label>
+          </div>
+          <div class="mini-grid">
+            <label>Address Line<input id="addressLine1" placeholder="Main road, near market" /></label>
+            <label>City<input id="city" required placeholder="Delhi" /></label>
+          </div>
+          <div class="mini-grid">
+            <label>State<input id="state" placeholder="Delhi" /></label>
+            <label>Pincode<input id="pincode" placeholder="110001" /></label>
+          </div>
+          <button class="primary-btn" type="submit">Save Public Profile</button>
+        </form>
+      </article>
+
+      <article class="panel live-preview">
+        <div class="section-head">
+          <h2>Live Public Preview</h2>
+          <span id="profileStatus" class="status-badge">draft</span>
+        </div>
+        <p id="profileDesc" class="muted">Profile description yahan dikhegi.</p>
+        <div class="contact-row" id="contactRow"></div>
+        <div class="address-card" id="addressCard"></div>
+      </article>
+    </section>
+
+    <section class="grid three-col">
+      <article class="panel">
+        <h2>Courses</h2>
+        <form id="courseForm" class="compact-form">
+          <input id="courseName" placeholder="Course name" />
+          <input id="classLevel" placeholder="Class level" />
+          <input id="duration" placeholder="Duration" />
+          <input id="mode" placeholder="Mode" />
+          <button class="ghost-btn" type="submit">Add Course</button>
+        </form>
+        <div id="coursesList" class="stack-list"></div>
+      </article>
+
+      <article class="panel">
+        <h2>Teachers & Results</h2>
+        <div id="teachersList" class="stack-list"></div>
+        <hr />
+        <div id="resultsList" class="stack-list"></div>
+      </article>
+
+      <article class="panel">
+        <h2>Facilities & Media</h2>
+        <div id="facilitiesList" class="chip-list"></div>
+        <div id="mediaList" class="media-grid"></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2>Public Search Preview</h2>
+        <button id="searchBtn" class="ghost-btn">Search Published Profiles</button>
+      </div>
+      <div id="searchResults" class="search-results"></div>
+    </section>
+  </main>
+  <script src="brand-system.js"></script>
+  <script src="public-institute-profile.js"></script>
+</body>
+</html>

@@ -3501,6 +3501,452 @@ app.get("/api/part58/demo", (req, res) => {
 });
 // ================= END PART 58 =================
 
+
+
+// ================= PART 59: PUBLIC INSTITUTE PROFILE =================
+// Roadmap scope: Institute logo/banner, courses, fees range, teachers, results, facilities, timings, photos/videos and address.
+// Safe rule: Part 59 stores public profile details and publish status. Real callback/enquiry action comes in Part 60.
+const part59ProfileSections = [
+  { id: "identity", label: "Institute Identity", fields: ["name", "tagline", "logoUrl", "bannerUrl"] },
+  { id: "courses", label: "Courses", fields: ["courseName", "classLevel", "duration", "mode", "fees"] },
+  { id: "fees", label: "Fees Range", fields: ["minimumFee", "maximumFee", "currency", "note"] },
+  { id: "teachers", label: "Teachers", fields: ["name", "subject", "experience", "bio"] },
+  { id: "results", label: "Results", fields: ["exam", "year", "achievement", "studentName"] },
+  { id: "facilities", label: "Facilities", fields: ["classrooms", "library", "liveClass", "doubtSupport"] },
+  { id: "timings", label: "Timings", fields: ["weekday", "weekend", "office"] },
+  { id: "media", label: "Photos/Videos", fields: ["photoUrls", "videoUrls"] },
+  { id: "address", label: "Address", fields: ["line1", "city", "state", "pincode", "mapUrl"] }
+];
+
+const part59Checklist = [
+  "Public profile page opens on /public-institute-profile.",
+  "Institute name, tagline, logo and banner URLs can be saved.",
+  "Courses with class, duration, mode and fees range are visible.",
+  "Teachers and result highlights are visible on the public profile.",
+  "Facilities, timings, media links and address are visible.",
+  "Profile can stay draft until owner is ready to publish.",
+  "Published profiles are searchable through /api/part59/search.",
+  "MongoDB connected mode stores profiles in part59publicprofiles collection.",
+  "Mock mode fallback works if MongoDB is temporarily unavailable.",
+  "Request callback/enquiry button is shown as Part 60 handoff, not final lead submit yet."
+];
+
+if (!globalThis.NAXORA_PART59_PROFILES) {
+  globalThis.NAXORA_PART59_PROFILES = [
+    {
+      id: "mock-profile-1",
+      profileId: "NX-PROFILE-DEMO-001",
+      slug: "naxora-demo-institute",
+      status: "published",
+      name: "NAXORA Demo Institute",
+      tagline: "Smart coaching management, AI learning and parent transparency in one system.",
+      description: "A demo public profile showing how a coaching institute can present courses, teachers, results, facilities, timings and address using NAXORA Institute OS.",
+      logoUrl: "/assets/naxora-logo.svg",
+      bannerUrl: "",
+      contact: { phone: "9876543210", email: "demo@naxora.in", website: "" },
+      courses: [
+        { id: "course-1", name: "Class 10 Board Excellence", classLevel: "Class 10", duration: "10 months", mode: "Offline + Online", feeMin: 12000, feeMax: 25000, highlight: "Board exam focused batch with test reports." },
+        { id: "course-2", name: "JEE Foundation", classLevel: "Class 11", duration: "12 months", mode: "Hybrid", feeMin: 30000, feeMax: 60000, highlight: "Foundation concepts, mock tests and doubt support." }
+      ],
+      feeRange: { currency: "INR", minimum: 12000, maximum: 60000, note: "Final fees depend on course, batch mode and duration." },
+      teachers: [
+        { id: "teacher-1", name: "Anita Sharma", subject: "Mathematics", experience: "8 years", bio: "Board and foundation math specialist." },
+        { id: "teacher-2", name: "Rohit Verma", subject: "Science", experience: "6 years", bio: "Concept-based teaching with weekly assessments." }
+      ],
+      results: [
+        { id: "result-1", exam: "Class 10 Board", year: "2026", achievement: "Demo: 25 students above 90%", studentName: "Demo Batch" }
+      ],
+      facilities: ["Smart classrooms", "Online live classes", "Weekly tests", "Parent reports", "Doubt support", "Study material"],
+      timings: { weekdays: "Mon–Sat, 8:00 AM – 8:00 PM", weekend: "Sun, 10:00 AM – 2:00 PM", office: "Mon–Sat, 9:00 AM – 7:00 PM" },
+      media: { photoUrls: [], videoUrls: [] },
+      address: { line1: "Demo Market Road", area: "Education Hub", city: "Delhi", state: "Delhi", pincode: "110001", mapUrl: "" },
+      visibility: { showFees: true, showTeachers: true, showResults: true, showContact: true },
+      verification: { verified: false, label: "Demo profile" },
+      part: "Part 59 - Public Institute Profile",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      publishedAt: new Date().toISOString()
+    }
+  ];
+}
+
+function part59CleanText(value, max = 160) {
+  return String(value ?? "").trim().replace(/[<>]/g, "").slice(0, max);
+}
+
+function part59CleanUrl(value, max = 320) {
+  const clean = part59CleanText(value, max);
+  if (!clean) return "";
+  if (clean.startsWith("/") || /^https?:\/\//i.test(clean)) return clean;
+  return "";
+}
+
+function part59Number(value, fallback = 0) {
+  const num = Number(value);
+  return Number.isFinite(num) && num >= 0 ? num : fallback;
+}
+
+function part59Slugify(value = "") {
+  const slug = part59CleanText(value, 100).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return slug || `institute-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function part59SplitLines(value, maxItems = 12) {
+  if (Array.isArray(value)) return value.map((item) => part59CleanText(item, 120)).filter(Boolean).slice(0, maxItems);
+  return String(value ?? "").split(/\n|,/).map((item) => part59CleanText(item, 120)).filter(Boolean).slice(0, maxItems);
+}
+
+function part59ParseJsonArray(value, fallback = []) {
+  if (Array.isArray(value)) return value;
+  if (!value) return fallback;
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function part59BuildCourses(payload = {}, existing = {}) {
+  const raw = part59ParseJsonArray(payload.courses, existing.courses || []);
+  return raw.map((course, index) => ({
+    id: part59CleanText(course.id || `course-${index + 1}`, 40),
+    name: part59CleanText(course.name || course.courseName, 100),
+    classLevel: part59CleanText(course.classLevel || course.className, 60),
+    duration: part59CleanText(course.duration, 60),
+    mode: part59CleanText(course.mode || "Offline", 50),
+    feeMin: part59Number(course.feeMin ?? course.minimumFee, 0),
+    feeMax: part59Number(course.feeMax ?? course.maximumFee, 0),
+    highlight: part59CleanText(course.highlight || course.description, 180)
+  })).filter((course) => course.name).slice(0, 20);
+}
+
+function part59BuildTeachers(payload = {}, existing = {}) {
+  const raw = part59ParseJsonArray(payload.teachers, existing.teachers || []);
+  return raw.map((teacher, index) => ({
+    id: part59CleanText(teacher.id || `teacher-${index + 1}`, 40),
+    name: part59CleanText(teacher.name, 100),
+    subject: part59CleanText(teacher.subject, 80),
+    experience: part59CleanText(teacher.experience, 80),
+    bio: part59CleanText(teacher.bio, 180)
+  })).filter((teacher) => teacher.name).slice(0, 30);
+}
+
+function part59BuildResults(payload = {}, existing = {}) {
+  const raw = part59ParseJsonArray(payload.results, existing.results || []);
+  return raw.map((result, index) => ({
+    id: part59CleanText(result.id || `result-${index + 1}`, 40),
+    exam: part59CleanText(result.exam, 100),
+    year: part59CleanText(result.year, 20),
+    achievement: part59CleanText(result.achievement, 180),
+    studentName: part59CleanText(result.studentName, 100)
+  })).filter((result) => result.exam || result.achievement).slice(0, 20);
+}
+
+function part59GenerateProfileId(payload = {}) {
+  const prefix = part59Slugify(payload.name || "profile").slice(0, 12).toUpperCase().replace(/-/g, "");
+  const stamp = Date.now().toString(36).toUpperCase();
+  return `NX-PROFILE-${prefix || "INST"}-${stamp}`;
+}
+
+function part59ValidateProfile(payload = {}) {
+  const errors = [];
+  if (!part59CleanText(payload.name, 120)) errors.push("Institute name required hai.");
+  if (!part59CleanText(payload.description, 500)) errors.push("Institute description required hai.");
+  const address = payload.address || {};
+  if (!part59CleanText(address.city || payload.city, 80)) errors.push("City required hai.");
+  return errors;
+}
+
+function part59BuildProfile(payload = {}, existing = {}) {
+  const now = new Date().toISOString();
+  const name = part59CleanText(payload.name ?? existing.name, 140);
+  const slug = part59Slugify(payload.slug || existing.slug || name);
+  const address = payload.address || {};
+  const contact = payload.contact || {};
+  const timings = payload.timings || {};
+  const media = payload.media || {};
+  const visibility = payload.visibility || {};
+  const courses = part59BuildCourses(payload, existing);
+  const teachers = part59BuildTeachers(payload, existing);
+  const results = part59BuildResults(payload, existing);
+  const feeMin = part59Number(payload.feeRange?.minimum ?? payload.minimumFee ?? existing.feeRange?.minimum, courses.reduce((min, c) => c.feeMin ? Math.min(min, c.feeMin) : min, 0));
+  const feeMax = part59Number(payload.feeRange?.maximum ?? payload.maximumFee ?? existing.feeRange?.maximum, courses.reduce((max, c) => Math.max(max, c.feeMax || 0), 0));
+  return {
+    ...existing,
+    profileId: existing.profileId || payload.profileId || part59GenerateProfileId({ name }),
+    slug,
+    status: ["draft", "published", "hidden"].includes(part59CleanText(payload.status || existing.status, 40)) ? part59CleanText(payload.status || existing.status, 40) : "draft",
+    name,
+    tagline: part59CleanText(payload.tagline ?? existing.tagline, 180),
+    description: part59CleanText(payload.description ?? existing.description, 900),
+    logoUrl: part59CleanUrl(payload.logoUrl ?? existing.logoUrl),
+    bannerUrl: part59CleanUrl(payload.bannerUrl ?? existing.bannerUrl),
+    contact: {
+      phone: part59CleanText(contact.phone ?? payload.phone ?? existing.contact?.phone, 30).replace(/[^0-9+]/g, ""),
+      email: part59CleanText(contact.email ?? payload.email ?? existing.contact?.email, 120),
+      website: part59CleanUrl(contact.website ?? payload.website ?? existing.contact?.website)
+    },
+    courses,
+    feeRange: {
+      currency: part59CleanText(payload.feeRange?.currency ?? payload.currency ?? existing.feeRange?.currency ?? "INR", 10),
+      minimum: feeMin,
+      maximum: feeMax,
+      note: part59CleanText(payload.feeRange?.note ?? payload.feeNote ?? existing.feeRange?.note, 180)
+    },
+    teachers,
+    results,
+    facilities: part59SplitLines(payload.facilities ?? existing.facilities, 20),
+    timings: {
+      weekdays: part59CleanText(timings.weekdays ?? payload.weekdaysTiming ?? existing.timings?.weekdays, 100),
+      weekend: part59CleanText(timings.weekend ?? payload.weekendTiming ?? existing.timings?.weekend, 100),
+      office: part59CleanText(timings.office ?? payload.officeTiming ?? existing.timings?.office, 100)
+    },
+    media: {
+      photoUrls: part59SplitLines(media.photoUrls ?? payload.photoUrls ?? existing.media?.photoUrls, 20).map((url) => part59CleanUrl(url)).filter(Boolean),
+      videoUrls: part59SplitLines(media.videoUrls ?? payload.videoUrls ?? existing.media?.videoUrls, 10).map((url) => part59CleanUrl(url)).filter(Boolean)
+    },
+    address: {
+      line1: part59CleanText(address.line1 ?? payload.addressLine1 ?? existing.address?.line1, 180),
+      area: part59CleanText(address.area ?? payload.area ?? existing.address?.area, 120),
+      city: part59CleanText(address.city ?? payload.city ?? existing.address?.city, 80),
+      state: part59CleanText(address.state ?? payload.state ?? existing.address?.state, 80),
+      pincode: part59CleanText(address.pincode ?? payload.pincode ?? existing.address?.pincode, 20),
+      mapUrl: part59CleanUrl(address.mapUrl ?? payload.mapUrl ?? existing.address?.mapUrl)
+    },
+    visibility: {
+      showFees: visibility.showFees !== false,
+      showTeachers: visibility.showTeachers !== false,
+      showResults: visibility.showResults !== false,
+      showContact: visibility.showContact !== false
+    },
+    verification: existing.verification || { verified: false, label: "Not verified yet" },
+    part: "Part 59 - Public Institute Profile",
+    createdAt: existing.createdAt || now,
+    updatedAt: now,
+    publishedAt: existing.publishedAt || (payload.status === "published" ? now : null)
+  };
+}
+
+function part59PublicProfileView(row = {}) {
+  return {
+    id: row._id || row.id || row.profileId,
+    profileId: row.profileId,
+    slug: row.slug,
+    status: row.status,
+    name: row.name,
+    tagline: row.tagline,
+    description: row.description,
+    logoUrl: row.logoUrl,
+    bannerUrl: row.bannerUrl,
+    contact: row.visibility?.showContact === false ? { phone: "", email: "", website: "" } : row.contact,
+    courses: row.courses || [],
+    feeRange: row.visibility?.showFees === false ? null : row.feeRange,
+    teachers: row.visibility?.showTeachers === false ? [] : row.teachers || [],
+    results: row.visibility?.showResults === false ? [] : row.results || [],
+    facilities: row.facilities || [],
+    timings: row.timings || {},
+    media: row.media || { photoUrls: [], videoUrls: [] },
+    address: row.address || {},
+    visibility: row.visibility || {},
+    verification: row.verification || { verified: false },
+    part: row.part || "Part 59 - Public Institute Profile",
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    publishedAt: row.publishedAt
+  };
+}
+
+async function part59GetCollection() {
+  if (globalThis.NAXORA_DB_MODE === "mongodb" && mongoose.connection?.readyState === 1) {
+    return mongoose.connection.collection("part59publicprofiles");
+  }
+  return null;
+}
+
+async function part59FindProfileById(id) {
+  const cleanId = part59CleanText(id, 140);
+  const collection = await part59GetCollection();
+  if (!collection) {
+    return { collection: null, row: globalThis.NAXORA_PART59_PROFILES.find((item) => item.profileId === cleanId || item.slug === cleanId || item.id === cleanId) };
+  }
+  const row = await collection.findOne({ $or: [{ profileId: cleanId }, { slug: cleanId }] });
+  return { collection, row };
+}
+
+app.get("/public-institute-profile", (req, res) => sendFileSafe(res, "public-institute-profile.html"));
+app.get("/institute-profile-public", (req, res) => sendFileSafe(res, "public-institute-profile.html"));
+app.get("/public-profile", (req, res) => sendFileSafe(res, "public-institute-profile.html"));
+app.get("/institute-showcase", (req, res) => sendFileSafe(res, "public-institute-profile.html"));
+
+app.get("/api/part59/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 59 - Public Institute Profile",
+    status: "active",
+    roadmap: "Part 59 = Public Institute Profile. Part 60 will connect request callback/send enquiry.",
+    dbMode: globalThis.NAXORA_DB_MODE || "mock",
+    sections: part59ProfileSections.map((section) => section.id),
+    routes: ["/public-institute-profile", "/institute-profile-public", "/api/part59/profile", "/api/part59/search"],
+    safe: { noEnvIncluded: true, noRealCallbackSubmit: true, publishControl: true }
+  });
+});
+
+app.get("/api/part59/config", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 59 - Public Institute Profile",
+    sections: part59ProfileSections,
+    statusOptions: ["draft", "published", "hidden"],
+    mediaRule: "Part 59 me direct file upload nahi; safe URL fields hain. Secure upload/storage later add karenge.",
+    nextPart: "Part 60 - Request Callback/Send Enquiry"
+  });
+});
+
+app.get("/api/part59/profile", async (req, res) => {
+  const collection = await part59GetCollection();
+  const slug = part59CleanText(req.query.slug || req.query.profileId, 140);
+  let row;
+  if (!collection) {
+    row = slug ? globalThis.NAXORA_PART59_PROFILES.find((item) => item.slug === slug || item.profileId === slug) : globalThis.NAXORA_PART59_PROFILES[0];
+  } else if (slug) {
+    row = await collection.findOne({ $or: [{ slug }, { profileId: slug }] });
+  } else {
+    row = await collection.findOne({}, { sort: { updatedAt: -1 } });
+  }
+  if (!row) return res.status(404).json({ success: false, message: "Public institute profile nahi mila." });
+  res.json({ success: true, mode: collection ? "mongodb" : "mock", profile: part59PublicProfileView(row) });
+});
+
+app.post("/api/part59/profile", async (req, res) => {
+  const errors = part59ValidateProfile(req.body || {});
+  if (errors.length) return res.status(400).json({ success: false, message: "Profile validation failed.", errors });
+  const profile = part59BuildProfile(req.body || {}, {});
+  const collection = await part59GetCollection();
+  if (!collection) {
+    globalThis.NAXORA_PART59_PROFILES.unshift({ id: profile.profileId, ...profile });
+    return res.status(201).json({ success: true, mode: "mock", message: "Public institute profile saved in mock mode.", profile: part59PublicProfileView(profile) });
+  }
+  await collection.updateOne({ profileId: profile.profileId }, { $set: profile }, { upsert: true });
+  const saved = await collection.findOne({ profileId: profile.profileId });
+  res.status(201).json({ success: true, mode: "mongodb", message: "Public institute profile saved.", profile: part59PublicProfileView(saved) });
+});
+
+app.get("/api/part59/profile/:profileId", async (req, res) => {
+  const { collection, row } = await part59FindProfileById(req.params.profileId);
+  if (!row) return res.status(404).json({ success: false, message: "Public institute profile nahi mila." });
+  res.json({ success: true, mode: collection ? "mongodb" : "mock", profile: part59PublicProfileView(row) });
+});
+
+app.put("/api/part59/profile/:profileId", async (req, res) => {
+  const found = await part59FindProfileById(req.params.profileId);
+  if (!found.row) return res.status(404).json({ success: false, message: "Public institute profile nahi mila." });
+  const errors = part59ValidateProfile({ ...found.row, ...(req.body || {}) });
+  if (errors.length) return res.status(400).json({ success: false, message: "Profile validation failed.", errors });
+  const updated = part59BuildProfile({ ...found.row, ...(req.body || {}) }, found.row);
+  if (!found.collection) {
+    const index = globalThis.NAXORA_PART59_PROFILES.findIndex((item) => item.profileId === found.row.profileId || item.slug === found.row.slug);
+    if (index >= 0) globalThis.NAXORA_PART59_PROFILES[index] = { ...globalThis.NAXORA_PART59_PROFILES[index], ...updated };
+    return res.json({ success: true, mode: "mock", message: "Public institute profile updated in mock mode.", profile: part59PublicProfileView(updated) });
+  }
+  await found.collection.updateOne({ profileId: found.row.profileId }, { $set: updated });
+  const saved = await found.collection.findOne({ profileId: found.row.profileId });
+  res.json({ success: true, mode: "mongodb", message: "Public institute profile updated.", profile: part59PublicProfileView(saved) });
+});
+
+app.patch("/api/part59/profile/:profileId/publish", async (req, res) => {
+  const found = await part59FindProfileById(req.params.profileId);
+  if (!found.row) return res.status(404).json({ success: false, message: "Public institute profile nahi mila." });
+  const status = ["draft", "published", "hidden"].includes(part59CleanText(req.body?.status, 40)) ? part59CleanText(req.body.status, 40) : "published";
+  const update = { status, updatedAt: new Date().toISOString(), publishedAt: status === "published" ? new Date().toISOString() : found.row.publishedAt || null };
+  if (!found.collection) {
+    Object.assign(found.row, update);
+    return res.json({ success: true, mode: "mock", message: `Profile status ${status} ho gaya.`, profile: part59PublicProfileView(found.row) });
+  }
+  await found.collection.updateOne({ profileId: found.row.profileId }, { $set: update });
+  const saved = await found.collection.findOne({ profileId: found.row.profileId });
+  res.json({ success: true, mode: "mongodb", message: `Profile status ${status} ho gaya.`, profile: part59PublicProfileView(saved) });
+});
+
+app.post("/api/part59/profile/:profileId/courses", async (req, res) => {
+  const found = await part59FindProfileById(req.params.profileId);
+  if (!found.row) return res.status(404).json({ success: false, message: "Public institute profile nahi mila." });
+  const course = {
+    id: `course-${Date.now().toString(36)}`,
+    name: part59CleanText(req.body?.name || req.body?.courseName, 100),
+    classLevel: part59CleanText(req.body?.classLevel, 60),
+    duration: part59CleanText(req.body?.duration, 60),
+    mode: part59CleanText(req.body?.mode || "Offline", 50),
+    feeMin: part59Number(req.body?.feeMin || req.body?.minimumFee, 0),
+    feeMax: part59Number(req.body?.feeMax || req.body?.maximumFee, 0),
+    highlight: part59CleanText(req.body?.highlight || req.body?.description, 180)
+  };
+  if (!course.name) return res.status(400).json({ success: false, message: "Course name required hai." });
+  const courses = [...(found.row.courses || []), course].slice(0, 20);
+  const update = { courses, updatedAt: new Date().toISOString() };
+  if (!found.collection) {
+    Object.assign(found.row, update);
+    return res.status(201).json({ success: true, mode: "mock", course, profile: part59PublicProfileView(found.row) });
+  }
+  await found.collection.updateOne({ profileId: found.row.profileId }, { $set: update });
+  const saved = await found.collection.findOne({ profileId: found.row.profileId });
+  res.status(201).json({ success: true, mode: "mongodb", course, profile: part59PublicProfileView(saved) });
+});
+
+app.post("/api/part59/profile/:profileId/media", async (req, res) => {
+  const found = await part59FindProfileById(req.params.profileId);
+  if (!found.row) return res.status(404).json({ success: false, message: "Public institute profile nahi mila." });
+  const type = part59CleanText(req.body?.type || "photo", 20);
+  const url = part59CleanUrl(req.body?.url, 320);
+  if (!url) return res.status(400).json({ success: false, message: "Valid photo/video URL required hai." });
+  const media = found.row.media || { photoUrls: [], videoUrls: [] };
+  if (type === "video") media.videoUrls = [...(media.videoUrls || []), url].slice(0, 10);
+  else media.photoUrls = [...(media.photoUrls || []), url].slice(0, 20);
+  const update = { media, updatedAt: new Date().toISOString() };
+  if (!found.collection) {
+    Object.assign(found.row, update);
+    return res.status(201).json({ success: true, mode: "mock", media, profile: part59PublicProfileView(found.row) });
+  }
+  await found.collection.updateOne({ profileId: found.row.profileId }, { $set: update });
+  const saved = await found.collection.findOne({ profileId: found.row.profileId });
+  res.status(201).json({ success: true, mode: "mongodb", media, profile: part59PublicProfileView(saved) });
+});
+
+app.get("/api/part59/search", async (req, res) => {
+  const query = part59CleanText(req.query.q || req.query.city || "", 100).toLowerCase();
+  const onlyPublished = req.query.status !== "all";
+  const collection = await part59GetCollection();
+  let rows = [];
+  if (!collection) {
+    rows = globalThis.NAXORA_PART59_PROFILES;
+  } else {
+    rows = await collection.find(onlyPublished ? { status: "published" } : {}).sort({ updatedAt: -1 }).limit(100).toArray();
+  }
+  const filtered = rows.filter((row) => {
+    if (onlyPublished && row.status !== "published") return false;
+    if (!query) return true;
+    const haystack = [row.name, row.tagline, row.description, row.address?.city, row.address?.state, ...(row.courses || []).map((c) => c.name), ...(row.facilities || [])].join(" ").toLowerCase();
+    return haystack.includes(query);
+  });
+  res.json({ success: true, mode: collection ? "mongodb" : "mock", count: filtered.length, profiles: filtered.map(part59PublicProfileView) });
+});
+
+app.get("/api/part59/checklist", (req, res) => {
+  res.json({ success: true, part: "Part 59 - Public Institute Profile", checklist: part59Checklist });
+});
+
+app.get("/api/part59/export", async (req, res) => {
+  const collection = await part59GetCollection();
+  const rows = collection ? await collection.find({}).sort({ updatedAt: -1 }).limit(1000).toArray() : globalThis.NAXORA_PART59_PROFILES;
+  res.json({ success: true, part: "Part 59 - Public Institute Profile", exportedAt: new Date().toISOString(), count: rows.length, profiles: rows.map(part59PublicProfileView) });
+});
+
+app.get("/api/part59/demo", (req, res) => {
+  const profiles = globalThis.NAXORA_PART59_PROFILES.map(part59PublicProfileView);
+  res.json({ success: true, part: "Part 59 - Public Institute Profile", count: profiles.length, profiles, checklist: part59Checklist });
+});
+// ================= END PART 59 =================
+
 // Same-server frontend hosting for Render/Railway/VPS deployment.
 app.use("/landing", express.static(frontendPath));
 
@@ -3587,7 +4033,11 @@ const modulePageRoutes = {
   "/enquiry-followup-crm": "enquiry-followup-crm.html",
   "/enquiry-crm": "enquiry-followup-crm.html",
   "/followup-crm": "enquiry-followup-crm.html",
-  "/admission-crm": "enquiry-followup-crm.html"
+  "/admission-crm": "enquiry-followup-crm.html",
+  "/public-institute-profile": "public-institute-profile.html",
+  "/institute-profile-public": "public-institute-profile.html",
+  "/public-profile": "public-institute-profile.html",
+  "/institute-showcase": "public-institute-profile.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -3628,8 +4078,8 @@ const port = Number(process.env.PORT) || 5000;
 await connectDB();
 
 const server = app.listen(port, () => {
-  console.log("✅ PART 58 ENQUIRY AND FOLLOW-UP CRM ACTIVE");
-  console.log("✅ All routes Part 1 to Part 57 loaded + Part 58 enquiry and follow-up CRM");
+  console.log("✅ PART 59 PUBLIC INSTITUTE PROFILE ACTIVE");
+  console.log("✅ All routes Part 1 to Part 58 loaded + Part 59 public institute profile");
   console.log("✅ AI Notes route active: /api/ai-notes");
   console.log("✅ AI Mock Tests route active: /api/ai-mock-tests");
   console.log("✅ AI Roadmaps route active: /api/ai-roadmaps");
@@ -3681,6 +4131,8 @@ const server = app.listen(port, () => {
   console.log("✅ Student/Parent portal frontend: /student-parent-portal");
   console.log("✅ Part 58 enquiry CRM active: /api/part58/status");
   console.log("✅ Enquiry Follow-up CRM frontend: /enquiry-followup-crm");
+  console.log("✅ Part 59 public institute profile active: /api/part59/status");
+  console.log("✅ Public institute profile frontend: /public-institute-profile");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");
