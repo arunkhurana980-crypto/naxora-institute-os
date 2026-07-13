@@ -85,7 +85,11 @@ const publicRoutes = [
   "/student-parent-portal",
   "/student-portal",
   "/parent-portal",
-  "/portal"
+  "/portal",
+  "/enquiry-followup-crm",
+  "/enquiry-crm",
+  "/followup-crm",
+  "/admission-crm"
 ];
 
 const internalPageFiles = new Set([
@@ -3055,6 +3059,448 @@ app.get("/api/part57/demo", (req, res) => {
 });
 // ================= END PART 57 =================
 
+
+
+// ================= PART 58: ENQUIRY AND FOLLOW-UP CRM =================
+// Roadmap scope: New lead, call notes, follow-up date, lead status, reminder and admission conversion.
+// Safe rule: Part 58 stores enquiry/follow-up records and conversion intent. It does not send real SMS/WhatsApp automatically.
+const part58LeadStatuses = [
+  { id: "new", label: "New Lead", tone: "blue", meaning: "Lead abhi fresh hai; first call pending." },
+  { id: "contacted", label: "Contacted", tone: "cyan", meaning: "First contact ho chuka hai." },
+  { id: "interested", label: "Interested", tone: "green", meaning: "Student/parent interested hai." },
+  { id: "demo_scheduled", label: "Demo Scheduled", tone: "gold", meaning: "Demo/trial class scheduled hai." },
+  { id: "followup_pending", label: "Follow-up Pending", tone: "orange", meaning: "Next follow-up date set hai." },
+  { id: "converted", label: "Converted", tone: "success", meaning: "Lead admission/enrolment me convert ho gaya." },
+  { id: "not_interested", label: "Not Interested", tone: "muted", meaning: "Lead currently interested nahi hai." },
+  { id: "lost", label: "Lost", tone: "red", meaning: "Lead close/lost ho gaya." }
+];
+
+const part58LeadSources = [
+  "Walk-in", "Phone Call", "WhatsApp", "Website", "Referral", "Social Media", "Discovery", "Demo Class", "Other"
+];
+
+const part58Courses = [
+  "Class 9 Foundation", "Class 10 Board", "Class 11 Science", "Class 12 Science", "JEE Foundation", "NEET Foundation", "English Speaking", "Computer Course", "Other"
+];
+
+const part58FollowUpOutcomes = [
+  "Not picked", "Asked for details", "Fees discussed", "Demo requested", "Parent will decide", "Visit scheduled", "Converted", "Not interested"
+];
+
+const part58Checklist = [
+  "CRM page opens on /enquiry-followup-crm, /enquiry-crm and /followup-crm.",
+  "New lead form creates a lead with name, phone, course interest and source.",
+  "Call notes can be added without deleting previous history.",
+  "Follow-up date and reminder settings can be updated.",
+  "Lead status can move from new/contacted/interested/demo/followup/converted/lost.",
+  "Admission conversion stores studentId, batch and fee summary when lead converts.",
+  "MongoDB connected mode saves leads in part58enquiryfollowups collection.",
+  "Mock mode fallback works if MongoDB is temporarily unavailable.",
+  "No real WhatsApp/SMS/email is sent automatically in Part 58; message sending comes in Part 65.",
+  "Part 71 AI Admission Copilot can later use this CRM data for reply drafts and lead priority."
+];
+
+if (!globalThis.NAXORA_PART58_LEADS) {
+  globalThis.NAXORA_PART58_LEADS = [
+    {
+      id: "mock-lead-1",
+      leadId: "NX-LEAD-DEMO-001",
+      studentName: "Aarav Sharma",
+      parentName: "Mr. Sharma",
+      phone: "9876543210",
+      alternatePhone: "",
+      email: "",
+      classLevel: "Class 10",
+      courseInterest: "Class 10 Board",
+      source: "Website",
+      city: "Delhi",
+      priority: "hot",
+      status: "followup_pending",
+      assignedTo: "Counsellor",
+      followUpDate: new Date(Date.now() + 86400000).toISOString(),
+      reminder: { enabled: true, channel: "call", note: "Parent ko evening me call karna." },
+      callNotes: [
+        { id: "note-1", type: "call", outcome: "Asked for details", note: "Fees aur batch timing puchha. Demo class me interest hai.", createdAt: new Date().toISOString(), createdBy: "System Demo" }
+      ],
+      conversion: { converted: false },
+      part: "Part 58 - Enquiry and Follow-Up CRM",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  ];
+}
+
+function part58CleanText(value, max = 120) {
+  return String(value ?? "").trim().replace(/[<>]/g, "").slice(0, max);
+}
+
+function part58CleanPhone(value) {
+  return String(value ?? "").replace(/[^0-9+]/g, "").slice(0, 16);
+}
+
+function part58AllowedStatus(value) {
+  const clean = part58CleanText(value || "new", 40);
+  return part58LeadStatuses.some((item) => item.id === clean) ? clean : "new";
+}
+
+function part58GenerateLeadId(payload = {}) {
+  const date = new Date();
+  const y = String(date.getFullYear()).slice(-2);
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  const phoneTail = part58CleanPhone(payload.phone).slice(-4) || "0000";
+  const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `NX-LEAD-${y}${m}${d}-${phoneTail}-${rand}`;
+}
+
+function part58ValidateLead(payload = {}) {
+  const errors = [];
+  if (!part58CleanText(payload.studentName, 80)) errors.push("Student name required hai.");
+  if (!part58CleanPhone(payload.phone)) errors.push("Phone number required hai.");
+  if (!part58CleanText(payload.courseInterest, 80)) errors.push("Course interest required hai.");
+  return errors;
+}
+
+function part58BuildLead(payload = {}, existing = {}) {
+  const now = new Date().toISOString();
+  const followUpDate = payload.followUpDate ? new Date(payload.followUpDate).toISOString() : existing.followUpDate || null;
+  return {
+    ...existing,
+    leadId: existing.leadId || payload.leadId || part58GenerateLeadId(payload),
+    studentName: part58CleanText(payload.studentName, 100),
+    parentName: part58CleanText(payload.parentName, 100),
+    phone: part58CleanPhone(payload.phone),
+    alternatePhone: part58CleanPhone(payload.alternatePhone),
+    email: part58CleanText(payload.email, 120),
+    classLevel: part58CleanText(payload.classLevel, 60),
+    courseInterest: part58CleanText(payload.courseInterest, 100),
+    source: part58CleanText(payload.source || "Other", 60),
+    city: part58CleanText(payload.city, 80),
+    priority: ["hot", "warm", "cold"].includes(part58CleanText(payload.priority, 20)) ? part58CleanText(payload.priority, 20) : "warm",
+    status: part58AllowedStatus(payload.status || existing.status || "new"),
+    assignedTo: part58CleanText(payload.assignedTo || existing.assignedTo || "Counsellor", 80),
+    followUpDate,
+    reminder: {
+      enabled: payload.reminderEnabled === true || payload.reminder?.enabled === true || Boolean(followUpDate),
+      channel: part58CleanText(payload.reminderChannel || payload.reminder?.channel || "call", 40),
+      note: part58CleanText(payload.reminderNote || payload.reminder?.note, 180)
+    },
+    callNotes: Array.isArray(existing.callNotes) ? existing.callNotes : [],
+    conversion: existing.conversion || { converted: false },
+    tags: Array.isArray(payload.tags) ? payload.tags.map((tag) => part58CleanText(tag, 40)).filter(Boolean).slice(0, 8) : existing.tags || [],
+    lastContactedAt: existing.lastContactedAt || null,
+    part: "Part 58 - Enquiry and Follow-Up CRM",
+    createdAt: existing.createdAt || now,
+    updatedAt: now
+  };
+}
+
+function part58PublicLeadView(row = {}) {
+  return {
+    id: row._id || row.id || row.leadId,
+    leadId: row.leadId,
+    studentName: row.studentName,
+    parentName: row.parentName,
+    phone: row.phone,
+    alternatePhone: row.alternatePhone,
+    email: row.email,
+    classLevel: row.classLevel,
+    courseInterest: row.courseInterest,
+    source: row.source,
+    city: row.city,
+    priority: row.priority,
+    status: row.status,
+    assignedTo: row.assignedTo,
+    followUpDate: row.followUpDate,
+    reminder: row.reminder,
+    callNotes: row.callNotes || [],
+    conversion: row.conversion || { converted: false },
+    tags: row.tags || [],
+    lastContactedAt: row.lastContactedAt,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  };
+}
+
+async function part58GetCollection() {
+  if (globalThis.NAXORA_DB_MODE === "mongodb" && mongoose.connection?.readyState === 1) {
+    return mongoose.connection.collection("part58enquiryfollowups");
+  }
+  return null;
+}
+
+async function part58FindLeadById(id) {
+  const cleanId = part58CleanText(id, 100);
+  const collection = await part58GetCollection();
+  if (!collection) {
+    return { collection: null, row: globalThis.NAXORA_PART58_LEADS.find((item) => item.id === cleanId || item.leadId === cleanId) };
+  }
+  const row = await collection.findOne({ leadId: cleanId });
+  return { collection, row };
+}
+
+function part58BuildAnalytics(rows = []) {
+  const total = rows.length;
+  const byStatus = Object.fromEntries(part58LeadStatuses.map((status) => [status.id, 0]));
+  const byPriority = { hot: 0, warm: 0, cold: 0 };
+  let converted = 0;
+  let overdue = 0;
+  const now = Date.now();
+  rows.forEach((row) => {
+    if (byStatus[row.status] !== undefined) byStatus[row.status] += 1;
+    if (byPriority[row.priority] !== undefined) byPriority[row.priority] += 1;
+    if (row.status === "converted" || row.conversion?.converted) converted += 1;
+    if (row.followUpDate && !["converted", "lost", "not_interested"].includes(row.status) && new Date(row.followUpDate).getTime() < now) overdue += 1;
+  });
+  return {
+    total,
+    converted,
+    open: total - converted,
+    overdue,
+    conversionRate: total ? Math.round((converted / total) * 100) : 0,
+    byStatus,
+    byPriority
+  };
+}
+
+app.get("/enquiry-followup-crm", (req, res) => sendFileSafe(res, "enquiry-followup-crm.html"));
+app.get("/enquiry-crm", (req, res) => sendFileSafe(res, "enquiry-followup-crm.html"));
+app.get("/followup-crm", (req, res) => sendFileSafe(res, "enquiry-followup-crm.html"));
+app.get("/admission-crm", (req, res) => sendFileSafe(res, "enquiry-followup-crm.html"));
+
+app.get("/api/part58/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 58 - Enquiry and Follow-Up CRM",
+    status: "active",
+    currentVersionPlan: "Part 53–78 = NAXORA OS 1.0 completion. Part 79–110 = NAXORA OS 2.0 development.",
+    goal: "New lead, call notes, follow-up date, lead status, reminder and admission conversion CRM.",
+    dbMode: globalThis.NAXORA_DB_MODE || "starting",
+    frontend: ["/enquiry-followup-crm", "/enquiry-crm", "/followup-crm", "/admission-crm"],
+    routes: [
+      "GET /api/part58/status",
+      "GET /api/part58/config",
+      "GET /api/part58/leads",
+      "POST /api/part58/leads",
+      "GET /api/part58/leads/:leadId",
+      "PATCH /api/part58/leads/:leadId/status",
+      "POST /api/part58/leads/:leadId/call-notes",
+      "PATCH /api/part58/leads/:leadId/follow-up",
+      "POST /api/part58/leads/:leadId/convert",
+      "GET /api/part58/reminders",
+      "GET /api/part58/analytics",
+      "GET /api/part58/checklist",
+      "GET /api/part58/export"
+    ],
+    safety: "Part 58 real WhatsApp/SMS/email auto-send nahi karta. Communication provider integration Part 65 me hoga."
+  });
+});
+
+app.get("/api/part58/config", (req, res) => {
+  res.json({
+    success: true,
+    statuses: part58LeadStatuses,
+    sources: part58LeadSources,
+    courses: part58Courses,
+    followUpOutcomes: part58FollowUpOutcomes,
+    priorities: ["hot", "warm", "cold"],
+    reminderChannels: ["call", "whatsapp_manual", "sms_manual", "email_manual", "visit"]
+  });
+});
+
+app.get("/api/part58/leads", async (req, res) => {
+  const collection = await part58GetCollection();
+  const status = part58CleanText(req.query.status, 40);
+  const priority = part58CleanText(req.query.priority, 20);
+  const search = part58CleanText(req.query.search, 80).toLowerCase();
+  const query = {};
+  if (status && part58LeadStatuses.some((item) => item.id === status)) query.status = status;
+  if (priority && ["hot", "warm", "cold"].includes(priority)) query.priority = priority;
+
+  if (!collection) {
+    let rows = [...globalThis.NAXORA_PART58_LEADS];
+    if (query.status) rows = rows.filter((row) => row.status === query.status);
+    if (query.priority) rows = rows.filter((row) => row.priority === query.priority);
+    if (search) rows = rows.filter((row) => [row.studentName, row.parentName, row.phone, row.courseInterest, row.leadId].join(" ").toLowerCase().includes(search));
+    return res.json({ success: true, mode: "mock", count: rows.length, leads: rows.map(part58PublicLeadView), analytics: part58BuildAnalytics(rows) });
+  }
+
+  if (search) {
+    query.$or = [
+      { studentName: { $regex: search, $options: "i" } },
+      { parentName: { $regex: search, $options: "i" } },
+      { phone: { $regex: search, $options: "i" } },
+      { courseInterest: { $regex: search, $options: "i" } },
+      { leadId: { $regex: search, $options: "i" } }
+    ];
+  }
+  const rows = await collection.find(query).sort({ updatedAt: -1 }).limit(200).toArray();
+  res.json({ success: true, mode: "mongodb", count: rows.length, leads: rows.map(part58PublicLeadView), analytics: part58BuildAnalytics(rows) });
+});
+
+app.post("/api/part58/leads", async (req, res) => {
+  const errors = part58ValidateLead(req.body || {});
+  if (errors.length) return res.status(400).json({ success: false, message: "Lead form incomplete hai", errors });
+  const lead = part58BuildLead(req.body || {});
+  const firstNote = part58CleanText(req.body?.firstNote, 400);
+  if (firstNote) {
+    lead.callNotes.push({ id: `note-${Date.now()}`, type: "first-note", outcome: part58CleanText(req.body?.firstOutcome || "New enquiry", 80), note: firstNote, createdAt: new Date().toISOString(), createdBy: part58CleanText(req.body?.createdBy || "CRM", 80) });
+    lead.lastContactedAt = new Date().toISOString();
+  }
+  const collection = await part58GetCollection();
+  if (!collection) {
+    const mockRow = { ...lead, id: `mock-${Date.now()}` };
+    globalThis.NAXORA_PART58_LEADS.unshift(mockRow);
+    return res.status(201).json({ success: true, mode: "mock", message: "Lead mock mode me save hua.", lead: part58PublicLeadView(mockRow) });
+  }
+  const duplicate = await collection.findOne({ phone: lead.phone, courseInterest: lead.courseInterest, status: { $nin: ["converted", "lost", "not_interested"] } });
+  if (duplicate) return res.status(409).json({ success: false, message: "Same phone/course ke saath active lead already exists.", existing: part58PublicLeadView(duplicate) });
+  const result = await collection.insertOne(lead);
+  const saved = await collection.findOne({ _id: result.insertedId });
+  res.status(201).json({ success: true, mode: "mongodb", message: "Lead CRM me save ho gaya.", lead: part58PublicLeadView(saved) });
+});
+
+app.get("/api/part58/leads/:leadId", async (req, res) => {
+  const { row } = await part58FindLeadById(req.params.leadId);
+  if (!row) return res.status(404).json({ success: false, message: "Lead not found" });
+  res.json({ success: true, lead: part58PublicLeadView(row) });
+});
+
+app.patch("/api/part58/leads/:leadId/status", async (req, res) => {
+  const leadId = part58CleanText(req.params.leadId, 100);
+  const status = part58AllowedStatus(req.body?.status);
+  const statusNote = part58CleanText(req.body?.statusNote, 240);
+  const update = { status, statusNote, updatedAt: new Date().toISOString() };
+  const { collection, row } = await part58FindLeadById(leadId);
+  if (!row) return res.status(404).json({ success: false, message: "Lead not found" });
+  if (!collection) {
+    const index = globalThis.NAXORA_PART58_LEADS.findIndex((item) => item.leadId === leadId || item.id === leadId);
+    globalThis.NAXORA_PART58_LEADS[index] = { ...globalThis.NAXORA_PART58_LEADS[index], ...update };
+    return res.json({ success: true, mode: "mock", lead: part58PublicLeadView(globalThis.NAXORA_PART58_LEADS[index]) });
+  }
+  await collection.updateOne({ leadId }, { $set: update });
+  const saved = await collection.findOne({ leadId });
+  res.json({ success: true, mode: "mongodb", lead: part58PublicLeadView(saved) });
+});
+
+app.post("/api/part58/leads/:leadId/call-notes", async (req, res) => {
+  const leadId = part58CleanText(req.params.leadId, 100);
+  const noteText = part58CleanText(req.body?.note, 600);
+  if (!noteText) return res.status(400).json({ success: false, message: "Call note required hai" });
+  const note = {
+    id: `note-${Date.now()}`,
+    type: part58CleanText(req.body?.type || "call", 40),
+    outcome: part58CleanText(req.body?.outcome || "Call note", 80),
+    note: noteText,
+    createdAt: new Date().toISOString(),
+    createdBy: part58CleanText(req.body?.createdBy || "Counsellor", 80)
+  };
+  const { collection, row } = await part58FindLeadById(leadId);
+  if (!row) return res.status(404).json({ success: false, message: "Lead not found" });
+  const update = { lastContactedAt: note.createdAt, updatedAt: note.createdAt };
+  if (!collection) {
+    const index = globalThis.NAXORA_PART58_LEADS.findIndex((item) => item.leadId === leadId || item.id === leadId);
+    globalThis.NAXORA_PART58_LEADS[index].callNotes = [...(globalThis.NAXORA_PART58_LEADS[index].callNotes || []), note];
+    Object.assign(globalThis.NAXORA_PART58_LEADS[index], update);
+    return res.status(201).json({ success: true, mode: "mock", note, lead: part58PublicLeadView(globalThis.NAXORA_PART58_LEADS[index]) });
+  }
+  await collection.updateOne({ leadId }, { $push: { callNotes: note }, $set: update });
+  const saved = await collection.findOne({ leadId });
+  res.status(201).json({ success: true, mode: "mongodb", note, lead: part58PublicLeadView(saved) });
+});
+
+app.patch("/api/part58/leads/:leadId/follow-up", async (req, res) => {
+  const leadId = part58CleanText(req.params.leadId, 100);
+  const followUpDate = req.body?.followUpDate ? new Date(req.body.followUpDate).toISOString() : null;
+  if (!followUpDate) return res.status(400).json({ success: false, message: "Valid follow-up date required hai" });
+  const update = {
+    followUpDate,
+    status: part58AllowedStatus(req.body?.status || "followup_pending"),
+    reminder: {
+      enabled: req.body?.reminderEnabled !== false,
+      channel: part58CleanText(req.body?.reminderChannel || "call", 40),
+      note: part58CleanText(req.body?.reminderNote || "Follow-up reminder", 180)
+    },
+    updatedAt: new Date().toISOString()
+  };
+  const { collection, row } = await part58FindLeadById(leadId);
+  if (!row) return res.status(404).json({ success: false, message: "Lead not found" });
+  if (!collection) {
+    const index = globalThis.NAXORA_PART58_LEADS.findIndex((item) => item.leadId === leadId || item.id === leadId);
+    globalThis.NAXORA_PART58_LEADS[index] = { ...globalThis.NAXORA_PART58_LEADS[index], ...update };
+    return res.json({ success: true, mode: "mock", lead: part58PublicLeadView(globalThis.NAXORA_PART58_LEADS[index]) });
+  }
+  await collection.updateOne({ leadId }, { $set: update });
+  const saved = await collection.findOne({ leadId });
+  res.json({ success: true, mode: "mongodb", lead: part58PublicLeadView(saved) });
+});
+
+app.post("/api/part58/leads/:leadId/convert", async (req, res) => {
+  const leadId = part58CleanText(req.params.leadId, 100);
+  const now = new Date().toISOString();
+  const conversion = {
+    converted: true,
+    convertedAt: now,
+    studentId: part58CleanText(req.body?.studentId || `NX-STU-${Date.now()}`, 80),
+    batchName: part58CleanText(req.body?.batchName, 100),
+    admissionAmount: Number(req.body?.admissionAmount || 0),
+    expectedFee: Number(req.body?.expectedFee || 0),
+    note: part58CleanText(req.body?.note || "Lead converted to admission", 240)
+  };
+  const update = { status: "converted", conversion, updatedAt: now };
+  const { collection, row } = await part58FindLeadById(leadId);
+  if (!row) return res.status(404).json({ success: false, message: "Lead not found" });
+  if (!collection) {
+    const index = globalThis.NAXORA_PART58_LEADS.findIndex((item) => item.leadId === leadId || item.id === leadId);
+    globalThis.NAXORA_PART58_LEADS[index] = { ...globalThis.NAXORA_PART58_LEADS[index], ...update };
+    return res.json({ success: true, mode: "mock", message: "Lead converted in mock mode.", lead: part58PublicLeadView(globalThis.NAXORA_PART58_LEADS[index]) });
+  }
+  await collection.updateOne({ leadId }, { $set: update });
+  const saved = await collection.findOne({ leadId });
+  res.json({ success: true, mode: "mongodb", message: "Lead admission conversion saved.", lead: part58PublicLeadView(saved) });
+});
+
+app.get("/api/part58/reminders", async (req, res) => {
+  const collection = await part58GetCollection();
+  const now = new Date();
+  const next7 = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const closed = ["converted", "lost", "not_interested"];
+  let rows = [];
+  if (!collection) {
+    rows = globalThis.NAXORA_PART58_LEADS.filter((row) => row.followUpDate && !closed.includes(row.status));
+  } else {
+    rows = await collection.find({ followUpDate: { $ne: null }, status: { $nin: closed } }).sort({ followUpDate: 1 }).limit(100).toArray();
+  }
+  const reminders = rows.map(part58PublicLeadView).map((lead) => ({
+    ...lead,
+    overdue: new Date(lead.followUpDate) < now,
+    upcoming: new Date(lead.followUpDate) >= now && new Date(lead.followUpDate) <= next7
+  }));
+  res.json({ success: true, count: reminders.length, reminders });
+});
+
+app.get("/api/part58/analytics", async (req, res) => {
+  const collection = await part58GetCollection();
+  const rows = collection ? await collection.find({}).sort({ updatedAt: -1 }).limit(1000).toArray() : globalThis.NAXORA_PART58_LEADS;
+  res.json({ success: true, part: "Part 58 - Enquiry and Follow-Up CRM", analytics: part58BuildAnalytics(rows), generatedAt: new Date().toISOString() });
+});
+
+app.get("/api/part58/checklist", (req, res) => {
+  res.json({ success: true, part: "Part 58 - Enquiry and Follow-Up CRM", checklist: part58Checklist });
+});
+
+app.get("/api/part58/export", async (req, res) => {
+  const collection = await part58GetCollection();
+  const rows = collection ? await collection.find({}).sort({ updatedAt: -1 }).limit(1000).toArray() : globalThis.NAXORA_PART58_LEADS;
+  res.json({ success: true, part: "Part 58 - Enquiry and Follow-Up CRM", exportedAt: new Date().toISOString(), count: rows.length, records: rows.map(part58PublicLeadView) });
+});
+
+app.get("/api/part58/demo", (req, res) => {
+  const rows = globalThis.NAXORA_PART58_LEADS.map(part58PublicLeadView);
+  res.json({ success: true, part: "Part 58 - Enquiry and Follow-Up CRM", count: rows.length, leads: rows, analytics: part58BuildAnalytics(rows) });
+});
+// ================= END PART 58 =================
+
 // Same-server frontend hosting for Render/Railway/VPS deployment.
 app.use("/landing", express.static(frontendPath));
 
@@ -3137,7 +3583,11 @@ const modulePageRoutes = {
   "/student-parent-portal": "student-parent-portal.html",
   "/student-portal": "student-parent-portal.html",
   "/parent-portal": "student-parent-portal.html",
-  "/portal": "student-parent-portal.html"
+  "/portal": "student-parent-portal.html",
+  "/enquiry-followup-crm": "enquiry-followup-crm.html",
+  "/enquiry-crm": "enquiry-followup-crm.html",
+  "/followup-crm": "enquiry-followup-crm.html",
+  "/admission-crm": "enquiry-followup-crm.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -3178,8 +3628,8 @@ const port = Number(process.env.PORT) || 5000;
 await connectDB();
 
 const server = app.listen(port, () => {
-  console.log("✅ PART 57 STUDENT AND PARENT PORTAL COMPLETION ACTIVE");
-  console.log("✅ All routes Part 1 to Part 56 loaded + Part 57 student-parent portal completion");
+  console.log("✅ PART 58 ENQUIRY AND FOLLOW-UP CRM ACTIVE");
+  console.log("✅ All routes Part 1 to Part 57 loaded + Part 58 enquiry and follow-up CRM");
   console.log("✅ AI Notes route active: /api/ai-notes");
   console.log("✅ AI Mock Tests route active: /api/ai-mock-tests");
   console.log("✅ AI Roadmaps route active: /api/ai-roadmaps");
@@ -3229,6 +3679,8 @@ const server = app.listen(port, () => {
   console.log("✅ Smart enrolment frontend: /smart-enrolment");
   console.log("✅ Part 57 student-parent portal active: /api/part57/status");
   console.log("✅ Student/Parent portal frontend: /student-parent-portal");
+  console.log("✅ Part 58 enquiry CRM active: /api/part58/status");
+  console.log("✅ Enquiry Follow-up CRM frontend: /enquiry-followup-crm");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");

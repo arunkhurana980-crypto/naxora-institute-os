@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA Part 58 | Enquiry & Follow-Up CRM</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/enquiry-followup-crm.css" />
+</head>
+<body>
+  <div class="crm-shell">
+    <aside class="crm-sidebar">
+      <div class="brand-lockup">
+        <img src="/assets/naxora-logo.svg" alt="NAXORA" onerror="this.style.display='none'" />
+        <div>
+          <strong>NAXORA OS</strong>
+          <span>Part 58 CRM</span>
+        </div>
+      </div>
+      <nav>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/enquiries">Old Enquiries</a>
+        <a href="/followups">Old Follow-ups</a>
+        <a href="/smart-enrolment">Smart Enrolment</a>
+        <a href="/student-parent-portal">Student/Parent Portal</a>
+      </nav>
+      <div class="mini-card">
+        <b>Goal</b>
+        <p>New lead → call notes → follow-up → reminder → admission conversion.</p>
+      </div>
+    </aside>
+
+    <main class="crm-main">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">NAXORA Institute OS v1.0 • Part 58</p>
+          <h1>Enquiry & Follow-Up CRM</h1>
+          <p>Admissions team ke liye lead pipeline, call notes, reminders aur conversion tracking.</p>
+        </div>
+        <div class="hero-actions">
+          <button id="refreshBtn">Refresh</button>
+          <a href="/api/part58/status" target="_blank">API Status</a>
+        </div>
+      </section>
+
+      <section class="stats-grid" id="statsGrid">
+        <div class="stat"><span>Total Leads</span><b id="statTotal">0</b></div>
+        <div class="stat"><span>Converted</span><b id="statConverted">0</b></div>
+        <div class="stat"><span>Overdue</span><b id="statOverdue">0</b></div>
+        <div class="stat"><span>Conversion</span><b id="statRate">0%</b></div>
+      </section>
+
+      <section class="crm-grid">
+        <form class="panel lead-form" id="leadForm">
+          <div class="panel-title">
+            <h2>Create New Lead</h2>
+            <small>Required: student name, phone, course</small>
+          </div>
+          <label>Student Name <input name="studentName" placeholder="Rahul Sharma" required /></label>
+          <label>Parent Name <input name="parentName" placeholder="Mr/Mrs Sharma" /></label>
+          <label>Phone <input name="phone" placeholder="9876543210" required /></label>
+          <label>Class Level <input name="classLevel" placeholder="Class 10" /></label>
+          <label>Course Interest <select name="courseInterest" id="courseSelect" required></select></label>
+          <label>Source <select name="source" id="sourceSelect"></select></label>
+          <label>Priority
+            <select name="priority">
+              <option value="hot">Hot</option>
+              <option value="warm" selected>Warm</option>
+              <option value="cold">Cold</option>
+            </select>
+          </label>
+          <label>Follow-up Date <input name="followUpDate" type="datetime-local" /></label>
+          <label>First Call Note <textarea name="firstNote" placeholder="Parent ne fees/timing puchhi..."></textarea></label>
+          <button type="submit">Save Lead</button>
+          <p class="form-message" id="formMessage"></p>
+        </form>
+
+        <section class="panel leads-panel">
+          <div class="panel-title">
+            <h2>Lead Pipeline</h2>
+            <div class="filters">
+              <input id="searchInput" placeholder="Search name/phone/course" />
+              <select id="statusFilter"><option value="">All Status</option></select>
+            </div>
+          </div>
+          <div id="leadList" class="lead-list"></div>
+        </section>
+      </section>
+
+      <section class="panel detail-panel" id="detailPanel">
+        <div class="panel-title">
+          <h2>Selected Lead</h2>
+          <small>Call notes, follow-up, conversion</small>
+        </div>
+        <div id="selectedLead" class="selected-empty">Lead select karo.</div>
+        <div class="quick-actions" id="quickActions" hidden>
+          <form id="noteForm">
+            <h3>Add Call Note</h3>
+            <select name="outcome" id="outcomeSelect"></select>
+            <textarea name="note" placeholder="Call summary likho..." required></textarea>
+            <button type="submit">Add Note</button>
+          </form>
+          <form id="followForm">
+            <h3>Set Follow-up</h3>
+            <input name="followUpDate" type="datetime-local" required />
+            <input name="reminderNote" placeholder="Reminder note" />
+            <button type="submit">Save Follow-up</button>
+          </form>
+          <form id="convertForm">
+            <h3>Convert Admission</h3>
+            <input name="studentId" placeholder="Student ID optional" />
+            <input name="batchName" placeholder="Batch name" />
+            <input name="expectedFee" type="number" placeholder="Expected fee" />
+            <button type="submit">Mark Converted</button>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="/brand-system.js"></script>
+  <script src="/enquiry-followup-crm.js"></script>
+</body>
+</html>

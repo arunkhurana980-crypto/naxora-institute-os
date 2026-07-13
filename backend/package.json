@@ -1,5 +1,5 @@
 {
-  "name": "naxora-institute-os-part57-student-parent-portal-completion",
+  "name": "naxora-institute-os-part58-enquiry-followup-crm",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -12,7 +12,8 @@
     "check:security": "node scripts/check-security-routes.js",
     "check:part53": "node --check src/server.js",
     "check:part54": "node --check src/server.js",
-    "check:part57": "node --check src/server.js"
+    "check:part57": "node --check src/server.js",
+    "check:part58": "node --check src/server.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
