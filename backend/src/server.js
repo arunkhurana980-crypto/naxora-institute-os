@@ -89,7 +89,15 @@ const publicRoutes = [
   "/enquiry-followup-crm",
   "/enquiry-crm",
   "/followup-crm",
-  "/admission-crm"
+  "/admission-crm",
+  "/public-institute-profile",
+  "/institute-profile-public",
+  "/public-profile",
+  "/institute-showcase",
+  "/request-callback",
+  "/send-enquiry",
+  "/callback",
+  "/institute-enquiry"
 ];
 
 const internalPageFiles = new Set([
@@ -1769,7 +1777,10 @@ const part53PageRegistry = [
   { group: "Other", label: "Library", cleanRoute: "/library", htmlRoute: "/library.html", file: "library.html", critical: false },
   { group: "Audit", label: "Part 53 System Audit", cleanRoute: "/system-audit", htmlRoute: "/system-audit.html", file: "system-audit.html", critical: true },
   { group: "Brand", label: "Part 54 Official Branding", cleanRoute: "/branding", htmlRoute: "/branding.html", file: "branding.html", critical: true },
-  { group: "Security", label: "Part 55 Role Permissions", cleanRoute: "/role-permissions", htmlRoute: "/role-permissions.html", file: "role-permissions.html", critical: true }
+  { group: "Security", label: "Part 55 Role Permissions", cleanRoute: "/role-permissions", htmlRoute: "/role-permissions.html", file: "role-permissions.html", critical: true },
+  { group: "Leads", label: "Part 58 Enquiry CRM", cleanRoute: "/enquiry-followup-crm", htmlRoute: "/enquiry-followup-crm.html", file: "enquiry-followup-crm.html", critical: true },
+  { group: "Discovery", label: "Part 59 Public Institute Profile", cleanRoute: "/public-institute-profile", htmlRoute: "/public-institute-profile.html", file: "public-institute-profile.html", critical: true },
+  { group: "Leads", label: "Part 60 Request Callback / Send Enquiry", cleanRoute: "/request-callback", htmlRoute: "/request-callback.html", file: "request-callback.html", critical: true }
 ];
 
 const part53ApiRegistry = [
@@ -1811,7 +1822,12 @@ const part53ApiRegistry = [
   { group: "Admin", label: "Admin Analytics", prefix: "/api/admin-analytics", method: "GET", critical: false },
   { group: "Part 53", label: "System Audit", prefix: "/api/part53", method: "GET", critical: true },
   { group: "Part 54", label: "Official Branding", prefix: "/api/part54", method: "GET", critical: true },
-  { group: "Part 55", label: "Security and Role Permissions", prefix: "/api/part55", method: "GET", critical: true }
+  { group: "Part 55", label: "Security and Role Permissions", prefix: "/api/part55", method: "GET", critical: true },
+  { group: "Part 56", label: "Smart Student Enrolment", prefix: "/api/part56", method: "GET/POST", critical: true, collection: "part56enrolments" },
+  { group: "Part 57", label: "Student Parent Portal", prefix: "/api/part57", method: "GET", critical: true },
+  { group: "Part 58", label: "Enquiry Follow-Up CRM", prefix: "/api/part58", method: "GET/POST/PATCH", critical: true, collection: "part58leads" },
+  { group: "Part 59", label: "Public Institute Profile", prefix: "/api/part59", method: "GET/POST/PATCH", critical: true, collection: "part59publicprofiles" },
+  { group: "Part 60", label: "Request Callback / Send Enquiry", prefix: "/api/part60", method: "GET/POST/PATCH", critical: true, collection: "part60callbackenquiries" }
 ];
 
 const part53CriticalFlows = [
@@ -3947,6 +3963,355 @@ app.get("/api/part59/demo", (req, res) => {
 });
 // ================= END PART 59 =================
 
+
+
+// ================= PART 60: REQUEST CALLBACK / SEND ENQUIRY =================
+// Roadmap scope: Student enquiry form, course selection, parent contact, preferred timing, consent and institute notification foundation.
+// Safe rule: Part 60 stores consent-based callback/enquiry requests. Real WhatsApp/SMS/email auto-send will be completed in Part 65.
+const part60LeadStatuses = ["new", "callback_requested", "contacted", "demo_scheduled", "converted", "not_interested", "closed"];
+const part60LeadSources = ["public_profile", "nearby_search", "comparison", "landing_page", "manual", "demo"];
+
+const part60Checklist = [
+  "Request callback page opens on /request-callback.",
+  "Send enquiry alternate route opens on /send-enquiry.",
+  "Student/parent name, phone, course interest and preferred timing are captured.",
+  "Consent is required before saving a public enquiry.",
+  "Enquiry is linked with profileId/slug when available from Part 59 public profile.",
+  "MongoDB connected mode stores requests in part60callbackenquiries collection.",
+  "Mock mode fallback works if MongoDB is temporarily unavailable.",
+  "Status can be updated by counsellor/admin after contact.",
+  "Analytics shows total, open, contacted, converted and conversion rate.",
+  "No real WhatsApp/SMS/email auto-send in this part; Part 65 will handle communication integrations."
+];
+
+const part60Config = {
+  fields: [
+    "studentName",
+    "parentName",
+    "phone",
+    "email",
+    "classLevel",
+    "courseInterest",
+    "preferredTiming",
+    "city",
+    "profileId",
+    "message",
+    "consentAccepted"
+  ],
+  required: ["studentName", "phone", "courseInterest", "consentAccepted"],
+  statuses: part60LeadStatuses,
+  sources: part60LeadSources,
+  safety: {
+    consentRequired: true,
+    realMessageSending: false,
+    note: "Part 60 me request save hoti hai. WhatsApp/SMS/Email auto-send Part 65 me add hoga."
+  }
+};
+
+if (!globalThis.NAXORA_PART60_ENQUIRIES) {
+  globalThis.NAXORA_PART60_ENQUIRIES = [
+    {
+      id: "mock-callback-1",
+      requestId: "NX-CB-DEMO-001",
+      profileId: "NX-PROFILE-DEMO-001",
+      profileSlug: "naxora-demo-institute",
+      profileName: "NAXORA Demo Institute",
+      source: "public_profile",
+      studentName: "Aarav Demo",
+      parentName: "Mr. Demo Parent",
+      phone: "9876543210",
+      email: "parent@example.com",
+      classLevel: "Class 10",
+      courseInterest: "Class 10 Board Excellence",
+      preferredTiming: "Evening 5 PM - 7 PM",
+      city: "Delhi",
+      message: "Please call me for batch details and fee structure.",
+      consentAccepted: true,
+      status: "callback_requested",
+      priority: "hot",
+      assignedTo: "Counsellor",
+      notes: [
+        { id: "note-demo-1", note: "Demo request created for Part 60 testing.", createdAt: new Date().toISOString() }
+      ],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      nextFollowUpAt: null
+    }
+  ];
+}
+
+function part60CleanText(value, max = 160) {
+  return String(value || "").replace(/[<>]/g, "").replace(/\s+/g, " ").trim().slice(0, max);
+}
+
+function part60CleanPhone(value) {
+  return String(value || "").replace(/[^0-9+\-\s]/g, "").replace(/\s+/g, " ").trim().slice(0, 25);
+}
+
+function part60NormalizePhone(value) {
+  return String(value || "").replace(/\D/g, "");
+}
+
+function part60AllowedStatus(value) {
+  const cleaned = part60CleanText(value, 60).toLowerCase();
+  return part60LeadStatuses.includes(cleaned) ? cleaned : "new";
+}
+
+function part60AllowedSource(value) {
+  const cleaned = part60CleanText(value, 60).toLowerCase();
+  return part60LeadSources.includes(cleaned) ? cleaned : "public_profile";
+}
+
+function part60PriorityFromBody(body) {
+  const raw = part60CleanText(body?.priority, 30).toLowerCase();
+  if (["hot", "warm", "cold"].includes(raw)) return raw;
+  const msg = [body?.courseInterest, body?.preferredTiming, body?.message].join(" ").toLowerCase();
+  if (msg.includes("today") || msg.includes("urgent") || msg.includes("admission")) return "hot";
+  if (msg.includes("demo") || msg.includes("fees") || msg.includes("batch")) return "warm";
+  return "warm";
+}
+
+function part60ValidateRequest(body = {}) {
+  const errors = [];
+  if (!part60CleanText(body.studentName, 100)) errors.push("Student name required hai.");
+  const phoneDigits = part60NormalizePhone(body.phone);
+  if (phoneDigits.length < 7 || phoneDigits.length > 15) errors.push("Valid parent/student phone required hai.");
+  if (!part60CleanText(body.courseInterest, 120)) errors.push("Course interest required hai.");
+  if (body.consentAccepted !== true && body.consentAccepted !== "true" && body.consentAccepted !== "on") {
+    errors.push("Consent required hai before sending enquiry.");
+  }
+  return errors;
+}
+
+function part60BuildRequest(body = {}, existing = {}) {
+  const now = new Date().toISOString();
+  const requestId = existing.requestId || body.requestId || `NX-CB-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+  return {
+    ...existing,
+    requestId,
+    profileId: part60CleanText(body.profileId || existing.profileId || "NX-PROFILE-DEMO-001", 100),
+    profileSlug: part60CleanText(body.profileSlug || body.slug || existing.profileSlug || "", 120),
+    profileName: part60CleanText(body.profileName || existing.profileName || "", 140),
+    source: part60AllowedSource(body.source || existing.source),
+    studentName: part60CleanText(body.studentName || existing.studentName, 100),
+    parentName: part60CleanText(body.parentName || existing.parentName, 100),
+    phone: part60CleanPhone(body.phone || existing.phone),
+    email: part60CleanText(body.email || existing.email, 120),
+    classLevel: part60CleanText(body.classLevel || existing.classLevel, 60),
+    courseInterest: part60CleanText(body.courseInterest || body.course || existing.courseInterest, 120),
+    preferredTiming: part60CleanText(body.preferredTiming || body.preferredTime || existing.preferredTiming, 120),
+    city: part60CleanText(body.city || existing.city, 80),
+    message: part60CleanText(body.message || existing.message, 400),
+    consentAccepted: body.consentAccepted === true || body.consentAccepted === "true" || body.consentAccepted === "on" || existing.consentAccepted === true,
+    status: part60AllowedStatus(body.status || existing.status || "callback_requested"),
+    priority: part60PriorityFromBody(body || existing),
+    assignedTo: part60CleanText(body.assignedTo || existing.assignedTo || "Counsellor", 80),
+    nextFollowUpAt: body.nextFollowUpAt || existing.nextFollowUpAt || null,
+    notes: existing.notes || [],
+    createdAt: existing.createdAt || now,
+    updatedAt: now
+  };
+}
+
+function part60PublicRequestView(row = {}) {
+  return {
+    requestId: row.requestId,
+    profileId: row.profileId,
+    profileSlug: row.profileSlug,
+    profileName: row.profileName,
+    source: row.source,
+    studentName: row.studentName,
+    parentName: row.parentName,
+    phone: row.phone,
+    email: row.email,
+    classLevel: row.classLevel,
+    courseInterest: row.courseInterest,
+    preferredTiming: row.preferredTiming,
+    city: row.city,
+    message: row.message,
+    consentAccepted: row.consentAccepted === true,
+    status: row.status,
+    priority: row.priority,
+    assignedTo: row.assignedTo,
+    nextFollowUpAt: row.nextFollowUpAt || null,
+    notes: Array.isArray(row.notes) ? row.notes.slice(-10) : [],
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  };
+}
+
+async function part60GetCollection() {
+  if (mongoose.connection.readyState !== 1) return null;
+  return mongoose.connection.db.collection("part60callbackenquiries");
+}
+
+async function part60FindRequestById(requestId) {
+  const cleanId = part60CleanText(requestId, 100);
+  const collection = await part60GetCollection();
+  if (!collection) {
+    return { collection: null, row: globalThis.NAXORA_PART60_ENQUIRIES.find((item) => item.requestId === cleanId || item.id === cleanId) };
+  }
+  const row = await collection.findOne({ requestId: cleanId });
+  return { collection, row };
+}
+
+function part60BuildAnalytics(rows = []) {
+  const total = rows.length;
+  const statusCounts = rows.reduce((acc, row) => {
+    acc[row.status || "new"] = (acc[row.status || "new"] || 0) + 1;
+    return acc;
+  }, {});
+  const openStatuses = ["new", "callback_requested", "contacted", "demo_scheduled"];
+  const open = rows.filter((row) => openStatuses.includes(row.status)).length;
+  const converted = rows.filter((row) => row.status === "converted").length;
+  const contacted = rows.filter((row) => ["contacted", "demo_scheduled", "converted"].includes(row.status)).length;
+  const hot = rows.filter((row) => row.priority === "hot").length;
+  return {
+    total,
+    open,
+    contacted,
+    converted,
+    hot,
+    statusCounts,
+    conversionRate: total ? Number(((converted / total) * 100).toFixed(2)) : 0
+  };
+}
+
+async function part60SaveRequest(req, res) {
+  const body = req.body || {};
+  const errors = part60ValidateRequest(body);
+  if (errors.length) return res.status(400).json({ success: false, message: "Enquiry validation failed.", errors });
+
+  let profileName = part60CleanText(body.profileName, 140);
+  if (!profileName && body.profileId && typeof part59FindProfileById === "function") {
+    try {
+      const found = await part59FindProfileById(body.profileId);
+      if (found?.row?.name) profileName = found.row.name;
+    } catch (error) {
+      profileName = "";
+    }
+  }
+
+  const payload = part60BuildRequest({ ...body, profileName }, {});
+  const collection = await part60GetCollection();
+  if (!collection) {
+    globalThis.NAXORA_PART60_ENQUIRIES.unshift({ id: payload.requestId, ...payload });
+    return res.status(201).json({
+      success: true,
+      mode: "mock",
+      message: "Callback/enquiry request mock mode me save ho gayi.",
+      request: part60PublicRequestView(payload),
+      nextStep: "Counsellor Part 58 CRM ya Part 60 list me follow-up karega."
+    });
+  }
+  await collection.insertOne(payload);
+  const saved = await collection.findOne({ requestId: payload.requestId });
+  res.status(201).json({
+    success: true,
+    mode: "mongodb",
+    message: "Callback/enquiry request MongoDB me save ho gayi.",
+    request: part60PublicRequestView(saved),
+    nextStep: "Counsellor Part 58 CRM ya Part 60 list me follow-up karega."
+  });
+}
+
+app.get("/request-callback", (req, res) => sendFileSafe(res, "request-callback.html"));
+app.get("/send-enquiry", (req, res) => sendFileSafe(res, "request-callback.html"));
+app.get("/callback", (req, res) => sendFileSafe(res, "request-callback.html"));
+app.get("/institute-enquiry", (req, res) => sendFileSafe(res, "request-callback.html"));
+
+app.get("/api/part60/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 60 - Request Callback / Send Enquiry",
+    status: "active",
+    dbMode: mongoose.connection.readyState === 1 ? "mongodb" : "mock",
+    purpose: "Student enquiry form, course selection, parent contact, preferred timing, consent and institute notification foundation.",
+    currentVersionPlan: "Part 53–78 = NAXORA OS 1.0 completion. Part 79–110 = NAXORA OS 2.0 development.",
+    nextPart: "Part 61 - Nearby Institutes"
+  });
+});
+
+app.get("/api/part60/config", (req, res) => {
+  res.json({ success: true, part: "Part 60 - Request Callback / Send Enquiry", config: part60Config });
+});
+
+app.post("/api/part60/callback", part60SaveRequest);
+app.post("/api/part60/enquiry", part60SaveRequest);
+app.post("/api/part60/request-callback", part60SaveRequest);
+
+app.get("/api/part60/enquiries", async (req, res) => {
+  const collection = await part60GetCollection();
+  const status = part60CleanText(req.query.status, 60).toLowerCase();
+  let rows = [];
+  if (!collection) {
+    rows = globalThis.NAXORA_PART60_ENQUIRIES;
+  } else {
+    const filter = part60LeadStatuses.includes(status) ? { status } : {};
+    rows = await collection.find(filter).sort({ updatedAt: -1 }).limit(100).toArray();
+  }
+  if (!collection && part60LeadStatuses.includes(status)) rows = rows.filter((row) => row.status === status);
+  res.json({ success: true, mode: collection ? "mongodb" : "mock", count: rows.length, enquiries: rows.map(part60PublicRequestView), analytics: part60BuildAnalytics(rows) });
+});
+
+app.get("/api/part60/enquiries/:requestId", async (req, res) => {
+  const { collection, row } = await part60FindRequestById(req.params.requestId);
+  if (!row) return res.status(404).json({ success: false, message: "Callback/enquiry request nahi mili." });
+  res.json({ success: true, mode: collection ? "mongodb" : "mock", request: part60PublicRequestView(row) });
+});
+
+app.patch("/api/part60/enquiries/:requestId/status", async (req, res) => {
+  const status = part60AllowedStatus(req.body?.status || "contacted");
+  const noteText = part60CleanText(req.body?.note || `Status changed to ${status}`, 240);
+  const nextFollowUpAt = req.body?.nextFollowUpAt || null;
+  const { collection, row } = await part60FindRequestById(req.params.requestId);
+  if (!row) return res.status(404).json({ success: false, message: "Callback/enquiry request nahi mili." });
+  const note = { id: `note-${Date.now().toString(36)}`, note: noteText, createdAt: new Date().toISOString() };
+  const update = { status, nextFollowUpAt, updatedAt: new Date().toISOString() };
+  if (!collection) {
+    const index = globalThis.NAXORA_PART60_ENQUIRIES.findIndex((item) => item.requestId === row.requestId);
+    globalThis.NAXORA_PART60_ENQUIRIES[index] = { ...globalThis.NAXORA_PART60_ENQUIRIES[index], ...update, notes: [...(row.notes || []), note] };
+    return res.json({ success: true, mode: "mock", request: part60PublicRequestView(globalThis.NAXORA_PART60_ENQUIRIES[index]) });
+  }
+  await collection.updateOne({ requestId: row.requestId }, { $set: update, $push: { notes: note } });
+  const saved = await collection.findOne({ requestId: row.requestId });
+  res.json({ success: true, mode: "mongodb", request: part60PublicRequestView(saved) });
+});
+
+app.get("/api/part60/reminders", async (req, res) => {
+  const collection = await part60GetCollection();
+  const closedStatuses = ["converted", "not_interested", "closed"];
+  let rows = [];
+  if (!collection) {
+    rows = globalThis.NAXORA_PART60_ENQUIRIES.filter((row) => !closedStatuses.includes(row.status));
+  } else {
+    rows = await collection.find({ status: { $nin: closedStatuses } }).sort({ updatedAt: -1 }).limit(100).toArray();
+  }
+  res.json({ success: true, count: rows.length, reminders: rows.map(part60PublicRequestView) });
+});
+
+app.get("/api/part60/analytics", async (req, res) => {
+  const collection = await part60GetCollection();
+  const rows = collection ? await collection.find({}).sort({ updatedAt: -1 }).limit(1000).toArray() : globalThis.NAXORA_PART60_ENQUIRIES;
+  res.json({ success: true, part: "Part 60 - Request Callback / Send Enquiry", analytics: part60BuildAnalytics(rows), generatedAt: new Date().toISOString() });
+});
+
+app.get("/api/part60/checklist", (req, res) => {
+  res.json({ success: true, part: "Part 60 - Request Callback / Send Enquiry", checklist: part60Checklist });
+});
+
+app.get("/api/part60/export", async (req, res) => {
+  const collection = await part60GetCollection();
+  const rows = collection ? await collection.find({}).sort({ updatedAt: -1 }).limit(1000).toArray() : globalThis.NAXORA_PART60_ENQUIRIES;
+  res.json({ success: true, part: "Part 60 - Request Callback / Send Enquiry", exportedAt: new Date().toISOString(), count: rows.length, enquiries: rows.map(part60PublicRequestView) });
+});
+
+app.get("/api/part60/demo", (req, res) => {
+  const rows = globalThis.NAXORA_PART60_ENQUIRIES.map(part60PublicRequestView);
+  res.json({ success: true, part: "Part 60 - Request Callback / Send Enquiry", count: rows.length, enquiries: rows, analytics: part60BuildAnalytics(rows), checklist: part60Checklist });
+});
+// ================= END PART 60 =================
+
 // Same-server frontend hosting for Render/Railway/VPS deployment.
 app.use("/landing", express.static(frontendPath));
 
@@ -4037,7 +4402,11 @@ const modulePageRoutes = {
   "/public-institute-profile": "public-institute-profile.html",
   "/institute-profile-public": "public-institute-profile.html",
   "/public-profile": "public-institute-profile.html",
-  "/institute-showcase": "public-institute-profile.html"
+  "/institute-showcase": "public-institute-profile.html",
+  "/request-callback": "request-callback.html",
+  "/send-enquiry": "request-callback.html",
+  "/callback": "request-callback.html",
+  "/institute-enquiry": "request-callback.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -4079,7 +4448,7 @@ await connectDB();
 
 const server = app.listen(port, () => {
   console.log("✅ PART 59 PUBLIC INSTITUTE PROFILE ACTIVE");
-  console.log("✅ All routes Part 1 to Part 58 loaded + Part 59 public institute profile");
+  console.log("✅ All routes Part 1 to Part 59 loaded + Part 60 request callback/send enquiry");
   console.log("✅ AI Notes route active: /api/ai-notes");
   console.log("✅ AI Mock Tests route active: /api/ai-mock-tests");
   console.log("✅ AI Roadmaps route active: /api/ai-roadmaps");
@@ -4133,6 +4502,7 @@ const server = app.listen(port, () => {
   console.log("✅ Enquiry Follow-up CRM frontend: /enquiry-followup-crm");
   console.log("✅ Part 59 public institute profile active: /api/part59/status");
   console.log("✅ Public institute profile frontend: /public-institute-profile");
+  console.log("✅ Part 60 request callback active: /api/part60/status + /request-callback");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");

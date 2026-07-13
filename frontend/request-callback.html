@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA OS | Request Callback / Send Enquiry</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/request-callback.css" />
+</head>
+<body>
+  <main class="part60-shell">
+    <section class="part60-hero">
+      <div class="part60-brand-row">
+        <img src="/assets/naxora-logo.svg" alt="NAXORA" onerror="this.style.display='none'" />
+        <span>Part 60 · Request Callback / Send Enquiry</span>
+      </div>
+      <h1>Student enquiry ko direct admission follow-up me convert karo</h1>
+      <p>
+        Public institute profile se parent/student ka callback request, course interest,
+        preferred timing aur consent capture karo. Real WhatsApp/SMS/Email auto-send Part 65 me aayega.
+      </p>
+      <div class="part60-pill-row">
+        <span>Consent Required</span>
+        <span>MongoDB Save</span>
+        <span>CRM Handoff</span>
+        <span>Part 61 Ready</span>
+      </div>
+    </section>
+
+    <section class="part60-grid">
+      <div class="part60-card part60-form-card">
+        <div class="part60-card-head">
+          <h2>Send Enquiry</h2>
+          <p>Student/parent details fill karo. Form save hote hi enquiry Part 60 list me aa jayegi.</p>
+        </div>
+
+        <form id="part60Form" class="part60-form">
+          <div class="part60-two">
+            <label>
+              Student Name <b>*</b>
+              <input name="studentName" placeholder="Example: Rahul Sharma" required />
+            </label>
+            <label>
+              Parent/Guardian Name
+              <input name="parentName" placeholder="Example: Mr. Sharma" />
+            </label>
+          </div>
+
+          <div class="part60-two">
+            <label>
+              Phone <b>*</b>
+              <input name="phone" placeholder="Example: 9876543210" required />
+            </label>
+            <label>
+              Email
+              <input name="email" type="email" placeholder="parent@example.com" />
+            </label>
+          </div>
+
+          <div class="part60-two">
+            <label>
+              Class / Level
+              <input name="classLevel" placeholder="Class 10 / JEE / NEET" />
+            </label>
+            <label>
+              Course Interest <b>*</b>
+              <input name="courseInterest" placeholder="Class 10 Board Excellence" required />
+            </label>
+          </div>
+
+          <div class="part60-two">
+            <label>
+              Preferred Timing
+              <select name="preferredTiming">
+                <option value="Morning 8 AM - 11 AM">Morning 8 AM - 11 AM</option>
+                <option value="Afternoon 12 PM - 3 PM">Afternoon 12 PM - 3 PM</option>
+                <option value="Evening 5 PM - 8 PM" selected>Evening 5 PM - 8 PM</option>
+                <option value="Weekend">Weekend</option>
+              </select>
+            </label>
+            <label>
+              City
+              <input name="city" placeholder="Delhi" />
+            </label>
+          </div>
+
+          <div class="part60-two">
+            <label>
+              Profile ID / Slug
+              <input name="profileId" id="profileIdInput" placeholder="NX-PROFILE-DEMO-001" />
+            </label>
+            <label>
+              Source
+              <select name="source">
+                <option value="public_profile">Public Profile</option>
+                <option value="nearby_search">Nearby Search</option>
+                <option value="comparison">Comparison</option>
+                <option value="landing_page">Landing Page</option>
+                <option value="manual">Manual</option>
+              </select>
+            </label>
+          </div>
+
+          <label>
+            Message
+            <textarea name="message" placeholder="Please call me for fees, batch timing and demo class details."></textarea>
+          </label>
+
+          <label class="part60-consent">
+            <input type="checkbox" name="consentAccepted" required />
+            <span>I agree that the institute/NAXORA can contact me for admission enquiry follow-up.</span>
+          </label>
+
+          <button type="submit" class="part60-primary">Submit Enquiry</button>
+          <p id="part60Message" class="part60-message">Ready.</p>
+        </form>
+      </div>
+
+      <aside class="part60-card">
+        <div class="part60-card-head">
+          <h2>Live Status</h2>
+          <p>Part 60 backend, analytics and latest enquiry preview.</p>
+        </div>
+        <div id="part60Status" class="part60-status-box">Loading status...</div>
+        <div id="part60Analytics" class="part60-mini-grid"></div>
+      </aside>
+    </section>
+
+    <section class="part60-card">
+      <div class="part60-card-head part60-row-between">
+        <div>
+          <h2>Recent Callback / Enquiry Requests</h2>
+          <p>Latest requests yahan dikhenge. Real follow-up CRM Part 58 ke saath connect rahega.</p>
+        </div>
+        <button id="refreshPart60" class="part60-secondary">Refresh</button>
+      </div>
+      <div id="part60List" class="part60-list">Loading enquiries...</div>
+    </section>
+
+    <section class="part60-card">
+      <div class="part60-card-head">
+        <h2>Why Part 60 matters</h2>
+        <p>Part 59 public profile ke baad student ko direct action chahiye: call request ya enquiry submit.</p>
+      </div>
+      <div class="part60-explain-grid">
+        <div><b>Student</b><span>Course enquiry easily send karega.</span></div>
+        <div><b>Parent</b><span>Preferred callback timing choose karega.</span></div>
+        <div><b>Institute</b><span>Qualified leads miss nahi honge.</span></div>
+        <div><b>NAXORA</b><span>Discovery → enquiry → admission journey ready hogi.</span></div>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/request-callback.js"></script>
+</body>
+</html>
