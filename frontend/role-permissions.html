@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>NAXORA Role Permissions | Part 55</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="brand-system.css" />
+  <link rel="stylesheet" href="role-permissions.css" />
+  <link rel="stylesheet" href="mobile-polish.css" />
+  <link rel="stylesheet" href="theme-system.css" />
+</head>
+<body>
+  <main class="rbac-layout">
+    <div class="logo"><span>N</span><b>NAXORA</b></div>
+
+    <section class="rbac-hero brand-card">
+      <p class="brand-eyebrow">PART 55 · SECURITY AND ROLE PERMISSIONS</p>
+      <h1>Role-wise access control foundation for NAXORA OS 1.0.</h1>
+      <p class="lead small">Har user ko sirf required data aur actions dikhane ke liye official RBAC matrix add ho gaya: Super Admin, Institute Owner, Sub-Admin, Teacher, Staff, Student aur Parent.</p>
+      <div class="rbac-actions">
+        <a class="brand-btn" href="/api/part55/status">API Status</a>
+        <a class="ghost-btn brand-link-btn" href="/security">Open Security Page</a>
+        <a class="ghost-btn brand-link-btn" href="/dashboard">Dashboard</a>
+      </div>
+      <div id="part55Status" class="rbac-status">Checking Part 55 API…</div>
+    </section>
+
+    <section class="rbac-grid">
+      <div class="brand-card">
+        <div class="section-head">
+          <h2>Official Roles</h2>
+          <p>Version 1.0 ke liye final role list.</p>
+        </div>
+        <div id="roleCards" class="role-card-grid"></div>
+      </div>
+
+      <div class="brand-card">
+        <div class="section-head">
+          <h2>Access Checker</h2>
+          <p>Role + permission select karke check karo ki action allowed hai ya nahi.</p>
+        </div>
+        <div class="checker-box">
+          <label>Role</label>
+          <select id="roleSelect"></select>
+          <label>Permission</label>
+          <select id="permissionSelect"></select>
+          <button id="checkAccessBtn" class="brand-btn" type="button">Check Access</button>
+          <div id="accessResult" class="access-result">Select role and permission.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="brand-card rbac-section">
+      <div class="section-head">
+        <h2>Permission Matrix</h2>
+        <p>Ye table batata hai kaunse role ke paas kitne permissions hain.</p>
+      </div>
+      <div class="matrix-wrap">
+        <table class="matrix-table">
+          <thead>
+            <tr>
+              <th>Role</th>
+              <th>Scope</th>
+              <th>Permissions</th>
+              <th>Default Page</th>
+            </tr>
+          </thead>
+          <tbody id="matrixBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="brand-card rbac-section">
+      <div class="section-head">
+        <h2>Protected Areas</h2>
+        <p>Client launch se pehle in routes ko role-wise verify karna hai.</p>
+      </div>
+      <div id="protectedAreas" class="protected-grid"></div>
+    </section>
+
+    <section class="brand-card rbac-section warning-card">
+      <h2>Founder Note</h2>
+      <p>Part 55 ne role-permission foundation add kiya hai. Existing live flows ko todne se bachane ke liye hard enforcement staged rollout me rakha hai. Ab Part 53 audit ke saath test karke route-by-route enforcement strong karenge.</p>
+    </section>
+  </main>
+
+  <script src="brand-system.js"></script>
+  <script src="role-permissions.js"></script>
+</body>
+</html>

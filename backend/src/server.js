@@ -75,7 +75,9 @@ const publicRoutes = [
   "/parent",
   "/admin",
   "/branding",
-  "/brand"
+  "/brand",
+  "/role-permissions",
+  "/permissions"
 ];
 
 const internalPageFiles = new Set([
@@ -206,6 +208,8 @@ app.get("/parent", (req, res) => sendFileSafe(res, "parents.html"));
 app.get("/admin", (req, res) => sendFileSafe(res, "super-admin.html"));
 app.get("/branding", (req, res) => sendFileSafe(res, "branding.html"));
 app.get("/brand", (req, res) => sendFileSafe(res, "branding.html"));
+app.get("/role-permissions", (req, res) => sendFileSafe(res, "role-permissions.html"));
+app.get("/permissions", (req, res) => sendFileSafe(res, "role-permissions.html"));
 
 app.get("/api/health", (req, res) => {
   res.json({
@@ -214,7 +218,7 @@ app.get("/api/health", (req, res) => {
     status: "running",
     dbMode: globalThis.NAXORA_DB_MODE || "starting",
     note: globalThis.NAXORA_DB_MODE === "mock" ? "MongoDB connect nahi hai, par backend crash-free mock mode me chal raha hai." : "MongoDB connected mode.",
-    part: "Part 54 - Official NAXORA Branding",
+    part: "Part 55 - Security and Role Permissions",
     environment: process.env.NODE_ENV || "development",
     timestamp: new Date().toISOString(),
   });
@@ -1752,7 +1756,8 @@ const part53PageRegistry = [
   { group: "Other", label: "Certificates", cleanRoute: "/certificates", htmlRoute: "/certificates.html", file: "certificates.html", critical: false },
   { group: "Other", label: "Library", cleanRoute: "/library", htmlRoute: "/library.html", file: "library.html", critical: false },
   { group: "Audit", label: "Part 53 System Audit", cleanRoute: "/system-audit", htmlRoute: "/system-audit.html", file: "system-audit.html", critical: true },
-  { group: "Brand", label: "Part 54 Official Branding", cleanRoute: "/branding", htmlRoute: "/branding.html", file: "branding.html", critical: true }
+  { group: "Brand", label: "Part 54 Official Branding", cleanRoute: "/branding", htmlRoute: "/branding.html", file: "branding.html", critical: true },
+  { group: "Security", label: "Part 55 Role Permissions", cleanRoute: "/role-permissions", htmlRoute: "/role-permissions.html", file: "role-permissions.html", critical: true }
 ];
 
 const part53ApiRegistry = [
@@ -1793,7 +1798,8 @@ const part53ApiRegistry = [
   { group: "Admin", label: "Super Admin", prefix: "/api/super-admin", method: "GET/POST", critical: true, collection: "superadminactions" },
   { group: "Admin", label: "Admin Analytics", prefix: "/api/admin-analytics", method: "GET", critical: false },
   { group: "Part 53", label: "System Audit", prefix: "/api/part53", method: "GET", critical: true },
-  { group: "Part 54", label: "Official Branding", prefix: "/api/part54", method: "GET", critical: true }
+  { group: "Part 54", label: "Official Branding", prefix: "/api/part54", method: "GET", critical: true },
+  { group: "Part 55", label: "Security and Role Permissions", prefix: "/api/part55", method: "GET", critical: true }
 ];
 
 const part53CriticalFlows = [
@@ -1865,9 +1871,9 @@ async function getPart53DbCollectionStatus() {
 async function buildPart53AuditReport(req) {
   const env = getPart53EnvStatus(req);
   const pages = part53PageRegistry.map(part53FileStatus);
-  const apiPrefixes = new Set(["/api/health", "/api/part53", "/api/part54", "/api/parents", "/api/staff", "/api/progress", ...majorModuleRoutes]);
+  const apiPrefixes = new Set(["/api/health", "/api/part53", "/api/part54", "/api/part55", "/api/parents", "/api/staff", "/api/progress", ...majorModuleRoutes]);
   const apis = part53ApiRegistry.map((item) => {
-    const mounted = item.prefix === "/api/health" || item.prefix === "/api/part53" || item.prefix === "/api/part54" || apiPrefixes.has(item.prefix);
+    const mounted = item.prefix === "/api/health" || item.prefix === "/api/part53" || item.prefix === "/api/part54" || item.prefix === "/api/part55" || apiPrefixes.has(item.prefix);
     return {
       ...item,
       registered: mounted,
@@ -2048,6 +2054,283 @@ app.get("/api/part54/assets", (req, res) => {
 });
 // ================= END PART 54 =================
 
+// ================= PART 55: SECURITY AND ROLE PERMISSIONS =================
+// Roadmap: NAXORA Super Admin, Institute Owner, Sub-Admin, Teacher, Staff,
+// Student and Parent ko role-wise permissions dena. Is part me safe RBAC
+// foundation + live permission matrix add hai. Existing client flows ko todne
+// se bachane ke liye hard-enforcement ko staged rollout me rakha gaya hai.
+const part55RoleDefinitions = [
+  {
+    key: "naxora_super_admin",
+    label: "NAXORA Super Admin",
+    level: 100,
+    scope: "platform",
+    description: "Pure NAXORA platform, institutes, subscriptions, analytics aur support actions ka central control.",
+    defaultLanding: "/admin",
+    badge: "Platform Control"
+  },
+  {
+    key: "institute_owner",
+    label: "Institute Owner",
+    level: 90,
+    scope: "institute",
+    description: "Apne institute ka full business, academic, people, finance aur settings control.",
+    defaultLanding: "/dashboard",
+    badge: "Institute Admin"
+  },
+  {
+    key: "sub_admin",
+    label: "Sub-Admin",
+    level: 70,
+    scope: "institute",
+    description: "Owner ke behalf par daily operations manage karega, lekin billing/security final control limited rahega.",
+    defaultLanding: "/dashboard",
+    badge: "Operations"
+  },
+  {
+    key: "teacher",
+    label: "Teacher",
+    level: 50,
+    scope: "assigned_batches",
+    description: "Assigned batches, attendance, assignments, tests aur student progress dekh/sambhal sakta hai.",
+    defaultLanding: "/teachers",
+    badge: "Academic"
+  },
+  {
+    key: "staff",
+    label: "Staff",
+    level: 40,
+    scope: "assigned_desk",
+    description: "Reception/account/counselling work ke hisaab se enquiry, follow-up, attendance aur fee entry support.",
+    defaultLanding: "/staff",
+    badge: "Desk Team"
+  },
+  {
+    key: "student",
+    label: "Student",
+    level: 20,
+    scope: "self",
+    description: "Apni classes, notes, tests, assignments, attendance aur fees summary dekh sakta hai.",
+    defaultLanding: "/student",
+    badge: "Learner"
+  },
+  {
+    key: "parent",
+    label: "Parent",
+    level: 20,
+    scope: "linked_children",
+    description: "Linked child ki attendance, fee, reports, notices aur progress dekh sakta hai.",
+    defaultLanding: "/parent",
+    badge: "Guardian"
+  }
+];
+
+const part55PermissionCatalog = [
+  { key: "platform.manage", group: "Platform", title: "NAXORA platform manage" },
+  { key: "institutes.manage", group: "Platform", title: "Institutes approve/manage" },
+  { key: "subscriptions.manage", group: "SaaS", title: "Plans/subscriptions manage" },
+  { key: "analytics.view", group: "Admin", title: "Admin analytics view" },
+  { key: "settings.manage", group: "Admin", title: "Institute settings manage" },
+  { key: "security.manage", group: "Admin", title: "Security settings manage" },
+  { key: "users.manage", group: "People", title: "Users and roles manage" },
+  { key: "students.read", group: "People", title: "Students read" },
+  { key: "students.write", group: "People", title: "Students add/update" },
+  { key: "parents.read", group: "People", title: "Parents read" },
+  { key: "parents.write", group: "People", title: "Parents add/update" },
+  { key: "teachers.read", group: "People", title: "Teachers read" },
+  { key: "teachers.write", group: "People", title: "Teachers add/update" },
+  { key: "staff.read", group: "People", title: "Staff read" },
+  { key: "staff.write", group: "People", title: "Staff add/update" },
+  { key: "batches.read", group: "Academic", title: "Batches read" },
+  { key: "batches.write", group: "Academic", title: "Batches create/update" },
+  { key: "attendance.read", group: "Academic", title: "Attendance read" },
+  { key: "attendance.write", group: "Academic", title: "Attendance mark/update" },
+  { key: "assignments.read", group: "Academic", title: "Assignments read" },
+  { key: "assignments.write", group: "Academic", title: "Assignments create/update" },
+  { key: "tests.read", group: "Academic", title: "Tests/results read" },
+  { key: "tests.write", group: "Academic", title: "Tests/results create/update" },
+  { key: "reports.view", group: "Academic", title: "Reports view" },
+  { key: "fees.read", group: "Money", title: "Fees read" },
+  { key: "fees.write", group: "Money", title: "Fees entry/update" },
+  { key: "finance.view", group: "Money", title: "Finance summary view" },
+  { key: "payments.manage", group: "Money", title: "Payments manage" },
+  { key: "enquiries.read", group: "Leads", title: "Enquiries read" },
+  { key: "enquiries.write", group: "Leads", title: "Enquiries add/update" },
+  { key: "followups.manage", group: "Leads", title: "Follow-ups manage" },
+  { key: "live_classes.manage", group: "Online", title: "Live classes manage" },
+  { key: "notices.manage", group: "Communication", title: "Announcements/notifications manage" },
+  { key: "ai.use", group: "AI", title: "AI tools use" },
+  { key: "self.profile", group: "Self", title: "Own profile view/update" },
+  { key: "child.progress", group: "Parent", title: "Linked child progress view" }
+];
+
+const part55RolePermissions = {
+  naxora_super_admin: ["*"],
+  institute_owner: [
+    "settings.manage", "security.manage", "users.manage", "analytics.view", "subscriptions.manage",
+    "students.read", "students.write", "parents.read", "parents.write", "teachers.read", "teachers.write",
+    "staff.read", "staff.write", "batches.read", "batches.write", "attendance.read", "attendance.write",
+    "assignments.read", "assignments.write", "tests.read", "tests.write", "reports.view", "fees.read", "fees.write",
+    "finance.view", "payments.manage", "enquiries.read", "enquiries.write", "followups.manage", "live_classes.manage",
+    "notices.manage", "ai.use", "self.profile"
+  ],
+  sub_admin: [
+    "students.read", "students.write", "parents.read", "parents.write", "teachers.read", "staff.read",
+    "batches.read", "batches.write", "attendance.read", "attendance.write", "assignments.read", "assignments.write",
+    "tests.read", "tests.write", "reports.view", "fees.read", "fees.write", "enquiries.read", "enquiries.write",
+    "followups.manage", "live_classes.manage", "notices.manage", "ai.use", "self.profile"
+  ],
+  teacher: [
+    "students.read", "parents.read", "batches.read", "attendance.read", "attendance.write", "assignments.read",
+    "assignments.write", "tests.read", "tests.write", "reports.view", "live_classes.manage", "ai.use", "self.profile"
+  ],
+  staff: [
+    "students.read", "students.write", "parents.read", "parents.write", "attendance.read", "attendance.write",
+    "fees.read", "fees.write", "enquiries.read", "enquiries.write", "followups.manage", "notices.manage", "self.profile"
+  ],
+  student: ["self.profile", "batches.read", "attendance.read", "assignments.read", "tests.read", "fees.read", "live_classes.manage", "ai.use"],
+  parent: ["self.profile", "child.progress", "students.read", "attendance.read", "assignments.read", "tests.read", "fees.read", "notices.manage"]
+};
+
+const part55ProtectedAreas = [
+  { area: "Super Admin", route: "/admin", api: "/api/super-admin", allowedRoles: ["naxora_super_admin"] },
+  { area: "Institute Dashboard", route: "/dashboard", api: "/api/dashboard", allowedRoles: ["naxora_super_admin", "institute_owner", "sub_admin"] },
+  { area: "Students", route: "/student", api: "/api/students", allowedRoles: ["naxora_super_admin", "institute_owner", "sub_admin", "teacher", "staff"] },
+  { area: "Parent Portal", route: "/parent", api: "/api/parents", allowedRoles: ["naxora_super_admin", "institute_owner", "sub_admin", "parent"] },
+  { area: "Teacher Work", route: "/teachers", api: "/api/teachers", allowedRoles: ["naxora_super_admin", "institute_owner", "sub_admin", "teacher"] },
+  { area: "Fees", route: "/fees", api: "/api/fees", allowedRoles: ["naxora_super_admin", "institute_owner", "sub_admin", "staff", "student", "parent"] },
+  { area: "Finance", route: "/finance", api: "/api/finance", allowedRoles: ["naxora_super_admin", "institute_owner"] },
+  { area: "Security", route: "/security", api: "/api/security", allowedRoles: ["naxora_super_admin", "institute_owner"] },
+  { area: "Role Permissions", route: "/role-permissions", api: "/api/part55", allowedRoles: ["naxora_super_admin", "institute_owner"] }
+];
+
+const part55Checklist = [
+  { item: "7 official roles defined", status: "done" },
+  { item: "Permission catalog created", status: "done" },
+  { item: "Role-to-permission matrix created", status: "done" },
+  { item: "Protected areas mapping added", status: "done" },
+  { item: "Permission checker API added", status: "done" },
+  { item: "Role Permissions frontend page added", status: "done" },
+  { item: "No .env or secret required", status: "safe" },
+  { item: "Hard enforcement on existing APIs", status: "staged-rollout", note: "Part 55 foundation active hai; existing routes ko todne se bachane ke liye full enforcement ko audit ke baad apply karna hai." }
+];
+
+function normalizePart55Role(role) {
+  return String(role || "").trim().toLowerCase().replace(/[\s-]+/g, "_");
+}
+
+function part55RoleExists(role) {
+  const normalized = normalizePart55Role(role);
+  return part55RoleDefinitions.some((item) => item.key === normalized);
+}
+
+function part55HasPermission(role, permission) {
+  const normalizedRole = normalizePart55Role(role);
+  const requestedPermission = String(permission || "").trim();
+  const permissions = part55RolePermissions[normalizedRole] || [];
+  if (permissions.includes("*")) return true;
+  if (permissions.includes(requestedPermission)) return true;
+  const [group] = requestedPermission.split(".");
+  return permissions.includes(`${group}.*`);
+}
+
+function buildPart55Matrix() {
+  return part55RoleDefinitions.map((role) => {
+    const permissions = part55RolePermissions[role.key] || [];
+    return {
+      ...role,
+      permissions,
+      permissionCount: permissions.includes("*") ? part55PermissionCatalog.length : permissions.length,
+      hasFullAccess: permissions.includes("*")
+    };
+  });
+}
+
+function part55RequirePermission(permission) {
+  return (req, res, next) => {
+    const roleFromHeader = req.get("x-naxora-role") || req.user?.role || req.query?.role;
+    if (part55HasPermission(roleFromHeader, permission)) return next();
+    return res.status(403).json({
+      success: false,
+      code: "ROLE_PERMISSION_DENIED",
+      message: "Is role ko ye action allowed nahi hai.",
+      requiredPermission: permission,
+      receivedRole: normalizePart55Role(roleFromHeader),
+      hint: "Login token ke role ko Part 55 matrix ke saath map karo."
+    });
+  };
+}
+
+globalThis.NAXORA_PART55 = {
+  roles: part55RoleDefinitions,
+  permissions: part55PermissionCatalog,
+  rolePermissions: part55RolePermissions,
+  protectedAreas: part55ProtectedAreas,
+  hasPermission: part55HasPermission,
+  requirePermission: part55RequirePermission
+};
+
+app.get("/role-permissions", (req, res) => sendFileSafe(res, "role-permissions.html"));
+app.get("/permissions", (req, res) => sendFileSafe(res, "role-permissions.html"));
+
+app.get("/api/part55/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 55 - Security and Role Permissions",
+    status: "active",
+    basedOn: "Part 54 - Official NAXORA Branding",
+    purpose: "Har user ko sirf required data/actions dikhane ke liye role-based permission foundation.",
+    roles: part55RoleDefinitions.map((role) => role.key),
+    totalRoles: part55RoleDefinitions.length,
+    totalPermissions: part55PermissionCatalog.length,
+    frontend: ["/role-permissions", "/permissions"],
+    routes: ["/api/part55/status", "/api/part55/roles", "/api/part55/permission-catalog", "/api/part55/matrix", "/api/part55/protected-areas", "/api/part55/check-access", "/api/part55/checklist"],
+    enforcementMode: "safe-foundation-staged-rollout",
+    currentVersionPlan: "Part 53-78 = NAXORA OS 1.0 completion. Part 79-110 = NAXORA OS 2.0 development."
+  });
+});
+
+app.get("/api/part55/roles", (req, res) => {
+  res.json({ success: true, part: "Part 55 - Security and Role Permissions", roles: part55RoleDefinitions });
+});
+
+app.get("/api/part55/permission-catalog", (req, res) => {
+  res.json({ success: true, permissions: part55PermissionCatalog });
+});
+
+app.get("/api/part55/matrix", (req, res) => {
+  res.json({ success: true, matrix: buildPart55Matrix(), permissions: part55PermissionCatalog });
+});
+
+app.get("/api/part55/protected-areas", (req, res) => {
+  res.json({ success: true, protectedAreas: part55ProtectedAreas });
+});
+
+app.get("/api/part55/check-access", (req, res) => {
+  const role = normalizePart55Role(req.query.role || req.get("x-naxora-role") || "");
+  const permission = String(req.query.permission || "").trim();
+  if (!role || !permission) {
+    return res.status(400).json({
+      success: false,
+      message: "role aur permission query required hain. Example: /api/part55/check-access?role=teacher&permission=attendance.write"
+    });
+  }
+  const exists = part55RoleExists(role);
+  res.json({
+    success: true,
+    role,
+    roleExists: exists,
+    permission,
+    allowed: exists ? part55HasPermission(role, permission) : false,
+    reason: exists ? "Part 55 matrix checked." : "Unknown role."
+  });
+});
+
+app.get("/api/part55/checklist", (req, res) => {
+  res.json({ success: true, part: "Part 55 - Security and Role Permissions", checklist: part55Checklist });
+});
+// ================= END PART 55 =================
+
 
 // Same-server frontend hosting for Render/Railway/VPS deployment.
 app.use("/landing", express.static(frontendPath));
@@ -2121,7 +2404,9 @@ const modulePageRoutes = {
   "/system-audit": "system-audit.html",
   "/audit": "system-audit.html",
   "/branding": "branding.html",
-  "/brand": "branding.html"
+  "/brand": "branding.html",
+  "/role-permissions": "role-permissions.html",
+  "/permissions": "role-permissions.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -2162,8 +2447,8 @@ const port = Number(process.env.PORT) || 5000;
 await connectDB();
 
 const server = app.listen(port, () => {
-  console.log("✅ PART 54 OFFICIAL NAXORA BRANDING ACTIVE");
-  console.log("✅ All routes Part 1 to Part 53 loaded + Part 54 official branding system");
+  console.log("✅ PART 55 SECURITY AND ROLE PERMISSIONS ACTIVE");
+  console.log("✅ All routes Part 1 to Part 54 loaded + Part 55 role permission foundation");
   console.log("✅ AI Notes route active: /api/ai-notes");
   console.log("✅ AI Mock Tests route active: /api/ai-mock-tests");
   console.log("✅ AI Roadmaps route active: /api/ai-roadmaps");
@@ -2208,6 +2493,7 @@ const server = app.listen(port, () => {
   console.log("✅ Part 53 audit active: /api/part53/run");
   console.log("✅ System audit frontend: /system-audit");
   console.log("✅ Part 54 branding active: /api/part54/status");
+  console.log("✅ Part 55 role permissions active: /api/part55/status");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");
