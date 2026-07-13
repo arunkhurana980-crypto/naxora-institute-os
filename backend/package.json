@@ -1,5 +1,5 @@
 {
-  "name": "naxora-institute-os-part54-official-branding",
+  "name": "naxora-institute-os-part57-student-parent-portal-completion",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -11,7 +11,8 @@
     "check:final": "node scripts/final-smoke-test.js",
     "check:security": "node scripts/check-security-routes.js",
     "check:part53": "node --check src/server.js",
-    "check:part54": "node --check src/server.js"
+    "check:part54": "node --check src/server.js",
+    "check:part57": "node --check src/server.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

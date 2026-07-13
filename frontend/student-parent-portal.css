@@ -1,0 +1,57 @@
+* { box-sizing: border-box; }
+body { margin: 0; color: #fff; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+a { color: inherit; text-decoration: none; }
+button, input { font: inherit; }
+.nx-portal-shell { min-height: 100vh; display: grid; grid-template-columns: 292px 1fr; }
+.nx-portal-sidebar { position: sticky; top: 0; height: 100vh; padding: 24px; background: rgba(3,5,9,.86); border-right: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(16px); }
+.nx-logo-wrap { display: flex; gap: 12px; align-items: center; margin-bottom: 28px; }
+.nx-logo { width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg,#d4af37,#00d4ff); }
+.nx-logo-wrap strong { display: block; font-size: 15px; letter-spacing: .3px; }
+.nx-logo-wrap span { display: block; color: #aeb6c7; font-size: 12px; margin-top: 3px; }
+.nx-portal-nav { display: grid; gap: 9px; margin: 22px 0; }
+.nx-portal-nav a { padding: 12px 13px; border-radius: 14px; color: #dfe7ff; background: rgba(255,255,255,.045); border: 1px solid rgba(255,255,255,.07); }
+.nx-portal-nav a:hover { border-color: rgba(0,212,255,.38); background: rgba(0,212,255,.08); }
+.nx-note-card, .nx-card, .nx-status-card, .nx-profile-card, .nx-info-card { border: 1px solid rgba(255,255,255,.11); background: linear-gradient(145deg, rgba(255,255,255,.095), rgba(255,255,255,.03)); box-shadow: 0 18px 70px rgba(0,0,0,.24); border-radius: 24px; }
+.nx-note-card { padding: 16px; color: #dfe7ff; }
+.nx-note-card p { color: #aeb6c7; line-height: 1.5; margin-bottom: 0; }
+.nx-portal-main { padding: 28px; max-width: 1480px; width: 100%; }
+.nx-hero { display: grid; grid-template-columns: 1.3fr 390px; gap: 18px; align-items: stretch; margin-bottom: 18px; }
+.nx-hero > div:first-child, .nx-status-card { padding: 28px; border-radius: 28px; border: 1px solid rgba(255,255,255,.11); background: radial-gradient(circle at top left, rgba(0,212,255,.15), transparent 32%), linear-gradient(145deg, rgba(255,255,255,.1), rgba(255,255,255,.03)); }
+.nx-kicker { color: #00d4ff; letter-spacing: 2px; text-transform: uppercase; font-size: 12px; font-weight: 800; margin: 0 0 8px; }
+h1 { font-size: clamp(32px, 5vw, 58px); line-height: .98; margin: 0 0 14px; }
+h2 { margin: 0; font-size: 22px; }
+.nx-subtitle, .nx-info-card p, .nx-profile-card p { color: #aeb6c7; line-height: 1.65; max-width: 850px; }
+.nx-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.nx-btn { border: 0; border-radius: 14px; padding: 12px 16px; cursor: pointer; color: #05070b; font-weight: 900; background: linear-gradient(135deg, #d4af37, #ffe59a 48%, #00d4ff); box-shadow: 0 12px 36px rgba(0,212,255,.13); }
+.nx-btn-secondary { color: #fff; background: rgba(0,212,255,.12); border: 1px solid rgba(0,212,255,.34); }
+.nx-btn-ghost { color: #fff; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); }
+.nx-status-card input { width: 100%; margin-top: 8px; padding: 13px 14px; border-radius: 14px; color: #fff; background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.12); outline: none; }
+.nx-status-card label { display: block; color: #dfe7ff; font-weight: 800; margin-top: 18px; }
+.nx-pill { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; padding: 7px 11px; font-size: 12px; font-weight: 900; color: #ffeaa8; border: 1px solid rgba(212,175,55,.36); background: rgba(212,175,55,.1); }
+.nx-pill-blue { color: #bff6ff; border-color: rgba(0,212,255,.38); background: rgba(0,212,255,.1); }
+.nx-profile-card { padding: 22px; display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 18px; }
+.nx-profile-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.nx-summary-grid { display: grid; grid-template-columns: repeat(7, minmax(140px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.nx-summary-card { padding: 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.055); }
+.nx-summary-card b { display: block; font-size: 24px; margin-bottom: 4px; }
+.nx-summary-card span { color: #aeb6c7; font-size: 12px; }
+.nx-tabs { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 10px; }
+.nx-tab { white-space: nowrap; padding: 11px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.12); color: #dfe7ff; background: rgba(255,255,255,.055); cursor: pointer; font-weight: 800; }
+.nx-tab.active { color: #05070b; background: linear-gradient(135deg, #d4af37, #00d4ff); }
+.nx-grid { display: grid; grid-template-columns: 1fr 380px; gap: 18px; align-items: start; }
+.nx-card { padding: 22px; }
+.nx-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.nx-list { display: grid; gap: 12px; }
+.nx-row { padding: 15px; border: 1px solid rgba(255,255,255,.1); background: rgba(0,0,0,.18); border-radius: 18px; }
+.nx-row h3 { margin: 0 0 8px; font-size: 17px; }
+.nx-row p { margin: 4px 0; color: #aeb6c7; line-height: 1.45; }
+.nx-row-grid { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 10px; margin-top: 10px; }
+.nx-mini { padding: 10px; border-radius: 14px; background: rgba(255,255,255,.055); color: #dfe7ff; }
+.nx-mini span { display: block; color: #aeb6c7; font-size: 11px; margin-bottom: 3px; }
+.nx-timeline { display: grid; gap: 10px; }
+.nx-time-item { padding: 13px; border-left: 3px solid #00d4ff; background: rgba(255,255,255,.055); border-radius: 14px; }
+.nx-time-item b { display: block; }
+.nx-time-item span { color: #aeb6c7; font-size: 12px; }
+.nx-info-card { margin-top: 18px; padding: 22px; }
+@media (max-width: 1180px) { .nx-portal-shell { grid-template-columns: 1fr; } .nx-portal-sidebar { position: static; height: auto; } .nx-hero, .nx-grid { grid-template-columns: 1fr; } .nx-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .nx-portal-main, .nx-portal-sidebar { padding: 16px; } .nx-profile-card, .nx-card-head { align-items: flex-start; flex-direction: column; } .nx-row-grid { grid-template-columns: 1fr; } .nx-summary-grid { grid-template-columns: 1fr; } }

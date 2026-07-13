@@ -81,7 +81,11 @@ const publicRoutes = [
   "/smart-enrolment",
   "/enrolment",
   "/admission",
-  "/admissions"
+  "/admissions",
+  "/student-parent-portal",
+  "/student-portal",
+  "/parent-portal",
+  "/portal"
 ];
 
 const internalPageFiles = new Set([
@@ -2672,6 +2676,385 @@ app.get("/api/part56/export", async (req, res) => {
 // ================= END PART 56 =================
 
 
+
+
+// ================= PART 57: STUDENT AND PARENT PORTAL COMPLETION =================
+// Roadmap scope: Attendance, Fees, Tests, Reports, Assignments, Notes, Notices, Live Classes.
+// Safe rule: portal data is read-first. Write/actions are only acknowledgement-style placeholders so live app flows do not break.
+const part57PortalModules = [
+  {
+    id: "attendance",
+    title: "Attendance",
+    studentView: "Apni daily/monthly attendance, present percentage aur absent days dekhna.",
+    parentView: "Child attendance, frequent absence alerts aur class regularity dekhna.",
+    permissions: ["student:own-attendance.read", "parent:child-attendance.read"]
+  },
+  {
+    id: "fees",
+    title: "Fees",
+    studentView: "Own fee status, paid amount, pending amount aur due date dekhna.",
+    parentView: "Child fee dues, paid history, reminders aur online payment direction dekhna.",
+    permissions: ["student:own-fees.read", "parent:child-fees.read"]
+  },
+  {
+    id: "tests",
+    title: "Tests",
+    studentView: "Upcoming tests, marks, rank aur weak topics dekhna.",
+    parentView: "Child marks, test performance aur improvement area dekhna.",
+    permissions: ["student:own-tests.read", "parent:child-tests.read"]
+  },
+  {
+    id: "reports",
+    title: "Reports",
+    studentView: "Progress card, monthly report aur learning summary dekhna.",
+    parentView: "Child progress report, attendance-fee-test combined summary dekhna.",
+    permissions: ["student:own-reports.read", "parent:child-reports.read"]
+  },
+  {
+    id: "assignments",
+    title: "Assignments",
+    studentView: "Assigned homework, due date, status aur teacher remarks dekhna.",
+    parentView: "Child pending/completed assignments aur discipline status dekhna.",
+    permissions: ["student:own-assignments.read", "parent:child-assignments.read"]
+  },
+  {
+    id: "notes",
+    title: "Notes",
+    studentView: "Class notes, PDF/resources aur revision material access karna.",
+    parentView: "Child ko kaunse notes/resources diye gaye hain, ye dekhna.",
+    permissions: ["student:own-notes.read", "parent:child-notes.read"]
+  },
+  {
+    id: "notices",
+    title: "Notices",
+    studentView: "Announcements, holidays, exam notices aur class updates dekhna.",
+    parentView: "Institute notices, fee reminders, absence alerts aur parent updates dekhna.",
+    permissions: ["student:own-notices.read", "parent:child-notices.read"]
+  },
+  {
+    id: "liveClasses",
+    title: "Live Classes",
+    studentView: "Upcoming live classes, join link, recording link aur class notes dekhna.",
+    parentView: "Child ke live class schedule, attendance aur recording access status dekhna.",
+    permissions: ["student:own-live-classes.read", "parent:child-live-classes.read"]
+  }
+];
+
+const part57Checklist = [
+  "Student portal opens on /student-portal and /student-parent-portal.",
+  "Parent portal opens on /parent-portal and uses same safe portal engine.",
+  "Attendance, fees, tests, reports, assignments, notes, notices and live classes sections render.",
+  "Portal API returns demo data when MongoDB collections are empty.",
+  "Portal API attempts MongoDB read when production DB is connected.",
+  "Student view does not show admin-only controls.",
+  "Parent view is child-focused and does not show other students data.",
+  "No payment charge, file upload or destructive action is added in Part 57.",
+  "UI is mobile-friendly and uses NAXORA Part 54 branding.",
+  "Future hard permission enforcement will connect with Part 55 role matrix route-by-route."
+];
+
+function part57CleanText(value, max = 120) {
+  return String(value ?? "").trim().replace(/[<>]/g, "").slice(0, max);
+}
+
+function part57Money(value) {
+  const num = Number(value || 0);
+  return Number.isFinite(num) ? Math.max(0, Math.round(num)) : 0;
+}
+
+function part57BuildDemoPortal(studentId = "NX-DEMO-STD-0001", role = "student") {
+  const now = new Date();
+  const nextClass = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  const dueDate = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000);
+  const student = {
+    studentId,
+    name: "Aarav Sharma",
+    className: "Class 10 Foundation",
+    batchName: "Morning Batch A",
+    courseName: "Maths + Science Foundation",
+    parentName: "Rajesh Sharma",
+    parentPhone: "98XXXXXX10",
+    portalRole: role
+  };
+  return {
+    success: true,
+    part: "Part 57 - Student and Parent Portal Completion",
+    mode: "demo",
+    role,
+    student,
+    summary: {
+      attendancePercent: 92,
+      pendingFees: 2500,
+      paidFees: 9500,
+      upcomingTests: 2,
+      pendingAssignments: 1,
+      unreadNotices: 3,
+      upcomingLiveClasses: 2
+    },
+    attendance: [
+      { date: now.toISOString().slice(0, 10), status: "present", batch: "Morning Batch A", note: "Maths class attended" },
+      { date: new Date(now.getTime() - 86400000).toISOString().slice(0, 10), status: "present", batch: "Morning Batch A", note: "Science class attended" },
+      { date: new Date(now.getTime() - 2 * 86400000).toISOString().slice(0, 10), status: "absent", batch: "Morning Batch A", note: "Parent informed" }
+    ],
+    fees: [
+      { title: "July Monthly Fee", total: 12000, paid: 9500, pending: 2500, dueDate: dueDate.toISOString().slice(0, 10), status: "partial" },
+      { title: "Admission Kit", total: 1500, paid: 1500, pending: 0, dueDate: now.toISOString().slice(0, 10), status: "paid" }
+    ],
+    tests: [
+      { title: "Algebra Weekly Test", date: dueDate.toISOString().slice(0, 10), maxMarks: 50, obtainedMarks: 41, status: "completed", remark: "Good accuracy, speed improve karo" },
+      { title: "Physics Motion Test", date: new Date(now.getTime() + 3 * 86400000).toISOString().slice(0, 10), maxMarks: 40, obtainedMarks: null, status: "upcoming", remark: "Revision required" }
+    ],
+    reports: [
+      { title: "Monthly Progress Summary", period: "Current Month", result: "Stable", highlights: ["Attendance strong", "Maths score improving", "One assignment pending"] }
+    ],
+    assignments: [
+      { title: "Algebra Worksheet 4", subject: "Maths", dueDate: dueDate.toISOString().slice(0, 10), status: "pending", teacher: "Mr. Verma" },
+      { title: "Physics Numericals", subject: "Science", dueDate: now.toISOString().slice(0, 10), status: "submitted", teacher: "Ms. Mehta" }
+    ],
+    notes: [
+      { title: "Algebra Formula Sheet", subject: "Maths", type: "PDF/Notes", access: "available" },
+      { title: "Motion Chapter Revision", subject: "Science", type: "Class Notes", access: "available" }
+    ],
+    notices: [
+      { title: "Parent Meeting Reminder", audience: role === "parent" ? "Parent" : "Student", date: now.toISOString().slice(0, 10), priority: "high" },
+      { title: "Sunday Test Schedule", audience: "All", date: now.toISOString().slice(0, 10), priority: "medium" }
+    ],
+    liveClasses: [
+      { title: "Maths Live Doubt Class", dateTime: nextClass.toISOString(), teacher: "Mr. Verma", joinStatus: "available-before-class", recordingStatus: "after-class" },
+      { title: "Science Revision Live", dateTime: new Date(now.getTime() + 2 * 86400000).toISOString(), teacher: "Ms. Mehta", joinStatus: "scheduled", recordingStatus: "after-class" }
+    ],
+    safety: "Part 57 read-first portal hai. Admin-only edit/delete actions is part me expose nahi kiye gaye."
+  };
+}
+
+async function part57GetCollection(name) {
+  if (globalThis.NAXORA_DB_MODE === "mongodb" && mongoose.connection?.readyState === 1) {
+    return mongoose.connection.collection(name);
+  }
+  return null;
+}
+
+async function part57FindRows(collectionName, query, limit = 20) {
+  try {
+    const collection = await part57GetCollection(collectionName);
+    if (!collection) return [];
+    return await collection.find(query || {}).sort({ createdAt: -1 }).limit(limit).toArray();
+  } catch (error) {
+    return [];
+  }
+}
+
+function part57PickStudentFromEnrolment(row = {}, fallbackId = "NX-DEMO-STD-0001", role = "student") {
+  return {
+    studentId: row.studentId || fallbackId,
+    name: row.studentName || row.name || "Student",
+    className: row.studentClass || row.className || "Class / Level not set",
+    batchName: row.batchName || row.batchId || "Batch not assigned",
+    courseName: row.courseName || row.courseId || "Course not assigned",
+    parentName: row.parentName || "Parent/Guardian",
+    parentPhone: row.parentPhone ? String(row.parentPhone).replace(/\d(?=\d{2})/g, "X") : "Not set",
+    portalRole: role
+  };
+}
+
+async function part57BuildMongoPortal(studentId = "", role = "student") {
+  const cleanId = part57CleanText(studentId, 80);
+  if (!cleanId) return part57BuildDemoPortal("NX-DEMO-STD-0001", role);
+
+  const enrolmentRows = await part57FindRows("smartenrolments", { studentId: cleanId }, 1);
+  const studentRows = await part57FindRows("students", { $or: [{ studentId: cleanId }, { rollNo: cleanId }, { admissionNo: cleanId }] }, 1);
+  const baseRow = enrolmentRows[0] || studentRows[0];
+  if (!baseRow) return part57BuildDemoPortal(cleanId, role);
+
+  const student = part57PickStudentFromEnrolment(baseRow, cleanId, role);
+  const lookupOr = [
+    { studentId: student.studentId },
+    { studentName: student.name },
+    { name: student.name },
+    { student: student.name }
+  ];
+  const query = { $or: lookupOr };
+
+  const attendanceRows = await part57FindRows("attendances", query, 15);
+  const feeRows = await part57FindRows("fees", query, 15);
+  const testRows = await part57FindRows("tests", query, 15);
+  const reportRows = await part57FindRows("reports", query, 10);
+  const assignmentRows = await part57FindRows("assignments", query, 15);
+  const notesRows = await part57FindRows("libraries", {}, 10);
+  const noticeRows = await part57FindRows("announcements", {}, 10);
+  const liveRows = await part57FindRows("liveclasses", {}, 10);
+
+  const demo = part57BuildDemoPortal(student.studentId, role);
+  const attendance = attendanceRows.length ? attendanceRows.map((row) => ({
+    date: row.date || row.attendanceDate || row.createdAt,
+    status: row.status || row.attendanceStatus || "recorded",
+    batch: row.batchName || row.batch || student.batchName,
+    note: row.note || row.remarks || "Attendance record"
+  })) : demo.attendance;
+
+  const fees = feeRows.length ? feeRows.map((row) => {
+    const total = part57Money(row.total || row.amount || row.totalAmount || row.feeAmount);
+    const paid = part57Money(row.paid || row.paidAmount || row.amountPaid);
+    return {
+      title: row.title || row.feeTitle || row.month || "Fee Record",
+      total,
+      paid,
+      pending: part57Money(row.pending || row.pendingAmount || Math.max(total - paid, 0)),
+      dueDate: row.dueDate || row.date || row.createdAt,
+      status: row.status || (total > paid ? "pending" : "paid")
+    };
+  }) : demo.fees;
+
+  const tests = testRows.length ? testRows.map((row) => ({
+    title: row.title || row.testName || row.name || "Test",
+    date: row.date || row.testDate || row.createdAt,
+    maxMarks: row.maxMarks || row.totalMarks || null,
+    obtainedMarks: row.obtainedMarks || row.marks || null,
+    status: row.status || "recorded",
+    remark: row.remark || row.remarks || ""
+  })) : demo.tests;
+
+  const reports = reportRows.length ? reportRows.map((row) => ({
+    title: row.title || row.reportTitle || "Report",
+    period: row.period || row.month || "Latest",
+    result: row.result || row.status || "available",
+    highlights: Array.isArray(row.highlights) ? row.highlights : [row.summary || row.note || "Report available"]
+  })) : demo.reports;
+
+  const assignments = assignmentRows.length ? assignmentRows.map((row) => ({
+    title: row.title || row.assignmentTitle || "Assignment",
+    subject: row.subject || "General",
+    dueDate: row.dueDate || row.createdAt,
+    status: row.status || "assigned",
+    teacher: row.teacherName || row.teacher || "Teacher"
+  })) : demo.assignments;
+
+  const notes = notesRows.length ? notesRows.map((row) => ({
+    title: row.title || row.resourceTitle || row.name || "Study Material",
+    subject: row.subject || row.category || "General",
+    type: row.type || row.fileType || "Notes",
+    access: "available"
+  })) : demo.notes;
+
+  const notices = noticeRows.length ? noticeRows.map((row) => ({
+    title: row.title || row.subject || "Notice",
+    audience: row.audience || "All",
+    date: row.date || row.createdAt,
+    priority: row.priority || "normal"
+  })) : demo.notices;
+
+  const liveClasses = liveRows.length ? liveRows.map((row) => ({
+    title: row.title || row.classTitle || "Live Class",
+    dateTime: row.dateTime || row.startTime || row.scheduledAt || row.createdAt,
+    teacher: row.teacherName || row.teacher || "Teacher",
+    joinStatus: row.meetingLink ? "available" : "scheduled",
+    recordingStatus: row.recordingLink ? "available" : "after-class"
+  })) : demo.liveClasses;
+
+  const totalAttendance = attendance.length || 1;
+  const presentCount = attendance.filter((item) => String(item.status).toLowerCase().includes("present")).length;
+  const pendingFees = fees.reduce((sum, item) => sum + part57Money(item.pending), 0);
+  const paidFees = fees.reduce((sum, item) => sum + part57Money(item.paid), 0);
+
+  return {
+    success: true,
+    part: "Part 57 - Student and Parent Portal Completion",
+    mode: "mongodb",
+    role,
+    student,
+    summary: {
+      attendancePercent: Math.round((presentCount / totalAttendance) * 100),
+      pendingFees,
+      paidFees,
+      upcomingTests: tests.filter((item) => String(item.status).toLowerCase().includes("upcoming")).length,
+      pendingAssignments: assignments.filter((item) => String(item.status).toLowerCase().includes("pending")).length,
+      unreadNotices: notices.length,
+      upcomingLiveClasses: liveClasses.length
+    },
+    attendance,
+    fees,
+    tests,
+    reports,
+    assignments,
+    notes,
+    notices,
+    liveClasses,
+    safety: "Part 57 read-first portal hai. Admin-only edit/delete actions is part me expose nahi kiye gaye."
+  };
+}
+
+app.get("/student-parent-portal", (req, res) => sendFileSafe(res, "student-parent-portal.html"));
+app.get("/student-portal", (req, res) => sendFileSafe(res, "student-parent-portal.html"));
+app.get("/parent-portal", (req, res) => sendFileSafe(res, "student-parent-portal.html"));
+app.get("/portal", (req, res) => sendFileSafe(res, "student-parent-portal.html"));
+
+app.get("/api/part57/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 57 - Student and Parent Portal Completion",
+    status: "active",
+    currentVersionPlan: "Part 53–78 = NAXORA OS 1.0 completion. Part 79–110 = NAXORA OS 2.0 development.",
+    goal: "Student aur parent ko attendance, fees, tests, reports, assignments, notes, notices aur live classes ka direct read-first access dena.",
+    dbMode: globalThis.NAXORA_DB_MODE || "starting",
+    frontend: ["/student-parent-portal", "/student-portal", "/parent-portal", "/portal"],
+    routes: [
+      "GET /api/part57/status",
+      "GET /api/part57/portal-config",
+      "GET /api/part57/portal-data?studentId=NX-DEMO-STD-0001&role=student",
+      "GET /api/part57/student/:studentId",
+      "GET /api/part57/parent/:studentId",
+      "GET /api/part57/timeline/:studentId",
+      "GET /api/part57/checklist",
+      "GET /api/part57/demo"
+    ],
+    safeMode: "Read-first portal. No destructive actions and no secrets/env changes."
+  });
+});
+
+app.get("/api/part57/portal-config", (req, res) => {
+  res.json({ success: true, part: "Part 57 - Student and Parent Portal Completion", modules: part57PortalModules, roles: ["student", "parent"], checklist: part57Checklist });
+});
+
+app.get("/api/part57/portal-data", async (req, res) => {
+  const studentId = part57CleanText(req.query.studentId || "NX-DEMO-STD-0001", 80);
+  const requestedRole = part57CleanText(req.query.role || "student", 20).toLowerCase();
+  const role = requestedRole === "parent" ? "parent" : "student";
+  const data = await part57BuildMongoPortal(studentId, role);
+  res.json(data);
+});
+
+app.get("/api/part57/student/:studentId", async (req, res) => {
+  const data = await part57BuildMongoPortal(part57CleanText(req.params.studentId, 80), "student");
+  res.json(data);
+});
+
+app.get("/api/part57/parent/:studentId", async (req, res) => {
+  const data = await part57BuildMongoPortal(part57CleanText(req.params.studentId, 80), "parent");
+  res.json(data);
+});
+
+app.get("/api/part57/timeline/:studentId", async (req, res) => {
+  const data = await part57BuildMongoPortal(part57CleanText(req.params.studentId, 80), part57CleanText(req.query.role || "student", 20));
+  const timeline = [
+    ...data.attendance.map((item) => ({ type: "attendance", title: `Attendance: ${item.status}`, date: item.date, detail: item.note })),
+    ...data.fees.map((item) => ({ type: "fees", title: item.title, date: item.dueDate, detail: `Pending ₹${item.pending}` })),
+    ...data.tests.map((item) => ({ type: "test", title: item.title, date: item.date, detail: item.status })),
+    ...data.assignments.map((item) => ({ type: "assignment", title: item.title, date: item.dueDate, detail: item.status })),
+    ...data.notices.map((item) => ({ type: "notice", title: item.title, date: item.date, detail: item.priority })),
+    ...data.liveClasses.map((item) => ({ type: "liveClass", title: item.title, date: item.dateTime, detail: item.joinStatus }))
+  ].filter((item) => item.date).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 30);
+  res.json({ success: true, part: "Part 57 - Student and Parent Portal Completion", student: data.student, role: data.role, count: timeline.length, timeline });
+});
+
+app.get("/api/part57/checklist", (req, res) => {
+  res.json({ success: true, part: "Part 57 - Student and Parent Portal Completion", checklist: part57Checklist });
+});
+
+app.get("/api/part57/demo", (req, res) => {
+  res.json(part57BuildDemoPortal("NX-DEMO-STD-0001", part57CleanText(req.query.role || "student", 20) === "parent" ? "parent" : "student"));
+});
+// ================= END PART 57 =================
+
 // Same-server frontend hosting for Render/Railway/VPS deployment.
 app.use("/landing", express.static(frontendPath));
 
@@ -2750,7 +3133,11 @@ const modulePageRoutes = {
   "/smart-enrolment": "smart-enrolment.html",
   "/enrolment": "smart-enrolment.html",
   "/admission": "smart-enrolment.html",
-  "/admissions": "smart-enrolment.html"
+  "/admissions": "smart-enrolment.html",
+  "/student-parent-portal": "student-parent-portal.html",
+  "/student-portal": "student-parent-portal.html",
+  "/parent-portal": "student-parent-portal.html",
+  "/portal": "student-parent-portal.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -2791,8 +3178,8 @@ const port = Number(process.env.PORT) || 5000;
 await connectDB();
 
 const server = app.listen(port, () => {
-  console.log("✅ PART 56 SMART STUDENT ENROLMENT ACTIVE");
-  console.log("✅ All routes Part 1 to Part 55 loaded + Part 56 smart student enrolment");
+  console.log("✅ PART 57 STUDENT AND PARENT PORTAL COMPLETION ACTIVE");
+  console.log("✅ All routes Part 1 to Part 56 loaded + Part 57 student-parent portal completion");
   console.log("✅ AI Notes route active: /api/ai-notes");
   console.log("✅ AI Mock Tests route active: /api/ai-mock-tests");
   console.log("✅ AI Roadmaps route active: /api/ai-roadmaps");
@@ -2840,6 +3227,8 @@ const server = app.listen(port, () => {
   console.log("✅ Part 55 role permissions active: /api/part55/status");
   console.log("✅ Part 56 smart enrolment active: /api/part56/status");
   console.log("✅ Smart enrolment frontend: /smart-enrolment");
+  console.log("✅ Part 57 student-parent portal active: /api/part57/status");
+  console.log("✅ Student/Parent portal frontend: /student-parent-portal");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");

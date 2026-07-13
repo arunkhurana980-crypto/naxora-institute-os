@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA Student & Parent Portal | Part 57</title>
+  <link rel="stylesheet" href="brand-system.css" />
+  <link rel="stylesheet" href="student-parent-portal.css" />
+</head>
+<body>
+  <div class="nx-portal-shell">
+    <aside class="nx-portal-sidebar">
+      <div class="nx-logo-wrap">
+        <img src="assets/naxora-logo.svg" alt="NAXORA" class="nx-logo" onerror="this.style.display='none'" />
+        <div>
+          <strong>NAXORA Institute OS</strong>
+          <span>Part 57 · Student & Parent Portal</span>
+        </div>
+      </div>
+      <nav class="nx-portal-nav">
+        <a href="/dashboard">Dashboard</a>
+        <a href="/student">Students</a>
+        <a href="/parent">Parents</a>
+        <a href="/smart-enrolment">Smart Enrolment</a>
+        <a href="/role-permissions">Role Permissions</a>
+        <a href="/system-audit">System Audit</a>
+      </nav>
+      <div class="nx-note-card">
+        <b>Part 57 Safe Rule</b>
+        <p>Portal read-first hai. Student/parent ko direct access milega, lekin admin edit/delete controls expose nahi honge.</p>
+      </div>
+    </aside>
+
+    <main class="nx-portal-main">
+      <section class="nx-hero">
+        <div>
+          <p class="nx-kicker">NAXORA OS 1.0 · Part 57</p>
+          <h1>Student & Parent Portal Completion</h1>
+          <p class="nx-subtitle">Attendance, fees, tests, reports, assignments, notes, notices aur live classes ek direct portal me.</p>
+          <div class="nx-actions">
+            <button id="studentModeBtn" class="nx-btn" type="button">Student View</button>
+            <button id="parentModeBtn" class="nx-btn nx-btn-secondary" type="button">Parent View</button>
+            <button id="reloadBtn" class="nx-btn nx-btn-ghost" type="button">Reload Portal</button>
+          </div>
+        </div>
+        <div class="nx-status-card">
+          <span id="apiStatus" class="nx-pill">Checking API...</span>
+          <label>Student ID
+            <input id="studentIdInput" value="NX-DEMO-STD-0001" placeholder="NX-DEMO-STD-0001" />
+          </label>
+          <p>Real student ID daloge to MongoDB data read karne ki koshish hogi. Data empty ho to demo fallback dikhega.</p>
+        </div>
+      </section>
+
+      <section class="nx-profile-card">
+        <div>
+          <p class="nx-kicker" id="portalRoleLabel">Student View</p>
+          <h2 id="studentName">Loading...</h2>
+          <p id="studentMeta">Portal data loading...</p>
+        </div>
+        <div class="nx-profile-actions">
+          <span id="studentIdBadge" class="nx-pill nx-pill-blue">Student ID</span>
+          <span id="modeBadge" class="nx-pill">Mode</span>
+        </div>
+      </section>
+
+      <section class="nx-summary-grid" id="summaryGrid"></section>
+
+      <section class="nx-tabs" id="moduleTabs"></section>
+
+      <section class="nx-grid">
+        <article class="nx-card nx-main-list">
+          <div class="nx-card-head">
+            <div>
+              <p class="nx-kicker" id="activeModuleKicker">Module</p>
+              <h2 id="activeModuleTitle">Portal Section</h2>
+            </div>
+            <span id="activeModuleCount" class="nx-pill">0 Records</span>
+          </div>
+          <div id="moduleContent" class="nx-list"></div>
+        </article>
+
+        <aside class="nx-card nx-side-panel">
+          <div class="nx-card-head">
+            <div>
+              <p class="nx-kicker">Timeline</p>
+              <h2>Latest Updates</h2>
+            </div>
+          </div>
+          <div id="timelineList" class="nx-timeline"></div>
+        </aside>
+      </section>
+
+      <section class="nx-card nx-info-card">
+        <p class="nx-kicker">Why Part 57?</p>
+        <h2>Student aur parent ko direct transparent access</h2>
+        <p>Is part ka purpose owner/teacher workload kam karna, parent trust improve karna aur student ko apni learning journey clearly dikhana hai.</p>
+      </section>
+    </main>
+  </div>
+  <script src="brand-system.js"></script>
+  <script src="student-parent-portal.js"></script>
+</body>
+</html>
