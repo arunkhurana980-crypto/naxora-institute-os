@@ -1,0 +1,238 @@
+/* ==========================================================
+   NAXORA Institute OS - Part 54 Official Branding System
+   Scope: official logo, black/gold/white/electric-blue palette,
+   consistent SaaS cards, buttons, badges, auth and dashboard polish.
+   ========================================================== */
+:root {
+  --naxora-black: #030509;
+  --naxora-black-2: #080b12;
+  --naxora-panel: rgba(10, 13, 20, 0.82);
+  --naxora-panel-strong: rgba(6, 8, 13, 0.94);
+  --naxora-gold: #d4af37;
+  --naxora-gold-2: #ffe59a;
+  --naxora-blue: #00d4ff;
+  --naxora-blue-2: #27f4ff;
+  --naxora-white: #ffffff;
+  --naxora-muted: #aeb6c7;
+  --gold: var(--naxora-gold);
+  --blue: var(--naxora-blue);
+  --bg: var(--naxora-black);
+  --panel: var(--naxora-panel);
+  --text: var(--naxora-white);
+  --muted: var(--naxora-muted);
+  --brand-ring: 0 0 0 1px rgba(212, 175, 55, 0.22), 0 18px 70px rgba(0, 212, 255, 0.08);
+  --brand-gradient: linear-gradient(135deg, var(--naxora-gold), var(--naxora-gold-2) 46%, var(--naxora-blue));
+  --brand-glass: linear-gradient(145deg, rgba(255,255,255,.09), rgba(255,255,255,.025));
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background:
+    radial-gradient(circle at 12% 10%, rgba(0, 212, 255, 0.16), transparent 30%),
+    radial-gradient(circle at 82% 6%, rgba(212, 175, 55, 0.13), transparent 28%),
+    radial-gradient(circle at 74% 84%, rgba(0, 212, 255, 0.10), transparent 34%),
+    var(--naxora-black) !important;
+}
+body[data-naxora-brand="part54"]::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 3px;
+  z-index: 9999;
+  pointer-events: none;
+  background: var(--brand-gradient);
+  box-shadow: 0 0 22px rgba(0, 212, 255, 0.45);
+}
+
+.logo,
+.naxora-brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+.logo b,
+.naxora-brand-lockup strong {
+  color: #fff;
+  font-weight: 950;
+  text-shadow: 0 0 22px rgba(0, 212, 255, 0.13);
+}
+.logo span,
+.naxora-logo-mark {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  color: #050505;
+  font-weight: 950;
+  line-height: 1;
+  background: var(--brand-gradient);
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.28), 0 0 45px rgba(0, 212, 255, 0.13);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  overflow: hidden;
+}
+.logo span img,
+.naxora-logo-mark img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+.card,
+.panel,
+.stat-card,
+.module-card,
+.class-card,
+.auth-card,
+.brand-card {
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  background: var(--brand-glass) !important;
+  box-shadow: var(--brand-ring) !important;
+}
+.card:hover,
+.panel:hover,
+.stat-card:hover,
+.brand-card:hover {
+  border-color: rgba(0, 212, 255, 0.24) !important;
+}
+
+button,
+.primary,
+.action-btn,
+.ghost-btn,
+.brand-btn,
+.sidebar a {
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+}
+.primary,
+.brand-btn,
+.tabs button.active,
+.sidebar a.active,
+.sidebar a:hover {
+  background: var(--brand-gradient) !important;
+  color: #040609 !important;
+  box-shadow: 0 12px 40px rgba(212, 175, 55, 0.18), 0 0 26px rgba(0, 212, 255, 0.08);
+}
+.primary:hover,
+.brand-btn:hover,
+.action-btn:hover,
+.ghost-btn:hover {
+  transform: translateY(-2px);
+}
+input,
+select,
+textarea {
+  border-color: rgba(255,255,255,.16) !important;
+  background: rgba(3, 5, 9, 0.86) !important;
+}
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--naxora-blue) !important;
+  box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.12) !important;
+}
+
+.eyebrow,
+.brand-eyebrow {
+  color: var(--naxora-blue) !important;
+  font-weight: 900;
+  letter-spacing: 2.6px;
+}
+h1 em,
+.brand-gradient-text,
+.stat-value {
+  background: linear-gradient(90deg, #fff, var(--naxora-gold-2), var(--naxora-blue-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+}
+
+.naxora-brand-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 9px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  background: rgba(212, 175, 55, 0.08);
+  color: #fff4c2;
+  font-weight: 850;
+  font-size: 12px;
+  letter-spacing: .4px;
+}
+.naxora-brand-pill::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--naxora-blue);
+  box-shadow: 0 0 16px var(--naxora-blue);
+}
+
+.naxora-brand-watermark {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(3,5,9,.74);
+  backdrop-filter: blur(14px);
+  color: var(--naxora-muted);
+  font-size: 12px;
+  font-weight: 800;
+  pointer-events: none;
+}
+.naxora-brand-watermark span {
+  color: #fff;
+}
+
+.brand-swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  gap: 14px;
+}
+.brand-swatch {
+  min-height: 128px;
+  border-radius: 22px;
+  padding: 15px;
+  border: 1px solid rgba(255,255,255,.16);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  box-shadow: var(--brand-ring);
+  color: #fff;
+  font-weight: 900;
+}
+.brand-swatch small { display: block; color: rgba(255,255,255,.74); margin-top: 5px; font-weight: 700; }
+.brand-swatch.black { background: #030509; }
+.brand-swatch.gold { background: #d4af37; color: #050505; }
+.brand-swatch.white { background: #ffffff; color: #050505; }
+.brand-swatch.blue { background: #00d4ff; color: #050505; }
+
+.brand-guide-layout { max-width: 1180px; margin: 0 auto; padding: 42px 24px 70px; }
+.brand-hero { display: grid; grid-template-columns: 1.08fr .92fr; gap: 22px; align-items: stretch; margin-top: 24px; }
+.brand-card { border-radius: 28px; padding: 26px; }
+.brand-card h2 { margin-top: 0; }
+.brand-card p, .brand-card li { color: var(--naxora-muted); line-height: 1.7; }
+.brand-logo-showcase { min-height: 260px; display: grid; place-items: center; text-align: center; }
+.brand-logo-big { width: 96px; height: 96px; border-radius: 28px; margin: 0 auto 18px; }
+.brand-checklist { display: grid; gap: 11px; padding: 0; list-style: none; }
+.brand-checklist li { padding: 13px 14px; border: 1px solid rgba(255,255,255,.12); border-radius: 16px; background: rgba(255,255,255,.05); }
+.brand-checklist li::before { content: "✓"; color: var(--naxora-blue); font-weight: 950; margin-right: 8px; }
+.brand-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+
+@media (max-width: 900px) {
+  .brand-hero,
+  .brand-grid-2,
+  .brand-swatch-grid { grid-template-columns: 1fr; }
+  .naxora-brand-watermark { display: none; }
+}

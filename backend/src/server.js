@@ -73,7 +73,9 @@ const publicRoutes = [
   "/dashboard",
   "/student",
   "/parent",
-  "/admin"
+  "/admin",
+  "/branding",
+  "/brand"
 ];
 
 const internalPageFiles = new Set([
@@ -202,6 +204,8 @@ app.get("/dashboard", (req, res) => sendFileSafe(res, "dashboard.html"));
 app.get("/student", (req, res) => sendFileSafe(res, "students.html"));
 app.get("/parent", (req, res) => sendFileSafe(res, "parents.html"));
 app.get("/admin", (req, res) => sendFileSafe(res, "super-admin.html"));
+app.get("/branding", (req, res) => sendFileSafe(res, "branding.html"));
+app.get("/brand", (req, res) => sendFileSafe(res, "branding.html"));
 
 app.get("/api/health", (req, res) => {
   res.json({
@@ -210,7 +214,7 @@ app.get("/api/health", (req, res) => {
     status: "running",
     dbMode: globalThis.NAXORA_DB_MODE || "starting",
     note: globalThis.NAXORA_DB_MODE === "mock" ? "MongoDB connect nahi hai, par backend crash-free mock mode me chal raha hai." : "MongoDB connected mode.",
-    part: "Part 53 - Complete System Audit",
+    part: "Part 54 - Official NAXORA Branding",
     environment: process.env.NODE_ENV || "development",
     timestamp: new Date().toISOString(),
   });
@@ -1747,7 +1751,8 @@ const part53PageRegistry = [
   { group: "Other", label: "Announcements", cleanRoute: "/announcements", htmlRoute: "/announcements.html", file: "announcements.html", critical: false },
   { group: "Other", label: "Certificates", cleanRoute: "/certificates", htmlRoute: "/certificates.html", file: "certificates.html", critical: false },
   { group: "Other", label: "Library", cleanRoute: "/library", htmlRoute: "/library.html", file: "library.html", critical: false },
-  { group: "Audit", label: "Part 53 System Audit", cleanRoute: "/system-audit", htmlRoute: "/system-audit.html", file: "system-audit.html", critical: true }
+  { group: "Audit", label: "Part 53 System Audit", cleanRoute: "/system-audit", htmlRoute: "/system-audit.html", file: "system-audit.html", critical: true },
+  { group: "Brand", label: "Part 54 Official Branding", cleanRoute: "/branding", htmlRoute: "/branding.html", file: "branding.html", critical: true }
 ];
 
 const part53ApiRegistry = [
@@ -1787,7 +1792,8 @@ const part53ApiRegistry = [
   { group: "Admin", label: "Settings", prefix: "/api/settings", method: "GET/POST", critical: true, collection: "institutesettings" },
   { group: "Admin", label: "Super Admin", prefix: "/api/super-admin", method: "GET/POST", critical: true, collection: "superadminactions" },
   { group: "Admin", label: "Admin Analytics", prefix: "/api/admin-analytics", method: "GET", critical: false },
-  { group: "Part 53", label: "System Audit", prefix: "/api/part53", method: "GET", critical: true }
+  { group: "Part 53", label: "System Audit", prefix: "/api/part53", method: "GET", critical: true },
+  { group: "Part 54", label: "Official Branding", prefix: "/api/part54", method: "GET", critical: true }
 ];
 
 const part53CriticalFlows = [
@@ -1859,9 +1865,9 @@ async function getPart53DbCollectionStatus() {
 async function buildPart53AuditReport(req) {
   const env = getPart53EnvStatus(req);
   const pages = part53PageRegistry.map(part53FileStatus);
-  const apiPrefixes = new Set(["/api/health", "/api/part53", "/api/parents", "/api/staff", "/api/progress", ...majorModuleRoutes]);
+  const apiPrefixes = new Set(["/api/health", "/api/part53", "/api/part54", "/api/parents", "/api/staff", "/api/progress", ...majorModuleRoutes]);
   const apis = part53ApiRegistry.map((item) => {
-    const mounted = item.prefix === "/api/health" || item.prefix === "/api/part53" || apiPrefixes.has(item.prefix);
+    const mounted = item.prefix === "/api/health" || item.prefix === "/api/part53" || item.prefix === "/api/part54" || apiPrefixes.has(item.prefix);
     return {
       ...item,
       registered: mounted,
@@ -1951,6 +1957,98 @@ app.get("/api/system-audit/status", (req, res) => {
 // ================= END PART 53 =================
 
 
+// ================= PART 54: OFFICIAL NAXORA BRANDING =================
+// Roadmap: colored NAXORA logo, sidebar/logo branding, auth/dashboard polish,
+// black + gold + white + electric-blue theme, and consistent buttons/cards/fonts.
+const part54BrandKit = {
+  product: "NAXORA Institute OS",
+  part: "Part 54 - Official NAXORA Branding",
+  status: "active",
+  versionTrack: "NAXORA OS 1.0",
+  purpose: "NAXORA ko ek professional, consistent aur sellable SaaS brand identity dena.",
+  palette: {
+    black: "#030509",
+    gold: "#D4AF37",
+    white: "#FFFFFF",
+    electricBlue: "#00D4FF"
+  },
+  assets: {
+    logo: "/assets/naxora-logo.svg",
+    brandCss: "/brand-system.css",
+    brandJs: "/brand-system.js",
+    brandPage: "/branding"
+  },
+  appliedTo: [
+    "Login / Signup screen",
+    "Dashboard sidebar and topbar",
+    "All module pages through shared brand CSS/JS",
+    "Buttons, cards, inputs, badges and hover states",
+    "Official brand guide page"
+  ],
+  nextPart: "Part 55 - Security and Role Permissions"
+};
+
+const part54Checklist = [
+  { item: "Colored NAXORA SVG logo added", status: "done" },
+  { item: "Official black/gold/white/electric-blue palette added", status: "done" },
+  { item: "Global brand-system.css added", status: "done" },
+  { item: "Global brand-system.js added", status: "done" },
+  { item: "Login/signup branding polish added", status: "done" },
+  { item: "Dashboard branding badge/sidebar polish added", status: "done" },
+  { item: "Brand guide frontend page added", status: "done" },
+  { item: "Part 54 status APIs added", status: "done" },
+  { item: "No .env or secret required", status: "safe" }
+];
+
+function part54AssetStatus() {
+  const files = [
+    { label: "Logo SVG", file: "assets/naxora-logo.svg" },
+    { label: "Brand CSS", file: "brand-system.css" },
+    { label: "Brand JS", file: "brand-system.js" },
+    { label: "Branding Page", file: "branding.html" },
+    { label: "Branding Page CSS", file: "branding.css" },
+    { label: "Branding Page JS", file: "branding.js" }
+  ];
+
+  return files.map((asset) => {
+    const absolutePath = path.join(frontendPath, asset.file);
+    return {
+      ...asset,
+      exists: fs.existsSync(absolutePath),
+      route: asset.file.startsWith("assets/") ? `/${asset.file}` : `/${asset.file}`
+    };
+  });
+}
+
+app.get("/api/part54/status", (req, res) => {
+  const assets = part54AssetStatus();
+  res.json({
+    success: true,
+    ...part54BrandKit,
+    routes: ["/branding", "/brand", "/api/part54/status", "/api/part54/brand-kit", "/api/part54/checklist", "/api/part54/assets"],
+    assetSummary: {
+      total: assets.length,
+      ready: assets.filter((asset) => asset.exists).length,
+      missing: assets.filter((asset) => !asset.exists).length
+    },
+    currentVersionPlan: "Part 53-78 = NAXORA OS 1.0 completion. Part 79-110 = NAXORA OS 2.0 development."
+  });
+});
+
+app.get("/api/part54/brand-kit", (req, res) => {
+  res.json({ success: true, brandKit: part54BrandKit });
+});
+
+app.get("/api/part54/checklist", (req, res) => {
+  res.json({ success: true, part: part54BrandKit.part, checklist: part54Checklist });
+});
+
+app.get("/api/part54/assets", (req, res) => {
+  res.json({ success: true, part: part54BrandKit.part, assets: part54AssetStatus() });
+});
+// ================= END PART 54 =================
+
+
 // Same-server frontend hosting for Render/Railway/VPS deployment.
 app.use("/landing", express.static(frontendPath));
 
@@ -2021,7 +2119,9 @@ const modulePageRoutes = {
   "/admin-analytics": "admin-analytics.html",
   "/landing": "landing.html",
   "/system-audit": "system-audit.html",
-  "/audit": "system-audit.html"
+  "/audit": "system-audit.html",
+  "/branding": "branding.html",
+  "/brand": "branding.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -2062,8 +2162,8 @@ const port = Number(process.env.PORT) || 5000;
 await connectDB();
 
 const server = app.listen(port, () => {
-  console.log("✅ PART 53 COMPLETE SYSTEM AUDIT ACTIVE");
-  console.log("✅ All routes Part 1 to Part 52 loaded + Part 53 audit dashboard");
+  console.log("✅ PART 54 OFFICIAL NAXORA BRANDING ACTIVE");
+  console.log("✅ All routes Part 1 to Part 53 loaded + Part 54 official branding system");
   console.log("✅ AI Notes route active: /api/ai-notes");
   console.log("✅ AI Mock Tests route active: /api/ai-mock-tests");
   console.log("✅ AI Roadmaps route active: /api/ai-roadmaps");
@@ -2107,6 +2207,8 @@ const server = app.listen(port, () => {
   console.log("✅ Final secure status active: /api/part51/status");
   console.log("✅ Part 53 audit active: /api/part53/run");
   console.log("✅ System audit frontend: /system-audit");
+  console.log("✅ Part 54 branding active: /api/part54/status");
+  console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");
   console.log("🛡️ Security headers, validation, rate-limit and safe errors active");

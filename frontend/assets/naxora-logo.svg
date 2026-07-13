@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="NAXORA logo">
+  <defs>
+    <linearGradient id="g" x1="14" y1="14" x2="114" y2="114" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d4af37"/>
+      <stop offset="0.48" stop-color="#ffe59a"/>
+      <stop offset="1" stop-color="#00d4ff"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect x="10" y="10" width="108" height="108" rx="31" fill="#030509"/>
+  <rect x="12" y="12" width="104" height="104" rx="29" fill="url(#g)" opacity="0.98" filter="url(#glow)"/>
+  <path d="M37 91V37h13.5l28 31.7V37H92v54H78.6L50.6 59.1V91H37Z" fill="#050609"/>
+  <path d="M37 91V37h13.5l28 31.7V37H92" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.42"/>
+</svg>

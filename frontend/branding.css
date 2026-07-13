@@ -1,0 +1,10 @@
+body { min-height: 100vh; font-family: Inter, sans-serif; color: var(--text); }
+.brand-guide-layout .logo { margin-bottom: 18px; }
+.brand-card h1 { font-size: clamp(38px, 5vw, 72px); line-height: 1.02; margin: 14px 0 16px; }
+.brand-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+.brand-btn, .brand-link-btn { text-decoration: none; border-radius: 16px; padding: 14px 17px; font-weight: 900; display: inline-flex; align-items: center; justify-content: center; border: 0; }
+.brand-link-btn { width: auto; margin: 0; background: rgba(255,255,255,.07); color: #fff; border: 1px solid rgba(255,255,255,.18); }
+.brand-section { margin-top: 20px; }
+.brand-status-box { margin-top: 18px; padding: 14px; border-radius: 18px; border: 1px solid rgba(255,255,255,.13); background: rgba(255,255,255,.06); color: var(--muted); font-weight: 800; }
+.brand-status-box.ok { color: #cfffff; border-color: rgba(0,212,255,.25); }
+.brand-status-box.fail { color: #ffd4d4; border-color: rgba(255,99,99,.28); }

@@ -1,5 +1,5 @@
 {
-  "name": "naxora-institute-os-part53-complete-system-audit",
+  "name": "naxora-institute-os-part54-official-branding",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -10,7 +10,8 @@
     "check:deploy": "node scripts/check-deploy.js",
     "check:final": "node scripts/final-smoke-test.js",
     "check:security": "node scripts/check-security-routes.js",
-    "check:part53": "node --check src/server.js"
+    "check:part53": "node --check src/server.js",
+    "check:part54": "node --check src/server.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
