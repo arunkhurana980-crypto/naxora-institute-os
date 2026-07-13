@@ -3,6 +3,7 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 
 import { connectDB } from "./config/db.js";
@@ -209,7 +210,7 @@ app.get("/api/health", (req, res) => {
     status: "running",
     dbMode: globalThis.NAXORA_DB_MODE || "starting",
     note: globalThis.NAXORA_DB_MODE === "mock" ? "MongoDB connect nahi hai, par backend crash-free mock mode me chal raha hai." : "MongoDB connected mode.",
-    part: "Part 51 Integrated - Final Secure Route Cleanup + UI Asset Fix",
+    part: "Part 53 - Complete System Audit",
     environment: process.env.NODE_ENV || "development",
     timestamp: new Date().toISOString(),
   });
@@ -1701,6 +1702,255 @@ app.get("/api/part50/status", (req, res) => {
 });
 // ================= END PART 50 =================
 
+
+
+// ================= PART 53: COMPLETE SYSTEM AUDIT =================
+// Goal: Part 52 live foundation ke baad har page/button/API/database flow ko client demo se pehle audit karna.
+// Ye module secrets expose nahi karta. Sirf readiness, file presence, DB mode aur manual test checklist dikhata hai.
+const part53PageRegistry = [
+  { group: "Public", label: "Landing Page", cleanRoute: "/", htmlRoute: "/landing.html", file: "landing.html", critical: true },
+  { group: "Auth", label: "Login", cleanRoute: "/login", htmlRoute: "/index.html", file: "index.html", critical: true },
+  { group: "Auth", label: "Signup", cleanRoute: "/signup", htmlRoute: "/index.html", file: "index.html", critical: true },
+  { group: "Dashboard", label: "Institute Dashboard", cleanRoute: "/dashboard", htmlRoute: "/dashboard.html", file: "dashboard.html", critical: true },
+  { group: "People", label: "Students", cleanRoute: "/student", htmlRoute: "/students.html", file: "students.html", critical: true },
+  { group: "People", label: "Parents", cleanRoute: "/parent", htmlRoute: "/parents.html", file: "parents.html", critical: true },
+  { group: "People", label: "Teachers", cleanRoute: "/teachers", htmlRoute: "/teachers.html", file: "teachers.html", critical: true },
+  { group: "People", label: "Staff", cleanRoute: "/staff", htmlRoute: "/staff.html", file: "staff.html", critical: true },
+  { group: "Academic", label: "Batches", cleanRoute: "/batches", htmlRoute: "/batches.html", file: "batches.html", critical: true },
+  { group: "Academic", label: "Attendance", cleanRoute: "/attendance", htmlRoute: "/attendance.html", file: "attendance.html", critical: true },
+  { group: "Academic", label: "Assignments", cleanRoute: "/assignments", htmlRoute: "/assignments.html", file: "assignments.html", critical: false },
+  { group: "Academic", label: "Tests", cleanRoute: "/tests", htmlRoute: "/tests.html", file: "tests.html", critical: true },
+  { group: "Academic", label: "Test Builder", cleanRoute: "/test-builder", htmlRoute: "/test-builder.html", file: "test-builder.html", critical: false },
+  { group: "Academic", label: "Question Bank", cleanRoute: "/question-bank", htmlRoute: "/question-bank.html", file: "question-bank.html", critical: false },
+  { group: "Academic", label: "Timetable", cleanRoute: "/timetable", htmlRoute: "/timetable.html", file: "timetable.html", critical: true },
+  { group: "Academic", label: "Progress", cleanRoute: "/progress", htmlRoute: "/progress.html", file: "progress.html", critical: true },
+  { group: "Money", label: "Fees", cleanRoute: "/fees", htmlRoute: "/fees.html", file: "fees.html", critical: true },
+  { group: "Money", label: "Finance", cleanRoute: "/finance", htmlRoute: "/finance.html", file: "finance.html", critical: true },
+  { group: "Money", label: "Payments", cleanRoute: "/payments", htmlRoute: "/payments.html", file: "payments.html", critical: true },
+  { group: "SaaS", label: "Subscriptions", cleanRoute: "/subscriptions", htmlRoute: "/subscriptions.html", file: "subscriptions.html", critical: true },
+  { group: "Leads", label: "Enquiries", cleanRoute: "/enquiries", htmlRoute: "/enquiries.html", file: "enquiries.html", critical: true },
+  { group: "Leads", label: "Follow-Ups", cleanRoute: "/followups", htmlRoute: "/followups.html", file: "followups.html", critical: true },
+  { group: "Leads", label: "Discovery", cleanRoute: "/discovery", htmlRoute: "/discovery.html", file: "discovery.html", critical: true },
+  { group: "Online", label: "Live Classes", cleanRoute: "/live-classes", htmlRoute: "/live-classes.html", file: "live-classes.html", critical: true },
+  { group: "Online", label: "Online Batches", cleanRoute: "/online-batches", htmlRoute: "/online-batches.html", file: "online-batches.html", critical: true },
+  { group: "Communication", label: "Notifications", cleanRoute: "/notifications", htmlRoute: "/notifications.html", file: "notifications.html", critical: false },
+  { group: "Communication", label: "Email Notifications", cleanRoute: "/email-notifications", htmlRoute: "/email-notifications.html", file: "email-notifications.html", critical: false },
+  { group: "AI", label: "AI Doubts", cleanRoute: "/doubts", htmlRoute: "/doubts.html", file: "doubts.html", critical: false },
+  { group: "AI", label: "AI Notes", cleanRoute: "/ai-notes", htmlRoute: "/ai-notes.html", file: "ai-notes.html", critical: false },
+  { group: "AI", label: "AI Mock Tests", cleanRoute: "/ai-mock-tests", htmlRoute: "/ai-mock-tests.html", file: "ai-mock-tests.html", critical: false },
+  { group: "AI", label: "AI Roadmaps", cleanRoute: "/ai-roadmaps", htmlRoute: "/ai-roadmaps.html", file: "ai-roadmaps.html", critical: false },
+  { group: "Admin", label: "Reports", cleanRoute: "/reports", htmlRoute: "/reports.html", file: "reports.html", critical: true },
+  { group: "Admin", label: "Security", cleanRoute: "/security", htmlRoute: "/security.html", file: "security.html", critical: true },
+  { group: "Admin", label: "Settings", cleanRoute: "/settings", htmlRoute: "/settings.html", file: "settings.html", critical: true },
+  { group: "Admin", label: "Super Admin", cleanRoute: "/admin", htmlRoute: "/super-admin.html", file: "super-admin.html", critical: true },
+  { group: "Admin", label: "Admin Analytics", cleanRoute: "/admin-analytics", htmlRoute: "/admin-analytics.html", file: "admin-analytics.html", critical: false },
+  { group: "Other", label: "Announcements", cleanRoute: "/announcements", htmlRoute: "/announcements.html", file: "announcements.html", critical: false },
+  { group: "Other", label: "Certificates", cleanRoute: "/certificates", htmlRoute: "/certificates.html", file: "certificates.html", critical: false },
+  { group: "Other", label: "Library", cleanRoute: "/library", htmlRoute: "/library.html", file: "library.html", critical: false },
+  { group: "Audit", label: "Part 53 System Audit", cleanRoute: "/system-audit", htmlRoute: "/system-audit.html", file: "system-audit.html", critical: true }
+];
+
+const part53ApiRegistry = [
+  { group: "Core", label: "Health", prefix: "/api/health", method: "GET", critical: true },
+  { group: "Auth", label: "Auth", prefix: "/api/auth", method: "POST/GET", critical: true },
+  { group: "Dashboard", label: "Dashboard", prefix: "/api/dashboard", method: "GET", critical: true },
+  { group: "People", label: "Students", prefix: "/api/students", method: "GET/POST/PUT/DELETE", critical: true, collection: "students" },
+  { group: "People", label: "Teachers", prefix: "/api/teachers", method: "GET/POST/PUT/DELETE", critical: true, collection: "teachers" },
+  { group: "People", label: "Parents", prefix: "/api/parents", method: "GET/POST/PUT/DELETE", critical: true, collection: "parents" },
+  { group: "People", label: "Staff", prefix: "/api/staff", method: "GET/POST/PUT/DELETE", critical: true, collection: "staff" },
+  { group: "Academic", label: "Courses", prefix: "/api/courses", method: "GET/POST", critical: false, collection: "courses" },
+  { group: "Academic", label: "Batches", prefix: "/api/batches", method: "GET/POST/PUT/DELETE", critical: true, collection: "batches" },
+  { group: "Academic", label: "Attendance", prefix: "/api/attendance", method: "GET/POST", critical: true, collection: "attendances" },
+  { group: "Academic", label: "Assignments", prefix: "/api/assignments", method: "GET/POST", critical: false, collection: "assignments" },
+  { group: "Academic", label: "Tests", prefix: "/api/tests", method: "GET/POST", critical: true, collection: "testresults" },
+  { group: "Academic", label: "Test Builder", prefix: "/api/test-builder", method: "GET/POST", critical: false, collection: "questionpapers" },
+  { group: "Academic", label: "Question Bank", prefix: "/api/question-bank", method: "GET/POST", critical: false, collection: "questionbankitems" },
+  { group: "Academic", label: "Timetable", prefix: "/api/timetable", method: "GET/POST", critical: true, collection: "timetableslots" },
+  { group: "Academic", label: "Progress", prefix: "/api/progress", method: "GET/POST", critical: true, collection: "progresses" },
+  { group: "Money", label: "Fees", prefix: "/api/fees", method: "GET/POST/PUT/DELETE", critical: true, collection: "fees" },
+  { group: "Money", label: "Finance", prefix: "/api/finance", method: "GET/POST", critical: true, collection: "financerecords" },
+  { group: "Money", label: "Payments", prefix: "/api/payments", method: "GET/POST", critical: true, collection: "paymentrecords" },
+  { group: "SaaS", label: "Subscriptions", prefix: "/api/subscriptions", method: "GET/POST", critical: true, collection: "subscriptions" },
+  { group: "Leads", label: "Enquiries", prefix: "/api/enquiries", method: "GET/POST", critical: true, collection: "admissionenquiries" },
+  { group: "Leads", label: "Follow-Ups", prefix: "/api/followups", method: "GET/POST", critical: true },
+  { group: "Leads", label: "Discovery", prefix: "/api/discovery", method: "GET/POST", critical: true, collection: "discoveryleads" },
+  { group: "Online", label: "Live Classes", prefix: "/api/live-classes", method: "GET/POST", critical: true, collection: "liveclasses" },
+  { group: "Online", label: "Online Batches", prefix: "/api/online-batches", method: "GET/POST", critical: true, collection: "onlinebatchaccesses" },
+  { group: "Communication", label: "Notifications", prefix: "/api/notifications", method: "GET/POST", critical: false, collection: "notificationcampaigns" },
+  { group: "Communication", label: "Email Notifications", prefix: "/api/email-notifications", method: "GET/POST", critical: false, collection: "emailcampaigns" },
+  { group: "AI", label: "AI Doubts", prefix: "/api/doubts", method: "GET/POST", critical: false, collection: "doubts" },
+  { group: "AI", label: "AI Notes", prefix: "/api/ai-notes", method: "GET/POST", critical: false, collection: "ainotes" },
+  { group: "AI", label: "AI Mock Tests", prefix: "/api/ai-mock-tests", method: "GET/POST", critical: false, collection: "aimocktests" },
+  { group: "AI", label: "AI Roadmaps", prefix: "/api/ai-roadmaps", method: "GET/POST", critical: false, collection: "airoadmaps" },
+  { group: "Admin", label: "Reports", prefix: "/api/reports", method: "GET", critical: true },
+  { group: "Admin", label: "Security", prefix: "/api/security", method: "GET/POST", critical: true },
+  { group: "Admin", label: "Settings", prefix: "/api/settings", method: "GET/POST", critical: true, collection: "institutesettings" },
+  { group: "Admin", label: "Super Admin", prefix: "/api/super-admin", method: "GET/POST", critical: true, collection: "superadminactions" },
+  { group: "Admin", label: "Admin Analytics", prefix: "/api/admin-analytics", method: "GET", critical: false },
+  { group: "Part 53", label: "System Audit", prefix: "/api/part53", method: "GET", critical: true }
+];
+
+const part53CriticalFlows = [
+  { id: "auth-flow", title: "Signup/Login Flow", steps: ["/signup open", "new account create", "login", "token save", "/dashboard open"], expected: "Dashboard login ke baad open ho." },
+  { id: "student-crud", title: "Student CRUD", steps: ["student add", "list me show", "page refresh", "edit", "delete"], expected: "Data MongoDB me save rahe aur refresh ke baad visible rahe." },
+  { id: "fees-crud", title: "Fees CRUD", steps: ["fee record add", "paid/pending check", "receipt/history", "refresh"], expected: "Pending fees aur paid amount accurate dikhe." },
+  { id: "attendance-flow", title: "Attendance Flow", steps: ["batch select", "present/absent mark", "save", "report/progress me reflect"], expected: "Attendance history database se load ho." },
+  { id: "lead-crm", title: "Enquiry + Follow-Up", steps: ["new enquiry", "follow-up date", "status update", "conversion check"], expected: "Lead lost na ho aur next action clear rahe." },
+  { id: "live-class-flow", title: "Live Class Access", steps: ["class schedule", "batch link", "join/access rule", "recording/resources check"], expected: "Paid/active batch access logic verify ho." },
+  { id: "payment-flow", title: "Razorpay/Test Payment", steps: ["config check", "payment record", "order create", "test checkout", "receipt"], expected: "Test mode me safe order/verify flow chale; secret expose na ho." },
+  { id: "role-flow", title: "Role Permission", steps: ["owner", "teacher", "staff", "student", "parent"], expected: "Har role ko sirf required data dikhna chahiye." }
+];
+
+const part53ManualChecklist = [
+  "Har sidebar button ko click karke check karo: 404 nahi aana chahiye.",
+  "Har important form me sample data save karke MongoDB persistence verify karo.",
+  "Page refresh ke baad saved data visible hai ya nahi check karo.",
+  "Edit/delete/search buttons working hain ya nahi verify karo.",
+  "Protected API direct open karne par login token missing aana normal hai.",
+  "Render live URL par /api/health me dbMode mongodb confirm karo.",
+  "Razorpay sirf test keys se test karo; secret screenshot/chat me share mat karo.",
+  "Console me Failed to fetch, 404, 500, CORS error mile to screenshot + exact page note karo."
+];
+
+function getPart53EnvStatus(req) {
+  const keyId = process.env.RAZORPAY_KEY_ID || "";
+  return {
+    host: req.get("host"),
+    environment: process.env.NODE_ENV || "development",
+    dbMode: globalThis.NAXORA_DB_MODE || "starting",
+    mongoReadyState: mongoose.connection?.readyState ?? 0,
+    frontendUrl: process.env.FRONTEND_URL || "not set",
+    jwtSecret: process.env.JWT_SECRET ? `present (${process.env.JWT_SECRET.length} chars)` : "missing",
+    razorpay: keyId ? (keyId.startsWith("rzp_live_") ? "live-key-present" : keyId.startsWith("rzp_test_") ? "test-key-present" : "unknown-key-format") : "mock/missing",
+    internalToolsEnabled,
+    timestamp: new Date().toISOString()
+  };
+}
+
+function part53FileStatus(item) {
+  const filePath = path.join(frontendPath, item.file);
+  const exists = fs.existsSync(filePath);
+  return {
+    ...item,
+    fileExists: exists,
+    status: exists ? "pass" : item.critical ? "fail" : "warn",
+    action: exists ? "Open clean route and test buttons/forms." : "Frontend file missing. File restore/fix required."
+  };
+}
+
+async function getPart53DbCollectionStatus() {
+  const uniqueCollections = [...new Set(part53ApiRegistry.map((item) => item.collection).filter(Boolean))];
+  const dbConnected = globalThis.NAXORA_DB_MODE === "mongodb" && mongoose.connection?.readyState === 1;
+  if (!dbConnected) {
+    return uniqueCollections.map((collection) => ({ collection, status: "warn", count: null, note: "MongoDB connected nahi hai; live DB audit skipped." }));
+  }
+  const results = [];
+  for (const collection of uniqueCollections) {
+    try {
+      const count = await mongoose.connection.collection(collection).estimatedDocumentCount();
+      results.push({ collection, status: "pass", count, note: count > 0 ? "Collection has data." : "Collection empty hai; demo/client testing me sample data add karo." });
+    } catch (error) {
+      results.push({ collection, status: "warn", count: null, note: error.message });
+    }
+  }
+  return results;
+}
+
+async function buildPart53AuditReport(req) {
+  const env = getPart53EnvStatus(req);
+  const pages = part53PageRegistry.map(part53FileStatus);
+  const apiPrefixes = new Set(["/api/health", "/api/part53", "/api/parents", "/api/staff", "/api/progress", ...majorModuleRoutes]);
+  const apis = part53ApiRegistry.map((item) => {
+    const mounted = item.prefix === "/api/health" || item.prefix === "/api/part53" || apiPrefixes.has(item.prefix);
+    return {
+      ...item,
+      registered: mounted,
+      status: mounted ? "pass" : item.critical ? "fail" : "warn",
+      action: mounted ? "Manual GET/POST test required according to module form." : "Route registry me prefix missing hai. server.js route mount check karo."
+    };
+  });
+  const dbCollections = await getPart53DbCollectionStatus();
+  const allChecks = [...pages, ...apis, ...dbCollections];
+  const summary = {
+    total: allChecks.length,
+    pass: allChecks.filter((item) => item.status === "pass").length,
+    warn: allChecks.filter((item) => item.status === "warn").length,
+    fail: allChecks.filter((item) => item.status === "fail").length,
+    criticalFailures: [...pages, ...apis].filter((item) => item.critical && item.status === "fail").map((item) => item.label || item.prefix || item.file)
+  };
+  const launchGate = summary.fail === 0 && env.dbMode === "mongodb" ? "audit-ready-for-manual-crud" : "fix-required-before-client-demo";
+  return {
+    success: true,
+    part: "Part 53 - Complete System Audit",
+    basedOn: "Part 52 Live Clean Route Fix",
+    status: "active",
+    launchGate,
+    env,
+    summary,
+    pages,
+    apis,
+    dbCollections,
+    criticalFlows: part53CriticalFlows,
+    manualChecklist: part53ManualChecklist,
+    nextStep: summary.fail > 0
+      ? "Pehle fail items fix karo, phir /api/part53/run dobara check karo."
+      : "Ab browser me manual CRUD audit start karo: signup/login, students, fees, attendance, enquiries, payments.",
+    founderNote: "Button dikhna aur feature fully working hona alag hai. Part 53 ka kaam wahi real audit complete karna hai."
+  };
+}
+
+app.get("/api/part53/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 53 - Complete System Audit",
+    status: "active",
+    basedOn: "Part 52 Live Clean Route Fix",
+    frontend: ["/system-audit", "/audit"],
+    routes: ["/api/part53/status", "/api/part53/audit-plan", "/api/part53/pages", "/api/part53/run", "/api/part53/export"],
+    purpose: "Har existing button, route, API aur database flow ko Part 78 v1.0 launch se pehle verify karna.",
+    currentVersionPlan: "Part 53-78 = NAXORA OS 1.0 completion. Part 79-110 = NAXORA OS 2.0 development."
+  });
+});
+
+app.get("/api/part53/audit-plan", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 53 - Complete System Audit",
+    pages: part53PageRegistry,
+    apis: part53ApiRegistry,
+    criticalFlows: part53CriticalFlows,
+    manualChecklist: part53ManualChecklist
+  });
+});
+
+app.get("/api/part53/pages", (req, res) => {
+  res.json({ success: true, pages: part53PageRegistry.map(part53FileStatus) });
+});
+
+app.get("/api/part53/run", async (req, res, next) => {
+  try {
+    res.json(await buildPart53AuditReport(req));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/part53/export", async (req, res, next) => {
+  try {
+    const report = await buildPart53AuditReport(req);
+    res.setHeader("Content-Disposition", "attachment; filename=naxora-part53-audit-report.json");
+    res.json(report);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/system-audit/status", (req, res) => {
+  res.redirect(302, "/api/part53/status");
+});
+// ================= END PART 53 =================
+
+
 // Same-server frontend hosting for Render/Railway/VPS deployment.
 app.use("/landing", express.static(frontendPath));
 
@@ -1719,7 +1969,18 @@ app.get(/^\/app(?!\/api).*/, (req, res) => {
   }
   res.sendFile(path.join(frontendPath, "index.html"));
 });
+
+
+
+// ================= PART 52: LIVE CLEAN ROUTE FIX FOR ALL MODULE PAGES =================
+// Render live URL par /progress.html, /fees.html jaise old sidebar links 404 de rahe the.
+// Is fix me har normal module page ko clean route (/progress) aur old .html redirect dono milte hain.
 const modulePageRoutes = {
+  "/dashboard": "dashboard.html",
+  "/students": "students.html",
+  "/student": "students.html",
+  "/parents": "parents.html",
+  "/parent": "parents.html",
   "/progress": "progress.html",
   "/teachers": "teachers.html",
   "/staff": "staff.html",
@@ -1729,6 +1990,7 @@ const modulePageRoutes = {
   "/fees": "fees.html",
   "/finance": "finance.html",
   "/doubts": "doubts.html",
+  "/ai-doubts": "doubts.html",
   "/ai-notes": "ai-notes.html",
   "/ai-mock-tests": "ai-mock-tests.html",
   "/ai-roadmaps": "ai-roadmaps.html",
@@ -1753,8 +2015,13 @@ const modulePageRoutes = {
   "/announcements": "announcements.html",
   "/certificates": "certificates.html",
   "/library": "library.html",
+  "/profile": "dashboard.html",
+  "/admin": "super-admin.html",
   "/super-admin": "super-admin.html",
-  "/admin-analytics": "admin-analytics.html"
+  "/admin-analytics": "admin-analytics.html",
+  "/landing": "landing.html",
+  "/system-audit": "system-audit.html",
+  "/audit": "system-audit.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -1762,13 +2029,30 @@ for (const [route, fileName] of Object.entries(modulePageRoutes)) {
   app.get(`${route}.html`, (req, res) => res.redirect(302, route));
 }
 
+// Safety fallback: jo normal frontend .html file exist karti hai aur internal nahi hai,
+// usko clean route par redirect/send kar do. Internal debug/demo pages production me hidden rahenge.
+app.get(/^\/[a-z0-9-]+\.html$/i, (req, res, next) => {
+  const requestedFile = path.basename(req.path);
+  if (isProduction && internalPageFiles.has(requestedFile) && !wantsInternalAccess(req)) {
+    return res.status(404).send("Private NAXORA internal page. Login/admin access required.");
+  }
+  const cleanPath = req.path.replace(/\.html$/i, "");
+  const knownFile = Object.values(modulePageRoutes).includes(requestedFile);
+  if (knownFile) return res.redirect(302, cleanPath);
+  return next();
+});
+
 app.get("/api/part52/status", (req, res) => {
   res.json({
     success: true,
     part: "Part 52 - Live Clean Route Fix",
-    status: "active"
+    status: "active",
+    purpose: "All frontend module pages now work with clean URLs and old .html links redirect safely.",
+    examples: ["/progress", "/progress.html -> /progress", "/fees", "/teachers", "/live-classes"],
+    productionSafe: true
   });
 });
+// ================= END PART 52 =================
 
 app.use(notFound);
 app.use(errorHandler);
@@ -1778,8 +2062,8 @@ const port = Number(process.env.PORT) || 5000;
 await connectDB();
 
 const server = app.listen(port, () => {
-  console.log("✅ PART 51 FINAL SECURE ROUTE CLEANUP + UI ASSET FIX ACTIVE");
-  console.log("✅ All routes Part 1 to Part 50 loaded + Part 51 public/private route cleanup");
+  console.log("✅ PART 53 COMPLETE SYSTEM AUDIT ACTIVE");
+  console.log("✅ All routes Part 1 to Part 52 loaded + Part 53 audit dashboard");
   console.log("✅ AI Notes route active: /api/ai-notes");
   console.log("✅ AI Mock Tests route active: /api/ai-mock-tests");
   console.log("✅ AI Roadmaps route active: /api/ai-roadmaps");
@@ -1821,6 +2105,8 @@ const server = app.listen(port, () => {
   console.log("✅ Launch Package active: /api/launch-package/status");
   console.log("✅ Public route policy active: /api/public-route-policy/status");
   console.log("✅ Final secure status active: /api/part51/status");
+  console.log("✅ Part 53 audit active: /api/part53/run");
+  console.log("✅ System audit frontend: /system-audit");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");
   console.log("🛡️ Security headers, validation, rate-limit and safe errors active");

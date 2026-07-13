@@ -1,5 +1,5 @@
 {
-  "name": "naxora-institute-os-part51-secure-public-private-routing-final",
+  "name": "naxora-institute-os-part53-complete-system-audit",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -9,26 +9,20 @@
     "check:env": "node scripts/check-env.js",
     "check:deploy": "node scripts/check-deploy.js",
     "check:final": "node scripts/final-smoke-test.js",
-    "check:security": "node scripts/check-security-routes.js"
+    "check:security": "node scripts/check-security-routes.js",
+    "check:part53": "node --check src/server.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
-    "body-parser": "^2.3.0",
-    "compression": "^1.8.1",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "express-rate-limit": "^8.5.2",
-    "helmet": "^8.3.0",
-    "jsonwebtoken": "^9.0.3",
-    "mongoose": "^8.24.1",
-    "morgan": "^1.11.0",
-    "multer": "^2.2.0",
-    "nodemailer": "^6.10.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.1",
     "razorpay": "^2.9.6",
-    "validator": "^13.15.35"
+    "nodemailer": "^6.9.16"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.10"
   }
 }

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA OS Part 53 - Complete System Audit</title>
+  <link rel="stylesheet" href="/system-audit.css" />
+</head>
+<body>
+  <div class="audit-shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">NAXORA Institute OS</p>
+        <h1>Part 53 — Complete System Audit</h1>
+        <p class="subtitle">Part 52 live foundation ke baad ab har button, route, API aur MongoDB flow ko v1.0 launch se pehle verify karna hai.</p>
+      </div>
+      <div class="hero-actions">
+        <button id="runAuditBtn">Run Audit</button>
+        <a href="/api/part53/export" target="_blank" rel="noreferrer">Export JSON</a>
+      </div>
+    </header>
+
+    <section class="status-grid" id="summaryGrid">
+      <article><span>Total</span><strong id="totalCount">--</strong></article>
+      <article><span>Pass</span><strong id="passCount">--</strong></article>
+      <article><span>Warn</span><strong id="warnCount">--</strong></article>
+      <article><span>Fail</span><strong id="failCount">--</strong></article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">
+        <h2>Live Environment</h2>
+        <span id="launchGate" class="pill">waiting</span>
+      </div>
+      <div id="envBox" class="info-box">Audit run karo...</div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">
+        <h2>Frontend Pages Audit</h2>
+        <span>file + route readiness</span>
+      </div>
+      <div id="pagesTable" class="table-wrap"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">
+        <h2>API Routes Audit</h2>
+        <span>registered route prefixes</span>
+      </div>
+      <div id="apisTable" class="table-wrap"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">
+        <h2>MongoDB Collections</h2>
+        <span>data presence check</span>
+      </div>
+      <div id="dbTable" class="table-wrap"></div>
+    </section>
+
+    <section class="two-col">
+      <div class="panel">
+        <div class="panel-title"><h2>Critical Manual Flows</h2></div>
+        <div id="flowsBox" class="cards"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><h2>Arun Checklist</h2></div>
+        <ul id="checklistBox" class="checklist"></ul>
+      </div>
+    </section>
+
+    <section class="panel next-panel">
+      <h2>Next Step</h2>
+      <p id="nextStep">Run audit first.</p>
+    </section>
+  </div>
+
+  <script src="/system-audit.js"></script>
+</body>
+</html>
