@@ -5297,6 +5297,378 @@ app.get("/api/part63/demo", async (req, res) => {
 });
 // ================= END PART 63 =================
 
+
+// ================= PART 64: LIVE CLASSES COMPLETION =================
+// Roadmap scope: batch-wise class schedule, meeting link, join button, reminder,
+// online attendance, recording, notes/assignment foundation.
+const part64Checklist = [
+  "Batch-wise live class schedule open hota hai",
+  "Meeting link safe URL field ke through save/read hota hai",
+  "Join button active sirf valid meeting link par dikhta hai",
+  "Reminder foundation ready hai, real WhatsApp/SMS Part 65 me aayega",
+  "Online attendance join/leave status record hota hai",
+  "Recording link class ke baad attach ho sakta hai",
+  "Notes/assignment link aur due date class ke saath attach ho sakti hai",
+  "MongoDB connected mode me collection use hoti hai, warna mock fallback safe hai"
+];
+
+const part64Config = {
+  part: "Part 64 - Live Classes Completion",
+  status: "active",
+  purpose: "Institute ko online classes chalane ke liye batch-wise schedule, join link, reminder foundation, attendance, recording aur notes/assignment flow dena.",
+  routes: [
+    "/live-classes-completion",
+    "/live-classes",
+    "/api/part64/status",
+    "/api/part64/classes",
+    "/api/part64/today",
+    "/api/part64/analytics"
+  ],
+  importantNote: "Real video hosting ya native live classroom yahan nahi dala. External meeting link safe foundation hai; native classroom v2.0 Part 94 onwards me aayega.",
+  nextPart: "Part 65 - WhatsApp, SMS and Email Integration"
+};
+
+function part64CleanText(value, max = 220) {
+  return String(value ?? "").trim().replace(/[<>]/g, "").slice(0, max);
+}
+
+function part64SafeUrl(value) {
+  const raw = part64CleanText(value, 500);
+  if (!raw) return "";
+  try {
+    const parsed = new URL(raw);
+    if (!["https:", "http:"].includes(parsed.protocol)) return "";
+    return parsed.toString();
+  } catch {
+    return "";
+  }
+}
+
+function part64DateValue(value, fallback = null) {
+  const raw = part64CleanText(value, 80);
+  const date = raw ? new Date(raw) : null;
+  if (date && !Number.isNaN(date.getTime())) return date.toISOString();
+  return fallback;
+}
+
+function part64NowPlus(hours = 0) {
+  const date = new Date(Date.now() + Number(hours || 0) * 60 * 60 * 1000);
+  return date.toISOString();
+}
+
+if (!globalThis.NAXORA_PART64_CLASSES) {
+  globalThis.NAXORA_PART64_CLASSES = [
+    {
+      classId: "P64-LIVE-001",
+      title: "Class 10 Science - Motion Revision",
+      batchName: "Class 10 Foundation A",
+      subject: "Science",
+      teacherName: "Demo Teacher",
+      classMode: "online",
+      startTime: part64NowPlus(2),
+      endTime: part64NowPlus(3),
+      meetingLink: "https://meet.google.com/demo-naxora-class",
+      status: "scheduled",
+      reminderStatus: "pending",
+      recordingUrl: "",
+      notesUrl: "",
+      assignmentTitle: "Motion numericals practice set",
+      assignmentDueDate: part64NowPlus(48),
+      attendance: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      demoSeed: true
+    },
+    {
+      classId: "P64-LIVE-002",
+      title: "JEE Foundation Maths - Algebra Basics",
+      batchName: "JEE Foundation Weekend",
+      subject: "Mathematics",
+      teacherName: "NAXORA Faculty",
+      classMode: "hybrid",
+      startTime: part64NowPlus(24),
+      endTime: part64NowPlus(25),
+      meetingLink: "https://zoom.us/j/1234567890",
+      status: "scheduled",
+      reminderStatus: "pending",
+      recordingUrl: "",
+      notesUrl: "",
+      assignmentTitle: "Algebra worksheet 1",
+      assignmentDueDate: part64NowPlus(72),
+      attendance: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      demoSeed: true
+    }
+  ];
+}
+
+globalThis.NAXORA_PART64_REMINDERS = globalThis.NAXORA_PART64_REMINDERS || [];
+
+async function part64GetCollection() {
+  if (globalThis.NAXORA_DB_MODE === "mongodb" && mongoose.connection?.readyState === 1) {
+    return mongoose.connection.collection("part64liveclasses");
+  }
+  return null;
+}
+
+function part64NormalizeClass(input = {}) {
+  const startFallback = part64NowPlus(1);
+  const endFallback = part64NowPlus(2);
+  const classId = part64CleanText(input.classId || input.id || `P64-LIVE-${Date.now()}`, 80);
+  const startTime = part64DateValue(input.startTime || input.dateTime || input.scheduleAt, startFallback);
+  const endTime = part64DateValue(input.endTime, endFallback);
+  const meetingLink = part64SafeUrl(input.meetingLink || input.joinUrl || input.link);
+  return {
+    classId,
+    title: part64CleanText(input.title || input.classTitle || "Live Class", 160),
+    batchName: part64CleanText(input.batchName || input.batch || "General Batch", 120),
+    batchId: part64CleanText(input.batchId || "", 80),
+    subject: part64CleanText(input.subject || "General", 80),
+    teacherName: part64CleanText(input.teacherName || input.teacher || "Teacher", 120),
+    teacherId: part64CleanText(input.teacherId || "", 80),
+    classMode: ["online", "offline", "hybrid"].includes(part64CleanText(input.classMode || input.mode, 30)) ? part64CleanText(input.classMode || input.mode, 30) : "online",
+    startTime,
+    endTime,
+    meetingLink,
+    joinEnabled: Boolean(meetingLink),
+    status: ["draft", "scheduled", "live", "completed", "cancelled"].includes(part64CleanText(input.status, 40)) ? part64CleanText(input.status, 40) : "scheduled",
+    reminderStatus: ["pending", "queued", "sent", "disabled"].includes(part64CleanText(input.reminderStatus, 40)) ? part64CleanText(input.reminderStatus, 40) : "pending",
+    recordingUrl: part64SafeUrl(input.recordingUrl || input.recordingLink),
+    notesUrl: part64SafeUrl(input.notesUrl || input.notesLink),
+    assignmentTitle: part64CleanText(input.assignmentTitle || input.assignment || "", 160),
+    assignmentDueDate: part64DateValue(input.assignmentDueDate || input.dueDate, ""),
+    description: part64CleanText(input.description || input.note || "", 400),
+    attendance: Array.isArray(input.attendance) ? input.attendance.slice(0, 500) : [],
+    createdAt: input.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+}
+
+function part64PublicClass(row = {}) {
+  const normalized = part64NormalizeClass(row);
+  const now = Date.now();
+  const startMs = new Date(normalized.startTime).getTime();
+  const endMs = new Date(normalized.endTime).getTime();
+  const liveWindow = now >= startMs - 15 * 60 * 1000 && now <= endMs + 15 * 60 * 1000;
+  return {
+    ...normalized,
+    isJoinAvailable: Boolean(normalized.meetingLink && normalized.status !== "cancelled" && liveWindow),
+    minutesToStart: Number.isFinite(startMs) ? Math.round((startMs - now) / 60000) : null,
+    attendanceCount: Array.isArray(row.attendance) ? row.attendance.length : 0,
+    hasRecording: Boolean(normalized.recordingUrl),
+    hasNotes: Boolean(normalized.notesUrl || normalized.assignmentTitle)
+  };
+}
+
+async function part64FindClass(classId) {
+  const cleanId = part64CleanText(classId, 80);
+  const collection = await part64GetCollection();
+  if (collection) {
+    const row = await collection.findOne({ classId: cleanId });
+    return { collection, row };
+  }
+  return { collection: null, row: globalThis.NAXORA_PART64_CLASSES.find((item) => item.classId === cleanId || item.id === cleanId) };
+}
+
+function part64FilterRows(rows = [], query = {}) {
+  const batch = part64CleanText(query.batch || query.batchName, 120).toLowerCase();
+  const status = part64CleanText(query.status, 40).toLowerCase();
+  const subject = part64CleanText(query.subject, 80).toLowerCase();
+  const todayOnly = part64CleanText(query.today, 10) === "true";
+  const today = new Date().toISOString().slice(0, 10);
+  return rows.map(part64PublicClass).filter((item) => {
+    if (batch && !String(item.batchName || "").toLowerCase().includes(batch)) return false;
+    if (status && String(item.status || "").toLowerCase() !== status) return false;
+    if (subject && !String(item.subject || "").toLowerCase().includes(subject)) return false;
+    if (todayOnly && !String(item.startTime || "").startsWith(today)) return false;
+    return true;
+  }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+}
+
+function part64Analytics(rows = []) {
+  const classes = rows.map(part64PublicClass);
+  const byStatus = classes.reduce((acc, item) => {
+    acc[item.status] = (acc[item.status] || 0) + 1;
+    return acc;
+  }, {});
+  return {
+    totalClasses: classes.length,
+    scheduled: byStatus.scheduled || 0,
+    live: byStatus.live || 0,
+    completed: byStatus.completed || 0,
+    cancelled: byStatus.cancelled || 0,
+    joinLinksReady: classes.filter((item) => item.meetingLink).length,
+    remindersPending: classes.filter((item) => item.reminderStatus === "pending").length,
+    recordingsAttached: classes.filter((item) => item.hasRecording).length,
+    notesAssignmentsAttached: classes.filter((item) => item.hasNotes).length,
+    attendanceMarked: classes.reduce((sum, item) => sum + Number(item.attendanceCount || 0), 0)
+  };
+}
+
+app.get("/api/part64/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 64 - Live Classes Completion",
+    status: "active",
+    dbMode: mongoose.connection.readyState === 1 ? "mongodb" : "mock",
+    routes: part64Config.routes,
+    features: ["Batch-wise schedule", "Meeting link", "Join button", "Reminder foundation", "Online attendance", "Recording", "Notes/assignment"],
+    nextPart: part64Config.nextPart
+  });
+});
+
+app.get("/api/part64/config", (req, res) => {
+  res.json({ success: true, part: "Part 64 - Live Classes Completion", config: part64Config, checklist: part64Checklist });
+});
+
+app.get("/api/part64/classes", async (req, res) => {
+  const collection = await part64GetCollection();
+  const rows = collection ? await collection.find({}).sort({ startTime: 1 }).limit(1000).toArray() : globalThis.NAXORA_PART64_CLASSES;
+  const classes = part64FilterRows(rows, req.query || {});
+  res.json({ success: true, part: "Part 64 - Live Classes Completion", mode: collection ? "mongodb" : "mock", count: classes.length, classes });
+});
+
+app.post("/api/part64/classes", async (req, res) => {
+  const payload = part64NormalizeClass(req.body || {});
+  const collection = await part64GetCollection();
+  if (collection) {
+    await collection.updateOne({ classId: payload.classId }, { $set: payload }, { upsert: true });
+    return res.status(201).json({ success: true, mode: "mongodb", message: "Live class saved.", class: part64PublicClass(payload) });
+  }
+  globalThis.NAXORA_PART64_CLASSES.unshift(payload);
+  return res.status(201).json({ success: true, mode: "mock", message: "Live class saved in safe mock memory.", class: part64PublicClass(payload) });
+});
+
+app.get("/api/part64/classes/:classId", async (req, res) => {
+  const found = await part64FindClass(req.params.classId);
+  if (!found.row) return res.status(404).json({ success: false, message: "Live class nahi mili." });
+  res.json({ success: true, part: "Part 64 - Live Classes Completion", mode: found.collection ? "mongodb" : "mock", class: part64PublicClass(found.row) });
+});
+
+app.patch("/api/part64/classes/:classId", async (req, res) => {
+  const classId = part64CleanText(req.params.classId, 80);
+  const found = await part64FindClass(classId);
+  if (!found.row) return res.status(404).json({ success: false, message: "Live class nahi mili." });
+  const updated = part64NormalizeClass({ ...found.row, ...(req.body || {}), classId });
+  if (found.collection) {
+    await found.collection.updateOne({ classId }, { $set: updated });
+    return res.json({ success: true, mode: "mongodb", class: part64PublicClass(updated) });
+  }
+  const index = globalThis.NAXORA_PART64_CLASSES.findIndex((item) => item.classId === classId);
+  globalThis.NAXORA_PART64_CLASSES[index] = updated;
+  res.json({ success: true, mode: "mock", class: part64PublicClass(updated) });
+});
+
+app.post("/api/part64/classes/:classId/reminder", async (req, res) => {
+  const classId = part64CleanText(req.params.classId, 80);
+  const found = await part64FindClass(classId);
+  if (!found.row) return res.status(404).json({ success: false, message: "Live class nahi mili." });
+  const reminder = {
+    id: `P64-REM-${Date.now()}`,
+    classId,
+    channel: part64CleanText(req.body?.channel || "in_app", 40),
+    message: part64CleanText(req.body?.message || `Reminder: ${found.row.title || "Live class"} scheduled hai.`, 300),
+    status: "queued_mock",
+    createdAt: new Date().toISOString()
+  };
+  globalThis.NAXORA_PART64_REMINDERS.unshift(reminder);
+  const update = { reminderStatus: "queued", updatedAt: new Date().toISOString() };
+  if (found.collection) await found.collection.updateOne({ classId }, { $set: update });
+  else {
+    const index = globalThis.NAXORA_PART64_CLASSES.findIndex((item) => item.classId === classId);
+    if (index >= 0) Object.assign(globalThis.NAXORA_PART64_CLASSES[index], update);
+  }
+  res.status(201).json({ success: true, part: "Part 64 - Live Classes Completion", message: "Reminder queued as foundation only. Real WhatsApp/SMS/Email Part 65 me aayega.", reminder });
+});
+
+app.post("/api/part64/classes/:classId/attendance", async (req, res) => {
+  const classId = part64CleanText(req.params.classId, 80);
+  const found = await part64FindClass(classId);
+  if (!found.row) return res.status(404).json({ success: false, message: "Live class nahi mili." });
+  const entry = {
+    studentId: part64CleanText(req.body?.studentId || `STD-${Date.now()}`, 80),
+    studentName: part64CleanText(req.body?.studentName || "Student", 120),
+    status: ["joined", "left", "present", "absent"].includes(part64CleanText(req.body?.status, 20)) ? part64CleanText(req.body?.status, 20) : "joined",
+    joinedAt: part64DateValue(req.body?.joinedAt, new Date().toISOString()),
+    leftAt: part64DateValue(req.body?.leftAt, ""),
+    durationMinutes: Number(req.body?.durationMinutes || 0),
+    markedBy: part64CleanText(req.body?.markedBy || "system", 80)
+  };
+  if (found.collection) {
+    await found.collection.updateOne({ classId }, { $push: { attendance: entry }, $set: { updatedAt: new Date().toISOString() } });
+  } else {
+    const index = globalThis.NAXORA_PART64_CLASSES.findIndex((item) => item.classId === classId);
+    if (index >= 0) {
+      globalThis.NAXORA_PART64_CLASSES[index].attendance = [...(globalThis.NAXORA_PART64_CLASSES[index].attendance || []), entry];
+      globalThis.NAXORA_PART64_CLASSES[index].updatedAt = new Date().toISOString();
+    }
+  }
+  res.status(201).json({ success: true, part: "Part 64 - Live Classes Completion", message: "Online attendance entry saved.", attendance: entry });
+});
+
+app.post("/api/part64/classes/:classId/recording", async (req, res) => {
+  const classId = part64CleanText(req.params.classId, 80);
+  const found = await part64FindClass(classId);
+  if (!found.row) return res.status(404).json({ success: false, message: "Live class nahi mili." });
+  const recordingUrl = part64SafeUrl(req.body?.recordingUrl || req.body?.url);
+  if (!recordingUrl) return res.status(400).json({ success: false, message: "Valid recording URL required hai." });
+  const update = { recordingUrl, status: part64CleanText(req.body?.status || found.row.status || "completed", 40), updatedAt: new Date().toISOString() };
+  if (found.collection) await found.collection.updateOne({ classId }, { $set: update });
+  else {
+    const index = globalThis.NAXORA_PART64_CLASSES.findIndex((item) => item.classId === classId);
+    if (index >= 0) Object.assign(globalThis.NAXORA_PART64_CLASSES[index], update);
+  }
+  res.json({ success: true, part: "Part 64 - Live Classes Completion", message: "Recording attached.", recordingUrl });
+});
+
+app.post("/api/part64/classes/:classId/notes-assignment", async (req, res) => {
+  const classId = part64CleanText(req.params.classId, 80);
+  const found = await part64FindClass(classId);
+  if (!found.row) return res.status(404).json({ success: false, message: "Live class nahi mili." });
+  const update = {
+    notesUrl: part64SafeUrl(req.body?.notesUrl || req.body?.notesLink),
+    assignmentTitle: part64CleanText(req.body?.assignmentTitle || req.body?.assignment || found.row.assignmentTitle || "", 160),
+    assignmentDueDate: part64DateValue(req.body?.assignmentDueDate || req.body?.dueDate, found.row.assignmentDueDate || ""),
+    updatedAt: new Date().toISOString()
+  };
+  if (found.collection) await found.collection.updateOne({ classId }, { $set: update });
+  else {
+    const index = globalThis.NAXORA_PART64_CLASSES.findIndex((item) => item.classId === classId);
+    if (index >= 0) Object.assign(globalThis.NAXORA_PART64_CLASSES[index], update);
+  }
+  res.json({ success: true, part: "Part 64 - Live Classes Completion", message: "Notes/assignment attached.", update });
+});
+
+app.get("/api/part64/today", async (req, res) => {
+  const collection = await part64GetCollection();
+  const rows = collection ? await collection.find({}).sort({ startTime: 1 }).limit(1000).toArray() : globalThis.NAXORA_PART64_CLASSES;
+  const today = part64FilterRows(rows, { ...(req.query || {}), today: "true" });
+  res.json({ success: true, part: "Part 64 - Live Classes Completion", count: today.length, classes: today });
+});
+
+app.get("/api/part64/analytics", async (req, res) => {
+  const collection = await part64GetCollection();
+  const rows = collection ? await collection.find({}).sort({ startTime: 1 }).limit(1000).toArray() : globalThis.NAXORA_PART64_CLASSES;
+  res.json({ success: true, part: "Part 64 - Live Classes Completion", mode: collection ? "mongodb" : "mock", analytics: part64Analytics(rows) });
+});
+
+app.get("/api/part64/checklist", (req, res) => {
+  res.json({ success: true, part: "Part 64 - Live Classes Completion", checklist: part64Checklist });
+});
+
+app.get("/api/part64/export", async (req, res) => {
+  const collection = await part64GetCollection();
+  const rows = collection ? await collection.find({}).sort({ startTime: 1 }).limit(1000).toArray() : globalThis.NAXORA_PART64_CLASSES;
+  res.json({ success: true, part: "Part 64 - Live Classes Completion", exportedAt: new Date().toISOString(), config: part64Config, analytics: part64Analytics(rows), classes: rows.map(part64PublicClass), reminders: globalThis.NAXORA_PART64_REMINDERS.slice(0, 100) });
+});
+
+app.get("/api/part64/demo", async (req, res) => {
+  const classes = part64FilterRows(globalThis.NAXORA_PART64_CLASSES || [], {});
+  res.json({ success: true, part: "Part 64 - Live Classes Completion", config: part64Config, analytics: part64Analytics(classes), classes, checklist: part64Checklist });
+});
+// ================= END PART 64 =================
+
 // Same-server frontend hosting for Render/Railway/VPS deployment.
 app.use("/landing", express.static(frontendPath));
 
@@ -5340,7 +5712,7 @@ const modulePageRoutes = {
   "/ai-notes": "ai-notes.html",
   "/ai-mock-tests": "ai-mock-tests.html",
   "/ai-roadmaps": "ai-roadmaps.html",
-  "/live-classes": "live-classes.html",
+  "/live-classes": "live-classes-completion.html",
   "/notifications": "notifications.html",
   "/email-notifications": "email-notifications.html",
   "/assignments": "assignments.html",
@@ -5403,7 +5775,11 @@ const modulePageRoutes = {
   "/discovery-leads-integration": "discovery-leads-integration.html",
   "/discovery-journey": "discovery-leads-integration.html",
   "/admission-journey": "discovery-leads-integration.html",
-  "/lead-integration": "discovery-leads-integration.html"
+  "/lead-integration": "discovery-leads-integration.html",
+  "/live-classes-completion": "live-classes-completion.html",
+  "/online-classroom": "live-classes-completion.html",
+  "/live-classroom": "live-classes-completion.html",
+  "/classroom-live": "live-classes-completion.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {

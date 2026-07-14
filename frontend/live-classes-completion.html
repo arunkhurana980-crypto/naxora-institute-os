@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA Part 64 - Live Classes Completion</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/live-classes-completion.css" />
+</head>
+<body>
+  <main class="p64-shell">
+    <section class="p64-hero">
+      <div>
+        <p class="p64-kicker">PART 64 • LIVE CLASSES COMPLETION</p>
+        <h1>Live Classes Control Room</h1>
+        <p>Batch-wise class schedule, meeting link, join button, reminder foundation, online attendance, recording aur notes/assignment ko ek safe workflow me manage karo.</p>
+      </div>
+      <div class="p64-actions">
+        <a href="/dashboard" class="p64-btn ghost">← Dashboard</a>
+        <a href="/api/part64/status" class="p64-btn" target="_blank">API Status</a>
+      </div>
+    </section>
+
+    <section class="p64-grid" id="analyticsGrid">
+      <article class="p64-card"><span>Total Classes</span><strong id="totalClasses">0</strong></article>
+      <article class="p64-card"><span>Scheduled</span><strong id="scheduledClasses">0</strong></article>
+      <article class="p64-card"><span>Join Links</span><strong id="joinLinksReady">0</strong></article>
+      <article class="p64-card"><span>Recordings</span><strong id="recordingsAttached">0</strong></article>
+    </section>
+
+    <section class="p64-panel">
+      <div class="p64-panel-head">
+        <div>
+          <h2>Create / Update Live Class</h2>
+          <p>External Google Meet/Zoom link use karo. Native live classroom v2.0 Part 94 ke baad aayega.</p>
+        </div>
+      </div>
+      <form id="classForm" class="p64-form">
+        <label>Class title<input name="title" required placeholder="Class 10 Science - Motion Revision" /></label>
+        <label>Batch name<input name="batchName" required placeholder="Class 10 Foundation A" /></label>
+        <label>Subject<input name="subject" placeholder="Science" /></label>
+        <label>Teacher<input name="teacherName" placeholder="Teacher name" /></label>
+        <label>Start time<input name="startTime" type="datetime-local" required /></label>
+        <label>End time<input name="endTime" type="datetime-local" required /></label>
+        <label>Meeting link<input name="meetingLink" type="url" placeholder="https://meet.google.com/..." /></label>
+        <label>Status<select name="status"><option>scheduled</option><option>live</option><option>completed</option><option>cancelled</option><option>draft</option></select></label>
+        <label>Assignment title<input name="assignmentTitle" placeholder="Worksheet / homework title" /></label>
+        <label>Notes URL<input name="notesUrl" type="url" placeholder="https://drive.google.com/..." /></label>
+        <button class="p64-btn" type="submit">Save Live Class</button>
+        <p id="formMsg" class="p64-msg"></p>
+      </form>
+    </section>
+
+    <section class="p64-panel">
+      <div class="p64-panel-head">
+        <div>
+          <h2>Live Class Schedule</h2>
+          <p>Class join, reminder queue, attendance, recording aur notes status yahin se verify karo.</p>
+        </div>
+        <button id="refreshBtn" class="p64-btn ghost">Refresh</button>
+      </div>
+      <div id="classesList" class="p64-list"></div>
+    </section>
+
+    <section class="p64-panel">
+      <h2>Part 64 Checklist</h2>
+      <ul id="checklist" class="p64-checklist"></ul>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/live-classes-completion.js"></script>
+</body>
+</html>
