@@ -7602,6 +7602,370 @@ app.get("/api/part69/demo", async (req, res) => {
 // ================= END PART 69 =================
 
 
+
+// ================= PART 70: VANI AI V2 - VOICE FORM FILLING =================
+// Part 70 ka goal: VANI ko Hindi/Hinglish voice/text input se form draft fill karna sikhana.
+// Safety rule: VANI save se pehle confirmation maangti hai. Direct edit/delete/payment/message-send nahi hota.
+const part70Config = {
+  part: "Part 70 - VANI AI V2",
+  status: "active",
+  purpose: "Hindi/Hinglish voice form filling with confirmation before save and activity history.",
+  frontendRoute: "/vani-ai-v2",
+  alternateRoutes: ["/vani-ai", "/vani-assistant", "/vani", "/voice-form", "/vani-form-fill"],
+  apiRoutes: [
+    "/api/part70/status",
+    "/api/part70/config",
+    "/api/part70/form-targets",
+    "/api/part70/parse",
+    "/api/part70/voice-form",
+    "/api/part70/drafts",
+    "/api/part70/confirm-save",
+    "/api/part70/cancel",
+    "/api/part70/activity",
+    "/api/part70/credit-preview",
+    "/api/part70/checklist",
+    "/api/part70/export",
+    "/api/part70/demo"
+  ],
+  safetyMode: "Confirmation-first mode. VANI form fill karegi, preview dikhayegi, phir confirmed=true ke baad safe VANI draft/action record save hoga.",
+  aiHubDecision: "VANI AI Features / AI Hub ke andar hi rahegi. Part 69 read-only search tha; Part 70 voice form filling hai.",
+  previousPart: "Part 69 - VANI AI V1 read-only search",
+  nextPart: "Part 71 - AI Admission Copilot"
+};
+
+const part70FormTargets = [
+  {
+    id: "student_enrolment",
+    title: "Student Enrolment Draft",
+    description: "New student/admission form ke basic fields voice se fill karna.",
+    example: "New student add karo naam Rahul Sharma class 10 course Maths Science batch Evening parent Sunita phone 9876543210 fee plan monthly",
+    requiredFields: ["studentName", "className", "course", "parentPhone"],
+    optionalFields: ["batch", "parentName", "feePlan", "note"],
+    safeDestination: "part70_vani_form_drafts"
+  },
+  {
+    id: "enquiry_lead",
+    title: "Admission Enquiry Draft",
+    description: "New enquiry/lead ko CRM ke liye draft banana.",
+    example: "Enquiry banao student Aman parent Rakesh phone 9876543210 course JEE preferred timing evening source website",
+    requiredFields: ["studentName", "parentPhone", "courseInterest"],
+    optionalFields: ["parentName", "preferredTiming", "source", "priority", "note"],
+    safeDestination: "part70_vani_form_drafts"
+  },
+  {
+    id: "fee_record",
+    title: "Fee Record Draft",
+    description: "Fee entry ka draft fill karna, final payment collection nahi.",
+    example: "Fee record banao Rahul ne 5000 cash pay kiya pending 10000 due date 25 July",
+    requiredFields: ["studentName", "amount"],
+    optionalFields: ["mode", "pending", "dueDate", "note"],
+    safeDestination: "part70_vani_form_drafts"
+  },
+  {
+    id: "attendance_record",
+    title: "Attendance Draft",
+    description: "Attendance entry ka draft banana.",
+    example: "Attendance mark karo Rahul present batch Evening A date today",
+    requiredFields: ["studentName", "attendanceStatus"],
+    optionalFields: ["batch", "date", "note"],
+    safeDestination: "part70_vani_form_drafts"
+  },
+  {
+    id: "live_class",
+    title: "Live Class Draft",
+    description: "Live class schedule ka draft banana.",
+    example: "Live class schedule karo JEE batch subject Physics teacher Mehta time 5 PM meeting link zoom dot us",
+    requiredFields: ["batch", "subject"],
+    optionalFields: ["teacherName", "scheduledTime", "meetingLink", "note"],
+    safeDestination: "part70_vani_form_drafts"
+  }
+];
+
+const part70Checklist = [
+  "VANI AI V2 page /vani-ai-v2 open ho raha hai.",
+  "VANI AI latest route /vani-ai ab V2 form filling page kholta hai, aur /vani-ai-v1 old read-only search ke liye available hai.",
+  "Hindi/Hinglish transcript se form type detect hota hai.",
+  "Student, enquiry, fee, attendance aur live class drafts supported hain.",
+  "Parse route preview/draft banata hai, direct save nahi karta.",
+  "Confirm-save route confirmed=true ke bina save nahi karta.",
+  "Activity history me parse, save aur cancel events record hote hain.",
+  "Main production collections me direct write nahi hota; safe VANI draft/action collection use hoti hai.",
+  "AI Hub me VANI AI Assistant ka latest route active hai.",
+  ".env, secret, AI API key, Razorpay key ZIP me include nahi hai."
+];
+
+globalThis.NAXORA_PART70_DRAFTS = globalThis.NAXORA_PART70_DRAFTS || {};
+globalThis.NAXORA_PART70_ACTIVITY = globalThis.NAXORA_PART70_ACTIVITY || [];
+globalThis.NAXORA_PART70_SAVED_FORMS = globalThis.NAXORA_PART70_SAVED_FORMS || [];
+
+function part70CleanText(value, max = 240) {
+  return String(value ?? "").replace(/[<>]/g, "").replace(/\s+/g, " ").trim().slice(0, max);
+}
+
+function part70Lower(value) {
+  return part70CleanText(value, 500).toLowerCase();
+}
+
+function part70DbReady() {
+  return Boolean(mongoose.connection && mongoose.connection.readyState === 1 && mongoose.connection.db);
+}
+
+function part70Activity(type, payload = {}) {
+  const row = {
+    id: `vani70-activity-${Date.now()}-${Math.random().toString(16).slice(2, 7)}`,
+    type,
+    ...payload,
+    createdAt: new Date().toISOString()
+  };
+  globalThis.NAXORA_PART70_ACTIVITY.unshift(row);
+  globalThis.NAXORA_PART70_ACTIVITY = globalThis.NAXORA_PART70_ACTIVITY.slice(0, 100);
+  return row;
+}
+
+function part70DetectFormType(transcript = "", requestedType = "") {
+  const manual = part70FormTargets.find((item) => item.id === requestedType);
+  if (manual) return manual;
+  const t = part70Lower(transcript);
+  if (/(fee|fees|payment|paid|pay|collection|pending|dues|due)/i.test(t)) return part70FormTargets.find((x) => x.id === "fee_record");
+  if (/(attendance|present|absent|hazri|haazri|mark)/i.test(t)) return part70FormTargets.find((x) => x.id === "attendance_record");
+  if (/(live class|class schedule|meeting|zoom|meet|recording|teacher|subject)/i.test(t)) return part70FormTargets.find((x) => x.id === "live_class");
+  if (/(enquiry|lead|callback|follow.?up|interested|source|website|walk.?in)/i.test(t)) return part70FormTargets.find((x) => x.id === "enquiry_lead");
+  return part70FormTargets.find((x) => x.id === "student_enrolment");
+}
+
+function part70First(regex, text, fallback = "") {
+  const match = text.match(regex);
+  return match && match[1] ? part70CleanText(match[1], 120) : fallback;
+}
+
+function part70ExtractPhone(text = "") {
+  const match = text.replace(/[\s-]/g, "").match(/(?:\+91)?([6-9]\d{9})/);
+  return match ? match[1] : "";
+}
+
+function part70ExtractAmount(text = "") {
+  const match = text.match(/(?:₹|rs\.?|inr|amount|paid|pay|fee)?\s*(\d{3,7})(?:\s*rupees?)?/i);
+  return match ? Number(match[1]) : null;
+}
+
+function part70ExtractCourse(text = "") {
+  const courseFromLabel = part70First(/(?:course|subject|for)\s+(?:is|hai|=|:)?\s*([a-z0-9 +/&.-]{2,50})(?=\s+(?:batch|parent|phone|class|timing|time|source|priority|fee|teacher|$))/i, text);
+  if (courseFromLabel) return courseFromLabel;
+  const known = text.match(/(JEE|NEET|Maths?\s*\+?\s*Science|Maths?|Science|Physics|Chemistry|Biology|English|Commerce|Foundation|Coding)/i);
+  return known ? part70CleanText(known[1], 80) : "";
+}
+
+function part70ExtractName(text = "") {
+  const labelName = part70First(/(?:student\s+name|naam|name)\s+(?:is|hai|=|:)?\s*([a-zA-Z ]{2,40})(?=\s+(?:class|course|batch|parent|phone|fee|paid|present|absent|$))/i, text);
+  if (labelName) return labelName;
+  const afterStudent = part70First(/(?:student|bachcha|baccha)\s+([a-zA-Z ]{2,40})(?=\s+(?:class|course|batch|parent|phone|fee|paid|present|absent|$))/i, text);
+  if (afterStudent && !/add|banao|create|search|mark|record/i.test(afterStudent)) return afterStudent;
+  const firstCapitalWords = text.match(/\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})\b/);
+  return firstCapitalWords ? part70CleanText(firstCapitalWords[1], 80) : "";
+}
+
+function part70ParseTranscript(transcript = "", requestedType = "") {
+  const command = part70CleanText(transcript, 600);
+  const type = part70DetectFormType(command, requestedType);
+  const lower = part70Lower(command);
+  const phone = part70ExtractPhone(command);
+  const amount = part70ExtractAmount(command);
+  const common = {
+    studentName: part70ExtractName(command),
+    parentPhone: phone,
+    phone,
+    className: part70First(/class\s*([0-9]{1,2}|[a-zA-Z0-9 -]{2,20})/i, command),
+    course: part70ExtractCourse(command),
+    courseInterest: part70ExtractCourse(command),
+    batch: part70First(/batch\s+(?:is|hai|=|:)?\s*([a-zA-Z0-9 -]{1,40})(?=\s+(?:parent|phone|course|class|teacher|time|date|$))/i, command),
+    parentName: part70First(/(?:parent|father|mother|guardian)\s+(?:name\s*)?(?:is|hai|=|:)?\s*([a-zA-Z ]{2,40})(?=\s+(?:phone|mobile|course|class|batch|$))/i, command),
+    preferredTiming: part70First(/(?:preferred\s+timing|timing|time)\s+(?:is|hai|=|:)?\s*([a-zA-Z0-9: .-]{2,40})(?=\s+(?:source|phone|course|batch|$))/i, command),
+    source: part70First(/source\s+(?:is|hai|=|:)?\s*([a-zA-Z0-9 -]{2,30})(?=\s+(?:priority|phone|course|$))/i, command),
+    priority: lower.includes("hot") ? "hot" : lower.includes("cold") ? "cold" : lower.includes("warm") ? "warm" : "normal",
+    feePlan: lower.includes("monthly") ? "monthly" : lower.includes("yearly") || lower.includes("annual") ? "yearly" : lower.includes("installment") ? "installment" : "",
+    amount,
+    pending: part70First(/pending\s+(?:is|hai|=|:)?\s*(\d{3,7})/i, command),
+    mode: lower.includes("cash") ? "cash" : lower.includes("upi") ? "upi" : lower.includes("card") ? "card" : lower.includes("bank") ? "bank" : "",
+    dueDate: part70First(/due\s+(?:date\s*)?(?:is|hai|=|:)?\s*([a-zA-Z0-9 -]{2,30})(?=\s+(?:note|$))/i, command),
+    attendanceStatus: lower.includes("absent") ? "absent" : lower.includes("present") ? "present" : "",
+    date: lower.includes("today") || lower.includes("aaj") ? new Date().toISOString().slice(0, 10) : part70First(/date\s+(?:is|hai|=|:)?\s*([a-zA-Z0-9 -]{2,30})(?=\s+(?:note|$))/i, command),
+    subject: part70First(/subject\s+(?:is|hai|=|:)?\s*([a-zA-Z0-9 +/&.-]{2,40})(?=\s+(?:teacher|time|meeting|batch|$))/i, command) || part70ExtractCourse(command),
+    teacherName: part70First(/teacher\s+(?:is|hai|=|:)?\s*([a-zA-Z .]{2,40})(?=\s+(?:time|meeting|batch|subject|$))/i, command),
+    scheduledTime: part70First(/(?:schedule|time|at)\s+(?:is|hai|=|:)?\s*([0-9]{1,2}(?::[0-9]{2})?\s*(?:am|pm)?|[a-zA-Z]+\s+[0-9]{1,2}\s*(?:am|pm)?)(?=\s+(?:meeting|link|teacher|$))/i, command),
+    meetingLink: part70First(/(?:meeting\s+link|link)\s+(?:is|hai|=|:)?\s*(https?:\/\/\S+|[a-zA-Z0-9 ./:_-]{4,80})/i, command),
+    note: command
+  };
+
+  let fields = {};
+  if (type.id === "student_enrolment") {
+    fields = { studentName: common.studentName, className: common.className, course: common.course, batch: common.batch, parentName: common.parentName, parentPhone: common.parentPhone, feePlan: common.feePlan, note: common.note };
+  } else if (type.id === "enquiry_lead") {
+    fields = { studentName: common.studentName, parentName: common.parentName, parentPhone: common.parentPhone, courseInterest: common.courseInterest, preferredTiming: common.preferredTiming, source: common.source || "VANI", priority: common.priority, note: common.note };
+  } else if (type.id === "fee_record") {
+    fields = { studentName: common.studentName, amount: common.amount, mode: common.mode || "unknown", pending: common.pending, dueDate: common.dueDate, note: common.note };
+  } else if (type.id === "attendance_record") {
+    fields = { studentName: common.studentName, attendanceStatus: common.attendanceStatus, batch: common.batch, date: common.date || new Date().toISOString().slice(0, 10), note: common.note };
+  } else if (type.id === "live_class") {
+    fields = { batch: common.batch, subject: common.subject, teacherName: common.teacherName, scheduledTime: common.scheduledTime, meetingLink: common.meetingLink, note: common.note };
+  }
+
+  const missingFields = type.requiredFields.filter((field) => !fields[field]);
+  const filledCount = Object.values(fields).filter((value) => value !== "" && value !== null && value !== undefined).length;
+  const confidence = Math.max(35, Math.min(96, Math.round((filledCount / Math.max(Object.keys(fields).length, 1)) * 100)));
+  const draft = {
+    draftId: `vani70-draft-${Date.now()}-${Math.random().toString(16).slice(2, 7)}`,
+    formType: type.id,
+    formTitle: type.title,
+    command,
+    fields,
+    missingFields,
+    confidence,
+    requiresConfirmation: true,
+    actionMode: "preview-only-until-confirmed",
+    safetyNote: "Save se pehle user confirmation zaroori hai. Main module data direct edit/delete nahi hota.",
+    createdAt: new Date().toISOString()
+  };
+  globalThis.NAXORA_PART70_DRAFTS[draft.draftId] = draft;
+  part70Activity("draft_created", { draftId: draft.draftId, formType: draft.formType, missingFields, confidence });
+  return draft;
+}
+
+async function part70SaveConfirmedDraft(draft, meta = {}) {
+  const row = {
+    ...draft,
+    confirmed: true,
+    confirmedAt: new Date().toISOString(),
+    confirmedBy: part70CleanText(meta.confirmedBy || "demo-user", 100),
+    reviewStatus: "saved_to_vani_review_queue",
+    productionNote: "Part 70 VANI safe draft/action record. Route-by-route main module write Part 70 audit ke baad enable kiya jayega."
+  };
+  if (part70DbReady()) {
+    try {
+      const inserted = await mongoose.connection.db.collection("part70vaniformdrafts").insertOne(row);
+      part70Activity("draft_saved", { draftId: draft.draftId, formType: draft.formType, mode: "mongodb", mongoId: String(inserted.insertedId) });
+      return { mode: "mongodb", saved: { ...row, _id: inserted.insertedId } };
+    } catch (error) {
+      part70Activity("draft_save_fallback", { draftId: draft.draftId, error: error.message });
+    }
+  }
+  globalThis.NAXORA_PART70_SAVED_FORMS.unshift(row);
+  globalThis.NAXORA_PART70_SAVED_FORMS = globalThis.NAXORA_PART70_SAVED_FORMS.slice(0, 100);
+  part70Activity("draft_saved", { draftId: draft.draftId, formType: draft.formType, mode: "mock-memory" });
+  return { mode: "mock-memory", saved: row };
+}
+
+app.get("/api/part70/status", (req, res) => {
+  res.json({
+    success: true,
+    part: part70Config.part,
+    status: part70Config.status,
+    purpose: part70Config.purpose,
+    frontend: [part70Config.frontendRoute, ...part70Config.alternateRoutes],
+    apiRoutes: part70Config.apiRoutes,
+    safetyMode: part70Config.safetyMode,
+    aiHubDecision: part70Config.aiHubDecision,
+    currentVersionPlan: "Part 53–78 = NAXORA OS 1.0 completion. Part 79–110 = NAXORA OS 2.0 development.",
+    previousPart: part70Config.previousPart,
+    nextPart: part70Config.nextPart
+  });
+});
+
+app.get("/api/part70/config", (req, res) => {
+  res.json({ success: true, part: part70Config.part, config: part70Config, formTargets: part70FormTargets });
+});
+
+app.get("/api/part70/form-targets", (req, res) => {
+  res.json({ success: true, part: part70Config.part, formTargets: part70FormTargets });
+});
+
+app.post("/api/part70/parse", (req, res) => {
+  const transcript = req.body?.transcript || req.body?.command || req.body?.text || "New student add karo naam Rahul class 10 course Maths parent phone 9876543210";
+  const formType = req.body?.formType || "";
+  const draft = part70ParseTranscript(transcript, formType);
+  res.json({ success: true, part: part70Config.part, mode: "preview", message: "VANI ne form draft fill kar diya. Save ke liye confirmation required hai.", draft });
+});
+
+app.post("/api/part70/voice-form", (req, res) => {
+  const transcript = req.body?.transcript || req.body?.command || "Enquiry banao student Aman phone 9876543210 course JEE timing evening";
+  const formType = req.body?.formType || "";
+  const draft = part70ParseTranscript(transcript, formType);
+  res.json({ success: true, part: part70Config.part, inputType: "voice-transcript", mode: "preview", message: "Voice transcript se form draft ready hai. Confirm-save ke bina data final save nahi hoga.", draft });
+});
+
+app.get("/api/part70/drafts", (req, res) => {
+  const drafts = Object.values(globalThis.NAXORA_PART70_DRAFTS).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))).slice(0, 50);
+  res.json({ success: true, part: part70Config.part, count: drafts.length, drafts });
+});
+
+app.post("/api/part70/confirm-save", async (req, res) => {
+  const draftId = part70CleanText(req.body?.draftId || "", 120);
+  const confirmed = req.body?.confirmed === true || req.body?.confirm === true || req.body?.confirmation === "yes";
+  const draft = globalThis.NAXORA_PART70_DRAFTS[draftId];
+  if (!draft) {
+    return res.status(404).json({ success: false, part: part70Config.part, message: "Draft nahi mila. Pehle /api/part70/parse se draft banao." });
+  }
+  if (!confirmed) {
+    part70Activity("draft_save_blocked", { draftId, reason: "confirmation_missing" });
+    return res.status(400).json({ success: false, part: part70Config.part, message: "Confirmation missing hai. Save ke liye confirmed=true bhejo.", draft });
+  }
+  const result = await part70SaveConfirmedDraft(draft, { confirmedBy: req.body?.confirmedBy || req.body?.userName });
+  delete globalThis.NAXORA_PART70_DRAFTS[draftId];
+  res.json({ success: true, part: part70Config.part, message: "Confirmed VANI form draft safe review queue me save ho gaya.", ...result });
+});
+
+app.post("/api/part70/cancel", (req, res) => {
+  const draftId = part70CleanText(req.body?.draftId || "", 120);
+  const existed = Boolean(globalThis.NAXORA_PART70_DRAFTS[draftId]);
+  if (existed) delete globalThis.NAXORA_PART70_DRAFTS[draftId];
+  part70Activity("draft_cancelled", { draftId, existed });
+  res.json({ success: true, part: part70Config.part, draftId, cancelled: existed });
+});
+
+app.get("/api/part70/activity", (req, res) => {
+  res.json({ success: true, part: part70Config.part, count: globalThis.NAXORA_PART70_ACTIVITY.length, activity: globalThis.NAXORA_PART70_ACTIVITY });
+});
+
+app.get("/api/part70/credit-preview", (req, res) => {
+  res.json({
+    success: true,
+    part: part70Config.part,
+    toolId: "vani-ai-v2-form-filling",
+    estimatedCreditsPerDraft: 4,
+    estimatedCreditsPerConfirmSave: 1,
+    connectedToPart68: true,
+    note: "Part 68 AI credits foundation ke saath compatible. Is part me hard credit deduction nahi ki gayi."
+  });
+});
+
+app.get("/api/part70/checklist", (req, res) => {
+  res.json({ success: true, part: part70Config.part, checklist: part70Checklist });
+});
+
+app.get("/api/part70/export", (req, res) => {
+  res.json({
+    success: true,
+    part: part70Config.part,
+    exportedAt: new Date().toISOString(),
+    config: part70Config,
+    formTargets: part70FormTargets,
+    drafts: Object.values(globalThis.NAXORA_PART70_DRAFTS),
+    savedForms: globalThis.NAXORA_PART70_SAVED_FORMS,
+    activity: globalThis.NAXORA_PART70_ACTIVITY,
+    checklist: part70Checklist
+  });
+});
+
+app.get("/api/part70/demo", (req, res) => {
+  const samples = [
+    part70ParseTranscript("New student add karo naam Rahul Sharma class 10 course Maths Science batch Evening parent Sunita phone 9876543210 fee plan monthly", "student_enrolment"),
+    part70ParseTranscript("Enquiry banao student Aman parent Rakesh phone 9876543211 course JEE preferred timing evening source website", "enquiry_lead"),
+    part70ParseTranscript("Fee record banao Priya ne 5000 cash pay kiya pending 10000 due date 25 July", "fee_record"),
+    part70ParseTranscript("Attendance mark karo Rahul present batch Evening A date today", "attendance_record")
+  ];
+  res.json({ success: true, part: part70Config.part, demoTitle: "VANI AI V2 Voice Form Filling Demo", samples, checklist: part70Checklist });
+});
+// ================= END PART 70 =================
+
 // Same-server frontend hosting for Render/Railway/VPS deployment.
 app.use("/landing", express.static(frontendPath));
 
@@ -7721,10 +8085,13 @@ const modulePageRoutes = {
   "/ai-hub": "ai-hub.html",
   "/ai-features": "ai-hub.html",
   "/ai-tools": "ai-hub.html",
-  "/vani-ai": "vani-ai-v1.html",
-  "/vani-assistant": "vani-ai-v1.html",
+  "/vani-ai": "vani-ai-v2.html",
+  "/vani-assistant": "vani-ai-v2.html",
+  "/vani-ai-v2": "vani-ai-v2.html",
+  "/vani": "vani-ai-v2.html",
+  "/voice-form": "vani-ai-v2.html",
+  "/vani-form-fill": "vani-ai-v2.html",
   "/vani-ai-v1": "vani-ai-v1.html",
-  "/vani": "vani-ai-v1.html",
   "/voice-search": "vani-ai-v1.html",
   "/vani-search": "vani-ai-v1.html",
   "/ai-credits-usage": "ai-credits-usage.html",
@@ -7772,7 +8139,7 @@ await connectDB();
 
 const server = app.listen(port, () => {
   console.log("✅ PART 59 PUBLIC INSTITUTE PROFILE ACTIVE");
-  console.log("✅ All routes Part 1 to Part 69 loaded + VANI AI V1");
+  console.log("✅ All routes Part 1 to Part 70 loaded + VANI AI V2");
   console.log("✅ AI Notes route active: /api/ai-notes");
   console.log("✅ AI Mock Tests route active: /api/ai-mock-tests");
   console.log("✅ AI Roadmaps route active: /api/ai-roadmaps");
@@ -7836,6 +8203,7 @@ const server = app.listen(port, () => {
   console.log("✅ Part 67 AI Hub active: /api/part67/status + /ai-hub + VANI card");
   console.log("✅ Part 68 AI Credits and Usage active: /api/part68/status + /ai-credits-usage");
   console.log("✅ Part 69 VANI AI V1 active: /api/part69/status + /vani-ai-v1");
+  console.log("✅ Part 70 VANI AI V2 active: /api/part70/status + /vani-ai-v2");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VANI AI V2 | Voice Form Filling</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/vani-ai-v2.css" />
+</head>
+<body>
+  <main class="vani70-shell">
+    <section class="vani70-hero">
+      <div>
+        <p class="vani70-kicker">NAXORA AI HUB • PART 70</p>
+        <h1>VANI AI V2 — Voice Form Filling</h1>
+        <p>Hindi/Hinglish voice ya text command se student, enquiry, fee, attendance aur live-class form draft fill karo. Save se pehle confirmation zaroori hai.</p>
+        <div class="vani70-actions">
+          <a href="/ai-hub" class="vani70-btn">AI Hub</a>
+          <a href="/vani-ai-v1" class="vani70-btn ghost">Open VANI V1 Search</a>
+          <a href="/api/part70/status" target="_blank" class="vani70-btn ghost">Status API</a>
+        </div>
+      </div>
+      <aside class="vani70-card highlight">
+        <span id="statusPill">Loading...</span>
+        <h2>Safety Mode</h2>
+        <p>VANI pehle draft banayegi. Final save tabhi hoga jab tum confirm checkbox tick karke save karoge.</p>
+      </aside>
+    </section>
+
+    <section class="vani70-grid">
+      <article class="vani70-card form-card">
+        <h2>Speak / Type Command</h2>
+        <label>Form Type</label>
+        <select id="formType"></select>
+        <label>Hindi/Hinglish Command</label>
+        <textarea id="transcript" rows="6">New student add karo naam Rahul Sharma class 10 course Maths Science batch Evening parent Sunita phone 9876543210 fee plan monthly</textarea>
+        <div class="vani70-actions wrap">
+          <button class="vani70-btn primary" id="parseBtn">Generate Draft</button>
+          <button class="vani70-btn" id="voiceBtn">🎙️ Voice Input</button>
+          <button class="vani70-btn ghost" id="demoBtn">Load Demo</button>
+        </div>
+        <p class="vani70-note" id="voiceNote">Voice input browser support par depend karta hai. Text mode always works.</p>
+      </article>
+
+      <article class="vani70-card draft-card">
+        <h2>Draft Preview</h2>
+        <div id="draftBox" class="vani70-empty">Abhi draft nahi bana. Command likho aur Generate Draft dabao.</div>
+        <label class="confirm-line"><input type="checkbox" id="confirmCheck" /> I confirm this draft is correct.</label>
+        <div class="vani70-actions wrap">
+          <button class="vani70-btn primary" id="saveBtn" disabled>Confirm & Save Draft</button>
+          <button class="vani70-btn danger" id="cancelBtn" disabled>Cancel Draft</button>
+        </div>
+      </article>
+    </section>
+
+    <section class="vani70-grid bottom">
+      <article class="vani70-card">
+        <h2>Supported Forms</h2>
+        <div id="targetsGrid" class="targets-grid"></div>
+      </article>
+      <article class="vani70-card">
+        <h2>Voice Activity History</h2>
+        <div id="activityList" class="activity-list"></div>
+      </article>
+    </section>
+  </main>
+
+  <script src="/brand-system.js"></script>
+  <script src="/vani-ai-v2.js"></script>
+</body>
+</html>
