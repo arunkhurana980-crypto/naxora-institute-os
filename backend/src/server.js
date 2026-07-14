@@ -9347,6 +9347,155 @@ app.get("/api/part74/export", (req, res) => res.json({ success: true, part: part
 app.get("/api/part74/demo", async (req, res) => { const demo = { draftTypes: ["weekly", "result", "attendance", "fee", "appreciation"], weeklySummary: part74WeeklySummary("owner"), resultExplanations: part74ResultExplanations, vani: part74VaniCommand("VANI, weekly summary aur parent message draft banao", { role: "owner", studentName: "Aman Sharma", parentName: "Rakesh ji" }) }; await part74Log("demo_generated", { drafts: demo.draftTypes.length }); res.json({ success: true, part: part74Config.part, demoTitle: "AI Parent Communication and Weekly Summary Demo", demo, checklist: part74Checklist }); });
 // ================= END PART 74 =================
 
+
+// ============================================================
+// NAXORA Institute OS - Part 75: Student AI Tools
+// AI Study Planner, Weak Topic Coach, AI Flashcards, VANI Revision Assistant, Institute Recommendation AI
+// ============================================================
+const part75Config = {
+  part: "Part 75 — Student AI Tools",
+  status: "active",
+  frontendRoute: "/student-ai-tools",
+  alternateRoutes: ["/student-ai", "/student-tools-ai", "/ai-study-tools", "/vani-revision-assistant", "/student-revision-ai"],
+  apiRoutes: [
+    "/api/part75/status",
+    "/api/part75/config",
+    "/api/part75/features",
+    "/api/part75/roles",
+    "/api/part75/study-planner",
+    "/api/part75/weak-topic-coach",
+    "/api/part75/flashcards",
+    "/api/part75/vani-revision",
+    "/api/part75/institute-recommendations",
+    "/api/part75/vani/command",
+    "/api/part75/activity",
+    "/api/part75/checklist",
+    "/api/part75/export",
+    "/api/part75/demo"
+  ],
+  purpose: "Personalized student learning aur engagement ke liye AI tools: planner, weak topic coach, flashcards, VANI revision assistant aur institute recommendation AI.",
+  nextPart: "Part 76 — Smart Classroom Setup Module",
+  versionPlan: "Part 53-78 = NAXORA OS 1.0 completion. Part 79-110 = NAXORA OS 2.0 development."
+};
+
+const part75Features = [
+  { key: "ai_study_planner", name: "AI Study Planner", why: "Student ko daily/weekly study plan dena.", problemSolved: "Student ko kya, kab aur kitna padhna hai iski confusion kam hoti hai.", benefits: { owner: "Better student engagement", institute: "Learning outcomes improve", teacher: "Students prepared aate hain", student: "Clear daily plan", parent: "Child ka plan visible" } },
+  { key: "weak_topic_coach", name: "Weak Topic Coach", why: "Weak topic ko simple steps me improve karna.", problemSolved: "Student weak chapter se stuck nahi rehta.", benefits: { owner: "Results improve", institute: "Remedial support structured", teacher: "Weakness target clear", student: "Focused help", parent: "Support plan samajh aata hai" } },
+  { key: "ai_flashcards", name: "AI Flashcards", why: "Quick revision aur active recall ke liye.", problemSolved: "Passive reading ke bajay fast recall practice hoti hai.", benefits: { owner: "AI feature value visible", institute: "Study material engagement", teacher: "Revision tools reusable", student: "Fast revision", parent: "Practice habit improve" } },
+  { key: "vani_revision_assistant", name: "VANI Revision Assistant", why: "Student voice/text se revision help le sake.", problemSolved: "Non-technical students bhi Hinglish commands se padh sakte hain.", benefits: { owner: "Premium AI positioning", institute: "Student usage grows", teacher: "Repeated revision doubts kam", student: "Voice-based help", parent: "Home learning support" } },
+  { key: "institute_recommendation_ai", name: "Institute Recommendation AI", why: "Student ke goal/location ke hisaab se suitable institute suggest karna.", problemSolved: "Student ko discovery marketplace me better choice milti hai.", benefits: { owner: "Marketplace lead quality", institute: "Qualified leads", teacher: "Correct batch fit", student: "Better institute match", parent: "Decision easy" } }
+];
+
+const part75RolePermissions = {
+  owner: { allowed: ["view_all_student_ai", "usage_reports", "recommendation_insights", "support_overview"], limits: "Institute-wide summary, private student details role-based." },
+  branch_manager: { allowed: ["view_branch_student_ai", "support_overview"], limits: "Assigned branch only." },
+  teacher: { allowed: ["view_assigned_students", "create_support_plan", "flashcards_for_batch"], limits: "Assigned batches/students only." },
+  student: { allowed: ["own_study_planner", "own_weak_topic_coach", "own_flashcards", "own_vani_revision", "own_recommendations"], limits: "Own learning data only." },
+  parent: { allowed: ["linked_child_planner", "linked_child_progress_summary"], limits: "Linked child only." },
+  receptionist: { allowed: ["institute_recommendation_ai"], limits: "Discovery/enquiry context only." },
+  accountant: { allowed: ["ai_usage_summary_only"], limits: "No learning private details." },
+  naxora_super_admin: { allowed: ["logged_technical_support"], limits: "No unrestricted daily access to institute-private data." }
+};
+
+const part75Checklist = [
+  "Student AI Tools page /student-ai-tools open ho raha hai.",
+  "AI Study Planner safe demo plan generate karta hai.",
+  "Weak Topic Coach student ko supportive plan deta hai, labels/blame nahi karta.",
+  "AI Flashcards revision cards generate karta hai.",
+  "VANI Revision Assistant Hindi/English/Hinglish command accept karta hai.",
+  "Institute Recommendation AI public discovery data style me suggestion deta hai.",
+  "Role permissions own/linked/assigned access model follow karte hain.",
+  "Sensitive student data speaker par loudly bolne ke bajay private screen-first rule follow hota hai.",
+  "No .env, no secret, no API key, no node_modules, no .bat in ZIP.",
+  "Previous Part 52-74 features preserved hain."
+];
+
+const part75Demo = {
+  tools: ["AI Study Planner", "Weak Topic Coach", "AI Flashcards", "VANI Revision Assistant", "Institute Recommendation AI"],
+  studyPlanner: {
+    studentName: "Aman Sharma",
+    goal: "Class 10 Boards + JEE Foundation",
+    days: [
+      { day: "Monday", minutes: 60, focus: "Quadratic Equations concept revision + 10 solved examples" },
+      { day: "Tuesday", minutes: 50, focus: "Physics Laws of Motion basics + short notes" },
+      { day: "Wednesday", minutes: 45, focus: "Chemistry Mole Concept flashcards + 15 MCQs" },
+      { day: "Thursday", minutes: 60, focus: "Weak topic practice test and mistake review" },
+      { day: "Friday", minutes: 40, focus: "Formula revision + doubt list prepare" },
+      { day: "Saturday", minutes: 70, focus: "Mixed mock practice + teacher doubt session" },
+      { day: "Sunday", minutes: 35, focus: "Weekly recap and next week planning" }
+    ]
+  },
+  weakTopicCoach: [
+    { topic: "Quadratic Equations", level: "needs support", plan: "First standard form identify karo, phir factorisation, then formula method. Daily 8 questions for 5 days." },
+    { topic: "Mole Concept", level: "foundation", plan: "Mole-mass-particles relation ko one-page chart me revise karo, phir 10 basic conversions practice karo." }
+  ],
+  flashcards: [
+    { question: "Quadratic equation ka standard form kya hota hai?", answer: "ax² + bx + c = 0, jahan a ≠ 0." },
+    { question: "Newton's second law simple words me?", answer: "Force mass aur acceleration ke product ke proportional hota hai: F = ma." },
+    { question: "One mole me kitne particles hote hain?", answer: "6.022 × 10²³ particles." }
+  ],
+  instituteRecommendations: [
+    { name: "NAXORA Demo Institute - Science Wing", matchScore: 92, reason: "Class 10 + JEE Foundation goal, evening batch availability aur weekly tests match karte hain." },
+    { name: "NAXORA Demo Institute - Boards Excellence", matchScore: 84, reason: "Board result focus aur doubt support strong hai." }
+  ],
+  roleRules: {
+    Student: "Sirf apna planner, flashcards, weak topic coach aur VANI revision dekh sakta hai.",
+    Parent: "Sirf linked child ka summary view kar sakta hai.",
+    Teacher: "Assigned batch ke support plan aur flashcards bana sakta hai.",
+    Owner: "Institute-wide usage and support overview dekh sakta hai."
+  }
+};
+
+if (!globalThis.NAXORA_PART75_ACTIVITY) globalThis.NAXORA_PART75_ACTIVITY = [];
+function part75CleanText(value, max = 600) { return String(value ?? "").replace(/[<>]/g, "").trim().slice(0, max); }
+function part75Lower(value) { return part75CleanText(value, 600).toLowerCase(); }
+function part75DbReady() { return mongoose.connection.readyState === 1 && globalThis.NAXORA_DB_MODE !== "mock"; }
+function part75Role(role = "student") { const key = part75CleanText(role, 80).toLowerCase().replace(/[ -]+/g, "_") || "student"; if (key === "institute_owner") return "owner"; if (key === "counsellor" || key === "staff") return "receptionist"; return part75RolePermissions[key] ? key : "student"; }
+function part75Can(role, permission) { const resolved = part75Role(role); const allowed = part75RolePermissions[resolved]?.allowed || []; return allowed.includes(permission); }
+async function part75Log(type, payload = {}) { const row = { id: `part75-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`, type: part75CleanText(type, 80), payload, createdAt: new Date().toISOString(), part: part75Config.part }; globalThis.NAXORA_PART75_ACTIVITY.unshift(row); globalThis.NAXORA_PART75_ACTIVITY = globalThis.NAXORA_PART75_ACTIVITY.slice(0, 100); if (part75DbReady()) { try { await mongoose.connection.db.collection("part75studentaitoolslogs").insertOne(row); } catch (error) {} } return row; }
+
+function part75MakeStudyPlan(input = {}) {
+  const studentName = part75CleanText(input.studentName || "Student", 120);
+  const goal = part75CleanText(input.goal || "exam preparation", 180);
+  const weakTopic = part75CleanText(input.weakTopic || "current weak topic", 140);
+  const dailyMinutes = Math.max(20, Math.min(180, Number(input.dailyMinutes || 60)));
+  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day, index) => ({ day, minutes: index === 5 ? dailyMinutes + 10 : index === 6 ? Math.max(25, dailyMinutes - 20) : dailyMinutes, focus: index === 0 ? `${weakTopic} concept basics + short notes` : index === 1 ? `${weakTopic} solved examples + common mistakes` : index === 2 ? `${goal} related MCQ practice` : index === 3 ? `Mini test on ${weakTopic} + mistake review` : index === 4 ? `Formula/definitions flashcards + doubt list` : index === 5 ? `Mixed practice + teacher doubt session` : `Weekly recap + next week plan` }));
+  return { studentName, goal, weakTopic, days, privacy: "Student/parent/teacher permissions ke according private display." };
+}
+function part75WeakTopicCoach(input = {}) { const topic = part75CleanText(input.weakTopic || input.topic || "Quadratic Equations", 140); return { topic, supportiveTone: true, noBlameLabels: true, plan: [`${topic} ke basics ko 15-minute blocks me revise karo.`, "3 easy + 3 medium + 2 mixed questions daily solve karo.", "Har galti ko mistake notebook me likho.", "Agar 3 din me confidence na aaye to teacher doubt slot book karo."], teacherNote: "Teacher assigned batch ke basis par extra worksheet assign kar sakta hai." }; }
+function part75Flashcards(input = {}) { const topic = part75CleanText(input.topic || input.weakTopic || "Quadratic Equations", 140); return [ { question: `${topic} ka basic definition kya hai?`, answer: `${topic} ko simple definition + ek example ke saath revise karo.` }, { question: `${topic} me common mistake kya hoti hai?`, answer: "Formula ya step skip karna. Har step clearly likho." }, { question: `${topic} practice ka best method?`, answer: "Easy se medium aur then timed mixed questions." } ]; }
+function part75InstituteRecommendations(input = {}) { const goal = part75CleanText(input.goal || "JEE Foundation", 160); const city = part75CleanText(input.city || "Delhi", 80); return [ { name: "NAXORA Demo Institute - Science Wing", city, matchScore: 92, reason: `${goal} ke liye weekly tests, doubt support aur evening batch match karte hain.`, action: "Profile compare karo ya callback request bhejo." }, { name: "NAXORA Demo Institute - Boards Excellence", city, matchScore: 84, reason: "Board-focused plan, notes aur parent progress reports available hain.", action: "Demo class availability check karo." } ]; }
+function part75VaniRevision(command = "revision plan banao", payload = {}) {
+  const role = part75Role(payload.role || "student"); const text = part75Lower(command); const missing = [];
+  if (!payload.studentName && ["student","parent"].includes(role)) missing.push("student name");
+  if (!payload.weakTopic && (text.includes("weak") || text.includes("topic"))) missing.push("weak topic");
+  if (missing.length) return { allowed: true, role, needsMoreDetails: true, missingDetails: missing, question: `Kripya ${missing.join(", ")} batao, phir main safe revision preview bana dunga.` };
+  const weakTopic = payload.weakTopic || "current weak topic";
+  const planner = part75MakeStudyPlan({ ...payload, weakTopic });
+  const coach = part75WeakTopicCoach({ weakTopic });
+  const flashcards = part75Flashcards({ weakTopic });
+  return { allowed: true, role, command: part75CleanText(command, 400), responseMode: "private-screen-first", spokenSummary: "Revision plan, weak topic coach aur flashcards ready hain. Private study details screen par dikhaye gaye hain.", preview: { planner, coach, flashcards }, directCreateUpdateDeleteDisabled: true, confirmationRequiredForActions: ["save_plan", "share_with_parent", "export", "recommend_institute"], auditLogRequired: true };
+}
+
+app.get("/api/part75/status", (req, res) => res.json({ success: true, part: part75Config.part, status: part75Config.status, frontend: [part75Config.frontendRoute, ...part75Config.alternateRoutes], apiRoutes: part75Config.apiRoutes, purpose: part75Config.purpose, currentVersionPlan: part75Config.versionPlan, nextPart: part75Config.nextPart }));
+app.get("/api/part75/config", (req, res) => res.json({ success: true, part: part75Config.part, config: part75Config }));
+app.get("/api/part75/features", (req, res) => res.json({ success: true, part: part75Config.part, features: part75Features }));
+app.get("/api/part75/roles", (req, res) => res.json({ success: true, part: part75Config.part, roles: part75RolePermissions }));
+app.get("/api/part75/study-planner", async (req, res) => { const role = part75Role(req.query.role || "student"); if (!["student","parent","teacher","owner","branch_manager"].includes(role)) return res.status(403).json({ success: false, part: part75Config.part, role, message: "Is role ko study planner access nahi hai." }); const plan = part75MakeStudyPlan(req.query); await part75Log("study_planner_generated", { role, studentName: plan.studentName, weakTopic: plan.weakTopic }); res.json({ success: true, part: part75Config.part, role, plan }); });
+app.get("/api/part75/weak-topic-coach", async (req, res) => { const role = part75Role(req.query.role || "student"); const coach = part75WeakTopicCoach(req.query); await part75Log("weak_topic_coach_viewed", { role, topic: coach.topic }); res.json({ success: true, part: part75Config.part, role, coach }); });
+app.get("/api/part75/flashcards", async (req, res) => { const role = part75Role(req.query.role || "student"); const flashcards = part75Flashcards(req.query); await part75Log("flashcards_generated", { role, topic: req.query.topic || req.query.weakTopic || "demo" }); res.json({ success: true, part: part75Config.part, role, flashcards, saveRequiresConfirmation: true }); });
+app.get("/api/part75/vani-revision", async (req, res) => { const result = part75VaniRevision(req.query.q || req.query.command || "revision plan banao", req.query); await part75Log("vani_revision_requested", { role: result.role, command: req.query.q || req.query.command || "" }); res.json({ success: true, part: part75Config.part, result }); });
+app.get("/api/part75/institute-recommendations", async (req, res) => { const role = part75Role(req.query.role || "student"); const recommendations = part75InstituteRecommendations(req.query); await part75Log("institute_recommendations_viewed", { role, city: req.query.city || "Delhi" }); res.json({ success: true, part: part75Config.part, role, recommendations, consentRequiredForLeadShare: true }); });
+app.post("/api/part75/vani/command", async (req, res) => { const result = part75VaniRevision(req.body?.command || "revision plan banao", req.body || {}); await part75Log("vani_command", { role: result.role, command: req.body?.command || "" }); res.json({ success: true, part: part75Config.part, result }); });
+app.get("/api/part75/activity", (req, res) => res.json({ success: true, part: part75Config.part, activity: globalThis.NAXORA_PART75_ACTIVITY }));
+app.get("/api/part75/checklist", (req, res) => res.json({ success: true, part: part75Config.part, checklist: part75Checklist }));
+app.get("/api/part75/export", (req, res) => res.json({ success: true, part: part75Config.part, exportReady: true, ownerVerificationRequired: true, note: "Student learning export sensitive hai; owner/authorised role verification required." }));
+app.get("/api/part75/demo", (req, res) => res.json({ success: true, part: part75Config.part, demo: part75Demo, vaniPreview: part75VaniRevision("VANI, weak topic ke liye revision plan aur flashcards banao", { role: "student", studentName: "Aman Sharma", weakTopic: "Quadratic Equations", goal: "Class 10 Boards" }) }));
+
+for (const route of [part75Config.frontendRoute, ...part75Config.alternateRoutes]) {
+  app.get(route, (req, res) => sendFileSafe(res, "student-ai-tools.html"));
+}
+
 const modulePageRoutes = {
   "/dashboard": "dashboard.html",
   "/students": "students.html",
@@ -9583,6 +9732,7 @@ const server = app.listen(port, () => {
   console.log("✅ Part 72 AI Fee and Attendance Assistant active: /api/part72/status + /ai-fee-attendance-assistant");
   console.log("✅ Part 73 AI Batch Performance Analyzer active: /api/part73/status + /ai-batch-performance-analyzer");
   console.log("✅ Part 74 AI Parent Communication active: /api/part74/status + /ai-parent-weekly-summary");
+  console.log("✅ Part 75 Student AI Tools active: /api/part75/status + /student-ai-tools");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");

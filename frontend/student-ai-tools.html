@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA Part 75 | Student AI Tools</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/student-ai-tools.css" />
+</head>
+<body>
+  <main class="part75-shell">
+    <section class="part75-hero">
+      <div class="part75-logo">N</div>
+      <div>
+        <p class="part75-kicker">PART 75 • STUDENT AI TOOLS</p>
+        <h1>Student AI Tools</h1>
+        <p class="part75-subtitle">AI Study Planner, Weak Topic Coach, AI Flashcards, VANI Revision Assistant aur Institute Recommendation AI — student engagement aur personalized learning ke liye.</p>
+        <div class="part75-actions">
+          <a href="/api/part75/status" target="_blank" class="part75-btn primary">Status API</a>
+          <a href="/api/part75/demo" target="_blank" class="part75-btn">Demo API</a>
+          <a href="/ai-hub" class="part75-btn">Back AI Hub</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="part75-grid part75-stats">
+      <article><span id="toolCount">0</span><p>Student AI Tools</p></article>
+      <article><span id="plannerDays">0</span><p>Planner Days</p></article>
+      <article><span id="flashcardCount">0</span><p>Flashcards</p></article>
+      <article><span id="vaniMode">Safe</span><p>VANI Mode</p></article>
+    </section>
+
+    <section class="part75-card">
+      <div class="part75-section-head">
+        <div><p class="part75-kicker">AI STUDY PLANNER</p><h2>Personal weekly plan</h2></div>
+        <button id="plannerBtn" class="part75-btn small primary">Generate Plan</button>
+      </div>
+      <div class="part75-form-grid">
+        <label>Student name <input id="studentInput" placeholder="Aman Sharma" /></label>
+        <label>Class / Goal <input id="goalInput" placeholder="Class 10 Boards + JEE Foundation" /></label>
+        <label>Weak topic <input id="topicInput" placeholder="Quadratic Equations" /></label>
+        <label>Daily minutes <input id="minutesInput" type="number" value="60" /></label>
+      </div>
+      <div id="plannerOutput" class="part75-list loading">Planner yahan dikhega.</div>
+    </section>
+
+    <section class="part75-grid">
+      <article class="part75-card"><h2>Weak Topic Coach</h2><div id="coachOutput" class="part75-list loading">Loading...</div></article>
+      <article class="part75-card"><h2>AI Flashcards</h2><div id="flashcardsOutput" class="part75-list loading">Loading...</div></article>
+    </section>
+
+    <section class="part75-grid">
+      <article class="part75-card"><h2>Institute Recommendation AI</h2><div id="recommendOutput" class="part75-list loading">Loading...</div></article>
+      <article class="part75-card"><h2>Role + Privacy Rules</h2><div id="rolesOutput" class="part75-list loading">Loading...</div></article>
+    </section>
+
+    <section class="part75-card">
+      <div class="part75-section-head"><div><p class="part75-kicker">VANI REVISION ASSISTANT</p><h2>Ask VANI for student revision help</h2></div></div>
+      <div class="part75-command-row">
+        <input id="vaniCommand" value="VANI, mere weak topic ke liye revision plan aur flashcards banao" />
+        <button id="vaniBtn" class="part75-btn primary">Run VANI</button>
+      </div>
+      <pre id="vaniOutput" class="part75-output">VANI revision result yahan dikhega.</pre>
+    </section>
+
+    <section class="part75-card"><h2>Part 75 Checklist</h2><ul id="checklist" class="part75-checklist"></ul></section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/student-ai-tools.js"></script>
+</body>
+</html>
