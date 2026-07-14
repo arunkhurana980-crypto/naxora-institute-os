@@ -3144,7 +3144,7 @@ const part58Checklist = [
   "MongoDB connected mode saves leads in part58enquiryfollowups collection.",
   "Mock mode fallback works if MongoDB is temporarily unavailable.",
   "No real WhatsApp/SMS/email is sent automatically in Part 58; message sending comes in Part 65.",
-  "Part 71 AI Admission Copilot can later use this CRM data for reply drafts and lead priority."
+  "Part 71 AI Admission Copilot now uses this CRM data foundation for reply drafts, follow-up suggestions and lead priority."
 ];
 
 if (!globalThis.NAXORA_PART58_LEADS) {
@@ -6686,7 +6686,19 @@ const part67Tools = [
     status: "foundation",
     phase: "part67-hub",
     userBenefit: "Institute repetitive admin work ko AI support ke saath faster kar paayega.",
-    safeMode: "Actual advanced assistants Part 71-74 me expand honge."
+    safeMode: "Part 71 Admission Copilot active hai; Part 72-74 me fee/attendance, batch analyzer aur parent summary expand honge."
+  },
+  {
+    id: "ai-admission-copilot",
+    title: "AI Admission Copilot",
+    tagline: "Enquiry reply drafts, follow-up suggestions, course recommendation, lead priority aur conversation support.",
+    category: "Institute Operations",
+    route: "/ai-admission-copilot",
+    apiRoute: "/api/part71/status",
+    status: "active-part71",
+    phase: "part71-active",
+    userBenefit: "Counsellor faster response de sakta hai aur owner ko hot leads pehle milte hain.",
+    safeMode: "Draft-only, permission-aware, confirmation-first. Real send/discount/delete/export direct nahi hota."
   }
 ];
 
@@ -7966,6 +7978,563 @@ app.get("/api/part70/demo", (req, res) => {
 });
 // ================= END PART 70 =================
 
+// ================= PART 71: AI ADMISSION COPILOT =================
+// Part 71 ka goal: counsellor/receptionist/owner ko admission enquiries convert karne me AI help dena.
+// Safety rule: AI Copilot draft/suggestion/priority banata hai; WhatsApp/SMS/email send ya admission convert direct nahi karta.
+const part71Config = {
+  part: "Part 71 - AI Admission Copilot",
+  status: "active",
+  purpose: "Admission enquiries ke liye reply drafts, follow-up suggestions, course recommendations, lead priority aur conversation support.",
+  frontendRoute: "/ai-admission-copilot",
+  alternateRoutes: ["/admission-copilot", "/admission-ai", "/ai-counsellor", "/copilot-admission"],
+  apiRoutes: [
+    "/api/part71/status",
+    "/api/part71/config",
+    "/api/part71/features",
+    "/api/part71/roles",
+    "/api/part71/lead-context",
+    "/api/part71/reply-draft",
+    "/api/part71/followup-suggestions",
+    "/api/part71/course-recommendations",
+    "/api/part71/lead-priority",
+    "/api/part71/conversation-support",
+    "/api/part71/vani/command",
+    "/api/part71/activity",
+    "/api/part71/checklist",
+    "/api/part71/export",
+    "/api/part71/demo"
+  ],
+  connectedParts: [
+    "Part 58 Enquiry and Follow-Up CRM",
+    "Part 60 Request Callback / Send Enquiry",
+    "Part 63 Discovery and Leads Integration",
+    "Part 65 Communication Hub safe templates",
+    "Part 67 AI Hub",
+    "Part 68 AI Credits",
+    "Part 69/70 VANI"
+  ],
+  safetyMode: "Draft-first mode. AI Copilot message draft, lead score aur suggestions banata hai; send/discount/refund/delete/export jaise actions explicit confirmation aur permission ke bina nahi hote.",
+  vaniDecision: "VANI AI Hub ke andar rahegi aur Part 71 admission copilot commands ko permission + confirmation + audit log ke saath handle karegi.",
+  previousPart: "Part 70 - VANI AI V2 voice form filling",
+  nextPart: "Part 72 - AI Fee and Attendance Assistant"
+};
+
+const part71Features = [
+  {
+    id: "reply-drafts",
+    title: "Enquiry Reply Drafts",
+    problemSolved: "Counsellor ko har enquiry ke liye baar-baar same WhatsApp/email message manually type nahi karna padega.",
+    ownerBenefit: "Lead response speed improve hoti hai aur admission conversion chances badhte hain.",
+    instituteBenefit: "Professional, consistent aur respectful replies ready milte hain.",
+    teacherBenefit: "Teacher ko course/demo context clean mil sakta hai.",
+    studentBenefit: "Student/parent ko fast aur clear answer milta hai.",
+    parentBenefit: "Parent ko polite reply, timing aur next step quickly milta hai."
+  },
+  {
+    id: "followup-suggestions",
+    title: "Follow-Up Suggestions",
+    problemSolved: "Interested lead ko kab aur kis message se follow-up karna hai, ye miss nahi hota.",
+    ownerBenefit: "Admissions pipeline visible aur organized hoti hai.",
+    instituteBenefit: "Reception/counsellor ka daily follow-up work structured hota hai.",
+    teacherBenefit: "Demo class request timely teacher tak pahunch sakti hai.",
+    studentBenefit: "Student ko timely callback/demo reminder milta hai.",
+    parentBenefit: "Parent ko follow-up ke liye clear next step milta hai."
+  },
+  {
+    id: "course-recommendations",
+    title: "Course Recommendations",
+    problemSolved: "Wrong course suggest hone se confusion aur drop-off hota hai; copilot basic profile ke hisaab se options recommend karta hai.",
+    ownerBenefit: "Correct course positioning se conversion improve ho sakta hai.",
+    instituteBenefit: "Counsellor ko consistent guidance milti hai.",
+    teacherBenefit: "Student right batch/course me aata hai.",
+    studentBenefit: "Student ko goal ke according suitable course options milte hain.",
+    parentBenefit: "Parent ko course choice samajhne me help milti hai."
+  },
+  {
+    id: "lead-priority",
+    title: "Lead Priority",
+    problemSolved: "Hot leads lost ho jaate hain jab sab enquiries same priority dikhti hain.",
+    ownerBenefit: "High-intent leads par jaldi action hota hai.",
+    instituteBenefit: "Counsellor time better use karta hai.",
+    teacherBenefit: "Demo-ready leads pehle schedule hote hain.",
+    studentBenefit: "Interested student ko jaldi response milta hai.",
+    parentBenefit: "Parent ka callback wait time kam hota hai."
+  },
+  {
+    id: "conversation-support",
+    title: "Admission Conversation Support",
+    problemSolved: "New counsellor ko call/script/objection handling me help chahiye hoti hai.",
+    ownerBenefit: "Training dependency kam hoti hai.",
+    instituteBenefit: "Sales conversation quality improve hoti hai.",
+    teacherBenefit: "Academic questions teacher ko escalate karne ka clean suggestion milta hai.",
+    studentBenefit: "Student ko relevant explanation milti hai.",
+    parentBenefit: "Parent ke fee, timing, result aur safety questions ka structured answer milta hai."
+  }
+];
+
+const part71RolePermissions = {
+  owner: {
+    label: "Institute Owner",
+    allowed: ["view_all_leads", "draft_reply", "set_priority", "view_analytics", "approve_sensitive", "export_summary"],
+    sensitiveVerification: true
+  },
+  branch_manager: {
+    label: "Branch Manager",
+    allowed: ["view_branch_leads", "draft_reply", "set_priority", "view_branch_analytics"],
+    sensitiveVerification: true,
+    scope: "assigned_branches_only"
+  },
+  receptionist: {
+    label: "Receptionist/Counsellor",
+    allowed: ["view_assigned_leads", "draft_reply", "followup_suggestion", "course_recommendation", "conversation_support"],
+    sensitiveVerification: false
+  },
+  counsellor: {
+    label: "Receptionist/Counsellor",
+    allowed: ["view_assigned_leads", "draft_reply", "followup_suggestion", "course_recommendation", "conversation_support", "set_priority_suggestion"],
+    sensitiveVerification: false
+  },
+  teacher: {
+    label: "Teacher",
+    allowed: ["view_demo_context", "course_recommendation_view"],
+    sensitiveVerification: false,
+    scope: "assigned_batches_only"
+  },
+  accountant: {
+    label: "Accountant",
+    allowed: ["view_fee_context_limited"],
+    sensitiveVerification: true
+  },
+  student: {
+    label: "Student",
+    allowed: ["view_own_admission_guidance"],
+    sensitiveVerification: false,
+    scope: "own_data_only"
+  },
+  parent: {
+    label: "Parent",
+    allowed: ["view_child_admission_guidance"],
+    sensitiveVerification: false,
+    scope: "linked_child_only"
+  },
+  naxora_super_admin: {
+    label: "NAXORA Super Admin",
+    allowed: ["platform_support_logged", "view_system_health"],
+    sensitiveVerification: true,
+    scope: "logged_technical_support_not_unrestricted_private_data"
+  }
+};
+
+const part71Checklist = [
+  "AI Admission Copilot page /ai-admission-copilot open ho raha hai.",
+  "/api/part71/status success true return karta hai.",
+  "Reply draft API lead ke naam/course/parent contact ke basis par polite draft banata hai.",
+  "Follow-up suggestion API next action, timing aur reminder text return karta hai.",
+  "Course recommendation API student goal/class/interest ke basis par options return karta hai.",
+  "Lead priority API hot/warm/cold score explain karta hai, bina guessing ke missing details batata hai.",
+  "Conversation support API counsellor ko respectful Hinglish guidance deta hai.",
+  "VANI command endpoint missing details politely poochta hai aur sensitive info public me loudly bolne se bachne ka rule return karta hai.",
+  "Role permissions owner/branch_manager/counsellor/teacher/student/parent ke hisaab se scoped hain.",
+  "AI Copilot direct WhatsApp/SMS/email send nahi karta; sirf draft/queue-ready content banata hai.",
+  "Activity/audit log me generated suggestions save hote hain.",
+  ".env, secrets, API keys aur passwords ZIP me include nahi hain."
+];
+
+globalThis.NAXORA_PART71_ACTIVITY = globalThis.NAXORA_PART71_ACTIVITY || [];
+globalThis.NAXORA_PART71_DRAFTS = globalThis.NAXORA_PART71_DRAFTS || [];
+
+function part71CleanText(value, max = 500) {
+  return String(value ?? "").replace(/[<>]/g, "").replace(/\s+/g, " ").trim().slice(0, max);
+}
+
+function part71DbReady() {
+  return Boolean(mongoose.connection && mongoose.connection.readyState === 1 && mongoose.connection.db);
+}
+
+function part71Role(role = "counsellor") {
+  const key = part71CleanText(role, 60).toLowerCase().replace(/\s+/g, "_") || "counsellor";
+  return part71RolePermissions[key] ? key : "counsellor";
+}
+
+function part71Can(role, permission) {
+  const resolved = part71Role(role);
+  const allowed = part71RolePermissions[resolved]?.allowed || [];
+  return allowed.includes(permission) || allowed.includes("approve_sensitive") || allowed.includes("platform_support_logged");
+}
+
+async function part71Log(type, payload = {}) {
+  const row = {
+    id: `part71-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+    type,
+    ...payload,
+    createdAt: new Date().toISOString()
+  };
+  globalThis.NAXORA_PART71_ACTIVITY.unshift(row);
+  globalThis.NAXORA_PART71_ACTIVITY = globalThis.NAXORA_PART71_ACTIVITY.slice(0, 200);
+  if (part71DbReady()) {
+    try {
+      await mongoose.connection.db.collection("part71admissioncopilotlogs").insertOne(row);
+    } catch (error) {
+      // Logging fallback intentionally silent so user-facing flow never crashes because of audit DB write.
+    }
+  }
+  return row;
+}
+
+function part71NormalizeLead(raw = {}) {
+  const lead = raw.lead && typeof raw.lead === "object" ? raw.lead : raw;
+  return {
+    leadId: part71CleanText(lead.leadId || lead.id || lead._id || `lead-${Date.now()}`, 80),
+    studentName: part71CleanText(lead.studentName || lead.name || lead.student || "", 90),
+    parentName: part71CleanText(lead.parentName || lead.guardianName || "", 90),
+    parentPhone: part71CleanText(lead.parentPhone || lead.phone || lead.mobile || "", 30),
+    email: part71CleanText(lead.email || "", 120),
+    className: part71CleanText(lead.className || lead.class || lead.level || "", 60),
+    courseInterest: part71CleanText(lead.courseInterest || lead.course || lead.interest || "", 120),
+    preferredTiming: part71CleanText(lead.preferredTiming || lead.timing || lead.time || "", 120),
+    city: part71CleanText(lead.city || lead.location || "", 120),
+    source: part71CleanText(lead.source || "NAXORA Discovery", 80),
+    status: part71CleanText(lead.status || "new", 50),
+    message: part71CleanText(lead.message || lead.note || "", 500),
+    goal: part71CleanText(lead.goal || lead.examGoal || lead.target || "", 120),
+    budget: part71CleanText(lead.budget || "", 80),
+    consentAccepted: lead.consentAccepted === true || lead.consent === true || String(lead.consentAccepted || lead.consent || "").toLowerCase() === "true"
+  };
+}
+
+function part71MissingLeadFields(lead) {
+  const required = [
+    ["studentName", "student ka naam"],
+    ["parentPhone", "parent/guardian phone number"],
+    ["courseInterest", "course interest"],
+    ["className", "class/level"]
+  ];
+  return required.filter(([key]) => !lead[key]).map(([, label]) => label);
+}
+
+function part71Priority(leadInput = {}) {
+  const lead = part71NormalizeLead(leadInput);
+  let score = 25;
+  const reasons = [];
+  if (lead.parentPhone) { score += 15; reasons.push("parent contact available"); }
+  if (lead.courseInterest) { score += 15; reasons.push("course interest clear"); }
+  if (lead.preferredTiming) { score += 10; reasons.push("preferred timing shared"); }
+  if (lead.consentAccepted) { score += 10; reasons.push("consent accepted"); }
+  if (/demo|visit|admission|join|urgent|today|kal|tomorrow|fees|batch/i.test(`${lead.message} ${lead.status}`)) {
+    score += 20;
+    reasons.push("high-intent words detected");
+  }
+  if (/website|nearby|compare|public profile|discovery/i.test(lead.source)) {
+    score += 5;
+    reasons.push("discovery/public-profile source");
+  }
+  const missing = part71MissingLeadFields(lead);
+  if (missing.length) {
+    score -= Math.min(20, missing.length * 5);
+    reasons.push(`missing details: ${missing.join(", ")}`);
+  }
+  score = Math.max(0, Math.min(100, score));
+  const priority = score >= 75 ? "hot" : score >= 45 ? "warm" : "cold";
+  const nextAction = priority === "hot"
+    ? "10-30 minutes ke andar callback/demo slot confirm karo."
+    : priority === "warm"
+      ? "Same day polite follow-up bhejo aur missing details collect karo."
+      : "Nurture message bhejo, course info share karo, aur 24-48 hours follow-up set karo.";
+  return { lead, score, priority, reasons, missingFields: missing, nextAction };
+}
+
+function part71CourseRecommendations(profileInput = {}) {
+  const lead = part71NormalizeLead(profileInput);
+  const text = `${lead.className} ${lead.courseInterest} ${lead.goal} ${lead.message}`.toLowerCase();
+  const recommendations = [];
+  if (/jee|engineering|physics|math/i.test(text)) {
+    recommendations.push({ course: "JEE Foundation / JEE Target Batch", reason: "Student ne JEE/engineering/physics-maths interest show kiya.", suggestedNextStep: "Diagnostic test + demo class schedule karo." });
+  }
+  if (/neet|medical|biology|bio/i.test(text)) {
+    recommendations.push({ course: "NEET Foundation / NEET Target Batch", reason: "Medical/biology interest detect hua.", suggestedNextStep: "Biology + Chemistry demo class recommend karo." });
+  }
+  if (/10|class 10|board|cbse|science|math/i.test(text)) {
+    recommendations.push({ course: "Class 10 Board Excellence", reason: "Class 10/board/science-maths context mila.", suggestedNextStep: "Board syllabus + weekly test plan explain karo." });
+  }
+  if (/spoken|english|communication/i.test(text)) {
+    recommendations.push({ course: "Spoken English / Communication Skills", reason: "English/communication interest detect hua.", suggestedNextStep: "Level check + trial class offer karo." });
+  }
+  if (!recommendations.length) {
+    recommendations.push({ course: "Foundation / Counselling Required", reason: "Course goal clear nahi hai; pehle student class, goal aur current level confirm karo.", suggestedNextStep: "Parent/student se 3 details poochho: class, target exam, preferred timing." });
+  }
+  return { lead, recommendations: recommendations.slice(0, 3), missingFields: part71MissingLeadFields(lead) };
+}
+
+function part71ReplyDraft(leadInput = {}, channel = "whatsapp") {
+  const lead = part71NormalizeLead(leadInput);
+  const missing = part71MissingLeadFields(lead);
+  const student = lead.studentName || "student";
+  const course = lead.courseInterest || "aapke interested course";
+  const parentGreeting = lead.parentName ? `Namaste ${lead.parentName} ji,` : "Namaste Sir/Mam,";
+  const timingLine = lead.preferredTiming ? `Aapka preferred timing ${lead.preferredTiming} note kar liya hai.` : "Aap apna preferred callback/demo timing share kar dijiye.";
+  const missingLine = missing.length ? `Bas ye details confirm kar dijiye: ${missing.join(", ")}.` : "Aapki basic enquiry details complete hain.";
+  const whatsapp = `${parentGreeting}\n\nNAXORA Institute OS se message hai. ${student} ke liye ${course} enquiry receive ho gayi hai. ${timingLine}\n\n${missingLine}\n\nKya hum aapko free counselling/demo class ke liye call kar sakte hain?`;
+  const sms = `NAXORA: ${student} ki ${course} enquiry receive ho gayi. ${missing.length ? "Please confirm: " + missing.join(", ") : "Our team will contact you."}`.slice(0, 300);
+  const email = {
+    subject: `Enquiry received for ${student} - ${course}`,
+    body: `${parentGreeting}\n\nThank you for your enquiry for ${student}. We have received your interest in ${course}.\n\n${timingLine}\n${missingLine}\n\nOur counsellor will contact you with course details, batch timings and demo options.\n\nRegards,\nNAXORA Institute OS`
+  };
+  return {
+    lead,
+    channel,
+    drafts: { whatsapp, sms, email },
+    missingFields: missing,
+    sendMode: "draft_only_not_sent",
+    requiresConsentBeforeSending: true,
+    sensitiveDataRule: "Fees/financial/private details public speaker par loudly nahi bolni; screen par privately show karni."
+  };
+}
+
+function part71FollowupSuggestions(leadInput = {}) {
+  const priority = part71Priority(leadInput);
+  const { lead } = priority;
+  const suggestions = [
+    {
+      step: 1,
+      title: priority.priority === "hot" ? "Immediate callback" : "Polite first follow-up",
+      dueIn: priority.priority === "hot" ? "10-30 minutes" : "same day",
+      script: part71ReplyDraft(lead, "whatsapp").drafts.whatsapp
+    },
+    {
+      step: 2,
+      title: "Demo / counselling offer",
+      dueIn: "next working slot",
+      script: `Namaste ${lead.parentName || "Sir/Mam"}, ${lead.studentName || "student"} ke liye ${lead.courseInterest || "course"} demo/counselling slot available hai. Kya aap ${lead.preferredTiming || "today evening"} comfortable hain?`
+    },
+    {
+      step: 3,
+      title: "Missing details collection",
+      dueIn: "before final admission call",
+      script: priority.missingFields.length ? `Please confirm: ${priority.missingFields.join(", ")}.` : "All basic details available. Admission counsellor can proceed to demo/fee explanation."
+    }
+  ];
+  return { lead, priority: priority.priority, score: priority.score, nextAction: priority.nextAction, suggestions };
+}
+
+function part71ConversationSupport(message = "", leadInput = {}) {
+  const lead = part71NormalizeLead(leadInput);
+  const msg = part71CleanText(message, 800).toLowerCase();
+  const answers = [];
+  if (/fee|fees|discount|payment|installment|installment|emi/i.test(msg)) {
+    answers.push("Fee/discount ke liye exact amount loudly speaker par na bolo. Parent ko private screen/official message me plan explain karo. Discount owner approval ke bina final mat karo.");
+  }
+  if (/demo|trial|class/i.test(msg)) {
+    answers.push("Demo class ke liye course, class level, preferred timing aur parent contact confirm karo. Teacher availability check karke slot suggest karo.");
+  }
+  if (/result|teacher|faculty|quality/i.test(msg)) {
+    answers.push("Teacher/results ke claims sirf verified institute profile ke basis par bolo. Unsupported guarantee mat do.");
+  }
+  if (/not interested|busy|later|baad/i.test(msg)) {
+    answers.push("Lead ko pressure mat karo. Polite nurture message bhejo aur consent ke saath future follow-up schedule karo.");
+  }
+  if (!answers.length) {
+    answers.push("Parent/student ki requirement politely repeat karo, missing details poochho, aur next step: counselling call, demo class ya course brochure suggest karo.");
+  }
+  return {
+    lead,
+    incomingMessage: part71CleanText(message, 800),
+    suggestedResponse: answers.join(" "),
+    missingFields: part71MissingLeadFields(lead),
+    escalation: /refund|delete|export|discount|subscription|private|financial/i.test(msg) ? "owner_verification_required" : "normal_counsellor_support",
+    tone: "respectful-hinglish"
+  };
+}
+
+function part71VaniResponse(command = "", context = {}) {
+  const role = part71Role(context.role || context.userRole || "counsellor");
+  const cmd = part71CleanText(command || context.command || "", 800);
+  const lead = part71NormalizeLead(context.lead || context);
+  const lower = cmd.toLowerCase();
+  const sensitive = /(discount|refund|delete|remove|export|subscription|payment change|fee change)/i.test(lower);
+  if (sensitive && !part71RolePermissions[role]?.sensitiveVerification) {
+    return {
+      allowed: false,
+      role,
+      action: "blocked_sensitive_action",
+      message: "Ye sensitive action hai. Owner verification ke bina VANI isko execute nahi karegi.",
+      requiresOwnerVerification: true,
+      preview: null
+    };
+  }
+  if (!cmd) {
+    return { allowed: true, role, action: "ask_missing_command", message: "Aap bataiye VANI admission copilot se kya karwana hai: reply draft, lead priority, course recommendation ya follow-up?" };
+  }
+  let action = "conversation_support";
+  let preview = part71ConversationSupport(cmd, lead);
+  if (/reply|message|whatsapp|email|sms|draft/i.test(lower)) {
+    action = "reply_draft";
+    preview = part71ReplyDraft(lead, "whatsapp");
+  } else if (/priority|hot|warm|cold|score/i.test(lower)) {
+    action = "lead_priority";
+    preview = part71Priority(lead);
+  } else if (/course|recommend|batch|suggest/i.test(lower)) {
+    action = "course_recommendation";
+    preview = part71CourseRecommendations(lead);
+  } else if (/follow|callback|reminder|next/i.test(lower)) {
+    action = "followup_suggestion";
+    preview = part71FollowupSuggestions(lead);
+  }
+  const missing = part71MissingLeadFields(lead);
+  return {
+    allowed: true,
+    role,
+    action,
+    message: missing.length ? `Mujhe ye details chahiye: ${missing.join(", ")}. Main guess nahi karungi.` : "Preview ready hai. Create/send/update se pehle explicit confirmation required rahegi.",
+    preview,
+    requiresConfirmationBeforeExecution: true,
+    speakerPrivacyRule: "Private phone, fees, payment, parent contact aur personal info ko public speaker par loudly read na karein; screen par private preview dikhayein."
+  };
+}
+
+app.get("/api/part71/status", (req, res) => {
+  res.json({
+    success: true,
+    part: part71Config.part,
+    status: part71Config.status,
+    purpose: part71Config.purpose,
+    frontend: [part71Config.frontendRoute, ...part71Config.alternateRoutes],
+    apiRoutes: part71Config.apiRoutes,
+    connectedParts: part71Config.connectedParts,
+    safetyMode: part71Config.safetyMode,
+    vaniDecision: part71Config.vaniDecision,
+    currentVersionPlan: "Part 53–78 = NAXORA OS 1.0 completion. Part 79–110 = NAXORA OS 2.0 development.",
+    previousPart: part71Config.previousPart,
+    nextPart: part71Config.nextPart
+  });
+});
+
+app.get("/api/part71/config", (req, res) => {
+  res.json({ success: true, part: part71Config.part, config: part71Config, roles: part71RolePermissions });
+});
+
+app.get("/api/part71/features", (req, res) => {
+  res.json({ success: true, part: part71Config.part, count: part71Features.length, features: part71Features });
+});
+
+app.get("/api/part71/roles", (req, res) => {
+  res.json({ success: true, part: part71Config.part, roles: part71RolePermissions });
+});
+
+app.get("/api/part71/lead-context", async (req, res) => {
+  const leadId = part71CleanText(req.query.leadId || "demo-lead-001", 80);
+  const demoLead = part71NormalizeLead({
+    leadId,
+    studentName: req.query.studentName || "Aman Sharma",
+    parentName: req.query.parentName || "Rakesh Sharma",
+    parentPhone: req.query.phone || "9876543210",
+    className: req.query.className || "10",
+    courseInterest: req.query.course || "JEE Foundation",
+    preferredTiming: req.query.timing || "Evening",
+    city: req.query.city || "Delhi",
+    source: req.query.source || "Nearby Institutes",
+    message: req.query.message || "Parent wants demo class and fee details.",
+    consentAccepted: true
+  });
+  await part71Log("lead_context_viewed", { leadId, mode: "demo-or-query" });
+  res.json({ success: true, part: part71Config.part, lead: demoLead, note: "Real CRM lead lookup can be connected route-by-route after Part 58/60 collection audit." });
+});
+
+app.post("/api/part71/reply-draft", async (req, res) => {
+  const role = part71Role(req.body?.role || "counsellor");
+  if (!part71Can(role, "draft_reply")) return res.status(403).json({ success: false, part: part71Config.part, message: "Is role ko reply draft permission nahi hai.", role });
+  const result = part71ReplyDraft(req.body?.lead || req.body || {}, req.body?.channel || "whatsapp");
+  await part71Log("reply_draft_created", { role, leadId: result.lead.leadId, missingFields: result.missingFields, sendMode: result.sendMode });
+  res.json({ success: true, part: part71Config.part, role, result });
+});
+
+app.post("/api/part71/followup-suggestions", async (req, res) => {
+  const role = part71Role(req.body?.role || "counsellor");
+  if (!part71Can(role, "followup_suggestion") && !part71Can(role, "draft_reply")) return res.status(403).json({ success: false, part: part71Config.part, message: "Is role ko follow-up suggestion permission nahi hai.", role });
+  const result = part71FollowupSuggestions(req.body?.lead || req.body || {});
+  await part71Log("followup_suggestions_created", { role, leadId: result.lead.leadId, priority: result.priority, score: result.score });
+  res.json({ success: true, part: part71Config.part, role, result });
+});
+
+app.post("/api/part71/course-recommendations", async (req, res) => {
+  const role = part71Role(req.body?.role || "counsellor");
+  if (!part71Can(role, "course_recommendation") && !part71Can(role, "course_recommendation_view") && !part71Can(role, "draft_reply")) return res.status(403).json({ success: false, part: part71Config.part, message: "Is role ko course recommendation permission nahi hai.", role });
+  const result = part71CourseRecommendations(req.body?.lead || req.body?.student || req.body || {});
+  await part71Log("course_recommendations_created", { role, leadId: result.lead.leadId, count: result.recommendations.length });
+  res.json({ success: true, part: part71Config.part, role, result });
+});
+
+app.post("/api/part71/lead-priority", async (req, res) => {
+  const role = part71Role(req.body?.role || "counsellor");
+  if (!part71Can(role, "set_priority") && !part71Can(role, "set_priority_suggestion") && !part71Can(role, "draft_reply")) return res.status(403).json({ success: false, part: part71Config.part, message: "Is role ko lead priority permission nahi hai.", role });
+  const result = part71Priority(req.body?.lead || req.body || {});
+  await part71Log("lead_priority_scored", { role, leadId: result.lead.leadId, priority: result.priority, score: result.score });
+  res.json({ success: true, part: part71Config.part, role, result });
+});
+
+app.post("/api/part71/conversation-support", async (req, res) => {
+  const role = part71Role(req.body?.role || "counsellor");
+  if (!part71Can(role, "conversation_support") && !part71Can(role, "draft_reply")) return res.status(403).json({ success: false, part: part71Config.part, message: "Is role ko conversation support permission nahi hai.", role });
+  const result = part71ConversationSupport(req.body?.message || req.body?.text || "Parent fee and demo class pooch raha hai", req.body?.lead || req.body || {});
+  await part71Log("conversation_support_created", { role, leadId: result.lead.leadId, escalation: result.escalation });
+  res.json({ success: true, part: part71Config.part, role, result });
+});
+
+app.post("/api/part71/vani/command", async (req, res) => {
+  const result = part71VaniResponse(req.body?.command || req.body?.transcript || req.body?.text || "reply draft banao", req.body || {});
+  await part71Log("vani_admission_command", { role: result.role, action: result.action, allowed: result.allowed, requiresConfirmation: result.requiresConfirmationBeforeExecution });
+  res.status(result.allowed === false ? 403 : 200).json({ success: result.allowed !== false, part: part71Config.part, result });
+});
+
+app.get("/api/part71/activity", (req, res) => {
+  res.json({ success: true, part: part71Config.part, count: globalThis.NAXORA_PART71_ACTIVITY.length, activity: globalThis.NAXORA_PART71_ACTIVITY });
+});
+
+app.get("/api/part71/checklist", (req, res) => {
+  res.json({ success: true, part: part71Config.part, checklist: part71Checklist });
+});
+
+app.get("/api/part71/export", (req, res) => {
+  res.json({
+    success: true,
+    part: part71Config.part,
+    exportedAt: new Date().toISOString(),
+    config: part71Config,
+    features: part71Features,
+    roles: part71RolePermissions,
+    activity: globalThis.NAXORA_PART71_ACTIVITY,
+    checklist: part71Checklist,
+    limitation: "External AI model, WhatsApp/SMS/email real send, and final admission conversion are intentionally not executed in Part 71."
+  });
+});
+
+app.get("/api/part71/demo", async (req, res) => {
+  const lead = part71NormalizeLead({
+    leadId: "demo-part71-001",
+    studentName: "Aman Sharma",
+    parentName: "Rakesh Sharma",
+    parentPhone: "9876543210",
+    className: "10",
+    courseInterest: "JEE Foundation",
+    preferredTiming: "Evening",
+    city: "Delhi",
+    source: "Compare Institutes",
+    message: "Parent wants demo class, fee details and batch timing.",
+    consentAccepted: true
+  });
+  const demo = {
+    lead,
+    priority: part71Priority(lead),
+    replyDraft: part71ReplyDraft(lead),
+    followups: part71FollowupSuggestions(lead),
+    courses: part71CourseRecommendations(lead),
+    conversation: part71ConversationSupport("Parent fee and demo class pooch raha hai", lead),
+    vani: part71VaniResponse("VANI, is enquiry ke liye reply draft aur priority batao", { role: "counsellor", lead })
+  };
+  await part71Log("demo_generated", { leadId: lead.leadId });
+  res.json({ success: true, part: part71Config.part, demoTitle: "AI Admission Copilot Demo", demo, checklist: part71Checklist });
+});
+// ================= END PART 71 =================
+
 // Same-server frontend hosting for Render/Railway/VPS deployment.
 app.use("/landing", express.static(frontendPath));
 
@@ -8097,7 +8666,12 @@ const modulePageRoutes = {
   "/ai-credits-usage": "ai-credits-usage.html",
   "/ai-credits": "ai-credits-usage.html",
   "/ai-usage": "ai-credits-usage.html",
-  "/credits": "ai-credits-usage.html"
+  "/credits": "ai-credits-usage.html",
+  "/ai-admission-copilot": "ai-admission-copilot.html",
+  "/admission-copilot": "ai-admission-copilot.html",
+  "/admission-ai": "ai-admission-copilot.html",
+  "/ai-counsellor": "ai-admission-copilot.html",
+  "/copilot-admission": "ai-admission-copilot.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -8139,7 +8713,7 @@ await connectDB();
 
 const server = app.listen(port, () => {
   console.log("✅ PART 59 PUBLIC INSTITUTE PROFILE ACTIVE");
-  console.log("✅ All routes Part 1 to Part 70 loaded + VANI AI V2");
+  console.log("✅ All routes Part 1 to Part 71 loaded + AI Admission Copilot");
   console.log("✅ AI Notes route active: /api/ai-notes");
   console.log("✅ AI Mock Tests route active: /api/ai-mock-tests");
   console.log("✅ AI Roadmaps route active: /api/ai-roadmaps");
@@ -8204,6 +8778,7 @@ const server = app.listen(port, () => {
   console.log("✅ Part 68 AI Credits and Usage active: /api/part68/status + /ai-credits-usage");
   console.log("✅ Part 69 VANI AI V1 active: /api/part69/status + /vani-ai-v1");
   console.log("✅ Part 70 VANI AI V2 active: /api/part70/status + /vani-ai-v2");
+  console.log("✅ Part 71 AI Admission Copilot active: /api/part71/status + /ai-admission-copilot");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");

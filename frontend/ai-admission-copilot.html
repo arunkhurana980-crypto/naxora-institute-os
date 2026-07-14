@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA AI Admission Copilot | Part 71</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/ai-admission-copilot.css" />
+</head>
+<body>
+  <main class="copilot-shell">
+    <section class="copilot-hero">
+      <div class="copilot-logo">AI</div>
+      <div>
+        <p class="copilot-kicker">PART 71 • AI ADMISSION COPILOT</p>
+        <h1>AI Admission Copilot</h1>
+        <p class="copilot-subtitle">Enquiry reply drafts, follow-up suggestions, course recommendations, lead priority aur admission conversation support — VANI ke saath safe confirmation-first mode me.</p>
+        <div class="copilot-actions">
+          <a class="copilot-btn primary" href="/api/part71/status" target="_blank">Check Status API</a>
+          <a class="copilot-btn" href="/api/part71/demo" target="_blank">Open Demo API</a>
+          <a class="copilot-btn" href="/ai-hub">Back AI Hub</a>
+          <a class="copilot-btn" href="/dashboard">Dashboard</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="copilot-alert">
+      <strong>Safety rule:</strong> Part 71 drafts and suggestions banata hai. WhatsApp/SMS/email send, discount, deletion, export, subscription change ya final admission conversion explicit confirmation + correct role permission ke bina execute nahi hota.
+    </section>
+
+    <section class="copilot-stats" id="statsGrid">
+      <article><span id="featureCount">0</span><p>Copilot Features</p></article>
+      <article><span>Draft</span><p>Send Mode</p></article>
+      <article><span>VANI</span><p>Integrated</p></article>
+      <article><span>Logged</span><p>Audit Actions</p></article>
+    </section>
+
+    <section class="copilot-section">
+      <div class="copilot-section-head">
+        <div>
+          <p class="copilot-kicker">LIVE COPILOT PLAYGROUND</p>
+          <h2>Demo Lead Input</h2>
+        </div>
+        <button class="copilot-btn small" id="loadDemoBtn">Load Demo</button>
+      </div>
+
+      <form class="copilot-form" id="leadForm">
+        <label>Student Name <input name="studentName" value="Aman Sharma" /></label>
+        <label>Parent Name <input name="parentName" value="Rakesh Sharma" /></label>
+        <label>Parent Phone <input name="parentPhone" value="9876543210" /></label>
+        <label>Class / Level <input name="className" value="10" /></label>
+        <label>Course Interest <input name="courseInterest" value="JEE Foundation" /></label>
+        <label>Preferred Timing <input name="preferredTiming" value="Evening" /></label>
+        <label>City <input name="city" value="Delhi" /></label>
+        <label>Source <input name="source" value="Compare Institutes" /></label>
+        <label class="full">Lead Message <textarea name="message">Parent wants demo class, fee details and batch timing.</textarea></label>
+        <label>Role
+          <select name="role">
+            <option value="counsellor">Counsellor</option>
+            <option value="owner">Owner</option>
+            <option value="branch_manager">Branch Manager</option>
+            <option value="teacher">Teacher</option>
+            <option value="student">Student</option>
+            <option value="parent">Parent</option>
+          </select>
+        </label>
+      </form>
+
+      <div class="copilot-actions wrap">
+        <button class="copilot-btn primary" data-action="reply">Generate Reply Draft</button>
+        <button class="copilot-btn" data-action="priority">Lead Priority</button>
+        <button class="copilot-btn" data-action="followup">Follow-Up Plan</button>
+        <button class="copilot-btn" data-action="courses">Recommend Course</button>
+        <button class="copilot-btn" data-action="conversation">Conversation Support</button>
+      </div>
+    </section>
+
+    <section class="copilot-section">
+      <div class="copilot-section-head">
+        <div>
+          <p class="copilot-kicker">VANI ADMISSION COMMAND</p>
+          <h2>Hindi/Hinglish Voice/Text Command</h2>
+        </div>
+        <button class="copilot-btn small primary" id="runVaniBtn">Run VANI</button>
+      </div>
+      <textarea class="vani-box" id="vaniCommand">VANI, is enquiry ke liye reply draft aur lead priority batao</textarea>
+      <p class="copilot-note">VANI missing details politely poochegi, ambiguity me guess nahi karegi, aur sensitive data ko public speaker par loudly read nahi karegi.</p>
+    </section>
+
+    <section class="copilot-section">
+      <div class="copilot-section-head">
+        <div>
+          <p class="copilot-kicker">OUTPUT PREVIEW</p>
+          <h2>Copilot Result</h2>
+        </div>
+      </div>
+      <pre class="copilot-output" id="outputBox">Click any action to generate a safe preview.</pre>
+    </section>
+
+    <section class="copilot-section">
+      <div class="copilot-section-head"><div><p class="copilot-kicker">FEATURES</p><h2>Part 71 Feature Cards</h2></div></div>
+      <div class="copilot-grid" id="featuresGrid"></div>
+    </section>
+
+    <section class="copilot-section">
+      <div class="copilot-section-head"><div><p class="copilot-kicker">CHECKLIST</p><h2>Testing Checklist</h2></div></div>
+      <ul class="copilot-checklist" id="checklist"></ul>
+    </section>
+  </main>
+
+  <script src="/brand-system.js"></script>
+  <script src="/ai-admission-copilot.js"></script>
+</body>
+</html>
