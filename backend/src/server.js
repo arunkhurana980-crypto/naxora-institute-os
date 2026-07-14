@@ -109,7 +109,12 @@ const publicRoutes = [
   "/discovery-leads-integration",
   "/discovery-journey",
   "/admission-journey",
-  "/lead-integration"
+  "/lead-integration",
+  "/ai-hub",
+  "/ai-features",
+  "/ai-tools",
+  "/vani-ai",
+  "/vani-assistant"
 ];
 
 const internalPageFiles = new Set([
@@ -6574,6 +6579,291 @@ app.get("/api/part66/demo", async (req, res) => {
 // ================= END PART 66 =================
 
 
+
+// ================= PART 67: AI HUB + VANI AI CARD FOUNDATION =================
+// Part 67 ka goal: AI Doubts, AI Notes, AI Mock Tests, AI Roadmaps, Institute AI tools
+// aur VANI AI Assistant ko ek safe central AI Hub me organize karna.
+// VANI ka full working voice engine Part 69/70 me aayega; Part 67 me visible AI Hub card + roadmap lock hai.
+const part67Config = {
+  part: "Part 67 - AI Hub",
+  status: "active",
+  purpose: "Existing aur upcoming AI tools ko ek central NAXORA AI Hub me organize karna.",
+  aiHubRoute: "/ai-hub",
+  alternateRoutes: ["/ai-features", "/ai-tools", "/vani-ai", "/vani-assistant"],
+  apiRoutes: [
+    "/api/part67/status",
+    "/api/part67/config",
+    "/api/part67/tools",
+    "/api/part67/vani-roadmap",
+    "/api/part67/usage-summary",
+    "/api/part67/launch",
+    "/api/part67/checklist",
+    "/api/part67/export",
+    "/api/part67/demo"
+  ],
+  lockedDecision: "VANI ko AI Features / AI Hub ke andar proper card/section ke saath add karna hai.",
+  safetyMode: "Part 67 me AI tools ka hub/registry/visibility hai; external paid AI API call ya real voice action nahi chalaya gaya.",
+  currentVersionPlan: "Part 53-78 = NAXORA OS 1.0 completion. Part 79-110 = NAXORA OS 2.0 development.",
+  nextPart: "Part 68 - AI Credits and Usage"
+};
+
+const part67Tools = [
+  {
+    id: "ai-doubts",
+    title: "AI Doubts",
+    tagline: "Student doubts ko simple Hindi/Hinglish explanation me solve karne ka assistant.",
+    category: "Student Learning",
+    route: "/ai-doubts",
+    apiRoute: "/api/doubts",
+    status: "ready-foundation",
+    phase: "existing-ai-tool",
+    userBenefit: "Student ko 24x7 basic study help milti hai aur teacher workload kam hota hai.",
+    safeMode: "External paid AI model call is build me auto-trigger nahi hota. Existing route ke according safe foundation."
+  },
+  {
+    id: "ai-notes",
+    title: "AI Notes Generator",
+    tagline: "Topic ya class content se quick revision notes banane ka tool.",
+    category: "Content Generation",
+    route: "/ai-notes",
+    apiRoute: "/api/ai-notes",
+    status: "ready-foundation",
+    phase: "existing-ai-tool",
+    userBenefit: "Teacher aur student ka note-making time reduce hota hai.",
+    safeMode: "Notes generator UI/API registry AI Hub me visible hai."
+  },
+  {
+    id: "ai-mock-tests",
+    title: "AI Mock Test Generator",
+    tagline: "Topic-wise practice tests aur quiz foundation.",
+    category: "Assessment",
+    route: "/ai-mock-tests",
+    apiRoute: "/api/ai-mock-tests",
+    status: "ready-foundation",
+    phase: "existing-ai-tool",
+    userBenefit: "Students regular practice kar sakte hain aur weak areas identify kar sakte hain.",
+    safeMode: "Generated/mock test flow ko hub se central access milega."
+  },
+  {
+    id: "ai-roadmaps",
+    title: "AI Roadmap Generator",
+    tagline: "Student goal ke according study plan/roadmap banane ka tool.",
+    category: "Planning",
+    route: "/ai-roadmaps",
+    apiRoute: "/api/ai-roadmaps",
+    status: "ready-foundation",
+    phase: "existing-ai-tool",
+    userBenefit: "Student ko kya aur kis order me padhna hai ye clear hota hai.",
+    safeMode: "Roadmap tool ko hub ke andar organized access diya gaya."
+  },
+  {
+    id: "vani-ai-assistant",
+    title: "VANI AI Assistant",
+    tagline: "NAXORA ka Hindi/Hinglish voice-first assistant. Part 69 me read-only search working start hoga.",
+    category: "Voice AI",
+    route: "/vani-ai",
+    apiRoute: "/api/part67/vani-roadmap",
+    status: "visible-coming-part69",
+    phase: "locked-roadmap",
+    userBenefit: "Owner voice se students, fees, attendance, batches aur reports quickly search kar paayega.",
+    safeMode: "Part 67 me VANI visible card hai. Microphone/voice action/save/delete abhi enabled nahi hai."
+  },
+  {
+    id: "institute-ai-tools",
+    title: "Institute AI Tools",
+    tagline: "Owner/counsellor ke liye admission, fee, attendance aur parent communication AI tools ka foundation.",
+    category: "Institute Operations",
+    route: "/ai-hub#institute-ai-tools",
+    apiRoute: "/api/part67/tools?category=institute",
+    status: "foundation",
+    phase: "part67-hub",
+    userBenefit: "Institute repetitive admin work ko AI support ke saath faster kar paayega.",
+    safeMode: "Actual advanced assistants Part 71-74 me expand honge."
+  }
+];
+
+const part67VaniRoadmap = [
+  {
+    part: 67,
+    title: "AI Hub me VANI Card",
+    status: "active-now",
+    scope: "VANI ko AI Features / AI Hub ke andar visible card aur roadmap ke saath add karna.",
+    output: "VANI AI Assistant card, roadmap API, hub placement."
+  },
+  {
+    part: 69,
+    title: "VANI AI V1",
+    status: "upcoming",
+    scope: "Read-only voice/text search: students, fees, attendance, batches, reports.",
+    output: "Safe search-only VANI. Save/delete/change action nahi."
+  },
+  {
+    part: 70,
+    title: "VANI AI V2",
+    status: "upcoming",
+    scope: "Hindi/Hinglish voice form filling with confirmation before save.",
+    output: "Voice activity history + confirm-before-save."
+  },
+  {
+    part: 75,
+    title: "Student VANI Revision Assistant",
+    status: "upcoming",
+    scope: "Student AI Tools ke andar VANI revision support.",
+    output: "Study planner/revision voice assistant foundation."
+  },
+  {
+    part: "84-88",
+    title: "Advanced VANI 2.0",
+    status: "version-2-roadmap",
+    scope: "Action engine, admission assistant, fee/attendance actions, voice reports, natural Hinglish conversation.",
+    output: "Enterprise-grade VANI automation after v1.0."
+  }
+];
+
+const part67Checklist = [
+  "AI Hub page /ai-hub open ho raha hai.",
+  "AI Doubts, AI Notes, AI Mock Tests, AI Roadmaps cards visible hain.",
+  "VANI AI Assistant card AI Hub me visible hai.",
+  "VANI ka status clearly Coming Part 69 / visible-coming-part69 hai.",
+  "Institute AI Tools foundation visible hai.",
+  "External paid AI API key ya secret ZIP me include nahi hai.",
+  "Voice action/save/delete Part 67 me accidentally enabled nahi hai.",
+  "Part 68 AI credits/usage ke liye usage-summary foundation ready hai."
+];
+
+function part67CleanText(value, max = 160) {
+  return String(value ?? "").replace(/[<>]/g, "").trim().slice(0, max);
+}
+
+function part67ByCategory(tool, category) {
+  if (!category) return true;
+  const needle = part67CleanText(category, 60).toLowerCase();
+  return tool.category.toLowerCase().includes(needle) || tool.id.toLowerCase().includes(needle) || tool.phase.toLowerCase().includes(needle);
+}
+
+async function part67UsageSummary() {
+  const summary = {
+    mode: mongoose.connection.readyState === 1 ? "mongodb" : "mock",
+    aiCreditsFoundation: true,
+    note: "Detailed AI credit enforcement Part 68 me aayega. Part 67 sirf safe usage summary foundation deta hai.",
+    toolsVisible: part67Tools.length,
+    readyFoundationTools: part67Tools.filter((t) => t.status.includes("ready") || t.status === "foundation").length,
+    vaniVisible: part67Tools.some((t) => t.id === "vani-ai-assistant"),
+    estimatedMonthlyCredits: {
+      starter: 500,
+      growth: 2500,
+      pro: 10000,
+      enterprise: "custom"
+    },
+    counts: {}
+  };
+
+  if (mongoose.connection.readyState === 1) {
+    const collections = [
+      ["aiNotes", "ainotes"],
+      ["aiMockTests", "aimocktests"],
+      ["aiRoadmaps", "airoadmaps"],
+      ["doubts", "doubts"]
+    ];
+    for (const [label, collectionName] of collections) {
+      try {
+        summary.counts[label] = await mongoose.connection.db.collection(collectionName).countDocuments({});
+      } catch (error) {
+        summary.counts[label] = 0;
+      }
+    }
+  } else {
+    summary.counts = { aiNotes: 0, aiMockTests: 0, aiRoadmaps: 0, doubts: 0 };
+  }
+
+  return summary;
+}
+
+app.get("/api/part67/status", (req, res) => {
+  res.json({
+    success: true,
+    part: part67Config.part,
+    status: part67Config.status,
+    purpose: part67Config.purpose,
+    lockedDecision: part67Config.lockedDecision,
+    frontend: [part67Config.aiHubRoute, ...part67Config.alternateRoutes],
+    apiRoutes: part67Config.apiRoutes,
+    tools: part67Tools.map((tool) => ({ id: tool.id, title: tool.title, status: tool.status, route: tool.route })),
+    nextPart: part67Config.nextPart
+  });
+});
+
+app.get("/api/part67/config", (req, res) => {
+  res.json({ success: true, part: part67Config.part, config: part67Config });
+});
+
+app.get("/api/part67/tools", (req, res) => {
+  const category = req.query?.category;
+  const rows = part67Tools.filter((tool) => part67ByCategory(tool, category));
+  res.json({ success: true, part: part67Config.part, count: rows.length, tools: rows });
+});
+
+app.get("/api/part67/vani-roadmap", (req, res) => {
+  res.json({
+    success: true,
+    part: part67Config.part,
+    locked: true,
+    message: "VANI AI Assistant AI Hub ke andar add ho chuki hai. Full working VANI Part 69 se start hogi.",
+    roadmap: part67VaniRoadmap
+  });
+});
+
+app.get("/api/part67/usage-summary", async (req, res) => {
+  res.json({ success: true, part: part67Config.part, usage: await part67UsageSummary() });
+});
+
+app.post("/api/part67/launch", (req, res) => {
+  const toolId = part67CleanText(req.body?.toolId || req.query?.toolId || "ai-hub", 80);
+  const tool = part67Tools.find((item) => item.id === toolId) || part67Tools.find((item) => item.route.includes(toolId));
+  if (!tool) {
+    return res.status(404).json({ success: false, part: part67Config.part, message: "AI tool nahi mila.", availableTools: part67Tools.map((item) => item.id) });
+  }
+  return res.json({
+    success: true,
+    part: part67Config.part,
+    message: `${tool.title} launch route ready hai.`,
+    tool,
+    launchUrl: tool.route,
+    actionMode: tool.id === "vani-ai-assistant" ? "visible-only-until-part69" : "safe-launch-link"
+  });
+});
+
+app.get("/api/part67/checklist", (req, res) => {
+  res.json({ success: true, part: part67Config.part, checklist: part67Checklist });
+});
+
+app.get("/api/part67/export", async (req, res) => {
+  res.json({
+    success: true,
+    part: part67Config.part,
+    exportedAt: new Date().toISOString(),
+    config: part67Config,
+    tools: part67Tools,
+    vaniRoadmap: part67VaniRoadmap,
+    usage: await part67UsageSummary(),
+    checklist: part67Checklist
+  });
+});
+
+app.get("/api/part67/demo", async (req, res) => {
+  res.json({
+    success: true,
+    part: part67Config.part,
+    demoTitle: "NAXORA AI Hub Demo",
+    tools: part67Tools,
+    vaniRoadmap: part67VaniRoadmap,
+    usage: await part67UsageSummary(),
+    checklist: part67Checklist
+  });
+});
+// ================= END PART 67 =================
+
+
 // Same-server frontend hosting for Render/Railway/VPS deployment.
 app.use("/landing", express.static(frontendPath));
 
@@ -6689,7 +6979,12 @@ const modulePageRoutes = {
   "/subscription-payments": "payments-subscriptions.html",
   "/billing": "payments-subscriptions.html",
   "/invoices": "payments-subscriptions.html",
-  "/renewals": "payments-subscriptions.html"
+  "/renewals": "payments-subscriptions.html",
+  "/ai-hub": "ai-hub.html",
+  "/ai-features": "ai-hub.html",
+  "/ai-tools": "ai-hub.html",
+  "/vani-ai": "ai-hub.html",
+  "/vani-assistant": "ai-hub.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -6792,6 +7087,7 @@ const server = app.listen(port, () => {
   console.log("✅ Part 64 live classes completion active: /api/part64/status + /live-classes-completion");
   console.log("✅ Part 65 communication hub active: /api/part65/status + /communication-hub");
   console.log("✅ Part 66 payments/subscriptions active: /api/part66/status + /payments-subscriptions");
+  console.log("✅ Part 67 AI Hub active: /api/part67/status + /ai-hub + VANI card");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");
