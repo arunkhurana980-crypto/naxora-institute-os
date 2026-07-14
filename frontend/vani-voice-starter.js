@@ -1,11 +1,18 @@
-// NAXORA VANI browser voice starter.
-// Works after user taps a button because browsers block automatic speech.
-// This is Level 1 voice. Advanced mic conversation comes in Parts 84–88.
+// NAXORA VANI browser voice starter + listen/reply foundation.
+// Voice output uses Web Speech Synthesis.
+// Mic input uses browser SpeechRecognition/webkitSpeechRecognition when supported.
+// Browsers require user click and mic permission.
+
 window.NaxoraVaniVoice = (() => {
   let muted = false;
+  let recognition = null;
 
   function supported() {
     return typeof window !== "undefined" && "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+  }
+
+  function listenSupported() {
+    return typeof window !== "undefined" && ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
   }
 
   function speak(text, options = {}) {
@@ -27,8 +34,33 @@ window.NaxoraVaniVoice = (() => {
     }
   }
 
+  function listen(options = {}) {
+    return new Promise((resolve, reject) => {
+      if (!listenSupported()) {
+        reject(new Error("speech_recognition_not_supported"));
+        return;
+      }
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.lang = options.lang || "hi-IN";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      recognition.continuous = false;
+
+      recognition.onresult = (event) => {
+        const transcript = event.results?.[0]?.[0]?.transcript || "";
+        resolve({ transcript, confidence: event.results?.[0]?.[0]?.confidence || null });
+      };
+      recognition.onerror = (event) => reject(new Error(event.error || "speech_recognition_error"));
+      recognition.onend = () => {};
+      recognition.start();
+    });
+  }
+
   function stop() {
     if (supported()) window.speechSynthesis.cancel();
+    try { if (recognition) recognition.stop(); } catch {}
   }
 
   function setMuted(value) {
@@ -41,5 +73,5 @@ window.NaxoraVaniVoice = (() => {
     return muted;
   }
 
-  return { supported, speak, stop, setMuted, isMuted };
+  return { supported, listenSupported, speak, listen, stop, setMuted, isMuted };
 })();

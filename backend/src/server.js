@@ -10284,7 +10284,13 @@ const modulePageRoutes = {
   "/teacher-app": "teacher-mobile-app.html",
   "/mobile-teacher-dashboard": "teacher-mobile-app.html",
   "/teacher-command-center": "teacher-mobile-app.html",
-  "/teacher-app-mobile": "teacher-mobile-app.html"
+  "/teacher-app-mobile": "teacher-mobile-app.html",
+  "/student-mobile-app": "student-mobile-app.html",
+  "/student-app": "student-mobile-app.html",
+  "/mobile-student-dashboard": "student-mobile-app.html",
+  "/student-learning-app": "student-mobile-app.html",
+  "/student-ai-mobile": "student-mobile-app.html",
+  "/student-study-app": "student-mobile-app.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -11683,6 +11689,509 @@ app.get("/api/part81/demo", (req, res) => {
   });
 });
 // ================= END PART 81 =================
+
+// ================= PART 82 — STUDENT APP =================
+// NAXORA OS 2.0 student mobile app foundation. Student sees only own
+// learning data. Adds VANI Listen + Reply foundation using browser speech
+// recognition on frontend + safe backend command responses.
+
+const part82StudentFeatures = [
+  {
+    key: "student_dashboard",
+    name: "Student Mobile Dashboard",
+    summary: "Today timetable, homework, tests, notes, fees, live classes and AI study tools.",
+    problemSolved: "Student gets all daily learning tasks in one mobile place."
+  },
+  {
+    key: "timetable",
+    name: "My Timetable",
+    summary: "Class schedule and upcoming live/offline classes.",
+    problemSolved: "Student knows what to attend and when."
+  },
+  {
+    key: "assignments",
+    name: "Assignments and Homework",
+    summary: "Pending homework, due dates and submission status.",
+    problemSolved: "Student misses fewer homework tasks."
+  },
+  {
+    key: "tests_results",
+    name: "Tests and Results",
+    summary: "Upcoming tests, result summary and weak topic hints.",
+    problemSolved: "Student can prepare and improve after tests."
+  },
+  {
+    key: "notes_material",
+    name: "Notes and Study Material",
+    summary: "Teacher-shared notes and revision material.",
+    problemSolved: "Student does not lose study resources."
+  },
+  {
+    key: "fees_safe_view",
+    name: "My Fees Safe View",
+    summary: "Student can see safe fee status; detailed financial controls remain owner/accountant/parent side.",
+    problemSolved: "Student gets clarity without exposing sensitive controls."
+  },
+  {
+    key: "ai_study_tools",
+    name: "AI Study Tools",
+    summary: "Study planner, weak topic coach, flashcards and revision support.",
+    problemSolved: "Student gets personalized learning help."
+  },
+  {
+    key: "vani_listen_reply",
+    name: "VANI Listen + Reply",
+    summary: "Student can tap mic, speak a command, see reply and hear safe spoken response.",
+    problemSolved: "VANI no longer only asks a question; it starts replying to spoken commands."
+  }
+];
+
+const part82StudentRoleRules = [
+  {
+    role: "student",
+    allowed: true,
+    access: "Only own learning, timetable, fees summary, tests, notes and profile."
+  },
+  {
+    role: "parent",
+    allowed: false,
+    access: "Parent uses Part 83 Parent App for linked child view."
+  },
+  {
+    role: "teacher",
+    allowed: true,
+    previewOnly: true,
+    access: "Teacher can preview assigned student learning support, not impersonate student."
+  },
+  {
+    role: "institute_owner",
+    allowed: true,
+    previewOnly: true,
+    access: "Owner can preview student app readiness, not access unrestricted private student view."
+  },
+  {
+    role: "branch_manager",
+    allowed: true,
+    previewOnly: true,
+    access: "Branch manager can preview assigned branch student app readiness."
+  },
+  {
+    role: "accountant",
+    allowed: false,
+    access: "Accountant uses fees/finance module, not student app."
+  },
+  {
+    role: "receptionist_counsellor",
+    allowed: false,
+    access: "Receptionist/Counsellor uses CRM/admission workflows only."
+  },
+  {
+    role: "naxora_super_admin",
+    allowed: false,
+    access: "Platform support access only, not unrestricted student-private data."
+  }
+];
+
+function normalizePart82Role(role) {
+  const r = String(role || "student").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part82AccessCheck({ role, instituteId, studentId }) {
+  const normalizedRole = normalizePart82Role(role);
+  const rule = part82StudentRoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole,
+    allowed: false,
+    access: "Unknown or unsupported role."
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const hasStudentContext = normalizedRole !== "student" || Boolean(String(studentId || "STU-DEMO-001").trim());
+
+  const allowed = Boolean(rule.allowed && hasInstituteId && hasStudentContext);
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    studentId: studentId || (normalizedRole === "student" ? "STU-DEMO-001" : null),
+    allowed,
+    previewOnly: Boolean(rule.previewOnly),
+    reason: !rule.allowed
+      ? rule.access
+      : !hasInstituteId
+        ? "Institute ID missing. Student app opens only inside logged institute account."
+        : !hasStudentContext
+          ? "Student ID/self context missing."
+          : rule.previewOnly
+            ? "Preview allowed. Final student-private actions require student/linked context."
+            : "Student app access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    restrictToOwnData: true
+  };
+}
+
+function part82StudentDashboard(query = {}) {
+  const studentId = query.studentId || "STU-DEMO-001";
+  const studentName = query.studentName || "Aman";
+  return {
+    studentId,
+    studentName,
+    instituteId: query.instituteId || "NX-DEMO-INST-001",
+    generatedAt: new Date().toISOString(),
+    today: {
+      classesToday: 3,
+      homeworkPending: 2,
+      upcomingTests: 1,
+      notesAvailable: 4,
+      attendancePercent: 86,
+      aiStudyTasks: 3,
+      liveClassesToday: 1
+    },
+    timetable: [
+      { time: "09:00 AM", subject: "Maths", topic: "Quadratic Equations", mode: "offline" },
+      { time: "12:00 PM", subject: "Science", topic: "Motion", mode: "offline" },
+      { time: "07:00 PM", subject: "Maths", topic: "Doubt Session", mode: "live" }
+    ],
+    assignments: [
+      { id: "HW-STU-001", title: "Quadratic Equation Practice", due: "Tomorrow", status: "pending" },
+      { id: "HW-STU-002", title: "Motion Numericals", due: "Friday", status: "pending" }
+    ],
+    tests: [
+      { id: "TEST-STU-001", topic: "Quadratic Equations", date: "This Saturday", preparation: "revise weak formulas" }
+    ],
+    notes: [
+      { id: "NOTE-001", title: "Quadratic Formula Notes", subject: "Maths" },
+      { id: "NOTE-002", title: "Motion Summary Sheet", subject: "Science" }
+    ],
+    aiStudyPlan: {
+      weakTopic: query.weakTopic || "Quadratic Equations",
+      todayPlan: ["Revise formula basics", "Solve 10 easy questions", "Create 5 flashcards", "Ask doubt in live class"],
+      safeMotivation: "Small daily revision se improvement fast hoti hai."
+    },
+    feesSafeView: {
+      status: "summary_available",
+      message: "Detailed fee/payment controls are handled by parent/accountant/owner modules."
+    }
+  };
+}
+
+function part82BuildVaniReply(command, context = {}) {
+  const lower = String(command || "").toLowerCase();
+  const dashboard = part82StudentDashboard(context);
+
+  let intent = "student_dashboard";
+  let spokenSafeSummary = "Student dashboard ready hai. Aaj ki classes, homework aur study tasks screen par dikh rahe hain.";
+  let screenPreview = dashboard.today;
+  let privateScreenFirst = false;
+
+  if (lower.includes("timetable") || lower.includes("class") || lower.includes("schedule") || lower.includes("time table")) {
+    intent = "timetable";
+    spokenSafeSummary = "Aaj ka timetable screen par dikhaya gaya hai.";
+    screenPreview = dashboard.timetable;
+  } else if (lower.includes("homework") || lower.includes("assignment")) {
+    intent = "assignments";
+    spokenSafeSummary = "Homework list ready hai. Pending tasks screen par dikh rahe hain.";
+    screenPreview = dashboard.assignments;
+  } else if (lower.includes("test") || lower.includes("exam") || lower.includes("result")) {
+    intent = "tests_results";
+    spokenSafeSummary = "Upcoming test aur preparation hint screen par dikhaya gaya hai.";
+    screenPreview = dashboard.tests;
+  } else if (lower.includes("notes") || lower.includes("material")) {
+    intent = "notes_material";
+    spokenSafeSummary = "Available notes aur study material screen par dikhaya gaya hai.";
+    screenPreview = dashboard.notes;
+  } else if (lower.includes("fee") || lower.includes("payment")) {
+    intent = "fees_safe_view";
+    spokenSafeSummary = "Fee summary screen par privately dikhayi gayi hai. Detailed payment controls parent ya accountant side par rahenge.";
+    screenPreview = dashboard.feesSafeView;
+    privateScreenFirst = true;
+  } else if (lower.includes("weak") || lower.includes("revision") || lower.includes("study") || lower.includes("planner") || lower.includes("flashcard")) {
+    intent = "ai_study_tools";
+    spokenSafeSummary = "AI study plan ready hai. Weak topic revision steps screen par dikh rahe hain.";
+    screenPreview = dashboard.aiStudyPlan;
+  } else if (lower.includes("attendance")) {
+    intent = "attendance";
+    spokenSafeSummary = "Attendance summary screen par dikhayi gayi hai.";
+    screenPreview = { attendancePercent: dashboard.today.attendancePercent, note: "Detailed attendance history is private-screen-first when needed." };
+  }
+
+  return {
+    intent,
+    spokenSafeSummary,
+    screenPreview,
+    privateScreenFirst
+  };
+}
+
+const part82Checklist = [
+  "Student app page opens on live URL",
+  "Status API returns success true",
+  "Student access allowed with instituteId and studentId",
+  "Parent/unauthorized access blocked until Parent App Part 83",
+  "Student dashboard returns own-data foundation",
+  "VANI Start button speaks greeting",
+  "VANI Listen button converts speech to command on supported browsers",
+  "VANI replies on screen and speaks safe summary",
+  "Fee/private data uses private-screen-first rule",
+  "Previous Part 1–81 routes remain preserved"
+];
+
+app.get("/api/part82/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 82 — Student App",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 82,
+    nextPart: "Part 83 — Parent App",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/student-mobile-app", "/student-app", "/mobile-student-dashboard", "/student-learning-app", "/student-ai-mobile", "/student-study-app"],
+    apiRoutes: [
+      "/api/part82/config",
+      "/api/part82/features",
+      "/api/part82/roles",
+      "/api/part82/access-check",
+      "/api/part82/dashboard",
+      "/api/part82/timetable",
+      "/api/part82/assignments",
+      "/api/part82/tests",
+      "/api/part82/notes-material",
+      "/api/part82/fees-safe-view",
+      "/api/part82/ai-study-tools",
+      "/api/part82/vani/greeting",
+      "/api/part82/vani/command"
+    ],
+    vaniListenReplyFoundation: true
+  });
+});
+
+app.get("/api/part82/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "NAXORA Student App",
+    appType: "mobile_student_learning_app",
+    version: "2.0-student-foundation",
+    login: {
+      required: true,
+      requiresInstituteId: true,
+      roleRequired: "student",
+      ownDataOnly: true
+    },
+    voice: {
+      browserSpeechStarter: true,
+      browserSpeechRecognition: true,
+      greeting: "Namaste, main VANI hoon. Main aapki study me kya help kar sakti hoon?",
+      note: "Mic/listening works only on supported browsers after user taps Listen."
+    },
+    sensitiveDataPolicy: "Fees, personal profile and support details use private-screen-first."
+  });
+});
+
+app.get("/api/part82/features", (req, res) => {
+  res.json({ success: true, features: part82StudentFeatures });
+});
+
+app.get("/api/part82/roles", (req, res) => {
+  res.json({ success: true, roles: part82StudentRoleRules });
+});
+
+app.get("/api/part82/access-check", (req, res) => {
+  res.json({ success: true, access: part82AccessCheck(req.query || {}) });
+});
+
+app.get("/api/part82/dashboard", (req, res) => {
+  const access = part82AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, dashboard: part82StudentDashboard(req.query || {}) });
+});
+
+app.get("/api/part82/timetable", (req, res) => {
+  const access = part82AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, timetable: part82StudentDashboard(req.query || {}).timetable });
+});
+
+app.get("/api/part82/assignments", (req, res) => {
+  const access = part82AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, assignments: part82StudentDashboard(req.query || {}).assignments });
+});
+
+app.get("/api/part82/tests", (req, res) => {
+  const access = part82AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, tests: part82StudentDashboard(req.query || {}).tests });
+});
+
+app.get("/api/part82/notes-material", (req, res) => {
+  const access = part82AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, notes: part82StudentDashboard(req.query || {}).notes });
+});
+
+app.get("/api/part82/fees-safe-view", (req, res) => {
+  const access = part82AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, privateScreenFirst: true, feesSafeView: part82StudentDashboard(req.query || {}).feesSafeView });
+});
+
+app.get("/api/part82/ai-study-tools", (req, res) => {
+  const access = part82AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, aiStudyPlan: part82StudentDashboard(req.query || {}).aiStudyPlan });
+});
+
+app.get("/api/part82/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI",
+    voiceStarter: true,
+    listenReplyFoundation: true,
+    language: "Hindi/Hinglish",
+    greeting: "Namaste, main VANI hoon. Main aapki study me kya help kar sakti hoon?",
+    exampleCommands: [
+      "VANI, aaj ka timetable dikhao",
+      "VANI, homework batao",
+      "VANI, test kab hai",
+      "VANI, revision plan banao",
+      "VANI, notes dikhao"
+    ],
+    browserRequirement: "Voice and mic start after user button click because browsers need permission.",
+    privateScreenFirstReminder: "Fees/personal data screen par dikhaya jayega, loudly nahi bola jayega."
+  });
+});
+
+app.post("/api/part82/vani/command", (req, res) => {
+  const command = String(req.body?.command || req.query?.command || "").trim();
+  const access = part82AccessCheck({
+    role: req.body?.role || req.query?.role || "student",
+    instituteId: req.body?.instituteId || req.query?.instituteId || "NX-DEMO-INST-001",
+    studentId: req.body?.studentId || req.query?.studentId || "STU-DEMO-001"
+  });
+
+  if (!access.allowed) {
+    return res.status(403).json({
+      success: false,
+      assistant: "VANI",
+      access,
+      spokenSafeSummary: "Ye student app sirf logged-in student ke own data ke liye available hai.",
+      privateScreenFirst: true
+    });
+  }
+
+  const reply = part82BuildVaniReply(command, {
+    instituteId: access.instituteId,
+    studentId: access.studentId,
+    studentName: req.body?.studentName || req.query?.studentName || "Aman",
+    weakTopic: req.body?.weakTopic || req.query?.weakTopic
+  });
+
+  res.json({
+    success: true,
+    assistant: "VANI",
+    part: "Part 82 — Student App",
+    command: command || "VANI, student dashboard dikhao",
+    detectedIntent: reply.intent,
+    access,
+    voiceEnabled: true,
+    listenReplyFoundation: true,
+    privateScreenFirst: reply.privateScreenFirst,
+    spokenSafeSummary: reply.spokenSafeSummary,
+    screenPreview: reply.screenPreview,
+    confirmationRequiredFor: ["profile_change", "fee_action", "assignment_submit", "delete", "export"],
+    auditLog: {
+      event: "part82_vani_student_command",
+      intent: reply.intent,
+      createdAt: new Date().toISOString()
+    }
+  });
+});
+
+app.get("/api/part82/vani/command", (req, res) => {
+  const command = String(req.query.q || req.query.command || "").trim();
+  const access = part82AccessCheck({
+    role: req.query.role || "student",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    studentId: req.query.studentId || "STU-DEMO-001"
+  });
+  if (!access.allowed) {
+    return res.status(403).json({
+      success: false,
+      assistant: "VANI",
+      access,
+      spokenSafeSummary: "Ye student app sirf logged-in student ke own data ke liye available hai.",
+      privateScreenFirst: true
+    });
+  }
+  const reply = part82BuildVaniReply(command, {
+    instituteId: access.instituteId,
+    studentId: access.studentId,
+    studentName: req.query.studentName || "Aman",
+    weakTopic: req.query.weakTopic
+  });
+  res.json({
+    success: true,
+    assistant: "VANI",
+    part: "Part 82 — Student App",
+    command: command || "VANI, student dashboard dikhao",
+    detectedIntent: reply.intent,
+    access,
+    voiceEnabled: true,
+    privateScreenFirst: reply.privateScreenFirst,
+    spokenSafeSummary: reply.spokenSafeSummary,
+    screenPreview: reply.screenPreview,
+    auditLog: { event: "part82_vani_student_command_get", createdAt: new Date().toISOString() }
+  });
+});
+
+app.get("/api/part82/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "student_app_created", message: "Part 82 Student App active.", createdAt: new Date().toISOString() },
+      { type: "vani_listen_reply_added", message: "VANI mic listen + backend reply + spoken summary foundation added.", createdAt: new Date().toISOString() },
+      { type: "own_data_guard", message: "Student access limited to own learning data.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part82/checklist", (req, res) => {
+  res.json({ success: true, checklist: part82Checklist });
+});
+
+app.get("/api/part82/export", (req, res) => {
+  const access = part82AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({
+    success: true,
+    exportType: "part82-student-app-readiness",
+    ownerOrStudentVerificationRequired: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      features: part82StudentFeatures,
+      dashboard: part82StudentDashboard(req.query || {}),
+      checklist: part82Checklist
+    }
+  });
+});
+
+app.get("/api/part82/demo", (req, res) => {
+  res.json({
+    success: true,
+    demo: {
+      access: part82AccessCheck({ role: "student", instituteId: "NX-DEMO-INST-001", studentId: "STU-DEMO-001" }),
+      dashboard: part82StudentDashboard({ instituteId: "NX-DEMO-INST-001", studentId: "STU-DEMO-001" }),
+      features: part82StudentFeatures,
+      vaniGreeting: "Namaste, main VANI hoon. Main aapki study me kya help kar sakti hoon?",
+      vaniCommand: "VANI, revision plan banao",
+      nextPart: "Part 83 — Parent App"
+    }
+  });
+});
+// ================= END PART 82 =================
+
 
 
 
