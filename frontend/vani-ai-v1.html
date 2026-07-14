@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VANI AI V1 | NAXORA Institute OS</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/vani-ai-v1.css" />
+</head>
+<body>
+  <main class="vani-shell">
+    <section class="vani-hero">
+      <div class="vani-orb"><span>V</span></div>
+      <div>
+        <p class="vani-kicker">PART 69 • VANI AI V1</p>
+        <h1>VANI Read‑Only Voice Search</h1>
+        <p class="vani-subtitle">Students, fees, attendance, batches aur reports ko Hindi/Hinglish voice ya text command se quickly search karo. VANI V1 sirf read-only hai.</p>
+        <div class="vani-actions">
+          <a class="vani-btn primary" href="/api/part69/status" target="_blank">Check Status API</a>
+          <a class="vani-btn" href="/ai-hub">Back to AI Hub</a>
+          <a class="vani-btn" href="/ai-credits-usage">AI Credits</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="vani-safe-note">
+      <strong>Safety:</strong> VANI V1 save/edit/delete/payment/message-send nahi karti. Ye sirf read-only search assistant hai. Actions Part 70+ me confirmation ke saath aayenge.
+    </section>
+
+    <section class="vani-panel command-panel">
+      <div class="vani-panel-head">
+        <div>
+          <p class="vani-kicker">COMMAND</p>
+          <h2>Ask VANI</h2>
+        </div>
+        <span id="speechStatus" class="vani-pill">Speech: checking...</span>
+      </div>
+
+      <div class="vani-command-box">
+        <textarea id="commandInput" rows="3" placeholder="Example: Rahul student search karo, pending fees dikhao, aaj absent students dikhao"></textarea>
+        <div class="vani-command-actions">
+          <button class="vani-btn primary" id="searchBtn">Search</button>
+          <button class="vani-btn" id="voiceBtn">🎙️ Speak</button>
+          <button class="vani-btn ghost" id="clearBtn">Clear</button>
+        </div>
+      </div>
+
+      <div class="vani-examples" id="examplesGrid"></div>
+    </section>
+
+    <section class="vani-grid">
+      <article class="vani-stat"><span id="targetStat">—</span><p>Detected Target</p></article>
+      <article class="vani-stat"><span id="modeStat">—</span><p>Data Mode</p></article>
+      <article class="vani-stat"><span id="countStat">0</span><p>Results</p></article>
+      <article class="vani-stat"><span>2</span><p>Credit Preview</p></article>
+    </section>
+
+    <section class="vani-panel">
+      <div class="vani-panel-head">
+        <div>
+          <p class="vani-kicker">RESULTS</p>
+          <h2>Read-only Answer</h2>
+        </div>
+        <button class="vani-btn small" id="demoBtn">Run Demo</button>
+      </div>
+      <div class="vani-answer" id="answerBox">Command likho ya speak button dabao.</div>
+      <div class="vani-results" id="resultsGrid"></div>
+    </section>
+
+    <section class="vani-panel">
+      <div class="vani-panel-head">
+        <div>
+          <p class="vani-kicker">SUPPORTED SEARCH</p>
+          <h2>VANI V1 Scope</h2>
+        </div>
+      </div>
+      <div class="vani-scope-grid" id="commandsGrid"></div>
+    </section>
+
+    <section class="vani-panel">
+      <div class="vani-panel-head">
+        <div>
+          <p class="vani-kicker">HISTORY</p>
+          <h2>Recent VANI Commands</h2>
+        </div>
+        <button class="vani-btn small" id="historyBtn">Refresh History</button>
+      </div>
+      <div class="vani-history" id="historyList"></div>
+    </section>
+  </main>
+
+  <script src="/brand-system.js"></script>
+  <script src="/vani-ai-v1.js"></script>
+</body>
+</html>

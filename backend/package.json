@@ -1,5 +1,5 @@
 {
-  "name": "naxora-institute-os-part66-payments-subscription-completion",
+  "name": "naxora-institute-os-part69-vani-ai-v1",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -19,7 +19,8 @@
     "check:part61": "node --check src/server.js",
     "check:part62": "node --check src/server.js",
     "check:part65": "node --check src/server.js",
-    "check:part66": "node --check src/server.js"
+    "check:part66": "node --check src/server.js",
+    "check:part69": "node --check src/server.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

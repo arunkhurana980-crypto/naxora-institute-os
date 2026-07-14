@@ -118,7 +118,11 @@ const publicRoutes = [
   "/ai-credits-usage",
   "/ai-credits",
   "/ai-usage",
-  "/credits"
+  "/credits",
+  "/vani-ai-v1",
+  "/vani",
+  "/voice-search",
+  "/vani-search"
 ];
 
 const internalPageFiles = new Set([
@@ -6728,7 +6732,7 @@ const part67Checklist = [
   "AI Hub page /ai-hub open ho raha hai.",
   "AI Doubts, AI Notes, AI Mock Tests, AI Roadmaps cards visible hain.",
   "VANI AI Assistant card AI Hub me visible hai.",
-  "VANI ka status clearly Coming Part 69 / visible-coming-part69 hai.",
+  "VANI ka status Part 69 me active read-only search hai.",
   "Institute AI Tools foundation visible hai.",
   "External paid AI API key ya secret ZIP me include nahi hai.",
   "Voice action/save/delete Part 67 me accidentally enabled nahi hai.",
@@ -6812,7 +6816,7 @@ app.get("/api/part67/vani-roadmap", (req, res) => {
     success: true,
     part: part67Config.part,
     locked: true,
-    message: "VANI AI Assistant AI Hub ke andar add ho chuki hai. Full working VANI Part 69 se start hogi.",
+    message: "VANI AI Assistant AI Hub ke andar active hai. Part 69 me read-only voice/text search working start ho chuki hai.",
     roadmap: part67VaniRoadmap
   });
 });
@@ -7253,6 +7257,350 @@ app.get("/api/part68/demo", async (req, res) => {
 });
 // ================= END PART 68 =================
 
+// ================= PART 69: VANI AI V1 - READ-ONLY VOICE SEARCH =================
+// Part 69 ka goal: VANI ko AI Hub ke andar se working read-only assistant banana.
+// VANI V1 sirf search/read karegi: students, fees, attendance, batches aur reports.
+// Save/edit/delete/action Part 70+ me confirmation ke saath aayega.
+const part69Config = {
+  part: "Part 69 - VANI AI V1",
+  status: "active",
+  purpose: "Owner ke liye read-only voice/text search: students, fees, attendance, batches aur reports.",
+  frontendRoute: "/vani-ai-v1",
+  alternateRoutes: ["/vani-ai", "/vani-assistant", "/vani", "/voice-search", "/vani-search"],
+  apiRoutes: [
+    "/api/part69/status",
+    "/api/part69/config",
+    "/api/part69/commands",
+    "/api/part69/search",
+    "/api/part69/voice-search",
+    "/api/part69/history",
+    "/api/part69/credit-preview",
+    "/api/part69/checklist",
+    "/api/part69/export",
+    "/api/part69/demo"
+  ],
+  safetyMode: "Read-only mode. VANI V1 data save, edit, delete, payment, message-send ya irreversible action nahi karti.",
+  aiHubDecision: "VANI ko AI Features / AI Hub ke andar rakha gaya hai. Part 67 me card visible tha; Part 69 me working read-only search start hai.",
+  previousPart: "Part 68 - AI Credits and Usage",
+  nextPart: "Part 70 - VANI AI V2 voice form filling"
+};
+
+const part69CommandCatalog = [
+  {
+    target: "students",
+    title: "Student Search",
+    examples: ["Rahul student search karo", "Class 10 ke students dikhao", "Aman ka profile dikhao"],
+    keywords: ["student", "students", "bachcha", "baccha", "vidyarthi", "profile", "class", "course"],
+    route: "/students"
+  },
+  {
+    target: "fees",
+    title: "Fees Search",
+    examples: ["Pending fees list dikhao", "Rahul ka fee status", "Aaj ki collection report"],
+    keywords: ["fee", "fees", "pending", "paid", "collection", "payment", "dues", "due"],
+    route: "/fees"
+  },
+  {
+    target: "attendance",
+    title: "Attendance Search",
+    examples: ["Aaj absent students dikhao", "Class 10 attendance report", "Rahul ki attendance"],
+    keywords: ["attendance", "present", "absent", "hazri", "haazri", "attendance report"],
+    route: "/attendance"
+  },
+  {
+    target: "batches",
+    title: "Batch Search",
+    examples: ["JEE Foundation batch dikhao", "Aaj ke batches", "Batch A students"],
+    keywords: ["batch", "batches", "class schedule", "course", "timing", "teacher"],
+    route: "/batches"
+  },
+  {
+    target: "reports",
+    title: "Reports Search",
+    examples: ["Weekly report kholo", "Revenue report", "Student performance report"],
+    keywords: ["report", "reports", "summary", "analytics", "performance", "revenue", "weekly"],
+    route: "/reports"
+  }
+];
+
+const part69Checklist = [
+  "VANI page /vani-ai-v1 open ho raha hai.",
+  "AI Hub se VANI card /vani-ai par working page kholta hai.",
+  "Voice button browser Speech Recognition available ho to command capture karta hai.",
+  "Text command box Hindi/Hinglish query accept karta hai.",
+  "Student, fees, attendance, batch aur reports target detect hote hain.",
+  "Search result read-only response deta hai; save/edit/delete action nahi hota.",
+  "Credit preview Part 68 ke saath compatible hai.",
+  "History safe mode me recent VANI commands dikhata hai.",
+  ".env, secret, AI API key, Razorpay key ZIP me include nahi hai."
+];
+
+const part69DemoData = {
+  students: [
+    { id: "NX-STU-1001", name: "Rahul Sharma", className: "Class 10", course: "Maths + Science", batch: "Evening Batch A", phoneMasked: "98******21", status: "active" },
+    { id: "NX-STU-1002", name: "Aman Verma", className: "Class 12", course: "JEE Foundation", batch: "Morning Batch J1", phoneMasked: "99******44", status: "active" },
+    { id: "NX-STU-1003", name: "Priya Singh", className: "Class 11", course: "NEET Foundation", batch: "Afternoon Batch N1", phoneMasked: "97******80", status: "active" }
+  ],
+  fees: [
+    { id: "FEE-001", studentName: "Rahul Sharma", totalFee: 25000, paid: 15000, pending: 10000, dueDate: "2026-07-25", status: "pending" },
+    { id: "FEE-002", studentName: "Aman Verma", totalFee: 40000, paid: 40000, pending: 0, dueDate: "2026-07-15", status: "paid" },
+    { id: "FEE-003", studentName: "Priya Singh", totalFee: 38000, paid: 20000, pending: 18000, dueDate: "2026-07-30", status: "pending" }
+  ],
+  attendance: [
+    { id: "ATT-001", date: "2026-07-14", studentName: "Rahul Sharma", batch: "Evening Batch A", status: "present", percentage: 88 },
+    { id: "ATT-002", date: "2026-07-14", studentName: "Aman Verma", batch: "Morning Batch J1", status: "absent", percentage: 76 },
+    { id: "ATT-003", date: "2026-07-14", studentName: "Priya Singh", batch: "Afternoon Batch N1", status: "present", percentage: 92 }
+  ],
+  batches: [
+    { id: "BAT-001", name: "Evening Batch A", course: "Maths + Science", teacher: "Mr. Kapoor", timing: "5:00 PM - 7:00 PM", students: 28, status: "active" },
+    { id: "BAT-002", name: "Morning Batch J1", course: "JEE Foundation", teacher: "Ms. Iyer", timing: "7:00 AM - 9:00 AM", students: 34, status: "active" },
+    { id: "BAT-003", name: "Afternoon Batch N1", course: "NEET Foundation", teacher: "Dr. Mehta", timing: "3:00 PM - 5:00 PM", students: 31, status: "active" }
+  ],
+  reports: [
+    { id: "REP-001", title: "Weekly Attendance Summary", type: "attendance", summary: "Overall attendance 86%. 4 students need follow-up.", route: "/reports" },
+    { id: "REP-002", title: "Pending Fees Summary", type: "fees", summary: "₹28,000 pending across 2 demo students.", route: "/fees" },
+    { id: "REP-003", title: "Batch Performance Snapshot", type: "performance", summary: "NEET Foundation batch performing strongest this week.", route: "/progress" }
+  ]
+};
+
+globalThis.NAXORA_PART69_HISTORY = globalThis.NAXORA_PART69_HISTORY || [];
+
+function part69CleanText(value, max = 180) {
+  return String(value ?? "").replace(/[<>]/g, "").trim().slice(0, max);
+}
+
+function part69Lower(value) {
+  return part69CleanText(value, 300).toLowerCase();
+}
+
+function part69DetectTarget(command = "") {
+  const text = part69Lower(command);
+  const scores = part69CommandCatalog.map((item) => {
+    const score = item.keywords.reduce((count, keyword) => text.includes(keyword.toLowerCase()) ? count + 1 : count, 0);
+    return { ...item, score };
+  }).sort((a, b) => b.score - a.score);
+  return scores[0]?.score > 0 ? scores[0] : part69CommandCatalog[0];
+}
+
+function part69ExtractQuery(command = "", target = "students") {
+  let text = part69CleanText(command, 180);
+  const removeWords = ["dikhao", "batao", "search", "karo", "kholo", "list", "show", "find", "vani", "please", "ka", "ki", "ke"];
+  const targetWords = part69CommandCatalog.find((item) => item.target === target)?.keywords || [];
+  for (const word of [...removeWords, ...targetWords]) {
+    text = text.replace(new RegExp(`\\b${word.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")}\\b`, "gi"), " ");
+  }
+  return text.replace(/\s+/g, " ").trim();
+}
+
+function part69Mask(value = "") {
+  const text = String(value || "");
+  if (text.length <= 4) return text;
+  return `${text.slice(0, 2)}******${text.slice(-2)}`;
+}
+
+function part69SafeRow(row = {}, target = "students") {
+  if (target === "students") {
+    return {
+      id: row._id || row.id || row.studentId || row.admissionNo || "student-row",
+      name: row.name || row.studentName || row.fullName || "Student",
+      className: row.className || row.class || row.standard || row.grade || "Not set",
+      course: row.course || row.courseName || "Not set",
+      batch: row.batch || row.batchName || "Not assigned",
+      phoneMasked: row.phoneMasked || part69Mask(row.phone || row.mobile || row.parentPhone || ""),
+      status: row.status || "active"
+    };
+  }
+  if (target === "fees") {
+    const totalFee = Number(row.totalFee || row.amount || row.feeAmount || 0);
+    const paid = Number(row.paid || row.paidAmount || 0);
+    const pending = Number(row.pending || row.pendingAmount || Math.max(totalFee - paid, 0));
+    return {
+      id: row._id || row.id || "fee-row",
+      studentName: row.studentName || row.name || "Student",
+      totalFee,
+      paid,
+      pending,
+      dueDate: row.dueDate || row.nextDueDate || "Not set",
+      status: row.status || (pending > 0 ? "pending" : "paid")
+    };
+  }
+  if (target === "attendance") {
+    return {
+      id: row._id || row.id || "attendance-row",
+      date: row.date || row.attendanceDate || "Not set",
+      studentName: row.studentName || row.name || "Student",
+      batch: row.batch || row.batchName || "Not set",
+      status: row.status || row.attendanceStatus || "not-marked",
+      percentage: row.percentage || row.attendancePercentage || null
+    };
+  }
+  if (target === "batches") {
+    return {
+      id: row._id || row.id || "batch-row",
+      name: row.name || row.batchName || "Batch",
+      course: row.course || row.courseName || "Not set",
+      teacher: row.teacher || row.teacherName || "Not assigned",
+      timing: row.timing || row.schedule || "Not set",
+      students: row.students || row.studentCount || 0,
+      status: row.status || "active"
+    };
+  }
+  return {
+    id: row._id || row.id || "report-row",
+    title: row.title || row.name || "Report",
+    type: row.type || row.reportType || "summary",
+    summary: row.summary || row.description || "Report summary available.",
+    route: row.route || "/reports"
+  };
+}
+
+function part69Matches(row = {}, query = "") {
+  const q = part69Lower(query);
+  if (!q) return true;
+  return part69Lower(JSON.stringify(row)).includes(q);
+}
+
+async function part69CollectionRows(target = "students", query = "") {
+  const collectionMap = {
+    students: ["students", "part56enrolments"],
+    fees: ["fees", "payments", "part66payments"],
+    attendance: ["attendances", "attendance", "part64attendance"],
+    batches: ["batches", "courses"],
+    reports: ["reports", "part68usagelogs", "part63funnel"]
+  };
+
+  // Security: public VANI API demo data return karti hai. Real DB search ko future protected route me hard-enable karenge.
+  // Isse beta/live public URL par private student data accidentally expose nahi hota.
+  const allowRealDbSearch = String(process.env.VANI_REAL_DB_SEARCH || "false").toLowerCase() === "true";
+  if (!allowRealDbSearch || mongoose.connection.readyState !== 1) {
+    const rows = (part69DemoData[target] || []).filter((row) => part69Matches(row, query));
+    return { mode: allowRealDbSearch ? "mock-db-not-connected" : "safe-demo", rows };
+  }
+
+  const names = collectionMap[target] || [target];
+  const collected = [];
+  for (const name of names) {
+    try {
+      const regex = query ? new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i") : null;
+      const mongoQuery = regex ? { $or: [{ name: regex }, { studentName: regex }, { title: regex }, { course: regex }, { batch: regex }, { status: regex }] } : {};
+      const rows = await mongoose.connection.db.collection(name).find(mongoQuery).limit(10).toArray();
+      collected.push(...rows);
+      if (collected.length >= 10) break;
+    } catch {
+      // collection missing ho to ignore, fallback neeche.
+    }
+  }
+  if (!collected.length) {
+    return { mode: "mongodb-empty-fallback-demo", rows: (part69DemoData[target] || []).filter((row) => part69Matches(row, query)) };
+  }
+  return { mode: "mongodb", rows: collected.slice(0, 10) };
+}
+
+async function part69RunSearch(commandInput = "") {
+  const command = part69CleanText(commandInput || "students search", 220);
+  const detected = part69DetectTarget(command);
+  const query = part69ExtractQuery(command, detected.target);
+  const data = await part69CollectionRows(detected.target, query);
+  const results = data.rows.map((row) => part69SafeRow(row, detected.target));
+  const responseText = results.length
+    ? `VANI ne ${detected.title} me ${results.length} read-only result nikale.`
+    : `VANI ko ${detected.title} me matching result nahi mila. Query thodi simple karke try karo.`;
+  const historyRow = {
+    id: `vani-${Date.now()}`,
+    command,
+    target: detected.target,
+    query,
+    resultCount: results.length,
+    mode: data.mode,
+    readOnly: true,
+    createdAt: new Date().toISOString()
+  };
+  globalThis.NAXORA_PART69_HISTORY.unshift(historyRow);
+  globalThis.NAXORA_PART69_HISTORY = globalThis.NAXORA_PART69_HISTORY.slice(0, 50);
+  return { detectedTarget: detected, query, mode: data.mode, results, responseText, history: historyRow };
+}
+
+app.get("/api/part69/status", (req, res) => {
+  res.json({
+    success: true,
+    part: part69Config.part,
+    status: part69Config.status,
+    purpose: part69Config.purpose,
+    frontend: [part69Config.frontendRoute, ...part69Config.alternateRoutes],
+    apiRoutes: part69Config.apiRoutes,
+    safetyMode: part69Config.safetyMode,
+    aiHubDecision: part69Config.aiHubDecision,
+    nextPart: part69Config.nextPart
+  });
+});
+
+app.get("/api/part69/config", (req, res) => {
+  res.json({ success: true, part: part69Config.part, config: part69Config, commandCatalog: part69CommandCatalog });
+});
+
+app.get("/api/part69/commands", (req, res) => {
+  res.json({ success: true, part: part69Config.part, commands: part69CommandCatalog });
+});
+
+app.get("/api/part69/search", async (req, res) => {
+  const command = req.query?.q || req.query?.command || "students search";
+  const result = await part69RunSearch(command);
+  res.json({ success: true, part: part69Config.part, readOnly: true, ...result });
+});
+
+app.post("/api/part69/search", async (req, res) => {
+  const command = req.body?.command || req.body?.q || "students search";
+  const result = await part69RunSearch(command);
+  res.json({ success: true, part: part69Config.part, readOnly: true, ...result });
+});
+
+app.post("/api/part69/voice-search", async (req, res) => {
+  const transcript = req.body?.transcript || req.body?.command || "pending fees dikhao";
+  const result = await part69RunSearch(transcript);
+  res.json({ success: true, part: part69Config.part, inputType: "voice-transcript", readOnly: true, ...result });
+});
+
+app.get("/api/part69/history", (req, res) => {
+  res.json({ success: true, part: part69Config.part, count: globalThis.NAXORA_PART69_HISTORY.length, history: globalThis.NAXORA_PART69_HISTORY });
+});
+
+app.get("/api/part69/credit-preview", (req, res) => {
+  res.json({
+    success: true,
+    part: part69Config.part,
+    toolId: "vani-ai-v1",
+    defaultCreditsPerSearch: 2,
+    connectedToPart68: true,
+    note: "Part 68 me VANI AI V1 Search credit catalog ready tha. Is build me preview hai; hard credit deduction later protected flow me hoga."
+  });
+});
+
+app.get("/api/part69/checklist", (req, res) => {
+  res.json({ success: true, part: part69Config.part, checklist: part69Checklist });
+});
+
+app.get("/api/part69/export", async (req, res) => {
+  res.json({
+    success: true,
+    part: part69Config.part,
+    exportedAt: new Date().toISOString(),
+    config: part69Config,
+    commands: part69CommandCatalog,
+    demoData: part69DemoData,
+    history: globalThis.NAXORA_PART69_HISTORY,
+    checklist: part69Checklist
+  });
+});
+
+app.get("/api/part69/demo", async (req, res) => {
+  const samples = [];
+  for (const command of ["Rahul student search karo", "pending fees dikhao", "aaj absent students dikhao", "JEE batch dikhao", "weekly report kholo"]) {
+    samples.push(await part69RunSearch(command));
+  }
+  res.json({ success: true, part: part69Config.part, demoTitle: "VANI AI V1 Read-only Search Demo", samples, checklist: part69Checklist });
+});
+// ================= END PART 69 =================
+
 
 // Same-server frontend hosting for Render/Railway/VPS deployment.
 app.use("/landing", express.static(frontendPath));
@@ -7373,8 +7721,12 @@ const modulePageRoutes = {
   "/ai-hub": "ai-hub.html",
   "/ai-features": "ai-hub.html",
   "/ai-tools": "ai-hub.html",
-  "/vani-ai": "ai-hub.html",
-  "/vani-assistant": "ai-hub.html",
+  "/vani-ai": "vani-ai-v1.html",
+  "/vani-assistant": "vani-ai-v1.html",
+  "/vani-ai-v1": "vani-ai-v1.html",
+  "/vani": "vani-ai-v1.html",
+  "/voice-search": "vani-ai-v1.html",
+  "/vani-search": "vani-ai-v1.html",
   "/ai-credits-usage": "ai-credits-usage.html",
   "/ai-credits": "ai-credits-usage.html",
   "/ai-usage": "ai-credits-usage.html",
@@ -7420,7 +7772,7 @@ await connectDB();
 
 const server = app.listen(port, () => {
   console.log("✅ PART 59 PUBLIC INSTITUTE PROFILE ACTIVE");
-  console.log("✅ All routes Part 1 to Part 61 loaded + Nearby Institutes");
+  console.log("✅ All routes Part 1 to Part 69 loaded + VANI AI V1");
   console.log("✅ AI Notes route active: /api/ai-notes");
   console.log("✅ AI Mock Tests route active: /api/ai-mock-tests");
   console.log("✅ AI Roadmaps route active: /api/ai-roadmaps");
@@ -7483,6 +7835,7 @@ const server = app.listen(port, () => {
   console.log("✅ Part 66 payments/subscriptions active: /api/part66/status + /payments-subscriptions");
   console.log("✅ Part 67 AI Hub active: /api/part67/status + /ai-hub + VANI card");
   console.log("✅ Part 68 AI Credits and Usage active: /api/part68/status + /ai-credits-usage");
+  console.log("✅ Part 69 VANI AI V1 active: /api/part69/status + /vani-ai-v1");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");
