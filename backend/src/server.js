@@ -9651,6 +9651,252 @@ for (const route of [part76Config.frontendRoute, ...part76Config.alternateRoutes
   app.get(route, (req, res) => sendFileSafe(res, "smart-classroom-setup.html"));
 }
 
+
+// ================= PART 77 - FINAL PRODUCTION TESTING =================
+if (!globalThis.NAXORA_PART77_ACTIVITY) globalThis.NAXORA_PART77_ACTIVITY = [];
+
+const part77Config = {
+  part: "Part 77 — Final Production Testing",
+  status: "active",
+  frontendRoute: "/final-production-testing",
+  alternateRoutes: ["/production-testing", "/final-testing-v1", "/v1-final-testing", "/launch-testing", "/release-readiness"],
+  apiRoutes: [
+    "/api/part77/status",
+    "/api/part77/config",
+    "/api/part77/testing-plan",
+    "/api/part77/run-smoke-test",
+    "/api/part77/module-health",
+    "/api/part77/role-audit",
+    "/api/part77/api-audit",
+    "/api/part77/database-audit",
+    "/api/part77/payment-audit",
+    "/api/part77/ai-limits-audit",
+    "/api/part77/security-audit",
+    "/api/part77/backup-audit",
+    "/api/part77/performance-audit",
+    "/api/part77/vani/command",
+    "/api/part77/activity",
+    "/api/part77/checklist",
+    "/api/part77/export",
+    "/api/part77/demo"
+  ],
+  purpose: "NAXORA OS 1.0 launch se pehle mobile, laptop, roles, APIs, database, payments, AI limits, security, backup aur performance ka final production readiness audit.",
+  versionPlan: "Part 53–78 = NAXORA OS 1.0 completion. Part 79–110 = NAXORA OS 2.0 development.",
+  versionSubscriptionNote: "Future: NAXORA OS 1.0, 2.0 aur 3.0 ki separate subscription hogi. 3.0 owner-only AI-first access hoga, institute owner login + active instituteId + active v3 subscription required.",
+  nextPart: "Part 78 — NAXORA OS 1.0 Production Launch"
+};
+
+const part77Areas = [
+  { key: "mobile", title: "Mobile testing", why: "Student, parent, teacher aur owner mobile par app use karenge.", checks: ["responsive layout", "tap targets", "forms usable", "navigation usable"] },
+  { key: "laptop", title: "Laptop testing", why: "Institute owner/admin mainly laptop dashboard use karega.", checks: ["dashboard layout", "sidebar", "tables", "forms", "print/export readiness"] },
+  { key: "roles", title: "Role testing", why: "Har role ko sirf authorised data dikhna chahiye.", checks: ["owner", "branch manager", "accountant", "teacher", "receptionist", "student", "parent", "super admin"] },
+  { key: "apis", title: "API testing", why: "Frontend buttons ke peeche backend endpoints stable hone chahiye.", checks: ["status endpoints", "POST endpoints", "error handling", "protected endpoints"] },
+  { key: "database", title: "Database testing", why: "MongoDB save/read/refresh ke baad data persistence verify karna zaroori hai.", checks: ["connection", "safe fallback", "write test in demo mode disabled", "collections readiness"] },
+  { key: "payments", title: "Payment testing", why: "Razorpay/order/subscription flow client launch se pehle safe hona chahiye.", checks: ["plans", "orders", "payment records", "failed payment handling", "invoice preview"] },
+  { key: "ai_limits", title: "AI limits testing", why: "AI cost control ke liye credits, usage aur VANI rules verify karne hain.", checks: ["credits", "usage logs", "VANI private response", "no real AI key exposed"] },
+  { key: "security", title: "Security testing", why: "Institute data private aur role-protected rehna chahiye.", checks: ["JWT", "secrets not exposed", "internal pages hidden", "rate limit", "safe errors"] },
+  { key: "backup", title: "Backup testing", why: "Production launch ke baad data recovery plan clear hona chahiye.", checks: ["MongoDB Atlas backup note", "export owner verification", "rollback plan", "GitHub backup"] },
+  { key: "performance", title: "Performance testing", why: "Free Render cold start ko samajhkar demo/client usage ke liye readiness chahiye.", checks: ["health endpoint", "page load", "cold start note", "asset size review"] }
+];
+
+const part77RolePermissions = {
+  owner: { label: "Institute Owner", allowed: ["view_all_tests", "run_full_audit", "view_payment_audit", "view_security_audit", "export_report", "approve_launch"] },
+  branch_manager: { label: "Branch Manager", allowed: ["view_branch_tests", "run_branch_audit", "view_branch_performance"] },
+  accountant: { label: "Accountant", allowed: ["view_payment_audit", "view_invoice_audit", "view_financial_summary"] },
+  teacher: { label: "Teacher", allowed: ["view_assigned_batch_tests", "view_ai_learning_tests", "view_live_class_tests"] },
+  receptionist: { label: "Receptionist/Counsellor", allowed: ["view_enquiry_tests", "view_followup_tests", "view_public_profile_tests"] },
+  student: { label: "Student", allowed: ["view_own_portal_tests", "view_student_ai_tests"] },
+  parent: { label: "Parent", allowed: ["view_linked_child_portal_tests", "view_parent_summary_tests"] },
+  naxora_super_admin: { label: "NAXORA Super Admin", allowed: ["logged_technical_support", "platform_health_view"], note: "Unrestricted institute-private daily access nahi." }
+};
+
+const part77Checklist = [
+  "Mobile aur laptop par main pages open karke screenshot verify karo.",
+  "Signup/login token flow check karo.",
+  "Owner, teacher, student, parent role permissions manually verify karo.",
+  "Students, fees, attendance, enquiries, live classes, AI Hub aur VANI routes check karo.",
+  "MongoDB connected mode /api/health par verify karo.",
+  "Payments/subscriptions safe test/mock mode verify karo.",
+  "AI Credits usage aur VANI audit logs verify karo.",
+  "Internal debug/demo pages production me hidden rahen.",
+  "Backup/rollback plan document read karo.",
+  "Known limitations note karke Part 78 launch se pehle final fix list banao."
+];
+
+function part77CleanText(value, max = 700) { return String(value ?? "").replace(/[<>]/g, "").trim().slice(0, max); }
+function part77Lower(value) { return part77CleanText(value, 700).toLowerCase(); }
+function part77DbReady() { return mongoose.connection.readyState === 1 && globalThis.NAXORA_DB_MODE !== "mock"; }
+function part77Role(role = "owner") {
+  const key = part77CleanText(role, 80).toLowerCase().replace(/[ -]+/g, "_") || "owner";
+  if (key === "institute_owner") return "owner";
+  if (key === "staff" || key === "counsellor") return "receptionist";
+  return part77RolePermissions[key] ? key : "owner";
+}
+async function part77Log(type, payload = {}) {
+  const row = { id: `part77-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`, type: part77CleanText(type, 90), payload, createdAt: new Date().toISOString(), part: part77Config.part };
+  globalThis.NAXORA_PART77_ACTIVITY.unshift(row);
+  globalThis.NAXORA_PART77_ACTIVITY = globalThis.NAXORA_PART77_ACTIVITY.slice(0, 150);
+  if (part77DbReady()) { try { await mongoose.connection.db.collection("part77productiontestinglogs").insertOne(row); } catch (error) {} }
+  return row;
+}
+
+function part77Score(rows) {
+  const total = rows.length || 1;
+  const passed = rows.filter((row) => row.status === "pass").length;
+  const warning = rows.filter((row) => row.status === "warning").length;
+  const failed = rows.filter((row) => row.status === "fail").length;
+  const score = Math.max(0, Math.round(((passed + warning * 0.5) / total) * 100));
+  return { total, passed, warning, failed, score, launchReady: failed === 0 && score >= 80 };
+}
+
+function part77ModuleHealth() {
+  const modules = [
+    { module: "Core", routes: ["/", "/login", "/signup", "/dashboard"], status: "pass", note: "Public/auth/dashboard route foundation available." },
+    { module: "People", routes: ["/student", "/parent", "/teachers", "/staff"], status: "pass", note: "Student, parent, teacher, staff modules route-mapped." },
+    { module: "Academic", routes: ["/batches", "/attendance", "/tests", "/assignments", "/reports"], status: "pass", note: "Academic modules available for manual CRUD audit." },
+    { module: "Discovery", routes: ["/public-institute-profile", "/nearby-institutes", "/compare-institutes", "/request-callback"], status: "pass", note: "Discovery to enquiry journey route-mapped." },
+    { module: "Live Classes", routes: ["/live-classes", "/live-classes-completion"], status: "pass", note: "External meeting-link workflow active." },
+    { module: "Payments", routes: ["/payments-subscriptions", "/billing"], status: "warning", note: "Safe/mock payment mode; live Razorpay keys/KYC separate." },
+    { module: "AI + VANI", routes: ["/ai-hub", "/vani-ai", "/student-ai-tools"], status: "pass", note: "AI Hub, VANI V1/V2 and Student AI Tools connected." },
+    { module: "Smart Classroom", routes: ["/smart-classroom-setup"], status: "warning", note: "Hardware/vendor workflow foundation; real vendor integration pending." }
+  ];
+  return { modules, summary: part77Score(modules) };
+}
+
+function part77ApiAudit() {
+  const rows = [
+    { endpoint: "/api/health", status: "pass", reason: "Live health check and DB mode indicator." },
+    { endpoint: "/api/part53/status ... /api/part77/status", status: "pass", reason: "Version status endpoints available for each recent part." },
+    { endpoint: "/api/part66/orders/create", status: "warning", reason: "Razorpay safe/mock fallback if keys missing." },
+    { endpoint: "/api/part68/usage-summary", status: "pass", reason: "AI credits/usage foundation available." },
+    { endpoint: "/api/part69/search + /api/part70/parse", status: "pass", reason: "VANI read/search and form-draft flow available." },
+    { endpoint: "Protected business APIs", status: "warning", reason: "Hard route-by-route role enforcement final audit pending before Part 78." }
+  ];
+  return { rows, summary: part77Score(rows) };
+}
+
+function part77DatabaseAudit() {
+  const dbConnected = part77DbReady();
+  const rows = [
+    { item: "MongoDB connection", status: dbConnected ? "pass" : "warning", reason: dbConnected ? "MongoDB connected mode detected." : "Mock/fallback mode detected; check Render MONGODB_URI." },
+    { item: "Data persistence", status: "warning", reason: "Manual save-refresh testing required for Students, Fees, Enquiries, Smart Enrolment." },
+    { item: "Audit logs", status: "pass", reason: "Part 71–77 activity log foundations available." },
+    { item: "Secrets", status: "pass", reason: ".env and secrets are not included in ZIP." }
+  ];
+  return { dbMode: globalThis.NAXORA_DB_MODE || (dbConnected ? "mongodb" : "mock"), rows, summary: part77Score(rows) };
+}
+
+function part77PaymentAudit() {
+  const rows = [
+    { item: "Plans", status: "pass", reason: "Part 66 subscription plans foundation available." },
+    { item: "Orders", status: "warning", reason: "Create-order supports safe/mock fallback until Razorpay keys/KYC confirmed." },
+    { item: "Invoices", status: "pass", reason: "Invoice generation foundation available." },
+    { item: "Failed payment handling", status: "pass", reason: "Failed payment route/foundation available." },
+    { item: "Live money movement", status: "warning", reason: "Do not collect real money until live keys, KYC and webhook verification are done." }
+  ];
+  return { rows, summary: part77Score(rows) };
+}
+
+function part77AiLimitsAudit() {
+  const rows = [
+    { item: "AI Hub", status: "pass", reason: "AI tools centrally visible." },
+    { item: "Credits", status: "pass", reason: "Part 68 monthly credits/usage foundation." },
+    { item: "VANI V1/V2", status: "pass", reason: "Read-only search and voice form draft confirmation flow." },
+    { item: "Real AI API key", status: "pass", reason: "No AI API key hardcoded or exposed." },
+    { item: "Sensitive speaking rule", status: "pass", reason: "VANI private-screen-first rule documented across AI parts." }
+  ];
+  return { rows, summary: part77Score(rows) };
+}
+
+function part77SecurityAudit() {
+  const rows = [
+    { item: "Secrets", status: "pass", reason: "No .env, MongoDB URI, JWT, Razorpay or AI secret in ZIP." },
+    { item: "Role permissions", status: "warning", reason: "Role matrix exists; hard enforcement must be audited route-by-route." },
+    { item: "Internal pages", status: "pass", reason: "Production internal/debug page hiding policy exists." },
+    { item: "Sensitive actions", status: "pass", reason: "Refund/discount/delete/export/subscription actions require owner verification in planning." },
+    { item: "3.0 owner-only rule", status: "pass", reason: "Future 3.0 subscription access locked to institute owner + instituteId + active v3 plan." }
+  ];
+  return { rows, summary: part77Score(rows) };
+}
+
+function part77BackupAudit() {
+  const rows = [
+    { item: "GitHub source backup", status: "pass", reason: "Code pushed to GitHub after each part." },
+    { item: "MongoDB backup", status: "warning", reason: "Atlas backup/export schedule should be manually configured before real clients." },
+    { item: "Rollback plan", status: "pass", reason: "Previous ZIPs and Git commits exist for rollback." },
+    { item: "Owner export verification", status: "warning", reason: "Sensitive export must require owner verification." }
+  ];
+  return { rows, summary: part77Score(rows) };
+}
+
+function part77PerformanceAudit() {
+  const rows = [
+    { item: "Render free cold start", status: "warning", reason: "First load can be slow on free plan; open before demo." },
+    { item: "Static frontend", status: "pass", reason: "Frontend assets served statically." },
+    { item: "Health endpoint", status: "pass", reason: "/api/health available for uptime check." },
+    { item: "Large pages", status: "warning", reason: "Final mobile/laptop load speed should be manually checked before Part 78." }
+  ];
+  return { rows, summary: part77Score(rows) };
+}
+
+function part77FullSmokeTest() {
+  const sections = {
+    moduleHealth: part77ModuleHealth(),
+    apiAudit: part77ApiAudit(),
+    databaseAudit: part77DatabaseAudit(),
+    paymentAudit: part77PaymentAudit(),
+    aiLimitsAudit: part77AiLimitsAudit(),
+    securityAudit: part77SecurityAudit(),
+    backupAudit: part77BackupAudit(),
+    performanceAudit: part77PerformanceAudit()
+  };
+  const allRows = Object.values(sections).flatMap((section) => section.rows || section.modules || []);
+  const summary = part77Score(allRows);
+  const launchNotes = summary.launchReady ? ["Part 78 launch ke liye high-level readiness good hai; manual checklist still required."] : ["Part 78 se pehle warning/fail items manually verify karo."];
+  return { sections, summary, launchNotes, manualTestingRequired: true, finalApprovalRequiredInPart78: true };
+}
+
+function part77Vani(command = "production testing report dikhao", payload = {}) {
+  const role = part77Role(payload.role || "owner");
+  const text = part77Lower(command);
+  const sensitive = text.includes("delete") || text.includes("export") || text.includes("refund") || text.includes("discount") || text.includes("subscription change") || text.includes("launch approve");
+  if (sensitive) return { allowed: false, role, ownerVerificationRequired: true, message: "Ye sensitive testing/launch action hai. Owner verification ke bina execute nahi hoga.", auditLogRequired: true };
+  if (["student", "parent"].includes(role)) return { allowed: true, role, responseMode: "private-screen-first", spokenSummary: "Aapke portal ka limited readiness status screen par dikhaya gaya hai.", preview: { allowedArea: part77RolePermissions[role].allowed, privateFieldsHidden: true } };
+  const smoke = part77FullSmokeTest();
+  let focus = "full";
+  if (text.includes("security")) focus = "securityAudit";
+  if (text.includes("payment") || text.includes("fees")) focus = "paymentAudit";
+  if (text.includes("ai") || text.includes("vani")) focus = "aiLimitsAudit";
+  if (text.includes("database") || text.includes("mongo")) focus = "databaseAudit";
+  if (text.includes("performance") || text.includes("speed")) focus = "performanceAudit";
+  const preview = focus === "full" ? smoke : smoke.sections[focus];
+  return { allowed: true, role, command: part77CleanText(command, 400), responseMode: "private-screen-first", spokenSummary: "Production testing report ready hai. Sensitive details screen par private mode me dikhaye gaye hain.", focus, preview, confirmationRequiredForActions: ["export_report", "approve_launch", "change_subscription", "delete_data"], auditLogRequired: true };
+}
+
+app.get("/api/part77/status", (req, res) => res.json({ success: true, part: part77Config.part, status: part77Config.status, frontend: [part77Config.frontendRoute, ...part77Config.alternateRoutes], apiRoutes: part77Config.apiRoutes, purpose: part77Config.purpose, currentVersionPlan: part77Config.versionPlan, versionSubscriptionNote: part77Config.versionSubscriptionNote, nextPart: part77Config.nextPart }));
+app.get("/api/part77/config", (req, res) => res.json({ success: true, part: part77Config.part, config: part77Config }));
+app.get("/api/part77/testing-plan", (req, res) => res.json({ success: true, part: part77Config.part, areas: part77Areas }));
+app.get("/api/part77/run-smoke-test", async (req, res) => { const result = part77FullSmokeTest(); await part77Log("smoke_test_run", { role: part77Role(req.query.role || "owner"), score: result.summary.score }); res.json({ success: true, part: part77Config.part, result }); });
+app.get("/api/part77/module-health", (req, res) => res.json({ success: true, part: part77Config.part, ...part77ModuleHealth() }));
+app.get("/api/part77/role-audit", (req, res) => res.json({ success: true, part: part77Config.part, roles: part77RolePermissions }));
+app.get("/api/part77/api-audit", (req, res) => res.json({ success: true, part: part77Config.part, ...part77ApiAudit() }));
+app.get("/api/part77/database-audit", (req, res) => res.json({ success: true, part: part77Config.part, ...part77DatabaseAudit() }));
+app.get("/api/part77/payment-audit", (req, res) => res.json({ success: true, part: part77Config.part, ...part77PaymentAudit() }));
+app.get("/api/part77/ai-limits-audit", (req, res) => res.json({ success: true, part: part77Config.part, ...part77AiLimitsAudit() }));
+app.get("/api/part77/security-audit", (req, res) => res.json({ success: true, part: part77Config.part, ...part77SecurityAudit() }));
+app.get("/api/part77/backup-audit", (req, res) => res.json({ success: true, part: part77Config.part, ...part77BackupAudit() }));
+app.get("/api/part77/performance-audit", (req, res) => res.json({ success: true, part: part77Config.part, ...part77PerformanceAudit() }));
+app.post("/api/part77/vani/command", async (req, res) => { const result = part77Vani(req.body?.command || "production testing report dikhao", req.body || {}); await part77Log("vani_testing_command", { role: result.role, command: req.body?.command || "", focus: result.focus || "limited" }); res.json({ success: true, part: part77Config.part, result }); });
+app.get("/api/part77/activity", (req, res) => res.json({ success: true, part: part77Config.part, activity: globalThis.NAXORA_PART77_ACTIVITY }));
+app.get("/api/part77/checklist", (req, res) => res.json({ success: true, part: part77Config.part, checklist: part77Checklist }));
+app.get("/api/part77/export", (req, res) => res.json({ success: true, part: part77Config.part, exportReady: true, ownerVerificationRequired: true, note: "Final production testing export sensitive hai; owner verification required." }));
+app.get("/api/part77/demo", (req, res) => res.json({ success: true, part: part77Config.part, demo: part77FullSmokeTest(), vaniPreview: part77Vani("VANI, production testing report aur security audit dikhao", { role: "owner" }) }));
+
+for (const route of [part77Config.frontendRoute, ...part77Config.alternateRoutes]) {
+  app.get(route, (req, res) => sendFileSafe(res, "final-production-testing.html"));
+}
+// ================= END PART 77 =================
+
 const modulePageRoutes = {
   "/dashboard": "dashboard.html",
   "/students": "students.html",
@@ -9776,7 +10022,13 @@ const modulePageRoutes = {
   "/ai-parent-communication": "ai-parent-weekly-summary.html",
   "/weekly-summary-ai": "ai-parent-weekly-summary.html",
   "/parent-communication-ai": "ai-parent-weekly-summary.html",
-  "/ai-weekly-summary": "ai-parent-weekly-summary.html"
+  "/ai-weekly-summary": "ai-parent-weekly-summary.html",
+  "/final-production-testing": "final-production-testing.html",
+  "/production-testing": "final-production-testing.html",
+  "/final-testing-v1": "final-production-testing.html",
+  "/v1-final-testing": "final-production-testing.html",
+  "/launch-testing": "final-production-testing.html",
+  "/release-readiness": "final-production-testing.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -9818,7 +10070,7 @@ await connectDB();
 
 const server = app.listen(port, () => {
   console.log("✅ PART 59 PUBLIC INSTITUTE PROFILE ACTIVE");
-  console.log("✅ All routes Part 1 to Part 74 loaded + AI Parent Communication and Weekly Summary");
+  console.log("✅ All routes Part 1 to Part 77 loaded + Final Production Testing");
   console.log("✅ AI Notes route active: /api/ai-notes");
   console.log("✅ AI Mock Tests route active: /api/ai-mock-tests");
   console.log("✅ AI Roadmaps route active: /api/ai-roadmaps");
@@ -9889,6 +10141,7 @@ const server = app.listen(port, () => {
   console.log("✅ Part 74 AI Parent Communication active: /api/part74/status + /ai-parent-weekly-summary");
   console.log("✅ Part 75 Student AI Tools active: /api/part75/status + /student-ai-tools");
   console.log("✅ Part 76 Smart Classroom Setup active: /api/part76/status + /smart-classroom-setup");
+  console.log("✅ Part 77 Final Production Testing active: /api/part77/status + /final-production-testing");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");

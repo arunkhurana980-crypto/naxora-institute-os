@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA Part 77 | Final Production Testing</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/final-production-testing.css" />
+</head>
+<body>
+  <main class="part77-shell">
+    <section class="part77-hero">
+      <div class="part77-logo">N</div>
+      <div>
+        <p class="part77-kicker">PART 77 • FINAL PRODUCTION TESTING</p>
+        <h1>NAXORA OS 1.0 Launch Readiness</h1>
+        <p class="part77-subtitle">Mobile, laptop, roles, APIs, database, payments, AI limits, security, backup aur performance ka final audit — Part 78 production launch se pehle.</p>
+        <div class="part77-actions">
+          <a href="/api/part77/status" target="_blank" class="part77-btn primary">Status API</a>
+          <a href="/api/part77/run-smoke-test" target="_blank" class="part77-btn">Run Smoke Test</a>
+          <a href="/dashboard" class="part77-btn">Dashboard</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="part77-grid part77-stats">
+      <article><span id="score">0%</span><p>Readiness Score</p></article>
+      <article><span id="passed">0</span><p>Passed</p></article>
+      <article><span id="warnings">0</span><p>Warnings</p></article>
+      <article><span id="failed">0</span><p>Failed</p></article>
+    </section>
+
+    <section class="part77-card">
+      <div class="part77-section-head">
+        <div><p class="part77-kicker">TESTING AREAS</p><h2>Production checklist areas</h2></div>
+        <button id="refreshBtn" class="part77-btn small primary">Refresh Audit</button>
+      </div>
+      <div id="testingAreas" class="part77-area-grid loading">Loading testing plan...</div>
+    </section>
+
+    <section class="part77-grid">
+      <article class="part77-card"><h2>Module Health</h2><div id="moduleHealth" class="part77-list loading">Loading...</div></article>
+      <article class="part77-card"><h2>Security Audit</h2><div id="securityAudit" class="part77-list loading">Loading...</div></article>
+    </section>
+
+    <section class="part77-grid">
+      <article class="part77-card"><h2>Database Audit</h2><div id="databaseAudit" class="part77-list loading">Loading...</div></article>
+      <article class="part77-card"><h2>Payment Audit</h2><div id="paymentAudit" class="part77-list loading">Loading...</div></article>
+    </section>
+
+    <section class="part77-grid">
+      <article class="part77-card"><h2>AI Limits Audit</h2><div id="aiAudit" class="part77-list loading">Loading...</div></article>
+      <article class="part77-card"><h2>Performance + Backup</h2><div id="performanceAudit" class="part77-list loading">Loading...</div></article>
+    </section>
+
+    <section class="part77-card">
+      <div class="part77-section-head"><div><p class="part77-kicker">VANI TESTING ASSISTANT</p><h2>Ask VANI for launch readiness</h2></div></div>
+      <div class="part77-command-row">
+        <input id="vaniCommand" value="VANI, production testing report aur security audit dikhao" />
+        <button id="vaniBtn" class="part77-btn primary">Run VANI</button>
+      </div>
+      <pre id="vaniOutput" class="part77-output">VANI result yahan dikhega.</pre>
+    </section>
+
+    <section class="part77-card"><h2>Part 77 Checklist</h2><ul id="checklist" class="part77-checklist"></ul></section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/final-production-testing.js"></script>
+</body>
+</html>
