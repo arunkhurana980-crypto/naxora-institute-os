@@ -9219,6 +9219,134 @@ app.get("/api/part73/export", async (req, res) => { const result = await part73B
 app.get("/api/part73/demo", async (req, res) => { const result = await part73BatchPerformance({}); const vani = await part73VaniCommand("VANI, weak batches, weak chapters aur teacher suggestions dikhao", { role: "owner" }); await part73Log("demo_generated", { weakBatches: result.summary.weakBatches, supportStudents: result.summary.studentsNeedingSupport }); res.json({ success: true, part: part73Config.part, demoTitle: "AI Batch Performance Analyzer Demo", demo: { result, vani }, checklist: part73Checklist }); });
 // ================= END PART 73 =================
 
+
+// ================= PART 74: AI PARENT COMMUNICATION AND WEEKLY SUMMARY =================
+const part74Config = {
+  part: "Part 74 - AI Parent Communication and Weekly Summary",
+  status: "active",
+  frontendRoute: "/ai-parent-weekly-summary",
+  alternateRoutes: ["/ai-parent-communication", "/weekly-summary-ai", "/parent-communication-ai", "/ai-weekly-summary"],
+  previousPart: "Part 73 - AI Batch Performance Analyzer",
+  nextPart: "Part 75 - Student AI Tools",
+  purpose: "Parent message drafts, result explanation, weekly revenue report, attendance report, enquiry/admission summary aur VANI-safe communication support.",
+  safetyMode: "draft-and-preview-only-no-direct-send-no-public-speaking-of-sensitive-data",
+  vaniMode: "Hindi/English/Hinglish VANI commands with role checks, missing detail questions, private display for sensitive data and audit log.",
+  apiRoutes: [
+    "/api/part74/status",
+    "/api/part74/config",
+    "/api/part74/features",
+    "/api/part74/roles",
+    "/api/part74/parent-message-draft",
+    "/api/part74/result-explanation",
+    "/api/part74/weekly-summary",
+    "/api/part74/revenue-summary",
+    "/api/part74/attendance-summary",
+    "/api/part74/enquiry-admission-summary",
+    "/api/part74/vani/command",
+    "/api/part74/activity",
+    "/api/part74/checklist",
+    "/api/part74/export",
+    "/api/part74/demo"
+  ]
+};
+
+const part74Features = [
+  { id: "parent-message-drafts", title: "Parent Message Drafts", why: "Teachers/counsellors ko parent updates ke liye polite, clear aur consistent drafts chahiye.", problemSolved: "Manual message writing aur harsh/unclear communication ka risk kam hota hai.", ownerBenefit: "Institute communication quality consistent hoti hai.", instituteBenefit: "Parent trust improve hota hai.", teacherBenefit: "Teacher ka repetitive communication time bachta hai.", studentBenefit: "Student ko timely support milta hai.", parentBenefit: "Parent ko respectful aur clear update milta hai." },
+  { id: "result-explanation", title: "Result Explanation", why: "Marks ko parent-friendly explanation me convert karna zaroori hai.", problemSolved: "Parent ko sirf marks nahi, reason aur next support plan samajh aata hai.", ownerBenefit: "Result communication professional hoti hai.", instituteBenefit: "Parent complaints aur confusion reduce hota hai.", teacherBenefit: "Teacher result discussion better handle karta hai.", studentBenefit: "Student ko blame ke bajay improvement plan milta hai.", parentBenefit: "Parent ko child ke weak/strong areas clear hote hain." },
+  { id: "weekly-revenue-report", title: "Weekly Revenue Report", why: "Owner ko weekly fee collection aur pending dues ka quick summary chahiye.", problemSolved: "Manual finance review time reduce hota hai.", ownerBenefit: "Revenue, pending dues aur collection action clear hota hai.", instituteBenefit: "Cash-flow tracking improve hoti hai.", teacherBenefit: "Teaching staff ko finance access nahi diya jata, role safety maintain hoti hai.", studentBenefit: "Fee follow-up structured hota hai.", parentBenefit: "Fee reminders clearer aur less confusing hote hain." },
+  { id: "weekly-attendance-report", title: "Weekly Attendance Report", why: "Attendance problems weekly identify honi chahiye.", problemSolved: "Absent students ko late identify karne ka risk kam hota hai.", ownerBenefit: "Low attendance trends early dikhte hain.", instituteBenefit: "Retention aur learning continuity improve hoti hai.", teacherBenefit: "Teacher support list ready milti hai.", studentBenefit: "Missed class recovery support milta hai.", parentBenefit: "Parent ko attendance concern time par milta hai." },
+  { id: "enquiry-admission-summary", title: "Enquiry and Admission Summary", why: "Owner ko weekly sales/admission funnel samajhna hota hai.", problemSolved: "Admissions aur follow-ups scattered nahi rahte.", ownerBenefit: "Admission conversion aur counsellor priority clear hoti hai.", instituteBenefit: "Growth funnel visible hota hai.", teacherBenefit: "Demo class demand ka context mil sakta hai.", studentBenefit: "Interested students ka follow-up miss nahi hota.", parentBenefit: "Callback/demo response fast hota hai." }
+];
+
+const part74RolePermissions = {
+  naxora_super_admin: { label: "NAXORA Super Admin", allowed: ["technical_support_view", "audit_log_view"], sensitiveVerification: true, note: "Institute-private data ka unrestricted daily access nahi; logged support mode only." },
+  owner: { label: "Institute Owner", allowed: ["parent_draft", "result_explanation", "weekly_summary", "revenue_summary", "attendance_summary", "admission_summary", "vani_parent_summary", "audit_log_view", "export_request"], sensitiveVerification: true },
+  branch_manager: { label: "Branch Manager", allowed: ["parent_draft_assigned_branch", "result_explanation_assigned_branch", "weekly_summary_assigned_branch", "attendance_summary", "admission_summary", "vani_parent_summary"], sensitiveVerification: true },
+  accountant: { label: "Accountant", allowed: ["revenue_summary", "fee_parent_draft", "weekly_finance_summary"], sensitiveVerification: true },
+  teacher: { label: "Teacher", allowed: ["parent_draft_assigned_batches", "result_explanation_assigned_batches", "attendance_summary_assigned_batches"], sensitiveVerification: false },
+  receptionist: { label: "Receptionist/Counsellor", allowed: ["parent_draft", "admission_summary", "enquiry_summary", "followup_summary"], sensitiveVerification: false },
+  student: { label: "Student", allowed: ["own_weekly_learning_summary"], sensitiveVerification: false },
+  parent: { label: "Parent", allowed: ["linked_child_summary"], sensitiveVerification: false }
+};
+
+const part74Checklist = [
+  "AI Parent Weekly Summary page /ai-parent-weekly-summary open ho raha hai.",
+  "/api/part74/status success true return karta hai.",
+  "Parent message draft direct send nahi karta, sirf preview/draft return karta hai.",
+  "Result explanation supportive language me hai, student ko label/blame nahi karta.",
+  "Weekly revenue summary owner/accountant role ke according gated hai.",
+  "Weekly attendance summary support-alert style me return hota hai.",
+  "Enquiry/admission summary weekly funnel dikhata hai.",
+  "VANI command missing details poochti hai aur sensitive data private-screen-first rule follow karti hai.",
+  "Export/sending actions owner verification required mark hoti hain.",
+  "Previous Part 71, 72 and 73 routes preserved hain."
+];
+
+const part74WeeklyDemo = {
+  revenue: { collected: 184500, pending: 63200, failedPayments: 3, renewalDue: 2, insight: "Is week collection strong hai, lekin 8 high-priority pending fee follow-ups recommended hain." },
+  attendance: { average: 84, concernStudents: 7, improvedStudents: 11, insight: "Overall attendance stable hai. 7 students ke parent check-in aur missed notes sharing recommended hai." },
+  admissions: { newEnquiries: 34, demosBooked: 9, converted: 5, followUpsDue: 12, insight: "Hot leads ko same-day callback aur demo reminders bhejna admission conversion improve karega." },
+  academics: { testsConducted: 4, resultConcernStudents: 6, topImprovers: 3, insight: "Result explanation messages low-score students ke parents ke liye draft ready karne chahiye." }
+};
+const part74ResultExplanations = [
+  { studentName: "Aman Sharma", subject: "Maths", score: 54, trend: "improving slowly", explanation: "Aman ke marks me basic calculation accuracy improve hui hai, lekin Quadratic Equations me extra practice ki zarurat hai. Is week 2 revision worksheets aur doubt session recommended hai." },
+  { studentName: "Riya Verma", subject: "Physics", score: 88, trend: "strong", explanation: "Riya ne Laws of Motion test me strong conceptual clarity dikhayi. Ab usko advanced numericals aur timed practice dena useful rahega." },
+  { studentName: "Nitin Yadav", subject: "Chemistry", score: 49, trend: "needs support", explanation: "Nitin ko Mole Concept basics me support chahiye. Parent ko panic karne ke bajay short remedial plan aur weekly monitoring explain karna best rahega." }
+];
+if (!globalThis.NAXORA_PART74_ACTIVITY) globalThis.NAXORA_PART74_ACTIVITY = [];
+function part74CleanText(value, max = 600) { return String(value ?? "").replace(/[<>]/g, "").trim().slice(0, max); }
+function part74Lower(value) { return part74CleanText(value, 600).toLowerCase(); }
+function part74DbReady() { return mongoose.connection.readyState === 1 && globalThis.NAXORA_DB_MODE !== "mock"; }
+function part74Role(role = "owner") { const key = part74CleanText(role, 80).toLowerCase().replace(/[ -]+/g, "_") || "owner"; if (key === "institute_owner") return "owner"; if (key === "staff" || key === "counsellor") return "receptionist"; return part74RolePermissions[key] ? key : "owner"; }
+function part74Can(role, permission) { const resolved = part74Role(role); const allowed = part74RolePermissions[resolved]?.allowed || []; return allowed.includes(permission) || allowed.some((item) => permission.startsWith(item.replace("_assigned_branch", "").replace("_assigned_batches", ""))); }
+async function part74Log(type, payload = {}) { const row = { id: `part74-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`, type: part74CleanText(type, 80), payload, createdAt: new Date().toISOString(), part: part74Config.part }; globalThis.NAXORA_PART74_ACTIVITY.unshift(row); globalThis.NAXORA_PART74_ACTIVITY = globalThis.NAXORA_PART74_ACTIVITY.slice(0, 100); if (part74DbReady()) { try { await mongoose.connection.db.collection("part74parentcommunicationsummarylogs").insertOne(row); } catch (error) { /* non-blocking */ } } return row; }
+function part74MessageDraft(input = {}) {
+  const messageType = part74Lower(input.messageType || "weekly");
+  const studentName = part74CleanText(input.studentName || "Student", 120);
+  const parentName = part74CleanText(input.parentName || "Parent ji", 120);
+  const language = part74Lower(input.language || "hinglish");
+  const safePrefix = language === "english" ? `Hello ${parentName},` : `Namaste ${parentName},`;
+  let body = `${safePrefix}\n\n${studentName} ka weekly learning update ready hai. Attendance, test performance aur next support plan institute dashboard me review kiya gaya hai.`;
+  if (messageType.includes("result")) body = `${safePrefix}\n\n${studentName} ke recent result me kuch strong points aur kuch improvement areas dikh rahe hain. Hum next week focused revision aur doubt support plan kar rahe hain. Kripya panic na karein; support plan screen par shared hai.`;
+  if (messageType.includes("attendance")) body = `${safePrefix}\n\n${studentName} ki attendance me is week kuch concern dikh raha hai. Regular class continuity ke liye missed topics cover karna important hai. Hum aapke saath support plan share karenge.`;
+  if (messageType.includes("fee")) body = `${safePrefix}\n\nFee record me pending amount ka reminder draft ready hai. Kripya details dashboard par privately verify karke hi message send karein.`;
+  if (messageType.includes("appreciation")) body = `${safePrefix}\n\n${studentName} ne is week positive progress dikhayi hai. Regular practice aur attendance continue rakhne par result aur improve ho sakta hai. Great work!`;
+  return { draftId: `P74-DRAFT-${Date.now()}`, messageType, studentName, parentName, language, body, directSendDisabled: true, previewRequired: true, confirmationRequiredBeforeSend: true, sensitiveDataPolicy: "Financial/personal details screen par verify karo; speaker par loudly mat bolo." };
+}
+function part74WeeklySummary(role = "owner") { const resolved = part74Role(role); return { role: resolved, week: "current", revenue: part74Can(resolved, "revenue_summary") || resolved === "owner" ? part74WeeklyDemo.revenue : { access: "limited", message: "Revenue summary is role-restricted." }, attendance: part74WeeklyDemo.attendance, admissions: part74Can(resolved, "admission_summary") || ["owner","branch_manager","receptionist"].includes(resolved) ? part74WeeklyDemo.admissions : { access: "limited", message: "Admission summary is role-restricted." }, academics: part74WeeklyDemo.academics, generatedAt: new Date().toISOString(), privateDisplayRequired: true } }
+function part74VaniCommand(command = "weekly summary banao", payload = {}) {
+  const role = part74Role(payload.role || "owner"); const text = part74Lower(command); const missing = [];
+  let action = "weekly_summary";
+  if (text.includes("parent") || text.includes("message") || text.includes("draft")) action = "parent_draft";
+  if (text.includes("result")) action = "result_explanation";
+  if (text.includes("revenue") || text.includes("fees") || text.includes("collection")) action = "revenue_summary";
+  if (text.includes("attendance")) action = "attendance_summary";
+  if (text.includes("enquiry") || text.includes("admission")) action = "admission_summary";
+  if ((action === "parent_draft" || action === "result_explanation") && !payload.studentName && !text.includes("weekly")) missing.push("student name");
+  if (action === "revenue_summary" && !part74Can(role, "revenue_summary")) return { allowed: false, role, action, message: "Is role ko revenue summary access nahi hai.", privateDisplayRequired: true };
+  if (missing.length) return { allowed: true, role, action, needsMoreDetails: true, missingDetails: missing, question: `Kripya ${missing.join(", ")} batao, phir main safe preview bana dunga.` };
+  const summary = part74WeeklySummary(role);
+  const draft = part74MessageDraft({ studentName: payload.studentName || "Student", parentName: payload.parentName || "Parent ji", messageType: action.includes("result") ? "result" : action.includes("attendance") ? "attendance" : "weekly", language: payload.language || "hinglish" });
+  return { allowed: true, role, action, responseMode: "private-screen-first", spokenSummary: "Summary aur draft ready hai. Sensitive financial/personal details screen par privately dikhaye gaye hain.", preview: { summary, draft, resultExplanations: part74ResultExplanations }, confirmationRequiredForActions: ["send_message", "export_report", "discount", "refund", "delete", "subscription_change"], ownerVerificationRequiredForSensitiveActions: true, auditLogRequired: true };
+}
+
+app.get("/api/part74/status", (req, res) => res.json({ success: true, part: part74Config.part, status: part74Config.status, frontend: [part74Config.frontendRoute, ...part74Config.alternateRoutes], apiRoutes: part74Config.apiRoutes, purpose: part74Config.purpose, currentVersionPlan: "Part 53-78 = NAXORA OS 1.0 completion. Part 79-110 = NAXORA OS 2.0 development.", nextPart: part74Config.nextPart }));
+app.get("/api/part74/config", (req, res) => res.json({ success: true, part: part74Config.part, config: part74Config }));
+app.get("/api/part74/features", (req, res) => res.json({ success: true, part: part74Config.part, features: part74Features }));
+app.get("/api/part74/roles", (req, res) => res.json({ success: true, part: part74Config.part, roles: part74RolePermissions }));
+app.post("/api/part74/parent-message-draft", async (req, res) => { const role = part74Role(req.body?.role || "owner"); if (!part74Can(role, "parent_draft")) return res.status(403).json({ success: false, part: part74Config.part, role, message: "Is role ko parent message draft access nahi hai." }); const draft = part74MessageDraft(req.body || {}); await part74Log("parent_message_draft_created", { role, messageType: draft.messageType, studentName: draft.studentName }); res.json({ success: true, part: part74Config.part, role, draft }); });
+app.get("/api/part74/result-explanation", async (req, res) => { await part74Log("result_explanation_viewed", { role: part74Role(req.query.role || "owner") }); res.json({ success: true, part: part74Config.part, resultExplanations: part74ResultExplanations, supportiveLanguage: true, noBlameLabels: true }); });
+app.get("/api/part74/weekly-summary", async (req, res) => { const summary = part74WeeklySummary(req.query.role || "owner"); await part74Log("weekly_summary_viewed", { role: summary.role }); res.json({ success: true, part: part74Config.part, summary }); });
+app.get("/api/part74/revenue-summary", (req, res) => { const role = part74Role(req.query.role || "owner"); if (!part74Can(role, "revenue_summary")) return res.status(403).json({ success: false, part: part74Config.part, role, message: "Revenue summary role-restricted hai." }); res.json({ success: true, part: part74Config.part, role, revenue: part74WeeklyDemo.revenue, privateDisplayRequired: true }); });
+app.get("/api/part74/attendance-summary", (req, res) => res.json({ success: true, part: part74Config.part, attendance: part74WeeklyDemo.attendance, supportFirst: true }));
+app.get("/api/part74/enquiry-admission-summary", (req, res) => res.json({ success: true, part: part74Config.part, admissions: part74WeeklyDemo.admissions }));
+app.post("/api/part74/vani/command", async (req, res) => { const result = part74VaniCommand(req.body?.command || req.body?.text || req.body?.transcript || "weekly summary banao", req.body || {}); await part74Log("vani_parent_weekly_command", { role: result.role, action: result.action, allowed: result.allowed, responseMode: result.responseMode }); res.status(result.allowed === false ? 403 : 200).json({ success: result.allowed !== false, part: part74Config.part, result }); });
+app.get("/api/part74/activity", (req, res) => res.json({ success: true, part: part74Config.part, count: globalThis.NAXORA_PART74_ACTIVITY.length, activity: globalThis.NAXORA_PART74_ACTIVITY }));
+app.get("/api/part74/checklist", (req, res) => res.json({ success: true, part: part74Config.part, checklist: part74Checklist }));
+app.get("/api/part74/export", (req, res) => res.json({ success: true, part: part74Config.part, exportedAt: new Date().toISOString(), config: part74Config, features: part74Features, roles: part74RolePermissions, weeklySummary: part74WeeklySummary(req.query.role || "owner"), checklist: part74Checklist, activity: globalThis.NAXORA_PART74_ACTIVITY, exportRequiresOwnerVerification: true }));
+app.get("/api/part74/demo", async (req, res) => { const demo = { draftTypes: ["weekly", "result", "attendance", "fee", "appreciation"], weeklySummary: part74WeeklySummary("owner"), resultExplanations: part74ResultExplanations, vani: part74VaniCommand("VANI, weekly summary aur parent message draft banao", { role: "owner", studentName: "Aman Sharma", parentName: "Rakesh ji" }) }; await part74Log("demo_generated", { drafts: demo.draftTypes.length }); res.json({ success: true, part: part74Config.part, demoTitle: "AI Parent Communication and Weekly Summary Demo", demo, checklist: part74Checklist }); });
+// ================= END PART 74 =================
+
 const modulePageRoutes = {
   "/dashboard": "dashboard.html",
   "/students": "students.html",
@@ -9381,7 +9509,7 @@ await connectDB();
 
 const server = app.listen(port, () => {
   console.log("✅ PART 59 PUBLIC INSTITUTE PROFILE ACTIVE");
-  console.log("✅ All routes Part 1 to Part 73 loaded + AI Batch Performance Analyzer");
+  console.log("✅ All routes Part 1 to Part 74 loaded + AI Parent Communication and Weekly Summary");
   console.log("✅ AI Notes route active: /api/ai-notes");
   console.log("✅ AI Mock Tests route active: /api/ai-mock-tests");
   console.log("✅ AI Roadmaps route active: /api/ai-roadmaps");
@@ -9449,6 +9577,7 @@ const server = app.listen(port, () => {
   console.log("✅ Part 71 AI Admission Copilot active: /api/part71/status + /ai-admission-copilot");
   console.log("✅ Part 72 AI Fee and Attendance Assistant active: /api/part72/status + /ai-fee-attendance-assistant");
   console.log("✅ Part 73 AI Batch Performance Analyzer active: /api/part73/status + /ai-batch-performance-analyzer");
+  console.log("✅ Part 74 AI Parent Communication active: /api/part74/status + /ai-parent-weekly-summary");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");

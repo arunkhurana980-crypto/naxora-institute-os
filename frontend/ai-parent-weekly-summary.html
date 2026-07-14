@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA Part 74 | AI Parent Communication and Weekly Summary</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/ai-parent-weekly-summary.css" />
+</head>
+<body>
+  <main class="part74-shell">
+    <section class="part74-hero">
+      <div class="part74-logo">N</div>
+      <div>
+        <p class="part74-kicker">PART 74 • AI PARENT COMMUNICATION + WEEKLY SUMMARY</p>
+        <h1>AI Parent Communication and Weekly Summary</h1>
+        <p class="part74-subtitle">Parent message drafts, result explanation, weekly revenue report, attendance report, enquiry/admission summary aur VANI-safe communication support.</p>
+        <div class="part74-actions">
+          <a href="/api/part74/status" target="_blank" class="part74-btn primary">Status API</a>
+          <a href="/api/part74/demo" target="_blank" class="part74-btn">Demo API</a>
+          <a href="/ai-hub" class="part74-btn">Back AI Hub</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="part74-grid part74-stats">
+      <article><span id="draftCount">0</span><p>Draft Types</p></article>
+      <article><span id="weeklyRevenue">₹0</span><p>Weekly Revenue</p></article>
+      <article><span id="attendanceAvg">0%</span><p>Attendance Avg</p></article>
+      <article><span id="admissionCount">0</span><p>Admissions</p></article>
+    </section>
+
+    <section class="part74-card">
+      <div class="part74-section-head">
+        <div><p class="part74-kicker">PARENT COMMUNICATION</p><h2>AI Parent Message Draft</h2></div>
+        <button id="draftBtn" class="part74-btn small primary">Generate Draft</button>
+      </div>
+      <div class="part74-form-grid">
+        <label>Student name <input id="studentInput" placeholder="Aman Sharma" /></label>
+        <label>Parent name <input id="parentInput" placeholder="Rakesh ji" /></label>
+        <label>Message type <select id="messageType"><option value="result">Result explanation</option><option value="attendance">Attendance concern</option><option value="fee">Fee reminder</option><option value="weekly">Weekly progress summary</option><option value="appreciation">Appreciation message</option></select></label>
+        <label>Language <select id="languageInput"><option value="hinglish">Hinglish</option><option value="hindi">Hindi</option><option value="english">English</option></select></label>
+      </div>
+      <pre id="draftOutput" class="part74-output">Draft yahan dikhega. Ye direct send nahi hoga.</pre>
+    </section>
+
+    <section class="part74-grid">
+      <article class="part74-card"><h2>Weekly Revenue Summary</h2><div id="revenueSummary" class="part74-list loading">Loading...</div></article>
+      <article class="part74-card"><h2>Weekly Attendance Summary</h2><div id="attendanceSummary" class="part74-list loading">Loading...</div></article>
+    </section>
+
+    <section class="part74-grid">
+      <article class="part74-card"><h2>Enquiry & Admission Summary</h2><div id="admissionSummary" class="part74-list loading">Loading...</div></article>
+      <article class="part74-card"><h2>Result Explanation Preview</h2><div id="resultExplanation" class="part74-list loading">Loading...</div></article>
+    </section>
+
+    <section class="part74-card">
+      <div class="part74-section-head"><div><p class="part74-kicker">VANI COMMAND</p><h2>Ask VANI for parent/weekly summary support</h2></div></div>
+      <div class="part74-command-row">
+        <input id="vaniCommand" value="VANI, weekly summary aur parent message draft banao" />
+        <button id="vaniBtn" class="part74-btn primary">Run VANI</button>
+      </div>
+      <pre id="vaniOutput" class="part74-output">VANI result yahan dikhega.</pre>
+    </section>
+
+    <section class="part74-card"><h2>Part 74 Checklist</h2><ul id="checklist" class="part74-checklist"></ul></section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/ai-parent-weekly-summary.js"></script>
+</body>
+</html>
