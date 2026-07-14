@@ -1,0 +1,32 @@
+PART 74 FRONTEND ROUTE FIX
+
+Issue:
+/api/part74/status active tha, lekin /ai-parent-weekly-summary route not found aa raha tha.
+Reason:
+Part 74 frontend route modulePageRoutes mapping me add nahi hua tha.
+
+Fixed routes:
+/ai-parent-weekly-summary
+/ai-parent-communication
+/weekly-summary-ai
+/parent-communication-ai
+/ai-weekly-summary
+
+How to apply:
+1. ZIP extract karo.
+2. Sab files copy karo.
+3. Old live project folder me paste/replace karo:
+   C:\Users\bhaij\OneDrive\Documents\naxora-institute-os-part51-final-secure-clean-url-redirect-fixed
+4. VS Code terminal:
+   git status
+   git add .
+   git commit -m "Fix Part 74 frontend routes"
+   git push
+5. Render: Manual Deploy -> Clear build cache & deploy
+
+Check:
+https://naxora-institute-os.onrender.com/api/part74/status
+https://naxora-institute-os.onrender.com/ai-parent-weekly-summary
+https://naxora-institute-os.onrender.com/ai-parent-communication
+
+No .env, no secrets, no node_modules, no .bat.

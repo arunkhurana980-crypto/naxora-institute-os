@@ -9467,7 +9467,12 @@ const modulePageRoutes = {
   "/ai-batch-performance-analyzer": "ai-batch-performance-analyzer.html",
   "/batch-performance-ai": "ai-batch-performance-analyzer.html",
   "/ai-batch-analyzer": "ai-batch-performance-analyzer.html",
-  "/batch-analyzer": "ai-batch-performance-analyzer.html"
+  "/batch-analyzer": "ai-batch-performance-analyzer.html",
+  "/ai-parent-weekly-summary": "ai-parent-weekly-summary.html",
+  "/ai-parent-communication": "ai-parent-weekly-summary.html",
+  "/weekly-summary-ai": "ai-parent-weekly-summary.html",
+  "/parent-communication-ai": "ai-parent-weekly-summary.html",
+  "/ai-weekly-summary": "ai-parent-weekly-summary.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
