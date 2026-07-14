@@ -10274,7 +10274,12 @@ const modulePageRoutes = {
   "/mobile-foundation": "mobile-app-foundation.html",
   "/mobile-apps": "mobile-app-foundation.html",
   "/naxora-mobile": "mobile-app-foundation.html",
-  "/app-foundation": "mobile-app-foundation.html"
+  "/app-foundation": "mobile-app-foundation.html",
+  "/institute-owner-app": "institute-owner-app.html",
+  "/owner-mobile-app": "institute-owner-app.html",
+  "/owner-app": "institute-owner-app.html",
+  "/owner-command-center": "institute-owner-app.html",
+  "/mobile-owner-dashboard": "institute-owner-app.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -10605,8 +10610,24 @@ app.post("/api/part79/vani/command", (req, res) => {
 });
 
 app.get("/api/part79/vani/command", (req, res) => {
-  req.body = { command: req.query.q || req.query.command || "", role: req.query.role || "owner" };
-  return res.redirect(307, `/api/part79/vani/command`);
+  const command = String(req.query.q || req.query.command || "").trim();
+  const roleConfig = getPart79RoleConfig(req.query.role || "owner");
+  res.json({
+    success: true,
+    assistant: "VANI",
+    part: "Part 79 — Mobile App Foundation",
+    command: command || "VANI, mobile app foundation status dikhao",
+    detectedIntent: "mobile_foundation_status",
+    role: roleConfig.role,
+    privateScreenFirst: true,
+    spokenSafeSummary: "NAXORA mobile foundation active hai. Detailed role navigation screen par dekh sakte ho.",
+    screenPreview: {
+      message: "Mobile foundation is active. Native role apps continue in Parts 80–83.",
+      allowedNavigation: roleConfig.navigation,
+      nextPart: "Part 80 — Institute Owner App"
+    },
+    auditLog: { event: "part79_vani_mobile_foundation_command_get", createdAt: new Date().toISOString() }
+  });
 });
 
 app.get("/api/part79/activity", (req, res) => {
@@ -10659,6 +10680,498 @@ app.get("/api/part79/demo", (req, res) => {
   });
 });
 // ================= END PART 79 =================
+
+// ================= PART 80 — INSTITUTE OWNER APP =================
+// NAXORA OS 2.0 owner mobile app foundation. This is owner-focused,
+// instituteId-bound, private-screen-first, and does not break 1.0.
+
+const part80OwnerTiles = [
+  {
+    key: "revenue",
+    name: "Revenue",
+    icon: "₹",
+    summary: "Today, weekly and monthly collection overview.",
+    ownerBenefit: "Owner can see collection health from phone.",
+    sensitive: true
+  },
+  {
+    key: "admissions",
+    name: "Admissions",
+    icon: "🎯",
+    summary: "New enquiries, demo classes and converted admissions.",
+    ownerBenefit: "Owner can track growth without opening desktop.",
+    sensitive: false
+  },
+  {
+    key: "fees",
+    name: "Fees",
+    icon: "💳",
+    summary: "Pending fees, overdue fees and collection follow-ups.",
+    ownerBenefit: "Owner can prioritize pending collections quickly.",
+    sensitive: true
+  },
+  {
+    key: "attendance",
+    name: "Attendance",
+    icon: "✅",
+    summary: "Student, teacher and staff attendance pulse.",
+    ownerBenefit: "Owner can identify absence patterns early.",
+    sensitive: false
+  },
+  {
+    key: "leads",
+    name: "Leads",
+    icon: "📞",
+    summary: "CRM hot/warm/cold leads and follow-up reminders.",
+    ownerBenefit: "Owner can prevent missed admissions.",
+    sensitive: false
+  },
+  {
+    key: "branches",
+    name: "Branches",
+    icon: "🏫",
+    summary: "Assigned branches, branch revenue and performance.",
+    ownerBenefit: "Owner can compare branches from mobile.",
+    sensitive: true
+  },
+  {
+    key: "alerts",
+    name: "Alerts",
+    icon: "🔔",
+    summary: "Urgent fees, attendance, renewal, live-class and security alerts.",
+    ownerBenefit: "Owner sees priority actions first.",
+    sensitive: false
+  },
+  {
+    key: "vani",
+    name: "VANI Owner Assistant",
+    icon: "🎙️",
+    summary: "Owner-safe voice assistant for mobile command center.",
+    ownerBenefit: "Owner can ask for summaries in Hindi, English or Hinglish.",
+    sensitive: true
+  }
+];
+
+const part80OwnerRoles = [
+  {
+    role: "institute_owner",
+    allowed: true,
+    reason: "Full institute and authorised branch access after login and active instituteId."
+  },
+  {
+    role: "branch_manager",
+    allowed: false,
+    reason: "Branch manager will use branch-focused mobile views, not owner command center."
+  },
+  {
+    role: "accountant",
+    allowed: false,
+    reason: "Accountant has finance access only according to permission, not full owner app."
+  },
+  {
+    role: "teacher",
+    allowed: false,
+    reason: "Teacher will use Part 81 Teacher App."
+  },
+  {
+    role: "student",
+    allowed: false,
+    reason: "Student will use Part 82 Student App."
+  },
+  {
+    role: "parent",
+    allowed: false,
+    reason: "Parent will use Part 83 Parent App."
+  },
+  {
+    role: "naxora_super_admin",
+    allowed: false,
+    reason: "Super Admin has logged platform support access, not unrestricted institute-private owner app access."
+  }
+];
+
+function normalizePart80Role(role) {
+  const r = String(role || "institute_owner").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branch_manager", "branchmanager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part80AccessCheck({ role, instituteId, subscription }) {
+  const normalizedRole = normalizePart80Role(role);
+  const roleRule = part80OwnerRoles.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole,
+    allowed: false,
+    reason: "Unknown or unsupported role."
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const v2Active = ["active", "trial", "demo"].includes(String(subscription || "demo").toLowerCase());
+
+  const allowed = roleRule.allowed && hasInstituteId && v2Active;
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    subscriptionState: subscription || "demo",
+    allowed,
+    reason: !roleRule.allowed
+      ? roleRule.reason
+      : !hasInstituteId
+        ? "Institute ID missing. Owner app opens only inside a logged institute account."
+        : !v2Active
+          ? "NAXORA OS 2.0 subscription is not active for this institute."
+          : "Owner mobile app access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    requiresV2Subscription: true
+  };
+}
+
+function part80OwnerSnapshot(query = {}) {
+  const instituteId = query.instituteId || "NX-DEMO-INST-001";
+  const branch = query.branch || "All Branches";
+  return {
+    instituteId,
+    branch,
+    generatedAt: new Date().toISOString(),
+    today: {
+      revenueCollected: 42500,
+      pendingFees: 138000,
+      newEnquiries: 18,
+      hotLeads: 6,
+      admissionsConverted: 3,
+      studentAttendancePercent: 87,
+      teacherAttendancePercent: 96,
+      liveClassesToday: 4
+    },
+    month: {
+      revenueCollected: 842000,
+      admissionTarget: 120,
+      admissionsConverted: 78,
+      overdueFees: 92000,
+      activeStudents: 642,
+      activeBatches: 38
+    },
+    urgentAlerts: [
+      { type: "fees", level: "high", message: "12 students have overdue fees above 15 days.", privateScreenFirst: true },
+      { type: "attendance", level: "medium", message: "7 students have attendance below 70%.", privateScreenFirst: false },
+      { type: "leads", level: "high", message: "6 hot leads need same-day callback.", privateScreenFirst: false },
+      { type: "security", level: "medium", message: "Review role permissions before adding new staff users.", privateScreenFirst: true }
+    ]
+  };
+}
+
+const part80Checklist = [
+  "Owner app page opens on live URL",
+  "Status API returns success true",
+  "Access check allows institute_owner with instituteId",
+  "Access check blocks teacher/student/parent",
+  "Owner overview returns revenue, admissions, fees, attendance and alerts",
+  "VANI owner command returns private-screen-first response",
+  "No .env, secrets, node_modules or .bat scripts included",
+  "Previous Part 1–79 routes remain preserved"
+];
+
+app.get("/api/part80/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 80 — Institute Owner App",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 80,
+    nextPart: "Part 81 — Teacher App",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/institute-owner-app", "/owner-mobile-app", "/owner-app", "/owner-command-center", "/mobile-owner-dashboard"],
+    apiRoutes: [
+      "/api/part80/config",
+      "/api/part80/features",
+      "/api/part80/roles",
+      "/api/part80/access-check",
+      "/api/part80/overview",
+      "/api/part80/revenue",
+      "/api/part80/admissions",
+      "/api/part80/fees",
+      "/api/part80/attendance",
+      "/api/part80/leads",
+      "/api/part80/branches",
+      "/api/part80/alerts",
+      "/api/part80/vani/command"
+    ],
+    ownerOnly: true,
+    v3OwnerOnlyRulePreserved: true
+  });
+});
+
+app.get("/api/part80/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "NAXORA Institute Owner App",
+    appType: "mobile_owner_command_center",
+    version: "2.0-owner-foundation",
+    login: {
+      required: true,
+      requiresInstituteId: true,
+      roleRequired: "institute_owner",
+      subscriptionRequired: "NAXORA OS 2.0 active/trial/demo"
+    },
+    sensitiveDataPolicy: "Private financial/personal data should be displayed on screen, not loudly spoken in public areas.",
+    futureNativeApps: ["Android", "iOS", "PWA"],
+    speakerSupport: "Optional VANI speaker/hub supported later; mobile/laptop mic works first."
+  });
+});
+
+app.get("/api/part80/features", (req, res) => {
+  res.json({ success: true, features: part80OwnerTiles });
+});
+
+app.get("/api/part80/roles", (req, res) => {
+  res.json({ success: true, roles: part80OwnerRoles });
+});
+
+app.get("/api/part80/access-check", (req, res) => {
+  res.json({ success: true, access: part80AccessCheck(req.query || {}) });
+});
+
+app.get("/api/part80/overview", (req, res) => {
+  const access = part80AccessCheck(req.query || {});
+  if (!access.allowed) {
+    return res.status(403).json({ success: false, access, message: access.reason });
+  }
+  res.json({
+    success: true,
+    access,
+    overview: part80OwnerSnapshot(req.query || {}),
+    tiles: part80OwnerTiles
+  });
+});
+
+app.get("/api/part80/revenue", (req, res) => {
+  const access = part80AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({
+    success: true,
+    privateScreenFirst: true,
+    revenue: {
+      today: 42500,
+      thisWeek: 184000,
+      thisMonth: 842000,
+      pending: 138000,
+      overdue: 92000,
+      note: "Demo-safe revenue summary. Production schema hard-connect will be validated during 2.0."
+    }
+  });
+});
+
+app.get("/api/part80/admissions", (req, res) => {
+  const access = part80AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({
+    success: true,
+    admissions: {
+      newEnquiries: 18,
+      hotLeads: 6,
+      demosScheduled: 5,
+      convertedToday: 3,
+      conversionRateMonth: "65%",
+      nextAction: "Call hot leads before 7 PM."
+    }
+  });
+});
+
+app.get("/api/part80/fees", (req, res) => {
+  const access = part80AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({
+    success: true,
+    privateScreenFirst: true,
+    fees: {
+      pendingStudents: 42,
+      overdueStudents: 12,
+      pendingAmount: 138000,
+      overdueAmount: 92000,
+      reminderDraftAvailable: true
+    }
+  });
+});
+
+app.get("/api/part80/attendance", (req, res) => {
+  const access = part80AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({
+    success: true,
+    attendance: {
+      studentAverage: 87,
+      teacherAverage: 96,
+      staffAverage: 94,
+      lowAttendanceStudents: 7,
+      supportAlerts: 7
+    }
+  });
+});
+
+app.get("/api/part80/leads", (req, res) => {
+  const access = part80AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({
+    success: true,
+    leads: {
+      hot: 6,
+      warm: 9,
+      cold: 13,
+      followUpsDue: 11,
+      missedFollowUps: 2,
+      recommendation: "Prioritize hot leads and missed follow-ups."
+    }
+  });
+});
+
+app.get("/api/part80/branches", (req, res) => {
+  const access = part80AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({
+    success: true,
+    privateScreenFirst: true,
+    branches: [
+      { name: "Main Branch", revenue: 542000, attendance: 89, admissions: 42, status: "healthy" },
+      { name: "North Branch", revenue: 210000, attendance: 84, admissions: 21, status: "watch" },
+      { name: "Online Branch", revenue: 90000, attendance: 91, admissions: 15, status: "growing" }
+    ]
+  });
+});
+
+app.get("/api/part80/alerts", (req, res) => {
+  const access = part80AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, alerts: part80OwnerSnapshot(req.query || {}).urgentAlerts });
+});
+
+app.post("/api/part80/vani/command", (req, res) => {
+  const command = String(req.body?.command || req.query?.command || "").trim();
+  const access = part80AccessCheck({
+    role: req.body?.role || req.query?.role || "institute_owner",
+    instituteId: req.body?.instituteId || req.query?.instituteId || "NX-DEMO-INST-001",
+    subscription: req.body?.subscription || req.query?.subscription || "demo"
+  });
+
+  if (!access.allowed) {
+    return res.status(403).json({
+      success: false,
+      assistant: "VANI",
+      access,
+      spokenSafeSummary: "Ye owner mobile command center sirf institute owner ke active institute account me available hai.",
+      privateScreenFirst: true
+    });
+  }
+
+  const lower = command.toLowerCase();
+  let intent = "owner_overview";
+  if (lower.includes("revenue") || lower.includes("income") || lower.includes("collection")) intent = "revenue_summary";
+  if (lower.includes("fee") || lower.includes("pending")) intent = "fees_summary";
+  if (lower.includes("attendance") || lower.includes("absent")) intent = "attendance_summary";
+  if (lower.includes("lead") || lower.includes("admission") || lower.includes("enquiry")) intent = "admissions_leads_summary";
+  if (lower.includes("branch")) intent = "branch_summary";
+  if (lower.includes("alert")) intent = "urgent_alerts";
+
+  const snapshot = part80OwnerSnapshot({ instituteId: access.instituteId });
+  res.json({
+    success: true,
+    assistant: "VANI",
+    part: "Part 80 — Institute Owner App",
+    command: command || "VANI, owner app overview dikhao",
+    detectedIntent: intent,
+    access,
+    privateScreenFirst: ["revenue_summary", "fees_summary", "branch_summary"].includes(intent),
+    spokenSafeSummary: "Owner app overview ready hai. Sensitive finance details screen par privately dikhaye gaye hain.",
+    screenPreview: {
+      today: snapshot.today,
+      urgentAlerts: snapshot.urgentAlerts,
+      nextAction: "Review hot leads, overdue fees and low-attendance alerts."
+    },
+    confirmationRequiredFor: ["refund", "discount", "delete", "export", "subscription_change", "3.0_access_change"],
+    auditLog: {
+      event: "part80_vani_owner_mobile_command",
+      intent,
+      createdAt: new Date().toISOString()
+    }
+  });
+});
+
+app.get("/api/part80/vani/command", (req, res) => {
+  const command = String(req.query.q || req.query.command || "").trim();
+  const access = part80AccessCheck({
+    role: req.query.role || "institute_owner",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    subscription: req.query.subscription || "demo"
+  });
+  if (!access.allowed) {
+    return res.status(403).json({
+      success: false,
+      assistant: "VANI",
+      access,
+      spokenSafeSummary: "Ye owner mobile command center sirf institute owner ke active institute account me available hai.",
+      privateScreenFirst: true
+    });
+  }
+  const snapshot = part80OwnerSnapshot({ instituteId: access.instituteId });
+  res.json({
+    success: true,
+    assistant: "VANI",
+    part: "Part 80 — Institute Owner App",
+    command: command || "VANI, owner app overview dikhao",
+    detectedIntent: "owner_overview",
+    access,
+    privateScreenFirst: true,
+    spokenSafeSummary: "Owner overview ready hai. Sensitive data screen par dekho.",
+    screenPreview: snapshot.today,
+    auditLog: { event: "part80_vani_owner_mobile_command_get", createdAt: new Date().toISOString() }
+  });
+});
+
+app.get("/api/part80/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "owner_app_foundation_created", message: "Part 80 Institute Owner App active.", createdAt: new Date().toISOString() },
+      { type: "owner_only_guard", message: "Owner app requires institute_owner role and instituteId.", createdAt: new Date().toISOString() },
+      { type: "vani_owner_mobile_ready", message: "VANI owner mobile command center uses private-screen-first rules.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part80/checklist", (req, res) => {
+  res.json({ success: true, checklist: part80Checklist });
+});
+
+app.get("/api/part80/export", (req, res) => {
+  const access = part80AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({
+    success: true,
+    exportType: "part80-owner-app-readiness",
+    ownerVerificationRequired: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      tiles: part80OwnerTiles,
+      snapshot: part80OwnerSnapshot(req.query || {}),
+      checklist: part80Checklist
+    }
+  });
+});
+
+app.get("/api/part80/demo", (req, res) => {
+  res.json({
+    success: true,
+    demo: {
+      access: part80AccessCheck({ role: "institute_owner", instituteId: "NX-DEMO-INST-001", subscription: "demo" }),
+      overview: part80OwnerSnapshot({ instituteId: "NX-DEMO-INST-001" }),
+      tiles: part80OwnerTiles,
+      vaniCommand: "VANI, owner app overview dikhao",
+      nextPart: "Part 81 — Teacher App"
+    }
+  });
+});
+// ================= END PART 80 =================
+
 
 // ================= END PART 52 =================
 
