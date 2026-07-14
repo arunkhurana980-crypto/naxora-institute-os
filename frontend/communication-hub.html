@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA Part 65 | Communication Hub</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/communication-hub.css" />
+</head>
+<body>
+  <main class="p65-shell">
+    <section class="p65-hero">
+      <div>
+        <p class="p65-kicker">PART 65 • WHATSAPP, SMS & EMAIL INTEGRATION</p>
+        <h1>Communication Hub</h1>
+        <p>Fee reminders, absence alerts, test results, class reminders aur announcements ko ek safe queue + delivery log system me manage karo.</p>
+      </div>
+      <a class="p65-back" href="/dashboard">← Dashboard</a>
+    </section>
+
+    <section class="p65-grid" id="p65Stats">
+      <article class="p65-card"><span>Total Messages</span><strong>0</strong></article>
+      <article class="p65-card"><span>Queued</span><strong>0</strong></article>
+      <article class="p65-card"><span>Blocked Consent</span><strong>0</strong></article>
+      <article class="p65-card"><span>Delivery Logs</span><strong>0</strong></article>
+    </section>
+
+    <section class="p65-panel">
+      <div class="p65-panel-head">
+        <div>
+          <h2>Quick Message Queue</h2>
+          <p>Real external send disabled hai jab tak provider keys/account setup nahi hota. Abhi safe queue + logs banenge.</p>
+        </div>
+        <button id="p65SendDemo" class="p65-btn">Queue Demo Message</button>
+      </div>
+      <form id="p65Form" class="p65-form">
+        <label>Type
+          <select name="type">
+            <option value="fee_reminder">Fee Reminder</option>
+            <option value="absence_alert">Absence Alert</option>
+            <option value="test_result">Test Result</option>
+            <option value="class_reminder">Class Reminder</option>
+            <option value="announcement">Announcement</option>
+          </select>
+        </label>
+        <label>Recipient Name <input name="recipientName" value="Demo Parent" /></label>
+        <label>Phone <input name="phone" value="+919999999999" /></label>
+        <label>Email <input name="email" value="parent@example.com" /></label>
+        <label>Channels
+          <select name="channels" multiple>
+            <option selected>whatsapp</option>
+            <option>sms</option>
+            <option>email</option>
+            <option selected>in_app</option>
+          </select>
+        </label>
+        <label class="p65-wide">Message
+          <textarea name="message" rows="4">Namaste, ye NAXORA Part 65 safe communication queue test hai.</textarea>
+        </label>
+        <label class="p65-consent"><input type="checkbox" name="consentAccepted" checked /> Consent accepted / permission available</label>
+        <button class="p65-btn p65-wide" type="submit">Queue Communication</button>
+      </form>
+    </section>
+
+    <section class="p65-columns">
+      <article class="p65-panel">
+        <h2>Templates</h2>
+        <div id="p65Templates" class="p65-list">Loading templates...</div>
+      </article>
+      <article class="p65-panel">
+        <h2>Recent Queue</h2>
+        <div id="p65Queue" class="p65-list">Loading queue...</div>
+      </article>
+    </section>
+
+    <section class="p65-panel">
+      <h2>Delivery Logs</h2>
+      <div id="p65Logs" class="p65-log-list">Loading logs...</div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/communication-hub.js"></script>
+</body>
+</html>

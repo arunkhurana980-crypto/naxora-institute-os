@@ -5669,6 +5669,457 @@ app.get("/api/part64/demo", async (req, res) => {
 });
 // ================= END PART 64 =================
 
+
+// ================= PART 65: WHATSAPP, SMS AND EMAIL INTEGRATION =================
+// Roadmap scope: fee reminders, absence alerts, test results, class reminders,
+// announcements and delivery logs. This is a safe provider-ready communication hub.
+// Real external sending is intentionally disabled until provider API keys/accounts are added.
+const part65Checklist = [
+  "WhatsApp/SMS/Email templates load hote hain",
+  "Fee reminder draft/queue ban sakta hai",
+  "Absence alert draft/queue ban sakta hai",
+  "Test result message draft/queue ban sakta hai",
+  "Live class reminder draft/queue ban sakta hai",
+  "Announcement multi-channel queue ban sakta hai",
+  "Delivery logs maintain hote hain",
+  "Consent aur recipient validation ka foundation ready hai",
+  "Real provider keys ke bina message externally send nahi hota"
+];
+
+const part65Channels = [
+  { key: "whatsapp", label: "WhatsApp", realProviderStatus: "provider_ready_foundation", note: "Real WhatsApp Business/API provider Part 65 provider setup ke baad enable hoga." },
+  { key: "sms", label: "SMS", realProviderStatus: "provider_ready_foundation", note: "Real SMS gateway keys ke bina external SMS send nahi hoga." },
+  { key: "email", label: "Email", realProviderStatus: "provider_ready_foundation", note: "SMTP/provider env ke bina external email send nahi hoga." },
+  { key: "in_app", label: "In-App", realProviderStatus: "safe_mock_active", note: "In-app notification queue safe local/MongoDB mode me ready hai." }
+];
+
+const part65Config = {
+  part: "Part 65 - WhatsApp, SMS and Email Integration",
+  status: "active",
+  purpose: "Fee reminders, absence alerts, test results, class reminders aur announcements ko WhatsApp/SMS/Email/In-app communication hub me organize karna.",
+  routes: [
+    "/communication-hub",
+    "/whatsapp-sms-email",
+    "/api/part65/status",
+    "/api/part65/templates",
+    "/api/part65/send",
+    "/api/part65/queue",
+    "/api/part65/logs",
+    "/api/part65/analytics"
+  ],
+  safetyMode: "No real external WhatsApp/SMS/Email is sent without verified provider keys and consent.",
+  nextPart: "Part 66 - Payments and Subscription Completion"
+};
+
+const part65Templates = [
+  {
+    templateId: "P65-TPL-FEE-REMINDER",
+    type: "fee_reminder",
+    label: "Fee Reminder",
+    defaultChannels: ["whatsapp", "sms", "in_app"],
+    subject: "Fee reminder - {{studentName}}",
+    body: "Namaste {{parentName}}, {{studentName}} ki pending fee ₹{{pendingAmount}} hai. Due date: {{dueDate}}. Kripya institute se contact karein. - {{instituteName}}"
+  },
+  {
+    templateId: "P65-TPL-ABSENCE-ALERT",
+    type: "absence_alert",
+    label: "Absence Alert",
+    defaultChannels: ["whatsapp", "sms", "in_app"],
+    subject: "Attendance alert - {{studentName}}",
+    body: "Namaste {{parentName}}, {{studentName}} aaj {{className}} me absent mark hua hai. Detail ke liye institute se contact karein. - {{instituteName}}"
+  },
+  {
+    templateId: "P65-TPL-TEST-RESULT",
+    type: "test_result",
+    label: "Test Result",
+    defaultChannels: ["whatsapp", "email", "in_app"],
+    subject: "Test result - {{studentName}}",
+    body: "{{studentName}} ne {{testName}} me {{marks}}/{{totalMarks}} score kiya. Remarks: {{remarks}} - {{instituteName}}"
+  },
+  {
+    templateId: "P65-TPL-CLASS-REMINDER",
+    type: "class_reminder",
+    label: "Class Reminder",
+    defaultChannels: ["whatsapp", "sms", "email", "in_app"],
+    subject: "Live class reminder - {{classTitle}}",
+    body: "Reminder: {{classTitle}} {{startTime}} par scheduled hai. Join link: {{joinLink}} - {{instituteName}}"
+  },
+  {
+    templateId: "P65-TPL-ANNOUNCEMENT",
+    type: "announcement",
+    label: "Announcement",
+    defaultChannels: ["whatsapp", "email", "in_app"],
+    subject: "Important announcement - {{instituteName}}",
+    body: "{{announcementText}} - {{instituteName}}"
+  }
+];
+
+function part65CleanText(value, max = 500) {
+  return String(value ?? "").trim().replace(/[<>]/g, "").slice(0, max);
+}
+
+function part65CleanPhone(value) {
+  return part65CleanText(value, 30).replace(/[^0-9+]/g, "").slice(0, 20);
+}
+
+function part65CleanEmail(value) {
+  const email = part65CleanText(value, 160).toLowerCase();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : "";
+}
+
+function part65AllowedChannels(input) {
+  const raw = Array.isArray(input) ? input : String(input || "").split(",");
+  const allowed = new Set(["whatsapp", "sms", "email", "in_app"]);
+  const clean = raw.map((item) => part65CleanText(item, 30).toLowerCase()).filter((item) => allowed.has(item));
+  return [...new Set(clean.length ? clean : ["in_app"])];
+}
+
+function part65ApplyTemplate(templateBody = "", variables = {}) {
+  return String(templateBody || "").replace(/{{\s*([a-zA-Z0-9_]+)\s*}}/g, (_, key) => part65CleanText(variables[key] ?? "", 180));
+}
+
+function part65FindTemplate(typeOrId) {
+  const key = part65CleanText(typeOrId, 100).toLowerCase();
+  return part65Templates.find((tpl) => tpl.templateId.toLowerCase() === key || tpl.type.toLowerCase() === key) || part65Templates[4];
+}
+
+function part65ProviderMode(channel) {
+  // No external API is called here. This keeps Part 65 safe until real provider setup.
+  if (channel === "in_app") return "queued_in_app";
+  return "queued_provider_pending";
+}
+
+function part65NormalizeMessage(input = {}) {
+  const template = part65FindTemplate(input.templateId || input.type || input.messageType || "announcement");
+  const variables = typeof input.variables === "object" && input.variables ? input.variables : {};
+  const channels = part65AllowedChannels(input.channels || template.defaultChannels || ["in_app"]);
+  const recipient = {
+    name: part65CleanText(input.recipientName || input.name || variables.parentName || variables.studentName || "Recipient", 120),
+    role: part65CleanText(input.recipientRole || input.role || "parent_student", 80),
+    phone: part65CleanPhone(input.phone || input.mobile || variables.phone),
+    email: part65CleanEmail(input.email || variables.email),
+    studentId: part65CleanText(input.studentId || variables.studentId || "", 80),
+    parentId: part65CleanText(input.parentId || variables.parentId || "", 80)
+  };
+  const subject = part65CleanText(input.subject || part65ApplyTemplate(template.subject, variables), 180);
+  const body = part65CleanText(input.body || input.message || part65ApplyTemplate(template.body, variables), 1000);
+  const consentAccepted = input.consentAccepted === true || input.consent === true || input.hasConsent === true || part65CleanText(input.consentAccepted, 10) === "true";
+  return {
+    messageId: part65CleanText(input.messageId || `P65-MSG-${Date.now()}-${Math.floor(Math.random() * 9999)}`, 120),
+    templateId: template.templateId,
+    type: template.type,
+    channels,
+    recipient,
+    subject,
+    body,
+    consentAccepted,
+    status: consentAccepted ? "queued" : "blocked_consent_required",
+    source: part65CleanText(input.source || "part65_manual", 120),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    note: consentAccepted ? "Message queued safely. Real external send disabled until provider setup." : "Consent required before WhatsApp/SMS/Email queue."
+  };
+}
+
+function part65DeliveryLogsForMessage(message) {
+  return (message.channels || ["in_app"]).map((channel) => ({
+    logId: `P65-LOG-${Date.now()}-${channel}-${Math.floor(Math.random() * 9999)}`,
+    messageId: message.messageId,
+    channel,
+    status: message.consentAccepted ? part65ProviderMode(channel) : "blocked_consent_required",
+    recipientName: message.recipient?.name || "Recipient",
+    recipientPhone: message.recipient?.phone || "",
+    recipientEmail: message.recipient?.email || "",
+    createdAt: new Date().toISOString(),
+    providerMessageId: "",
+    providerResponse: channel === "in_app" ? "Stored in app queue." : "Provider integration pending. No external message sent."
+  }));
+}
+
+if (!globalThis.NAXORA_PART65_MESSAGES) {
+  globalThis.NAXORA_PART65_MESSAGES = [
+    part65NormalizeMessage({
+      type: "fee_reminder",
+      channels: ["whatsapp", "sms", "in_app"],
+      recipientName: "Demo Parent",
+      phone: "+919999999999",
+      consentAccepted: true,
+      variables: {
+        parentName: "Demo Parent",
+        studentName: "Aarav Demo",
+        pendingAmount: "2500",
+        dueDate: "2026-07-20",
+        instituteName: "NAXORA Demo Institute"
+      },
+      source: "demo_seed"
+    })
+  ];
+}
+
+globalThis.NAXORA_PART65_LOGS = globalThis.NAXORA_PART65_LOGS || globalThis.NAXORA_PART65_MESSAGES.flatMap(part65DeliveryLogsForMessage);
+
+async function part65GetMessagesCollection() {
+  if (globalThis.NAXORA_DB_MODE === "mongodb" && mongoose.connection?.readyState === 1) {
+    return mongoose.connection.collection("part65messages");
+  }
+  return null;
+}
+
+async function part65GetLogsCollection() {
+  if (globalThis.NAXORA_DB_MODE === "mongodb" && mongoose.connection?.readyState === 1) {
+    return mongoose.connection.collection("part65deliverylogs");
+  }
+  return null;
+}
+
+async function part65ListMessages(query = {}) {
+  const collection = await part65GetMessagesCollection();
+  if (collection) return { mode: "mongodb", rows: await collection.find({}).sort({ createdAt: -1 }).limit(300).toArray() };
+  return { mode: "mock", rows: globalThis.NAXORA_PART65_MESSAGES || [] };
+}
+
+function part65FilterMessages(rows = [], query = {}) {
+  const type = part65CleanText(query.type, 80).toLowerCase();
+  const channel = part65CleanText(query.channel, 40).toLowerCase();
+  const status = part65CleanText(query.status, 80).toLowerCase();
+  return rows.filter((item) => {
+    if (type && part65CleanText(item.type, 80).toLowerCase() !== type) return false;
+    if (status && part65CleanText(item.status, 80).toLowerCase() !== status) return false;
+    if (channel && !(item.channels || []).map((c) => String(c).toLowerCase()).includes(channel)) return false;
+    return true;
+  });
+}
+
+function part65Analytics(messages = [], logs = []) {
+  const byType = {};
+  const byChannel = {};
+  const byStatus = {};
+  messages.forEach((msg) => {
+    byType[msg.type || "unknown"] = (byType[msg.type || "unknown"] || 0) + 1;
+    byStatus[msg.status || "unknown"] = (byStatus[msg.status || "unknown"] || 0) + 1;
+    (msg.channels || ["in_app"]).forEach((channel) => {
+      byChannel[channel] = (byChannel[channel] || 0) + 1;
+    });
+  });
+  return {
+    totalMessages: messages.length,
+    totalDeliveryLogs: logs.length,
+    queuedMessages: messages.filter((m) => m.status === "queued").length,
+    blockedConsentRequired: messages.filter((m) => m.status === "blocked_consent_required").length,
+    byType,
+    byChannel,
+    byStatus,
+    providerMode: "safe_queue_only"
+  };
+}
+
+app.get("/communication-hub", (req, res) => sendFileSafe(res, "communication-hub.html"));
+app.get("/whatsapp-sms-email", (req, res) => sendFileSafe(res, "communication-hub.html"));
+app.get("/message-center", (req, res) => sendFileSafe(res, "communication-hub.html"));
+app.get("/delivery-logs", (req, res) => sendFileSafe(res, "communication-hub.html"));
+
+app.get("/api/part65/status", (req, res) => {
+  res.json({
+    success: true,
+    part: part65Config.part,
+    status: "active",
+    purpose: part65Config.purpose,
+    safetyMode: part65Config.safetyMode,
+    channels: part65Channels,
+    routes: part65Config.routes,
+    nextPart: part65Config.nextPart
+  });
+});
+
+app.get("/api/part65/config", (req, res) => {
+  res.json({ success: true, part: part65Config.part, config: part65Config, channels: part65Channels, templates: part65Templates });
+});
+
+app.get("/api/part65/templates", (req, res) => {
+  res.json({ success: true, part: part65Config.part, count: part65Templates.length, templates: part65Templates });
+});
+
+app.post("/api/part65/compose", (req, res) => {
+  const message = part65NormalizeMessage(req.body || {});
+  res.json({ success: true, part: part65Config.part, mode: "preview_only", message, logsPreview: part65DeliveryLogsForMessage(message) });
+});
+
+app.post("/api/part65/send", async (req, res) => {
+  const message = part65NormalizeMessage(req.body || {});
+  const logs = part65DeliveryLogsForMessage(message);
+  const messagesCollection = await part65GetMessagesCollection();
+  const logsCollection = await part65GetLogsCollection();
+  if (messagesCollection) {
+    await messagesCollection.updateOne({ messageId: message.messageId }, { $set: message }, { upsert: true });
+    if (logsCollection && logs.length) await logsCollection.insertMany(logs);
+    return res.status(201).json({ success: true, mode: "mongodb", part: part65Config.part, message: "Communication queued safely. No external provider call made.", queuedMessage: message, deliveryLogs: logs });
+  }
+  globalThis.NAXORA_PART65_MESSAGES.unshift(message);
+  globalThis.NAXORA_PART65_LOGS.unshift(...logs);
+  res.status(201).json({ success: true, mode: "mock", part: part65Config.part, message: "Communication queued safely in mock memory. No external provider call made.", queuedMessage: message, deliveryLogs: logs });
+});
+
+app.get("/api/part65/queue", async (req, res) => {
+  const result = await part65ListMessages(req.query || {});
+  const rows = part65FilterMessages(result.rows, req.query || {});
+  res.json({ success: true, part: part65Config.part, mode: result.mode, count: rows.length, messages: rows });
+});
+
+app.get("/api/part65/logs", async (req, res) => {
+  const collection = await part65GetLogsCollection();
+  const logs = collection ? await collection.find({}).sort({ createdAt: -1 }).limit(500).toArray() : (globalThis.NAXORA_PART65_LOGS || []);
+  res.json({ success: true, part: part65Config.part, mode: collection ? "mongodb" : "mock", count: logs.length, logs });
+});
+
+app.post("/api/part65/reminders/fees", async (req, res) => {
+  const payload = {
+    ...req.body,
+    type: "fee_reminder",
+    source: "part65_fee_reminder",
+    variables: {
+      instituteName: req.body?.instituteName || "NAXORA Institute",
+      parentName: req.body?.parentName || req.body?.recipientName || "Parent",
+      studentName: req.body?.studentName || "Student",
+      pendingAmount: req.body?.pendingAmount || req.body?.amount || "0",
+      dueDate: req.body?.dueDate || "Soon",
+      phone: req.body?.phone || "",
+      email: req.body?.email || ""
+    }
+  };
+  req.body = payload;
+  const message = part65NormalizeMessage(payload);
+  const logs = part65DeliveryLogsForMessage(message);
+  const messagesCollection = await part65GetMessagesCollection();
+  const logsCollection = await part65GetLogsCollection();
+  if (messagesCollection) {
+    await messagesCollection.updateOne({ messageId: message.messageId }, { $set: message }, { upsert: true });
+    if (logsCollection && logs.length) await logsCollection.insertMany(logs);
+  } else {
+    globalThis.NAXORA_PART65_MESSAGES.unshift(message);
+    globalThis.NAXORA_PART65_LOGS.unshift(...logs);
+  }
+  res.status(201).json({ success: true, part: part65Config.part, message: "Fee reminder queued safely.", queuedMessage: message, deliveryLogs: logs });
+});
+
+app.post("/api/part65/reminders/absence", async (req, res) => {
+  const payload = {
+    ...req.body,
+    type: "absence_alert",
+    source: "part65_absence_alert",
+    variables: {
+      instituteName: req.body?.instituteName || "NAXORA Institute",
+      parentName: req.body?.parentName || req.body?.recipientName || "Parent",
+      studentName: req.body?.studentName || "Student",
+      className: req.body?.className || req.body?.batchName || "class",
+      phone: req.body?.phone || "",
+      email: req.body?.email || ""
+    }
+  };
+  const message = part65NormalizeMessage(payload);
+  const logs = part65DeliveryLogsForMessage(message);
+  const messagesCollection = await part65GetMessagesCollection();
+  const logsCollection = await part65GetLogsCollection();
+  if (messagesCollection) {
+    await messagesCollection.updateOne({ messageId: message.messageId }, { $set: message }, { upsert: true });
+    if (logsCollection && logs.length) await logsCollection.insertMany(logs);
+  } else {
+    globalThis.NAXORA_PART65_MESSAGES.unshift(message);
+    globalThis.NAXORA_PART65_LOGS.unshift(...logs);
+  }
+  res.status(201).json({ success: true, part: part65Config.part, message: "Absence alert queued safely.", queuedMessage: message, deliveryLogs: logs });
+});
+
+app.post("/api/part65/test-results", async (req, res) => {
+  const payload = {
+    ...req.body,
+    type: "test_result",
+    source: "part65_test_result",
+    variables: {
+      instituteName: req.body?.instituteName || "NAXORA Institute",
+      studentName: req.body?.studentName || "Student",
+      testName: req.body?.testName || "Test",
+      marks: req.body?.marks || "0",
+      totalMarks: req.body?.totalMarks || "0",
+      remarks: req.body?.remarks || "Keep improving",
+      email: req.body?.email || "",
+      phone: req.body?.phone || ""
+    }
+  };
+  const message = part65NormalizeMessage(payload);
+  const logs = part65DeliveryLogsForMessage(message);
+  const messagesCollection = await part65GetMessagesCollection();
+  const logsCollection = await part65GetLogsCollection();
+  if (messagesCollection) {
+    await messagesCollection.updateOne({ messageId: message.messageId }, { $set: message }, { upsert: true });
+    if (logsCollection && logs.length) await logsCollection.insertMany(logs);
+  } else {
+    globalThis.NAXORA_PART65_MESSAGES.unshift(message);
+    globalThis.NAXORA_PART65_LOGS.unshift(...logs);
+  }
+  res.status(201).json({ success: true, part: part65Config.part, message: "Test result communication queued safely.", queuedMessage: message, deliveryLogs: logs });
+});
+
+app.post("/api/part65/announcements", async (req, res) => {
+  const recipients = Array.isArray(req.body?.recipients) && req.body.recipients.length ? req.body.recipients.slice(0, 50) : [{ recipientName: "All Students/Parents", consentAccepted: true }];
+  const queued = [];
+  const logsAll = [];
+  for (const recipient of recipients) {
+    const payload = {
+      ...(recipient || {}),
+      type: "announcement",
+      source: "part65_announcement",
+      channels: req.body?.channels || ["in_app"],
+      subject: req.body?.subject || "Important announcement",
+      consentAccepted: recipient?.consentAccepted === true || req.body?.consentAccepted === true,
+      variables: {
+        instituteName: req.body?.instituteName || "NAXORA Institute",
+        announcementText: req.body?.announcementText || req.body?.message || "Important update from institute.",
+        phone: recipient?.phone || "",
+        email: recipient?.email || ""
+      }
+    };
+    const message = part65NormalizeMessage(payload);
+    const logs = part65DeliveryLogsForMessage(message);
+    queued.push(message);
+    logsAll.push(...logs);
+  }
+  const messagesCollection = await part65GetMessagesCollection();
+  const logsCollection = await part65GetLogsCollection();
+  if (messagesCollection && queued.length) {
+    await messagesCollection.insertMany(queued);
+    if (logsCollection && logsAll.length) await logsCollection.insertMany(logsAll);
+  } else {
+    globalThis.NAXORA_PART65_MESSAGES.unshift(...queued);
+    globalThis.NAXORA_PART65_LOGS.unshift(...logsAll);
+  }
+  res.status(201).json({ success: true, part: part65Config.part, message: "Announcement queued safely.", count: queued.length, queuedMessages: queued, deliveryLogs: logsAll });
+});
+
+app.get("/api/part65/analytics", async (req, res) => {
+  const result = await part65ListMessages(req.query || {});
+  const logsCollection = await part65GetLogsCollection();
+  const logs = logsCollection ? await logsCollection.find({}).sort({ createdAt: -1 }).limit(1000).toArray() : (globalThis.NAXORA_PART65_LOGS || []);
+  res.json({ success: true, part: part65Config.part, mode: result.mode, analytics: part65Analytics(result.rows, logs) });
+});
+
+app.get("/api/part65/checklist", (req, res) => {
+  res.json({ success: true, part: part65Config.part, checklist: part65Checklist });
+});
+
+app.get("/api/part65/export", async (req, res) => {
+  const result = await part65ListMessages(req.query || {});
+  const logsCollection = await part65GetLogsCollection();
+  const logs = logsCollection ? await logsCollection.find({}).sort({ createdAt: -1 }).limit(1000).toArray() : (globalThis.NAXORA_PART65_LOGS || []);
+  res.json({ success: true, part: part65Config.part, exportedAt: new Date().toISOString(), config: part65Config, templates: part65Templates, analytics: part65Analytics(result.rows, logs), messages: result.rows, logs });
+});
+
+app.get("/api/part65/demo", async (req, res) => {
+  const result = await part65ListMessages({});
+  res.json({ success: true, part: part65Config.part, config: part65Config, channels: part65Channels, templates: part65Templates, messages: result.rows.slice(0, 10), checklist: part65Checklist });
+});
+// ================= END PART 65 =================
+
+
 // Same-server frontend hosting for Render/Railway/VPS deployment.
 app.use("/landing", express.static(frontendPath));
 
