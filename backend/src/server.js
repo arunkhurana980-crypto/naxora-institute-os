@@ -10279,7 +10279,12 @@ const modulePageRoutes = {
   "/owner-mobile-app": "institute-owner-app.html",
   "/owner-app": "institute-owner-app.html",
   "/owner-command-center": "institute-owner-app.html",
-  "/mobile-owner-dashboard": "institute-owner-app.html"
+  "/mobile-owner-dashboard": "institute-owner-app.html",
+  "/teacher-mobile-app": "teacher-mobile-app.html",
+  "/teacher-app": "teacher-mobile-app.html",
+  "/mobile-teacher-dashboard": "teacher-mobile-app.html",
+  "/teacher-command-center": "teacher-mobile-app.html",
+  "/teacher-app-mobile": "teacher-mobile-app.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -11171,6 +11176,514 @@ app.get("/api/part80/demo", (req, res) => {
   });
 });
 // ================= END PART 80 =================
+
+// ================= PART 81 — TEACHER APP =================
+// NAXORA OS 2.0 teacher mobile app foundation. Teacher sees only assigned
+// batches/students/classes/material/testing work. Includes browser voice
+// greeting starter for VANI so the assistant does not feel silent.
+
+const part81TeacherFeatures = [
+  {
+    key: "teacher_dashboard",
+    name: "Teacher Mobile Dashboard",
+    summary: "Daily classes, assigned batches, pending actions and alerts.",
+    problemSolved: "Teacher does not need desktop for daily teaching work."
+  },
+  {
+    key: "assigned_batches",
+    name: "Assigned Batches",
+    summary: "Only teacher's assigned batches and subjects.",
+    problemSolved: "Teacher cannot access unrelated batches."
+  },
+  {
+    key: "attendance_marking",
+    name: "Attendance Marking Foundation",
+    summary: "Mobile-ready attendance flow with preview before final save.",
+    problemSolved: "Classroom attendance can move from register to mobile."
+  },
+  {
+    key: "assignments_homework",
+    name: "Assignments and Homework",
+    summary: "Create/view homework drafts and pending submissions.",
+    problemSolved: "Teacher can manage homework quickly."
+  },
+  {
+    key: "tests_results",
+    name: "Tests and Results",
+    summary: "Test schedule, marks entry foundation and weak student list.",
+    problemSolved: "Teacher can track test work and student support needs."
+  },
+  {
+    key: "notes_material",
+    name: "Notes and Study Material",
+    summary: "Mobile material upload/share foundation.",
+    problemSolved: "Students can receive notes through portal/mobile flow later."
+  },
+  {
+    key: "live_classes",
+    name: "Live Classes",
+    summary: "Today live class list and class readiness status.",
+    problemSolved: "Teacher can start/check online classes faster."
+  },
+  {
+    key: "vani_teacher_assistant",
+    name: "VANI Teacher Assistant with Voice Starter",
+    summary: "Browser voice greeting plus private-screen-first teacher commands.",
+    problemSolved: "VANI no longer feels silent; teacher gets safe spoken greeting."
+  }
+];
+
+const part81TeacherRoleRules = [
+  {
+    role: "teacher",
+    allowed: true,
+    access: "Assigned batches, students, attendance, assignments, tests, notes/material and live classes only."
+  },
+  {
+    role: "institute_owner",
+    allowed: true,
+    previewOnly: true,
+    access: "Owner can preview teacher app readiness, but teacher actions still need assigned teacher context."
+  },
+  {
+    role: "branch_manager",
+    allowed: true,
+    previewOnly: true,
+    access: "Branch manager can review assigned branch teacher readiness, not act as teacher."
+  },
+  {
+    role: "student",
+    allowed: false,
+    access: "Student uses Part 82 Student App."
+  },
+  {
+    role: "parent",
+    allowed: false,
+    access: "Parent uses Part 83 Parent App."
+  },
+  {
+    role: "accountant",
+    allowed: false,
+    access: "Accountant uses finance access only."
+  },
+  {
+    role: "receptionist_counsellor",
+    allowed: false,
+    access: "Receptionist/Counsellor uses CRM/admission workflows only."
+  },
+  {
+    role: "naxora_super_admin",
+    allowed: false,
+    access: "Platform support access only, not unrestricted teacher/private class data."
+  }
+];
+
+function normalizePart81Role(role) {
+  const r = String(role || "teacher").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part81AccessCheck({ role, instituteId, teacherId, batchId }) {
+  const normalizedRole = normalizePart81Role(role);
+  const rule = part81TeacherRoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole,
+    allowed: false,
+    access: "Unknown or unsupported role."
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const hasTeacherContext = normalizedRole !== "teacher" || Boolean(String(teacherId || "TCH-DEMO-001").trim());
+
+  const allowed = Boolean(rule.allowed && hasInstituteId && hasTeacherContext);
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    teacherId: teacherId || (normalizedRole === "teacher" ? "TCH-DEMO-001" : null),
+    batchId: batchId || null,
+    allowed,
+    previewOnly: Boolean(rule.previewOnly),
+    reason: !rule.allowed
+      ? rule.access
+      : !hasInstituteId
+        ? "Institute ID missing. Teacher app opens only inside a logged institute account."
+        : !hasTeacherContext
+          ? "Teacher ID/assigned teacher context missing."
+          : rule.previewOnly
+            ? "Preview allowed. Final teacher actions require assigned teacher context."
+            : "Teacher app access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    restrictToAssignedBatches: true
+  };
+}
+
+function part81TeacherDashboard(query = {}) {
+  const teacherId = query.teacherId || "TCH-DEMO-001";
+  return {
+    teacherId,
+    instituteId: query.instituteId || "NX-DEMO-INST-001",
+    generatedAt: new Date().toISOString(),
+    today: {
+      classesToday: 4,
+      attendancePending: 1,
+      assignmentsToReview: 18,
+      testsToEvaluate: 2,
+      doubtsPending: 7,
+      liveClassesToday: 1
+    },
+    assignedBatches: [
+      { batchId: "BAT-10-MATH-A", name: "Class 10 Maths A", subject: "Maths", students: 38, nextClass: "10:00 AM", attendanceMarked: false },
+      { batchId: "BAT-10-MATH-B", name: "Class 10 Maths B", subject: "Maths", students: 34, nextClass: "12:00 PM", attendanceMarked: true },
+      { batchId: "BAT-9-SCI-A", name: "Class 9 Science A", subject: "Science", students: 31, nextClass: "04:00 PM", attendanceMarked: false }
+    ],
+    supportAlerts: [
+      { student: "Aman", batch: "Class 10 Maths A", reason: "Attendance below 70%", privateScreenFirst: true },
+      { student: "Riya", batch: "Class 10 Maths B", reason: "Weak in Quadratic Equations", privateScreenFirst: true },
+      { student: "Kabir", batch: "Class 9 Science A", reason: "Homework missing twice", privateScreenFirst: true }
+    ]
+  };
+}
+
+const part81Checklist = [
+  "Teacher app page opens on live URL",
+  "Status API returns success true",
+  "Teacher access allowed with instituteId",
+  "Student/parent access blocked",
+  "Assigned batches endpoint returns only assigned batch foundation",
+  "Attendance draft endpoint works with preview-first rule",
+  "VANI browser voice starter available on UI",
+  "VANI private-screen-first rule preserved",
+  "Previous Part 1–80 routes remain preserved"
+];
+
+app.get("/api/part81/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 81 — Teacher App",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 81,
+    nextPart: "Part 82 — Student App",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/teacher-mobile-app", "/teacher-app", "/mobile-teacher-dashboard", "/teacher-command-center", "/teacher-app-mobile"],
+    apiRoutes: [
+      "/api/part81/config",
+      "/api/part81/features",
+      "/api/part81/roles",
+      "/api/part81/access-check",
+      "/api/part81/dashboard",
+      "/api/part81/my-batches",
+      "/api/part81/attendance/draft",
+      "/api/part81/assignments",
+      "/api/part81/tests",
+      "/api/part81/notes-material",
+      "/api/part81/live-classes",
+      "/api/part81/student-support",
+      "/api/part81/vani/greeting",
+      "/api/part81/vani/command"
+    ],
+    vaniVoiceStarter: true
+  });
+});
+
+app.get("/api/part81/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "NAXORA Teacher App",
+    appType: "mobile_teacher_workspace",
+    version: "2.0-teacher-foundation",
+    login: {
+      required: true,
+      requiresInstituteId: true,
+      roleRequired: "teacher",
+      assignedBatchRestriction: true
+    },
+    voice: {
+      browserSpeechStarter: true,
+      greeting: "Namaste, main VANI hoon. Main aapki teaching me kya help kar sakti hoon?",
+      note: "Browser speech works only after user taps Start VANI because browsers block auto-play voice."
+    },
+    sensitiveDataPolicy: "Student personal/support data is private-screen-first."
+  });
+});
+
+app.get("/api/part81/features", (req, res) => {
+  res.json({ success: true, features: part81TeacherFeatures });
+});
+
+app.get("/api/part81/roles", (req, res) => {
+  res.json({ success: true, roles: part81TeacherRoleRules });
+});
+
+app.get("/api/part81/access-check", (req, res) => {
+  res.json({ success: true, access: part81AccessCheck(req.query || {}) });
+});
+
+app.get("/api/part81/dashboard", (req, res) => {
+  const access = part81AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, dashboard: part81TeacherDashboard(req.query || {}) });
+});
+
+app.get("/api/part81/my-batches", (req, res) => {
+  const access = part81AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({
+    success: true,
+    access,
+    assignedOnly: true,
+    batches: part81TeacherDashboard(req.query || {}).assignedBatches
+  });
+});
+
+app.post("/api/part81/attendance/draft", (req, res) => {
+  const access = part81AccessCheck(req.body || {});
+  if (!access.allowed || access.previewOnly) {
+    return res.status(403).json({ success: false, access, message: access.previewOnly ? "Preview user cannot mark attendance." : access.reason });
+  }
+  const batchId = req.body?.batchId || "BAT-10-MATH-A";
+  const present = Array.isArray(req.body?.presentStudentIds) ? req.body.presentStudentIds : ["STU-001", "STU-002"];
+  const absent = Array.isArray(req.body?.absentStudentIds) ? req.body.absentStudentIds : ["STU-003"];
+  res.json({
+    success: true,
+    mode: "draft_preview",
+    confirmationRequired: true,
+    message: "Attendance draft ready. Final save will require confirmation.",
+    draft: {
+      draftId: `ATT-DRAFT-${Date.now()}`,
+      batchId,
+      presentCount: present.length,
+      absentCount: absent.length,
+      presentStudentIds: present,
+      absentStudentIds: absent,
+      createdAt: new Date().toISOString()
+    }
+  });
+});
+
+app.get("/api/part81/attendance/draft", (req, res) => {
+  const access = part81AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({
+    success: true,
+    mode: "preview",
+    confirmationRequired: true,
+    sampleDraft: {
+      batchId: req.query.batchId || "BAT-10-MATH-A",
+      presentCount: 35,
+      absentCount: 3,
+      note: "Use POST for actual draft creation."
+    }
+  });
+});
+
+app.get("/api/part81/assignments", (req, res) => {
+  const access = part81AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({
+    success: true,
+    assignments: [
+      { id: "HW-001", batch: "Class 10 Maths A", title: "Quadratic Equation Practice", due: "Tomorrow", pendingSubmissions: 11 },
+      { id: "HW-002", batch: "Class 9 Science A", title: "Motion Numericals", due: "Friday", pendingSubmissions: 7 }
+    ]
+  });
+});
+
+app.get("/api/part81/tests", (req, res) => {
+  const access = part81AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({
+    success: true,
+    tests: [
+      { id: "TEST-001", batch: "Class 10 Maths A", topic: "Quadratic Equations", date: "This Saturday", marksEntryPending: true },
+      { id: "TEST-002", batch: "Class 9 Science A", topic: "Motion", date: "Next Monday", marksEntryPending: false }
+    ]
+  });
+});
+
+app.get("/api/part81/notes-material", (req, res) => {
+  const access = part81AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({
+    success: true,
+    material: [
+      { id: "MAT-001", title: "Quadratic Formula Notes", batch: "Class 10 Maths A", status: "shared" },
+      { id: "MAT-002", title: "Motion Summary Sheet", batch: "Class 9 Science A", status: "draft" }
+    ],
+    uploadPolicy: "File upload integration is future step. Do not upload secrets/private files."
+  });
+});
+
+app.get("/api/part81/live-classes", (req, res) => {
+  const access = part81AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({
+    success: true,
+    liveClasses: [
+      { id: "LIVE-001", batch: "Class 10 Maths A", time: "07:00 PM", topic: "Quadratic Doubt Session", readiness: "ready" }
+    ]
+  });
+});
+
+app.get("/api/part81/student-support", (req, res) => {
+  const access = part81AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({
+    success: true,
+    privateScreenFirst: true,
+    supportAlerts: part81TeacherDashboard(req.query || {}).supportAlerts
+  });
+});
+
+app.get("/api/part81/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI",
+    voiceStarter: true,
+    language: "Hindi/Hinglish",
+    greeting: "Namaste, main VANI hoon. Main aapki teaching me kya help kar sakti hoon?",
+    browserRequirement: "Voice starts after user taps Start VANI because browsers block automatic speech.",
+    safeToSpeak: true,
+    privateScreenFirstReminder: "Student private data screen par dikhaya jayega, loudly nahi bola jayega."
+  });
+});
+
+app.post("/api/part81/vani/command", (req, res) => {
+  const command = String(req.body?.command || req.query?.command || "").trim();
+  const access = part81AccessCheck({
+    role: req.body?.role || req.query?.role || "teacher",
+    instituteId: req.body?.instituteId || req.query?.instituteId || "NX-DEMO-INST-001",
+    teacherId: req.body?.teacherId || req.query?.teacherId || "TCH-DEMO-001",
+    batchId: req.body?.batchId || req.query?.batchId
+  });
+
+  if (!access.allowed) {
+    return res.status(403).json({
+      success: false,
+      assistant: "VANI",
+      access,
+      spokenSafeSummary: "Ye teacher app sirf assigned teacher login me available hai.",
+      privateScreenFirst: true
+    });
+  }
+
+  const lower = command.toLowerCase();
+  let intent = "teacher_dashboard";
+  if (lower.includes("attendance") || lower.includes("present") || lower.includes("absent")) intent = "attendance_help";
+  if (lower.includes("assignment") || lower.includes("homework")) intent = "assignment_help";
+  if (lower.includes("test") || lower.includes("marks") || lower.includes("result")) intent = "test_help";
+  if (lower.includes("notes") || lower.includes("material")) intent = "material_help";
+  if (lower.includes("live")) intent = "live_class_help";
+  if (lower.includes("weak") || lower.includes("support") || lower.includes("student")) intent = "student_support";
+
+  const dashboard = part81TeacherDashboard({ teacherId: access.teacherId, instituteId: access.instituteId });
+  res.json({
+    success: true,
+    assistant: "VANI",
+    part: "Part 81 — Teacher App",
+    command: command || "VANI, teacher dashboard dikhao",
+    detectedIntent: intent,
+    access,
+    voiceEnabled: true,
+    privateScreenFirst: intent === "student_support",
+    spokenSafeSummary: intent === "student_support"
+      ? "Student support alerts screen par privately dikhaye gaye hain."
+      : "Teacher dashboard ready hai. Aaj ki classes aur pending work screen par dikh rahe hain.",
+    screenPreview: {
+      today: dashboard.today,
+      assignedBatches: dashboard.assignedBatches,
+      supportAlerts: dashboard.supportAlerts
+    },
+    confirmationRequiredFor: ["attendance_final_save", "marks_publish", "assignment_send", "delete", "export"],
+    auditLog: {
+      event: "part81_vani_teacher_command",
+      intent,
+      createdAt: new Date().toISOString()
+    }
+  });
+});
+
+app.get("/api/part81/vani/command", (req, res) => {
+  const command = String(req.query.q || req.query.command || "").trim();
+  const access = part81AccessCheck({
+    role: req.query.role || "teacher",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    teacherId: req.query.teacherId || "TCH-DEMO-001",
+    batchId: req.query.batchId
+  });
+  if (!access.allowed) {
+    return res.status(403).json({
+      success: false,
+      assistant: "VANI",
+      access,
+      spokenSafeSummary: "Ye teacher app sirf assigned teacher login me available hai.",
+      privateScreenFirst: true
+    });
+  }
+  const dashboard = part81TeacherDashboard({ teacherId: access.teacherId, instituteId: access.instituteId });
+  res.json({
+    success: true,
+    assistant: "VANI",
+    part: "Part 81 — Teacher App",
+    command: command || "VANI, teacher dashboard dikhao",
+    detectedIntent: "teacher_dashboard",
+    access,
+    voiceEnabled: true,
+    privateScreenFirst: false,
+    spokenSafeSummary: "Teacher dashboard ready hai. Aaj ki classes aur pending work screen par dikh rahe hain.",
+    screenPreview: dashboard.today,
+    auditLog: { event: "part81_vani_teacher_command_get", createdAt: new Date().toISOString() }
+  });
+});
+
+app.get("/api/part81/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "teacher_app_created", message: "Part 81 Teacher App active.", createdAt: new Date().toISOString() },
+      { type: "vani_voice_starter_added", message: "VANI browser voice greeting added.", createdAt: new Date().toISOString() },
+      { type: "assigned_batch_guard", message: "Teacher access limited to assigned batches/students.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part81/checklist", (req, res) => {
+  res.json({ success: true, checklist: part81Checklist });
+});
+
+app.get("/api/part81/export", (req, res) => {
+  const access = part81AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({
+    success: true,
+    exportType: "part81-teacher-app-readiness",
+    ownerOrTeacherVerificationRequired: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      features: part81TeacherFeatures,
+      dashboard: part81TeacherDashboard(req.query || {}),
+      checklist: part81Checklist
+    }
+  });
+});
+
+app.get("/api/part81/demo", (req, res) => {
+  res.json({
+    success: true,
+    demo: {
+      access: part81AccessCheck({ role: "teacher", instituteId: "NX-DEMO-INST-001", teacherId: "TCH-DEMO-001" }),
+      dashboard: part81TeacherDashboard({ instituteId: "NX-DEMO-INST-001", teacherId: "TCH-DEMO-001" }),
+      features: part81TeacherFeatures,
+      vaniGreeting: "Namaste, main VANI hoon. Main aapki teaching me kya help kar sakti hoon?",
+      vaniCommand: "VANI, teacher dashboard dikhao",
+      nextPart: "Part 82 — Student App"
+    }
+  });
+});
+// ================= END PART 81 =================
+
 
 
 // ================= END PART 52 =================

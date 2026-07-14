@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — Teacher App</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/teacher-mobile-app.css" />
+</head>
+<body>
+  <main class="teacher-app">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 81 • NAXORA OS 2.0</p>
+        <h1>Teacher App</h1>
+        <p class="lead">
+          Mobile workspace for assigned batches, attendance, assignments, tests,
+          notes/material, live classes, student support alerts and VANI Teacher Assistant.
+        </p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">VANI Voice Starter</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Tap Start VANI to hear greeting.</p>
+        <div class="voice-actions">
+          <button id="startVaniBtn">Start VANI</button>
+          <button id="muteVaniBtn">Mute</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="access-panel">
+      <div>
+        <p class="kicker">Teacher access check</p>
+        <h2>Role + Institute ID + Teacher Context</h2>
+      </div>
+      <div class="controls">
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="teacherId" value="TCH-DEMO-001" />
+        <select id="roleSelect">
+          <option value="teacher">Teacher</option>
+          <option value="institute_owner">Institute Owner Preview</option>
+          <option value="branch_manager">Branch Manager Preview</option>
+          <option value="student">Student Block Test</option>
+          <option value="parent">Parent Block Test</option>
+        </select>
+        <button id="loadBtn">Load Teacher App</button>
+      </div>
+      <pre id="accessBox" class="code">Waiting...</pre>
+    </section>
+
+    <section class="metrics" id="metrics"></section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Assigned Batches</p>
+        <div id="batches" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Student Support</p>
+        <div id="supportAlerts" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Teacher Tools</p>
+        <div id="features" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">VANI Teacher Assistant</p>
+        <h2>Ask safely</h2>
+        <p>Private student support details stay on screen. VANI speaks only safe summary.</p>
+        <div class="controls">
+          <input id="vaniCommand" value="VANI, teacher dashboard dikhao" />
+          <button id="askVaniBtn">Ask VANI</button>
+        </div>
+        <pre id="vaniOutput" class="code">Waiting...</pre>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Testing links</p>
+      <div class="links">
+        <a href="/api/part81/status" target="_blank">Status</a>
+        <a href="/api/part81/demo" target="_blank">Demo</a>
+        <a href="/api/part81/dashboard?role=teacher&instituteId=NX-DEMO-INST-001&teacherId=TCH-DEMO-001" target="_blank">Teacher Dashboard</a>
+        <a href="/api/part81/dashboard?role=student&instituteId=NX-DEMO-INST-001" target="_blank">Student Block Test</a>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/vani-voice-starter.js"></script>
+  <script src="/teacher-mobile-app.js"></script>
+</body>
+</html>

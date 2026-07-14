@@ -86,6 +86,7 @@ async function askVani() {
       })
     });
     $("vaniOutput").textContent = JSON.stringify(data, null, 2);
+    window.NaxoraVaniVoice?.speak(data.spokenSafeSummary);
   } catch (err) {
     $("vaniOutput").textContent = JSON.stringify(err.data || { error: err.message }, null, 2);
   }
@@ -97,3 +98,24 @@ $("roleSelect").addEventListener("change", loadOwnerApp);
 
 loadStatus();
 loadOwnerApp();
+
+
+const ownerStartBtn = document.getElementById("ownerStartVani");
+const ownerMuteBtn = document.getElementById("ownerMuteVani");
+
+if (ownerStartBtn) {
+  ownerStartBtn.addEventListener("click", () => {
+    const line = "Namaste, main VANI hoon. Main aapki kya help kar sakti hoon?";
+    const result = window.NaxoraVaniVoice?.speak(line);
+    if (result && result.spoken === false) {
+      $("vaniOutput").textContent = `Voice not started: ${result.reason}`;
+    }
+  });
+}
+if (ownerMuteBtn) {
+  ownerMuteBtn.addEventListener("click", () => {
+    const next = !window.NaxoraVaniVoice?.isMuted();
+    window.NaxoraVaniVoice?.setMuted(next);
+    $("vaniOutput").textContent = next ? "VANI muted." : "VANI unmuted.";
+  });
+}
