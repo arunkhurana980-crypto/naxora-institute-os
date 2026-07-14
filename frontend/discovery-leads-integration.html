@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA OS | Discovery Leads Integration</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/discovery-leads-integration.css" />
+</head>
+<body>
+  <main class="part63-shell">
+    <section class="part63-hero">
+      <div class="part63-brand-row">
+        <img src="/assets/naxora-logo.svg" alt="NAXORA" onerror="this.style.display='none'" />
+        <span>Part 63 · Discovery and Leads Integration</span>
+      </div>
+      <h1>Public profile se admission follow-up tak complete journey</h1>
+      <p>Part 59 public profiles, Part 61 nearby search, Part 62 comparison, Part 60 enquiries aur Part 58 CRM follow-ups ko ek connected admission journey me laata hai.</p>
+      <div class="part63-pill-row"><span>Public Profile</span><span>Nearby</span><span>Compare</span><span>Callback</span><span>CRM</span><span>Conversion</span></div>
+    </section>
+    <section class="part63-grid">
+      <div class="part63-card"><div class="part63-card-head"><h2>Search integrated journey</h2><p>City/course ke basis par discovery-to-admission flow check karo.</p></div><form id="part63Form" class="part63-form"><label>City <input name="city" value="Delhi" placeholder="Delhi / Noida / Gurugram" /></label><label>Course / Class <input name="course" placeholder="Class 10 / JEE / NEET" /></label><label>Radius KM<select name="radiusKm"><option value="25">25 km</option><option value="50">50 km</option><option value="80" selected>80 km</option><option value="150">150 km</option></select></label><button type="submit">Load Journey</button></form></div>
+      <div class="part63-card"><div class="part63-card-head"><h2>Live Status</h2><p>Part 63 backend integration status.</p></div><div id="part63Status" class="part63-status">Loading...</div></div>
+    </section>
+    <section class="part63-card"><div class="part63-card-head"><h2>Journey Funnel</h2><p>Discovery → enquiry → CRM follow-up → conversion summary.</p></div><div id="part63Funnel" class="part63-funnel">Loading funnel...</div></section>
+    <section class="part63-card"><div class="part63-card-head part63-results-head"><div><h2>Connected institute journeys</h2><p id="part63Summary">Loading journey data...</p></div><a href="/nearby-institutes" class="part63-link">Nearby</a></div><div id="part63Journeys" class="part63-journeys">Loading...</div></section>
+    <section class="part63-card"><div class="part63-card-head"><h2>Journey stages</h2><p>Ye stages student ko institute discover karne se admission tak le jaate hain.</p></div><div id="part63Stages" class="part63-stages"></div></section>
+    <section class="part63-card"><div class="part63-card-head"><h2>Part 63 Checklist</h2><p>Integration test ke liye checklist.</p></div><ul id="part63Checklist" class="part63-checklist"></ul></section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/discovery-leads-integration.js"></script>
+</body>
+</html>

@@ -45,3 +45,7 @@ http://127.0.0.1:5000/api/discovery/status
 
 Final Testing + Bug Fix Build has been merged on top of Part 48. Open `/app/final-testing.html` or check `/api/final-testing/status`.
 
+
+
+## Part 63 - Discovery Leads Integration
+Public profiles, nearby search, comparison, enquiries and follow-ups are connected into a safe student-to-admission journey.

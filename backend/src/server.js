@@ -105,7 +105,11 @@ const publicRoutes = [
   "/compare-institutes",
   "/compare",
   "/institute-comparison",
-  "/compare-coaching"
+  "/compare-coaching",
+  "/discovery-leads-integration",
+  "/discovery-journey",
+  "/admission-journey",
+  "/lead-integration"
 ];
 
 const internalPageFiles = new Set([
@@ -1790,7 +1794,8 @@ const part53PageRegistry = [
   { group: "Discovery", label: "Part 59 Public Institute Profile", cleanRoute: "/public-institute-profile", htmlRoute: "/public-institute-profile.html", file: "public-institute-profile.html", critical: true },
   { group: "Leads", label: "Part 60 Request Callback / Send Enquiry", cleanRoute: "/request-callback", htmlRoute: "/request-callback.html", file: "request-callback.html", critical: true },
   { group: "Discovery", label: "Part 61 Nearby Institutes", cleanRoute: "/nearby-institutes", htmlRoute: "/nearby-institutes.html", file: "nearby-institutes.html", critical: true },
-  { group: "Discovery", label: "Part 62 Compare Institutes", cleanRoute: "/compare-institutes", htmlRoute: "/compare-institutes.html", file: "compare-institutes.html", critical: true }
+  { group: "Discovery", label: "Part 62 Compare Institutes", cleanRoute: "/compare-institutes", htmlRoute: "/compare-institutes.html", file: "compare-institutes.html", critical: true },
+  { group: "Discovery", label: "Part 63 Discovery Leads Integration", cleanRoute: "/discovery-leads-integration", htmlRoute: "/discovery-leads-integration.html", file: "discovery-leads-integration.html", critical: true }
 ];
 
 const part53ApiRegistry = [
@@ -1839,7 +1844,8 @@ const part53ApiRegistry = [
   { group: "Part 59", label: "Public Institute Profile", prefix: "/api/part59", method: "GET/POST/PATCH", critical: true, collection: "part59publicprofiles" },
   { group: "Part 60", label: "Request Callback / Send Enquiry", prefix: "/api/part60", method: "GET/POST/PATCH", critical: true, collection: "part60callbackenquiries" },
   { group: "Part 61", label: "Nearby Institutes", prefix: "/api/part61", method: "GET", critical: true, collection: "part59publicprofiles" },
-  { group: "Part 62", label: "Compare Institutes", prefix: "/api/part62", method: "GET/POST", critical: true, collection: "part59publicprofiles" }
+  { group: "Part 62", label: "Compare Institutes", prefix: "/api/part62", method: "GET/POST", critical: true, collection: "part59publicprofiles" },
+  { group: "Part 63", label: "Discovery Leads Integration", prefix: "/api/part63", method: "GET/POST", critical: true, collection: "part59publicprofiles + part60callbackenquiries + part58enquiryfollowups" }
 ];
 
 const part53CriticalFlows = [
@@ -4978,6 +4984,319 @@ app.get("/api/part62/demo", async (req, res) => {
 // ================= END PART 62 =================
 
 
+
+// ================= PART 63: DISCOVERY AND LEADS INTEGRATION =================
+// Roadmap goal: Public profiles, nearby search, comparison, enquiries aur follow-ups ko ek complete student-to-admission journey me connect karna.
+// Safe rule: Part 63 integrates public discovery + consented enquiry + CRM follow-up data. It does not expose private student/admin data.
+const part63Checklist = [
+  "Discovery Leads Integration page opens on /discovery-leads-integration.",
+  "Public profiles from Part 59 are connected to search/discovery journey.",
+  "Nearby search from Part 61 is connected to discovery journey.",
+  "Compare Institutes from Part 62 is connected to decision journey.",
+  "Request Callback / Send Enquiry from Part 60 is connected to lead capture.",
+  "Enquiry Follow-Up CRM from Part 58 is connected to follow-up and conversion status.",
+  "Consent-based lead sharing rule is visible and enforced at journey level.",
+  "No private student fee/attendance/admin data is exposed in public discovery APIs.",
+  "Mock mode fallback works even if MongoDB data is empty."
+];
+
+const part63Stages = [
+  { id: "profile", label: "Public Profile", route: "/public-institute-profile", api: "/api/part59/profile", owner: "Part 59", purpose: "Student/parent institute ka public information dekhta hai." },
+  { id: "nearby", label: "Nearby Search", route: "/nearby-institutes", api: "/api/part61/nearby", owner: "Part 61", purpose: "Student city, course aur distance filter se institutes find karta hai." },
+  { id: "compare", label: "Compare", route: "/compare-institutes", api: "/api/part62/compare", owner: "Part 62", purpose: "Student fees, distance, courses, facilities aur results compare karta hai." },
+  { id: "enquiry", label: "Request Callback", route: "/request-callback", api: "/api/part60/enquiry", owner: "Part 60", purpose: "Student/parent consent ke saath enquiry bhejta hai." },
+  { id: "followup", label: "CRM Follow-Up", route: "/enquiry-followup-crm", api: "/api/part58/leads", owner: "Part 58", purpose: "Counsellor call notes, reminders aur lead status manage karta hai." },
+  { id: "conversion", label: "Admission Conversion", route: "/smart-enrolment", api: "/api/part56/enrolments", owner: "Part 56", purpose: "Interested lead ko student enrolment/admission me convert kiya jata hai." }
+];
+
+const part63Config = {
+  journeyName: "Discovery to Admission Journey",
+  publicSafeFields: ["profileId", "name", "city", "area", "courses", "fees", "verified", "rating", "demoAvailable", "profileUrl", "callbackUrl", "compareUrl", "crmUrl"],
+  consentRule: "Lead sharing sirf tab valid hai jab enquiry/callback form me consent accepted ho. Public discovery APIs private student/admin data expose nahi karti.",
+  connectedParts: ["Part 59 Public Profile", "Part 61 Nearby Search", "Part 62 Compare", "Part 60 Enquiry", "Part 58 Follow-Up CRM"],
+  nextPart: "Part 64 - Live Classes Completion"
+};
+
+globalThis.NAXORA_PART63_EVENTS = globalThis.NAXORA_PART63_EVENTS || [];
+
+function part63CleanText(value, max = 180) {
+  return String(value ?? "").trim().slice(0, max);
+}
+
+function part63Array(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function part63PhoneKey(value) {
+  return String(value ?? "").replace(/\D/g, "").slice(-10);
+}
+
+function part63ProfileId(row = {}) {
+  return part63CleanText(row.profileId || row.slug || row.id || row.instituteId || row.instituteProfileId || "", 140);
+}
+
+async function part63Profiles(query = {}) {
+  if (typeof part62CandidateRows === "function") {
+    const { mode, rows, origin } = await part62CandidateRows(query || {});
+    return { mode, origin, rows: rows.map((row) => row.raw ? part62NormalizeInstitute(row.raw, origin) : row) };
+  }
+  let rows = [];
+  let mode = "mock";
+  if (typeof part59GetCollection === "function") {
+    const collection = await part59GetCollection();
+    if (collection) {
+      rows = await collection.find({}).sort({ updatedAt: -1 }).limit(300).toArray();
+      mode = "mongodb";
+    }
+  }
+  if (!rows.length) rows = globalThis.NAXORA_PART59_PROFILES || [];
+  return { mode, origin: null, rows: rows.map((row) => typeof part62NormalizeInstitute === "function" ? part62NormalizeInstitute(row) : row) };
+}
+
+async function part63Enquiries() {
+  let rows = [];
+  let mode = "mock";
+  if (typeof part60GetCollection === "function") {
+    const collection = await part60GetCollection();
+    if (collection) {
+      rows = await collection.find({}).sort({ createdAt: -1 }).limit(500).toArray();
+      mode = "mongodb";
+    }
+  }
+  if (!rows.length) rows = globalThis.NAXORA_PART60_ENQUIRIES || [];
+  return { mode, rows: rows.map((row) => typeof part60PublicRequestView === "function" ? part60PublicRequestView(row) : row) };
+}
+
+async function part63Leads() {
+  let rows = [];
+  let mode = "mock";
+  if (typeof part58GetCollection === "function") {
+    const collection = await part58GetCollection();
+    if (collection) {
+      rows = await collection.find({}).sort({ updatedAt: -1 }).limit(500).toArray();
+      mode = "mongodb";
+    }
+  }
+  if (!rows.length) rows = globalThis.NAXORA_PART58_LEADS || [];
+  return { mode, rows: rows.map((row) => typeof part58PublicLeadView === "function" ? part58PublicLeadView(row) : row) };
+}
+
+function part63PublicInstitute(row = {}, query = {}) {
+  const profileId = part63ProfileId(row) || `profile-${Date.now()}`;
+  const courseText = part63Array(row.courses).map((course) => part63CleanText(course?.name || course?.title || course, 80)).filter(Boolean);
+  const city = part63CleanText(row.city || row.address?.city || "", 80);
+  return {
+    profileId,
+    name: part63CleanText(row.name || row.instituteName || "Institute", 120),
+    tagline: part63CleanText(row.tagline || row.description || "Public institute profile available.", 220),
+    city,
+    area: part63CleanText(row.area || row.address?.area || "", 80),
+    distanceLabel: row.distanceLabel || (row.distanceKm !== null && row.distanceKm !== undefined ? `${row.distanceKm} km` : "City based"),
+    verified: Boolean(row.verified || row.verification?.verified),
+    courses: courseText,
+    fees: row.fees || row.feesRange || { label: "Ask institute" },
+    ratingLabel: row.ratingLabel || (row.rating ? `${row.rating}/5` : "Not rated"),
+    demoLabel: row.demoLabel || (row.demoAvailable ? "Available" : "Ask institute"),
+    profileUrl: `/public-institute-profile?profileId=${encodeURIComponent(profileId)}`,
+    nearbyUrl: `/nearby-institutes?city=${encodeURIComponent(city || query.city || "")}&course=${encodeURIComponent(query.course || query.q || "")}`,
+    compareUrl: `/compare-institutes?ids=${encodeURIComponent(profileId)}&city=${encodeURIComponent(city || query.city || "")}`,
+    callbackUrl: `/request-callback?profileId=${encodeURIComponent(profileId)}&course=${encodeURIComponent((courseText[0] || query.course || ""))}&source=discovery_integration`,
+    crmUrl: `/enquiry-followup-crm?profileId=${encodeURIComponent(profileId)}`
+  };
+}
+
+function part63MatchEnquiryToProfile(enquiry = {}, profileId = "") {
+  const id = part63CleanText(profileId, 140);
+  return [enquiry.profileId, enquiry.instituteProfileId, enquiry.instituteId, enquiry.slug].some((value) => part63CleanText(value, 140) === id);
+}
+
+function part63BuildJourneyForProfile(profile = {}, enquiries = [], leads = [], query = {}) {
+  const publicProfile = part63PublicInstitute(profile, query);
+  const relatedEnquiries = enquiries.filter((item) => part63MatchEnquiryToProfile(item, publicProfile.profileId));
+  const relatedPhones = new Set(relatedEnquiries.map((item) => part63PhoneKey(item.phone || item.parentPhone || item.mobile)).filter(Boolean));
+  const relatedLeads = leads.filter((lead) => {
+    const leadProfileId = part63CleanText(lead.profileId || lead.instituteProfileId || lead.instituteId || "", 140);
+    if (leadProfileId && leadProfileId === publicProfile.profileId) return true;
+    const leadPhone = part63PhoneKey(lead.phone || lead.parentPhone || lead.mobile);
+    return leadPhone && relatedPhones.has(leadPhone);
+  });
+  const converted = relatedLeads.filter((lead) => lead.status === "converted" || lead.conversion?.converted).length;
+  const openFollowups = relatedLeads.filter((lead) => !["converted", "lost", "not_interested"].includes(lead.status)).length;
+  const consented = relatedEnquiries.filter((item) => item.consentAccepted || item.consent?.accepted || item.consent === true).length;
+  const score = Math.min(100, (publicProfile.verified ? 15 : 0) + Math.min(relatedEnquiries.length * 18, 36) + Math.min(relatedLeads.length * 16, 32) + converted * 17);
+  return {
+    ...publicProfile,
+    journeyScore: score,
+    journeyHealth: score >= 70 ? "strong" : score >= 35 ? "active" : "needs_leads",
+    enquiryCount: relatedEnquiries.length,
+    consentedEnquiries: consented,
+    crmLeadCount: relatedLeads.length,
+    openFollowups,
+    convertedCount: converted,
+    nextAction: converted ? "Track converted admissions" : relatedEnquiries.length ? "Follow up in CRM" : "Promote profile and collect enquiry",
+    connected: {
+      publicProfile: true,
+      nearbySearch: true,
+      comparison: true,
+      enquiryCapture: relatedEnquiries.length > 0,
+      crmFollowup: relatedLeads.length > 0,
+      admissionConversion: converted > 0
+    }
+  };
+}
+
+async function part63BuildJourney(query = {}) {
+  const profilesData = await part63Profiles(query);
+  const enquiriesData = await part63Enquiries();
+  const leadsData = await part63Leads();
+  const institutes = profilesData.rows.map((row) => part63BuildJourneyForProfile(row, enquiriesData.rows, leadsData.rows, query));
+  const city = part63CleanText(query.city, 80).toLowerCase();
+  const course = part63CleanText(query.course || query.q, 120).toLowerCase();
+  const filtered = institutes.filter((item) => {
+    const text = [item.name, item.city, item.area, item.tagline, ...(item.courses || [])].join(" ").toLowerCase();
+    if (city && !text.includes(city)) return false;
+    if (course && !text.includes(course)) return false;
+    return true;
+  }).sort((a, b) => b.journeyScore - a.journeyScore).slice(0, 24);
+  return { mode: profilesData.mode, institutes: filtered, allInstitutes: institutes, enquiries: enquiriesData.rows, leads: leadsData.rows };
+}
+
+function part63Funnel(institutes = [], enquiries = [], leads = []) {
+  const converted = leads.filter((lead) => lead.status === "converted" || lead.conversion?.converted).length;
+  const followups = leads.filter((lead) => !["converted", "lost", "not_interested"].includes(lead.status)).length;
+  const consented = enquiries.filter((item) => item.consentAccepted || item.consent?.accepted || item.consent === true).length;
+  return {
+    publicProfiles: institutes.length,
+    searchableProfiles: institutes.filter((item) => item.verified || item.city || item.courses?.length).length,
+    comparisonReady: institutes.filter((item) => item.compareUrl).length,
+    enquiries: enquiries.length,
+    consentedEnquiries: consented,
+    crmLeads: leads.length,
+    openFollowups: followups,
+    convertedAdmissions: converted,
+    enquiryToLeadRate: enquiries.length ? Math.round((leads.length / enquiries.length) * 100) : 0,
+    leadToConversionRate: leads.length ? Math.round((converted / leads.length) * 100) : 0
+  };
+}
+
+app.get("/discovery-leads-integration", (req, res) => sendFileSafe(res, "discovery-leads-integration.html"));
+app.get("/discovery-journey", (req, res) => sendFileSafe(res, "discovery-leads-integration.html"));
+app.get("/admission-journey", (req, res) => sendFileSafe(res, "discovery-leads-integration.html"));
+app.get("/lead-integration", (req, res) => sendFileSafe(res, "discovery-leads-integration.html"));
+
+app.get("/api/part63/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 63 - Discovery and Leads Integration",
+    status: "active",
+    dbMode: mongoose.connection.readyState === 1 ? "mongodb" : "mock",
+    purpose: "Public profiles, nearby search, comparison, enquiries aur follow-ups ko ek complete student-to-admission journey me connect karna.",
+    connectedParts: part63Config.connectedParts,
+    nextPart: part63Config.nextPart,
+    routes: ["/discovery-leads-integration", "/api/part63/journey", "/api/part63/funnel", "/api/part63/lead-map"]
+  });
+});
+
+app.get("/api/part63/config", (req, res) => {
+  res.json({ success: true, part: "Part 63 - Discovery and Leads Integration", config: part63Config, stages: part63Stages });
+});
+
+app.get("/api/part63/journey", async (req, res) => {
+  const journey = await part63BuildJourney(req.query || {});
+  res.json({
+    success: true,
+    part: "Part 63 - Discovery and Leads Integration",
+    mode: journey.mode,
+    count: journey.institutes.length,
+    stages: part63Stages,
+    funnel: part63Funnel(journey.allInstitutes, journey.enquiries, journey.leads),
+    institutes: journey.institutes
+  });
+});
+
+app.get("/api/part63/funnel", async (req, res) => {
+  const journey = await part63BuildJourney(req.query || {});
+  res.json({ success: true, part: "Part 63 - Discovery and Leads Integration", mode: journey.mode, funnel: part63Funnel(journey.allInstitutes, journey.enquiries, journey.leads) });
+});
+
+app.get("/api/part63/lead-map", async (req, res) => {
+  const journey = await part63BuildJourney(req.query || {});
+  const leadMap = journey.institutes.map((item) => ({
+    profileId: item.profileId,
+    name: item.name,
+    journeyHealth: item.journeyHealth,
+    enquiryCount: item.enquiryCount,
+    crmLeadCount: item.crmLeadCount,
+    openFollowups: item.openFollowups,
+    convertedCount: item.convertedCount,
+    nextAction: item.nextAction,
+    profileUrl: item.profileUrl,
+    compareUrl: item.compareUrl,
+    callbackUrl: item.callbackUrl,
+    crmUrl: item.crmUrl
+  }));
+  res.json({ success: true, part: "Part 63 - Discovery and Leads Integration", count: leadMap.length, leadMap });
+});
+
+app.get("/api/part63/profile/:profileId/journey", async (req, res) => {
+  const id = part63CleanText(req.params.profileId, 140);
+  const journey = await part63BuildJourney(req.query || {});
+  const found = journey.allInstitutes.find((item) => item.profileId === id || item.slug === id || item.id === id);
+  if (!found) return res.status(404).json({ success: false, message: "Profile journey nahi mila." });
+  const row = part63BuildJourneyForProfile(found.raw || found, journey.enquiries, journey.leads, req.query || {});
+  res.json({ success: true, part: "Part 63 - Discovery and Leads Integration", journey: row, stages: part63Stages });
+});
+
+app.get("/api/part63/recommend-next-actions", async (req, res) => {
+  const journey = await part63BuildJourney(req.query || {});
+  const actions = [];
+  const funnel = part63Funnel(journey.allInstitutes, journey.enquiries, journey.leads);
+  if (funnel.publicProfiles === 0) actions.push("Part 59 me public institute profile create/publish karo.");
+  if (funnel.enquiries === 0) actions.push("Part 60 request callback form ko public profile/nearby pages se test karo.");
+  if (funnel.crmLeads === 0) actions.push("Part 58 CRM me incoming enquiries ko lead pipeline se connect/test karo.");
+  if (funnel.openFollowups > 0) actions.push("Open follow-ups ko counsellor ke daily task list me handle karo.");
+  if (!actions.length) actions.push("Discovery journey healthy hai. Ab conversion reports aur next Part 64 live classes flow continue karo.");
+  res.json({ success: true, part: "Part 63 - Discovery and Leads Integration", funnel, actions });
+});
+
+app.post("/api/part63/connect", (req, res) => {
+  const event = {
+    id: `P63-EVT-${Date.now()}`,
+    type: part63CleanText(req.body?.type || "manual_check", 80),
+    profileId: part63CleanText(req.body?.profileId || "", 140),
+    requestId: part63CleanText(req.body?.requestId || "", 140),
+    leadId: part63CleanText(req.body?.leadId || "", 140),
+    note: part63CleanText(req.body?.note || "Manual Part 63 journey connection event.", 240),
+    createdAt: new Date().toISOString()
+  };
+  globalThis.NAXORA_PART63_EVENTS.unshift(event);
+  res.status(201).json({ success: true, mode: "mock", part: "Part 63 - Discovery and Leads Integration", message: "Journey connection event saved in safe mock memory. No external message sent.", event });
+});
+
+app.get("/api/part63/checklist", (req, res) => {
+  res.json({ success: true, part: "Part 63 - Discovery and Leads Integration", checklist: part63Checklist });
+});
+
+app.get("/api/part63/export", async (req, res) => {
+  const journey = await part63BuildJourney(req.query || {});
+  res.json({
+    success: true,
+    part: "Part 63 - Discovery and Leads Integration",
+    exportedAt: new Date().toISOString(),
+    config: part63Config,
+    stages: part63Stages,
+    funnel: part63Funnel(journey.allInstitutes, journey.enquiries, journey.leads),
+    institutes: journey.institutes,
+    events: globalThis.NAXORA_PART63_EVENTS.slice(0, 100)
+  });
+});
+
+app.get("/api/part63/demo", async (req, res) => {
+  const journey = await part63BuildJourney({ city: "Delhi", radiusKm: 80 });
+  res.json({ success: true, part: "Part 63 - Discovery and Leads Integration", stages: part63Stages, funnel: part63Funnel(journey.allInstitutes, journey.enquiries, journey.leads), institutes: journey.institutes.slice(0, 5), checklist: part63Checklist });
+});
+// ================= END PART 63 =================
+
 // Same-server frontend hosting for Render/Railway/VPS deployment.
 app.use("/landing", express.static(frontendPath));
 
@@ -5080,7 +5399,11 @@ const modulePageRoutes = {
   "/compare-institutes": "compare-institutes.html",
   "/compare": "compare-institutes.html",
   "/institute-comparison": "compare-institutes.html",
-  "/compare-coaching": "compare-institutes.html"
+  "/compare-coaching": "compare-institutes.html",
+  "/discovery-leads-integration": "discovery-leads-integration.html",
+  "/discovery-journey": "discovery-leads-integration.html",
+  "/admission-journey": "discovery-leads-integration.html",
+  "/lead-integration": "discovery-leads-integration.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
