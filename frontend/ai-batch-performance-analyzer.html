@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA Part 73 | AI Batch Performance Analyzer</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/ai-batch-performance-analyzer.css" />
+</head>
+<body>
+  <main class="part73-shell">
+    <section class="part73-hero">
+      <div class="part73-logo">N</div>
+      <div>
+        <p class="part73-kicker">PART 73 • AI BATCH PERFORMANCE ANALYZER</p>
+        <h1>AI Batch Performance Analyzer</h1>
+        <p class="part73-subtitle">Weak batches, weak chapters, top students, students needing support aur teacher suggestions — sab ek AI/VANI-ready analyzer me.</p>
+        <div class="part73-actions">
+          <a href="/api/part73/status" target="_blank" class="part73-btn primary">Status API</a>
+          <a href="/api/part73/demo" target="_blank" class="part73-btn">Demo API</a>
+          <a href="/ai-hub" class="part73-btn">Back AI Hub</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="part73-grid part73-stats" id="statsGrid">
+      <article><span id="batchCount">0</span><p>Batches Analyzed</p></article>
+      <article><span id="weakBatchCount">0</span><p>Weak Batches</p></article>
+      <article><span id="supportCount">0</span><p>Students Need Support</p></article>
+      <article><span id="suggestionCount">0</span><p>Teacher Suggestions</p></article>
+    </section>
+
+    <section class="part73-card">
+      <div class="part73-section-head">
+        <div><p class="part73-kicker">ANALYSIS CONTROLS</p><h2>Batch Performance Filters</h2></div>
+        <button id="refreshBtn" class="part73-btn small primary">Refresh Analysis</button>
+      </div>
+      <div class="part73-form-grid">
+        <label>Branch <input id="branchInput" placeholder="Main Branch" /></label>
+        <label>Course <input id="courseInput" placeholder="JEE / NEET / Board" /></label>
+        <label>Minimum risk <select id="riskInput"><option value="">All</option><option value="medium">Medium+</option><option value="high">High+</option><option value="critical">Critical</option></select></label>
+      </div>
+    </section>
+
+    <section class="part73-grid">
+      <article class="part73-card"><h2>Weak Batches</h2><div id="weakBatches" class="part73-list loading">Loading...</div></article>
+      <article class="part73-card"><h2>Weak Chapters</h2><div id="weakChapters" class="part73-list loading">Loading...</div></article>
+    </section>
+
+    <section class="part73-grid">
+      <article class="part73-card"><h2>Top Students</h2><div id="topStudents" class="part73-list loading">Loading...</div></article>
+      <article class="part73-card"><h2>Students Needing Support</h2><div id="supportStudents" class="part73-list loading">Loading...</div></article>
+    </section>
+
+    <section class="part73-card">
+      <div class="part73-section-head"><div><p class="part73-kicker">TEACHER ACTIONS</p><h2>AI Teacher Suggestions</h2></div></div>
+      <div id="teacherSuggestions" class="part73-list loading">Loading...</div>
+    </section>
+
+    <section class="part73-card">
+      <div class="part73-section-head"><div><p class="part73-kicker">VANI COMMAND</p><h2>Ask VANI about batch performance</h2></div></div>
+      <div class="part73-command-row">
+        <input id="vaniCommand" value="VANI, weak batches aur teacher suggestions dikhao" />
+        <button id="vaniBtn" class="part73-btn primary">Run VANI</button>
+      </div>
+      <pre id="vaniOutput" class="part73-output">VANI result yahan dikhega.</pre>
+    </section>
+
+    <section class="part73-card"><h2>Part 73 Checklist</h2><ul id="checklist" class="part73-checklist"></ul></section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/ai-batch-performance-analyzer.js"></script>
+</body>
+</html>

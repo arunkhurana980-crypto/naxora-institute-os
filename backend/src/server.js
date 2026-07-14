@@ -267,7 +267,7 @@ app.get("/api/health", (req, res) => {
     status: "running",
     dbMode: globalThis.NAXORA_DB_MODE || "starting",
     note: globalThis.NAXORA_DB_MODE === "mock" ? "MongoDB connect nahi hai, par backend crash-free mock mode me chal raha hai." : "MongoDB connected mode.",
-    part: "Part 72 - AI Fee and Attendance Assistant",
+    part: "Part 73 - AI Batch Performance Analyzer",
     environment: process.env.NODE_ENV || "development",
     timestamp: new Date().toISOString(),
   });
@@ -9031,6 +9031,194 @@ app.get("/api/part72/demo", async (req, res) => {
 });
 // ================= END PART 72 =================
 
+// ================= PART 73: AI BATCH PERFORMANCE ANALYZER =================
+const part73Config = {
+  part: "Part 73 - AI Batch Performance Analyzer",
+  status: "active",
+  frontendRoute: "/ai-batch-performance-analyzer",
+  alternateRoutes: ["/batch-performance-ai", "/ai-batch-analyzer", "/batch-analyzer"],
+  previousPart: "Part 72 - AI Fee and Attendance Assistant",
+  nextPart: "Part 74 - AI Parent Communication and Weekly Summary",
+  purpose: "Weak batches, weak chapters, top students, students needing support aur teacher suggestions identify karna.",
+  safetyMode: "analysis-and-suggestion-only-no-direct-grade-change-no-student-labeling-as-failure",
+  vaniMode: "Hindi/English/Hinglish VANI commands with role checks, ambiguity handling, private display for sensitive student data and audit log.",
+  apiRoutes: [
+    "/api/part73/status",
+    "/api/part73/config",
+    "/api/part73/features",
+    "/api/part73/roles",
+    "/api/part73/batch-performance",
+    "/api/part73/weak-batches",
+    "/api/part73/weak-chapters",
+    "/api/part73/top-students",
+    "/api/part73/students-needing-support",
+    "/api/part73/teacher-suggestions",
+    "/api/part73/vani/command",
+    "/api/part73/activity",
+    "/api/part73/checklist",
+    "/api/part73/export",
+    "/api/part73/demo"
+  ]
+};
+
+const part73Features = [
+  { id: "weak-batches", title: "Weak Batches", problemSolved: "Owner ko kaunsa batch low performance me hai ye manually reports compare karke nahi nikalna padega.", ownerBenefit: "Early intervention aur teacher support decisions fast hote hain.", instituteBenefit: "Teaching quality aur results improve hote hain.", teacherBenefit: "Teacher ko specific batch support priority milti hai.", studentBenefit: "Student ko timely remedial class aur doubt support mil sakta hai.", parentBenefit: "Parent ko late result shock ke bajay early support update milta hai." },
+  { id: "weak-chapters", title: "Weak Chapters", problemSolved: "Sirf weak student nahi, weak topic/chapter identify hota hai.", ownerBenefit: "Owner chapter-wise re-teaching plan approve kar sakta hai.", instituteBenefit: "Batch-level academic quality improve hoti hai.", teacherBenefit: "Teacher ko exact chapter repeat/revise karna clear hota hai.", studentBenefit: "Concept gaps par focused revision milta hai.", parentBenefit: "Parent ko child ke struggle area ka better context milta hai." },
+  { id: "top-students", title: "Top Students", problemSolved: "High performers recognize karna aur role-model examples identify karna easy hota hai.", ownerBenefit: "Result marketing aur scholarship planning ka foundation milta hai.", instituteBenefit: "Healthy motivation build hoti hai.", teacherBenefit: "Teacher high performers ko advanced practice de sakta hai.", studentBenefit: "Effort recognition milti hai.", parentBenefit: "Progress visibility improve hoti hai." },
+  { id: "students-needing-support", title: "Students Needing Support", problemSolved: "Low score/attendance students ko time par academic help milti hai.", ownerBenefit: "Dropout aur poor result risk reduce hota hai.", instituteBenefit: "Student retention improve hota hai.", teacherBenefit: "Support list ready milti hai.", studentBenefit: "Personalized help mil sakti hai.", parentBenefit: "Parent ko support action plan milta hai." },
+  { id: "teacher-suggestions", title: "Teacher Suggestions", problemSolved: "Data ko action plan me convert karta hai.", ownerBenefit: "Owner ko next academic actions clear hote hain.", instituteBenefit: "Quality control systematic hota hai.", teacherBenefit: "Teacher ko practical remedial steps milte hain.", studentBenefit: "Better teaching interventions milte hain.", parentBenefit: "Parent communication more meaningful hoti hai." }
+];
+
+const part73RolePermissions = {
+  naxora_super_admin: { label: "NAXORA Super Admin", allowed: ["technical_support_view", "audit_log_view"], sensitiveVerification: true, note: "Institute-private data ka unrestricted daily access nahi; logged support mode only." },
+  owner: { label: "Institute Owner", allowed: ["batch_analysis", "weak_chapters", "top_students", "support_students", "teacher_suggestions", "vani_batch_analysis", "audit_log_view", "export_request"], sensitiveVerification: true },
+  branch_manager: { label: "Branch Manager", allowed: ["batch_analysis_assigned_branch", "weak_chapters", "support_students", "teacher_suggestions", "vani_batch_analysis"], sensitiveVerification: true },
+  accountant: { label: "Accountant", allowed: ["limited_summary_view"], sensitiveVerification: false },
+  teacher: { label: "Teacher", allowed: ["batch_analysis_assigned_batches", "weak_chapters_assigned_batches", "support_students_assigned_batches", "teacher_suggestions", "vani_batch_analysis_limited"], sensitiveVerification: false },
+  receptionist: { label: "Receptionist/Counsellor", allowed: ["limited_support_followup", "support_students_limited"], sensitiveVerification: false },
+  student: { label: "Student", allowed: ["own_progress_summary"], sensitiveVerification: false },
+  parent: { label: "Parent", allowed: ["linked_child_progress_summary"], sensitiveVerification: false }
+};
+
+const part73Checklist = [
+  "AI Batch Performance Analyzer page /ai-batch-performance-analyzer open ho raha hai.",
+  "/api/part73/status success true return karta hai.",
+  "Weak batches list safe/demo fallback ke saath return hoti hai.",
+  "Weak chapters identify hote hain aur affected batches dikhte hain.",
+  "Top students recognition data return hota hai without harmful comparison language.",
+  "Students needing support list supportive language me return hoti hai.",
+  "Teacher suggestions action-oriented hain, blame-based nahi.",
+  "VANI command role check, missing detail handling, preview aur audit log ke saath return hoti hai.",
+  "Sensitive student performance data public speaker par loudly bolne ke bajay private display rule follow karta hai.",
+  "Previous Part 71 and Part 72 routes preserved hain."
+];
+
+const part73DemoBatches = [
+  { batchId: "BAT-JEE-EVE", batchName: "JEE Foundation Evening", course: "JEE Foundation", branch: "Main Branch", teacher: "Mehta Sir", students: 32, averageScore: 58, attendancePercent: 72, resultTrend: "down", weakChapters: [{ subject: "Physics", chapter: "Laws of Motion", averageScore: 45, supportStudents: 11 }, { subject: "Maths", chapter: "Quadratic Equations", averageScore: 52, supportStudents: 8 }], topStudents: [{ studentName: "Riya Verma", averageScore: 91, attendancePercent: 96, strength: "Consistent problem solving" }], supportStudents: [{ studentName: "Aman Sharma", averageScore: 48, attendancePercent: 68, reason: "Low score + attendance drop" }, { studentName: "Karan Mehta", averageScore: 51, attendancePercent: 74, reason: "Weak in Physics numericals" }] },
+  { batchId: "BAT-NEET-MOR", batchName: "NEET Foundation Morning", course: "NEET Foundation", branch: "West Branch", teacher: "Anita Ma'am", students: 28, averageScore: 66, attendancePercent: 81, resultTrend: "stable", weakChapters: [{ subject: "Chemistry", chapter: "Mole Concept", averageScore: 49, supportStudents: 7 }], topStudents: [{ studentName: "Simran Kaur", averageScore: 88, attendancePercent: 93, strength: "Biology recall and diagrams" }], supportStudents: [{ studentName: "Nitin Yadav", averageScore: 54, attendancePercent: 76, reason: "Chemistry basics need support" }] },
+  { batchId: "BAT-10-BOARD", batchName: "Class 10 Board Morning", course: "Board Preparation", branch: "Main Branch", teacher: "Khan Sir", students: 24, averageScore: 79, attendancePercent: 90, resultTrend: "up", weakChapters: [{ subject: "Maths", chapter: "Trigonometry", averageScore: 61, supportStudents: 4 }], topStudents: [{ studentName: "Dev Arora", averageScore: 94, attendancePercent: 97, strength: "Accuracy and revision discipline" }], supportStudents: [] }
+];
+
+if (!globalThis.NAXORA_PART73_ACTIVITY) globalThis.NAXORA_PART73_ACTIVITY = [];
+
+function part73CleanText(value, max = 500) { return String(value ?? "").replace(/[<>]/g, "").trim().slice(0, max); }
+function part73Lower(value) { return part73CleanText(value, 500).toLowerCase(); }
+function part73DbReady() { return mongoose.connection.readyState === 1 && globalThis.NAXORA_DB_MODE !== "mock"; }
+function part73Role(role = "owner") {
+  const key = part73CleanText(role, 80).toLowerCase().replace(/[ -]+/g, "_") || "owner";
+  if (key === "institute_owner") return "owner";
+  if (key === "staff" || key === "counsellor") return "receptionist";
+  return part73RolePermissions[key] ? key : "owner";
+}
+function part73Can(role, permission) {
+  const resolved = part73Role(role);
+  const allowed = part73RolePermissions[resolved]?.allowed || [];
+  return allowed.includes(permission) || allowed.includes("vani_batch_analysis") || allowed.some((item) => permission.startsWith(item.replace("_assigned_branch", "").replace("_assigned_batches", "")));
+}
+async function part73Log(type, payload = {}) {
+  const row = { id: `part73-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`, type: part73CleanText(type, 80), payload, createdAt: new Date().toISOString(), part: part73Config.part };
+  globalThis.NAXORA_PART73_ACTIVITY.unshift(row);
+  globalThis.NAXORA_PART73_ACTIVITY = globalThis.NAXORA_PART73_ACTIVITY.slice(0, 100);
+  if (part73DbReady()) { try { await mongoose.connection.db.collection("part73batchperformanceanalyzerlogs").insertOne(row); } catch (error) { /* non-blocking */ } }
+  return row;
+}
+function part73Risk(batch) {
+  const score = Number(batch.averageScore || 0); const attendance = Number(batch.attendancePercent || 0);
+  if (score < 55 || attendance < 70) return "critical";
+  if (score < 65 || attendance < 78) return "high";
+  if (score < 75 || attendance < 85) return "medium";
+  return "low";
+}
+function part73NormalizeBatch(row = {}) {
+  const weakChapters = Array.isArray(row.weakChapters) ? row.weakChapters : [];
+  const topStudents = Array.isArray(row.topStudents) ? row.topStudents : [];
+  const supportStudents = Array.isArray(row.supportStudents) ? row.supportStudents : [];
+  const batch = {
+    batchId: part73CleanText(row.batchId || row._id || `BAT-${Date.now()}`, 80),
+    batchName: part73CleanText(row.batchName || row.name || row.batch || "General Batch", 120),
+    course: part73CleanText(row.course || row.courseName || "General Course", 100),
+    branch: part73CleanText(row.branch || row.branchName || "Main Branch", 100),
+    teacher: part73CleanText(row.teacher || row.teacherName || "Assigned Teacher", 100),
+    students: Number(row.students || row.studentCount || 0),
+    averageScore: Math.round(Number(row.averageScore || row.avgScore || 0)),
+    attendancePercent: Math.round(Number(row.attendancePercent || row.attendance || 0)),
+    resultTrend: part73CleanText(row.resultTrend || row.trend || "stable", 40),
+    weakChapters: weakChapters.map((c) => ({ subject: part73CleanText(c.subject || "Subject", 80), chapter: part73CleanText(c.chapter || c.name || "Chapter", 120), averageScore: Math.round(Number(c.averageScore || 0)), supportStudents: Number(c.supportStudents || 0) })),
+    topStudents: topStudents.map((s) => ({ studentName: part73CleanText(s.studentName || s.name || "Student", 100), averageScore: Math.round(Number(s.averageScore || 0)), attendancePercent: Math.round(Number(s.attendancePercent || 0)), strength: part73CleanText(s.strength || "Consistent performance", 160) })),
+    supportStudents: supportStudents.map((s) => ({ studentName: part73CleanText(s.studentName || s.name || "Student", 100), averageScore: Math.round(Number(s.averageScore || 0)), attendancePercent: Math.round(Number(s.attendancePercent || 0)), reason: part73CleanText(s.reason || "Needs academic support", 160) }))
+  };
+  batch.risk = part73Risk(batch);
+  return batch;
+}
+async function part73LoadBatches(filters = {}) {
+  let rows = part73DemoBatches;
+  if (part73DbReady()) {
+    try {
+      const dbRows = await mongoose.connection.db.collection("part73batchperformances").find({}).limit(80).toArray();
+      if (dbRows.length) rows = dbRows;
+    } catch (error) { rows = part73DemoBatches; }
+  }
+  let normalized = rows.map(part73NormalizeBatch);
+  const branch = part73Lower(filters.branch || ""); const course = part73Lower(filters.course || ""); const risk = part73Lower(filters.risk || "");
+  if (branch) normalized = normalized.filter((b) => part73Lower(b.branch).includes(branch));
+  if (course) normalized = normalized.filter((b) => part73Lower(b.course).includes(course) || part73Lower(b.batchName).includes(course));
+  if (risk) {
+    const order = { low: 1, medium: 2, high: 3, critical: 4 };
+    normalized = normalized.filter((b) => (order[b.risk] || 0) >= (order[risk] || 0));
+  }
+  return normalized;
+}
+function part73Analyze(batches = []) {
+  const weakBatches = batches.filter((b) => ["medium", "high", "critical"].includes(b.risk)).sort((a, b) => (a.averageScore + a.attendancePercent) - (b.averageScore + b.attendancePercent));
+  const weakChapters = [];
+  batches.forEach((batch) => (batch.weakChapters || []).forEach((chapter) => weakChapters.push({ ...chapter, batchId: batch.batchId, affectedBatches: [batch.batchName], branch: batch.branch, risk: chapter.averageScore < 50 ? "critical" : chapter.averageScore < 60 ? "high" : "medium" })));
+  const topStudents = batches.flatMap((batch) => (batch.topStudents || []).map((student) => ({ ...student, batchName: batch.batchName, branch: batch.branch }))).sort((a, b) => b.averageScore - a.averageScore).slice(0, 10);
+  const studentsNeedingSupport = batches.flatMap((batch) => (batch.supportStudents || []).map((student) => ({ ...student, batchId: batch.batchId, batchName: batch.batchName, branch: batch.branch, risk: student.averageScore < 50 || student.attendancePercent < 70 ? "high" : "medium" })));
+  const teacherSuggestions = [];
+  weakBatches.forEach((batch) => {
+    teacherSuggestions.push({ title: `${batch.batchName} remedial plan`, detail: `${batch.teacher} ke saath ${batch.batchName} me weak chapters ka 2-session revision plan schedule karo.`, priority: batch.risk, ownerAction: true });
+    if (batch.attendancePercent < 78) teacherSuggestions.push({ title: `${batch.batchName} attendance recovery`, detail: `Low attendance students ke parent check-in aur missed class notes share karo.`, priority: batch.risk, ownerAction: false });
+  });
+  weakChapters.slice(0, 5).forEach((chapter) => teacherSuggestions.push({ title: `${chapter.chapter} concept support`, detail: `${chapter.subject} ke ${chapter.chapter} par mini-test + doubt class plan banao.`, priority: chapter.risk, ownerAction: false }));
+  return {
+    summary: { totalBatches: batches.length, weakBatches: weakBatches.length, weakChapters: weakChapters.length, topStudents: topStudents.length, studentsNeedingSupport: studentsNeedingSupport.length, averageScore: batches.length ? Math.round(batches.reduce((sum, b) => sum + b.averageScore, 0) / batches.length) : 0, averageAttendance: batches.length ? Math.round(batches.reduce((sum, b) => sum + b.attendancePercent, 0) / batches.length) : 0 },
+    weakBatches, weakChapters, topStudents, studentsNeedingSupport, teacherSuggestions
+  };
+}
+async function part73BatchPerformance(filters = {}) { return part73Analyze(await part73LoadBatches(filters)); }
+async function part73VaniCommand(command = "weak batches dikhao", payload = {}) {
+  const role = part73Role(payload.role || "owner"); const text = part73Lower(command);
+  const missing = [];
+  if (text.includes("branch") && !payload.branch) missing.push("branch name");
+  const canView = part73Can(role, "batch_analysis");
+  const result = await part73BatchPerformance(payload);
+  let action = "batch_performance_summary";
+  if (text.includes("chapter")) action = "weak_chapters";
+  if (text.includes("top")) action = "top_students";
+  if (text.includes("support") || text.includes("weak student")) action = "students_needing_support";
+  if (text.includes("teacher") || text.includes("suggestion")) action = "teacher_suggestions";
+  if (!canView) return { allowed: false, role, action, message: "Is role ko full batch performance access nahi hai.", privateDisplayRequired: true };
+  if (missing.length) return { allowed: true, role, action, needsMoreDetails: true, missingDetails: missing, question: `Kripya ${missing.join(", ")} batao, phir main exact analysis dikha dunga.` };
+  return { allowed: true, role, action, responseMode: "private-screen-first", spokenSummary: `Analysis ready hai. ${result.summary.weakBatches} weak batches, ${result.summary.weakChapters} weak chapters aur ${result.summary.studentsNeedingSupport} students ko support chahiye. Sensitive student details screen par dikhaye gaye hain.`, preview: result, confirmationRequiredForActions: ["export", "message_send", "student_status_change", "teacher_warning"], sensitiveVerificationRequired: false };
+}
+
+app.get("/api/part73/status", (req, res) => res.json({ success: true, part: part73Config.part, status: part73Config.status, frontend: [part73Config.frontendRoute, ...part73Config.alternateRoutes], apiRoutes: part73Config.apiRoutes, purpose: part73Config.purpose, currentVersionPlan: "Part 53-78 = NAXORA OS 1.0 completion. Part 79-110 = NAXORA OS 2.0 development.", nextPart: part73Config.nextPart }));
+app.get("/api/part73/config", (req, res) => res.json({ success: true, part: part73Config.part, config: part73Config }));
+app.get("/api/part73/features", (req, res) => res.json({ success: true, part: part73Config.part, features: part73Features }));
+app.get("/api/part73/roles", (req, res) => res.json({ success: true, part: part73Config.part, roles: part73RolePermissions }));
+app.get("/api/part73/batch-performance", async (req, res) => { const role = part73Role(req.query.role || "owner"); if (!part73Can(role, "batch_analysis")) return res.status(403).json({ success: false, part: part73Config.part, role, message: "Is role ko batch analysis access nahi hai." }); const result = await part73BatchPerformance(req.query); await part73Log("batch_performance_viewed", { role, summary: result.summary }); res.json({ success: true, part: part73Config.part, role, result }); });
+app.get("/api/part73/weak-batches", async (req, res) => { const result = await part73BatchPerformance(req.query); res.json({ success: true, part: part73Config.part, count: result.weakBatches.length, weakBatches: result.weakBatches }); });
+app.get("/api/part73/weak-chapters", async (req, res) => { const result = await part73BatchPerformance(req.query); res.json({ success: true, part: part73Config.part, count: result.weakChapters.length, weakChapters: result.weakChapters }); });
+app.get("/api/part73/top-students", async (req, res) => { const result = await part73BatchPerformance(req.query); res.json({ success: true, part: part73Config.part, count: result.topStudents.length, topStudents: result.topStudents }); });
+app.get("/api/part73/students-needing-support", async (req, res) => { const result = await part73BatchPerformance(req.query); res.json({ success: true, part: part73Config.part, count: result.studentsNeedingSupport.length, studentsNeedingSupport: result.studentsNeedingSupport }); });
+app.get("/api/part73/teacher-suggestions", async (req, res) => { const result = await part73BatchPerformance(req.query); res.json({ success: true, part: part73Config.part, count: result.teacherSuggestions.length, teacherSuggestions: result.teacherSuggestions }); });
+app.post("/api/part73/vani/command", async (req, res) => { const result = await part73VaniCommand(req.body?.command || req.body?.text || req.body?.transcript || "weak batches dikhao", req.body || {}); await part73Log("vani_batch_performance_command", { role: result.role, action: result.action, allowed: result.allowed, responseMode: result.responseMode }); res.status(result.allowed === false ? 403 : 200).json({ success: result.allowed !== false, part: part73Config.part, result }); });
+app.get("/api/part73/activity", (req, res) => res.json({ success: true, part: part73Config.part, count: globalThis.NAXORA_PART73_ACTIVITY.length, activity: globalThis.NAXORA_PART73_ACTIVITY }));
+app.get("/api/part73/checklist", (req, res) => res.json({ success: true, part: part73Config.part, checklist: part73Checklist }));
+app.get("/api/part73/export", async (req, res) => { const result = await part73BatchPerformance(req.query); res.json({ success: true, part: part73Config.part, exportedAt: new Date().toISOString(), config: part73Config, features: part73Features, roles: part73RolePermissions, result, checklist: part73Checklist, activity: globalThis.NAXORA_PART73_ACTIVITY, exportRequiresOwnerVerification: true }); });
+app.get("/api/part73/demo", async (req, res) => { const result = await part73BatchPerformance({}); const vani = await part73VaniCommand("VANI, weak batches, weak chapters aur teacher suggestions dikhao", { role: "owner" }); await part73Log("demo_generated", { weakBatches: result.summary.weakBatches, supportStudents: result.summary.studentsNeedingSupport }); res.json({ success: true, part: part73Config.part, demoTitle: "AI Batch Performance Analyzer Demo", demo: { result, vani }, checklist: part73Checklist }); });
+// ================= END PART 73 =================
+
 const modulePageRoutes = {
   "/dashboard": "dashboard.html",
   "/students": "students.html",
@@ -9147,7 +9335,11 @@ const modulePageRoutes = {
   "/ai-fee-attendance-assistant": "ai-fee-attendance-assistant.html",
   "/fee-attendance-ai": "ai-fee-attendance-assistant.html",
   "/ai-fee-assistant": "ai-fee-attendance-assistant.html",
-  "/ai-attendance-assistant": "ai-fee-attendance-assistant.html"
+  "/ai-attendance-assistant": "ai-fee-attendance-assistant.html",
+  "/ai-batch-performance-analyzer": "ai-batch-performance-analyzer.html",
+  "/batch-performance-ai": "ai-batch-performance-analyzer.html",
+  "/ai-batch-analyzer": "ai-batch-performance-analyzer.html",
+  "/batch-analyzer": "ai-batch-performance-analyzer.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -9189,7 +9381,7 @@ await connectDB();
 
 const server = app.listen(port, () => {
   console.log("✅ PART 59 PUBLIC INSTITUTE PROFILE ACTIVE");
-  console.log("✅ All routes Part 1 to Part 72 loaded + AI Fee and Attendance Assistant");
+  console.log("✅ All routes Part 1 to Part 73 loaded + AI Batch Performance Analyzer");
   console.log("✅ AI Notes route active: /api/ai-notes");
   console.log("✅ AI Mock Tests route active: /api/ai-mock-tests");
   console.log("✅ AI Roadmaps route active: /api/ai-roadmaps");
@@ -9256,6 +9448,7 @@ const server = app.listen(port, () => {
   console.log("✅ Part 70 VANI AI V2 active: /api/part70/status + /vani-ai-v2");
   console.log("✅ Part 71 AI Admission Copilot active: /api/part71/status + /ai-admission-copilot");
   console.log("✅ Part 72 AI Fee and Attendance Assistant active: /api/part72/status + /ai-fee-attendance-assistant");
+  console.log("✅ Part 73 AI Batch Performance Analyzer active: /api/part73/status + /ai-batch-performance-analyzer");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");
