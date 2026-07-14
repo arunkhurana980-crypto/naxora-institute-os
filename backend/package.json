@@ -1,5 +1,5 @@
 {
-  "name": "naxora-institute-os-part71-ai-admission-copilot",
+  "name": "naxora-institute-os-part78-v1-production-launch",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -21,7 +21,8 @@
     "check:part65": "node --check src/server.js",
     "check:part66": "node --check src/server.js",
     "check:part69": "node --check src/server.js",
-    "check:part71": "node --check src/server.js"
+    "check:part71": "node --check src/server.js",
+    "check:part78": "node --check src/server.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

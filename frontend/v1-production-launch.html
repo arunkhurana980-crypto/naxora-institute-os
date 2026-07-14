@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA OS 1.0 Production Launch</title>
+  <link rel="stylesheet" href="/app/brand-system.css" />
+  <link rel="stylesheet" href="/app/v1-production-launch.css" />
+</head>
+<body>
+  <main class="launch-shell">
+    <section class="hero-card">
+      <div class="eyebrow">Part 78 • Official 1.0 Launch</div>
+      <h1>NAXORA Institute OS 1.0 Production Launch</h1>
+      <p>NAXORA OS 1.0 ko stable live SaaS foundation ke roop me lock karo: demo institute, monitoring, backup, first beta institute onboarding aur sales-ready handoff.</p>
+      <div class="hero-actions">
+        <button id="runReadinessBtn">Run Launch Readiness</button>
+        <a href="/final-production-testing">Part 77 Testing</a>
+        <a href="/ai-hub">AI Hub</a>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <h2>Launch Readiness</h2>
+        <div id="readinessBox" class="loading">Loading readiness...</div>
+      </article>
+      <article class="panel">
+        <h2>Version Subscriptions</h2>
+        <div id="subscriptionsBox" class="loading">Loading subscriptions...</div>
+      </article>
+      <article class="panel">
+        <h2>Go-Live Plan</h2>
+        <div id="goLiveBox" class="loading">Loading go-live plan...</div>
+      </article>
+      <article class="panel">
+        <h2>Demo Institute Plan</h2>
+        <div id="demoBox" class="loading">Loading demo plan...</div>
+      </article>
+      <article class="panel">
+        <h2>Monitoring + Backup</h2>
+        <div id="opsBox" class="loading">Loading operations plan...</div>
+      </article>
+      <article class="panel">
+        <h2>VANI Launch Assistant</h2>
+        <p class="muted">VANI launch/subscription sensitive actions owner verification ke bina execute nahi karegi.</p>
+        <input id="vaniCommand" value="VANI, v1 launch status aur beta client plan dikhao" />
+        <button id="vaniBtn">Ask VANI</button>
+        <pre id="vaniBox"></pre>
+      </article>
+    </section>
+  </main>
+  <script src="/app/brand-system.js"></script>
+  <script src="/app/v1-production-launch.js"></script>
+</body>
+</html>

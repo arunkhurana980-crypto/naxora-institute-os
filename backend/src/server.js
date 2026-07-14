@@ -9897,6 +9897,241 @@ for (const route of [part77Config.frontendRoute, ...part77Config.alternateRoutes
 }
 // ================= END PART 77 =================
 
+
+// ================= PART 78 - NAXORA OS 1.0 PRODUCTION LAUNCH =================
+if (!globalThis.NAXORA_PART78_ACTIVITY) globalThis.NAXORA_PART78_ACTIVITY = [];
+
+const part78Config = {
+  part: "Part 78 — NAXORA OS 1.0 Production Launch",
+  status: "active",
+  releaseVersion: "NAXORA Institute OS 1.0",
+  frontendRoute: "/v1-production-launch",
+  alternateRoutes: ["/production-launch", "/naxora-v1-launch", "/v1-launch", "/launch-v1", "/official-launch"],
+  apiRoutes: [
+    "/api/part78/status",
+    "/api/part78/config",
+    "/api/part78/release-summary",
+    "/api/part78/launch-checklist",
+    "/api/part78/go-live-plan",
+    "/api/part78/demo-institute",
+    "/api/part78/admin-account-plan",
+    "/api/part78/monitoring-plan",
+    "/api/part78/backup-plan",
+    "/api/part78/client-onboarding-plan",
+    "/api/part78/version-subscriptions",
+    "/api/part78/owner-only-v3-rule",
+    "/api/part78/launch-readiness",
+    "/api/part78/vani/command",
+    "/api/part78/activity",
+    "/api/part78/checklist",
+    "/api/part78/export",
+    "/api/part78/demo"
+  ],
+  purpose: "NAXORA OS 1.0 ko stable production launch state me lock karna: deployment, demo institute, admin account plan, monitoring, backup, first-client onboarding aur sales-ready handoff.",
+  versionPlan: "Part 53–78 = NAXORA OS 1.0 completion. Part 79–110 = NAXORA OS 2.0 development. 3.0 future AI-first OS hai, par 1.0/2.0 ko distract nahi karega.",
+  versionSubscriptionNote: "NAXORA OS 1.0, 2.0 aur future 3.0 ki separate subscription hogi. 3.0 owner-only AI-first access hoga: institute_owner role + valid instituteId + active v3 subscription required.",
+  nextPart: "Part 79 — Mobile App Foundation"
+};
+
+const part78Roles = {
+  owner: { label: "Institute Owner", access: ["launch_dashboard", "sales_readiness", "demo_institute", "billing_plan", "backup_monitoring", "version_subscription_control"] },
+  branch_manager: { label: "Branch Manager", access: ["assigned_branch_launch_readiness", "branch_onboarding"] },
+  accountant: { label: "Accountant", access: ["billing_readiness", "payments_summary", "invoice_readiness"] },
+  teacher: { label: "Teacher", access: ["teaching_module_readiness", "assigned_batch_launch_notes"] },
+  receptionist: { label: "Receptionist/Counsellor", access: ["lead_onboarding", "demo_enquiry_flow"] },
+  student: { label: "Student", access: ["own_portal_readiness", "own_student_ai_tools"] },
+  parent: { label: "Parent", access: ["linked_child_portal_readiness"] },
+  naxora_super_admin: { label: "NAXORA Super Admin", access: ["platform_health", "logged_support"], note: "Unrestricted daily institute-private data access nahi." }
+};
+
+const part78Checklist = [
+  "Render production deploy live confirm karo.",
+  "MongoDB connected mode /api/health par verify karo.",
+  "Signup/login/dashboard flow test karo.",
+  "Demo institute account and sample data prepare karo.",
+  "Students, fees, attendance, enquiries, live classes, AI Hub, VANI pages open karo.",
+  "Razorpay test/safe mode confirm karo; live payments KYC ke baad hi enable karo.",
+  "MongoDB password/security rotation complete karo agar secret kabhi expose hua ho.",
+  "Backup/rollback plan read and save karo.",
+  "First beta institute onboarding script ready karo.",
+  "Sales demo video and WhatsApp pitch ready karo."
+];
+
+function part78CleanText(value, max = 700) { return String(value ?? "").replace(/[<>]/g, "").trim().slice(0, max); }
+function part78Lower(value) { return part78CleanText(value, 700).toLowerCase(); }
+function part78DbReady() { return mongoose.connection.readyState === 1 && globalThis.NAXORA_DB_MODE !== "mock"; }
+function part78Role(role = "owner") {
+  const key = part78CleanText(role, 80).toLowerCase().replace(/[ -]+/g, "_") || "owner";
+  if (key === "institute_owner") return "owner";
+  if (key === "staff" || key === "counsellor") return "receptionist";
+  return part78Roles[key] ? key : "owner";
+}
+async function part78Log(type, payload = {}) {
+  const row = { id: `part78-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`, type: part78CleanText(type, 90), payload, createdAt: new Date().toISOString(), part: part78Config.part };
+  globalThis.NAXORA_PART78_ACTIVITY.unshift(row);
+  globalThis.NAXORA_PART78_ACTIVITY = globalThis.NAXORA_PART78_ACTIVITY.slice(0, 200);
+  if (part78DbReady()) { try { await mongoose.connection.db.collection("part78productionlaunchlogs").insertOne(row); } catch (error) {} }
+  return row;
+}
+
+function part78ReleaseSummary() {
+  return {
+    release: "NAXORA Institute OS 1.0",
+    completedParts: "Part 1–78",
+    liveFoundation: ["Render deployment", "MongoDB production connection", "Clean URLs", "Public/protected route foundation", "AI Hub + VANI foundation"],
+    launchModules: [
+      "Students, parents, teachers, staff", "Batches, attendance, fees, finance", "Tests, assignments, reports", "Enquiries, follow-ups, discovery", "Public institute profile", "Nearby/compare institutes", "Request callback", "Live classes", "Payments/subscriptions", "AI Hub", "VANI V1/V2", "Student AI tools", "Smart classroom setup"
+    ],
+    releaseStatus: "sales-ready foundation with final real-client manual testing required",
+    nextVersion: "NAXORA OS 2.0 starts at Part 79"
+  };
+}
+
+function part78GoLivePlan() {
+  return [
+    { step: 1, title: "Production deployment lock", action: "GitHub push + Render Clear build cache & deploy", owner: "Arun/NAXORA", status: "ready" },
+    { step: 2, title: "Health check", action: "/api/health and /api/part78/status check", owner: "Arun", status: part78DbReady() ? "pass" : "warning" },
+    { step: 3, title: "Demo institute setup", action: "Demo owner login, sample students, fees, attendance, enquiries add karo", owner: "Arun", status: "manual_required" },
+    { step: 4, title: "Security check", action: "MongoDB password rotation, env review, no secrets in repo", owner: "Arun", status: "manual_required" },
+    { step: 5, title: "First beta institute", action: "One coaching owner ko 5-minute demo aur beta account do", owner: "Arun", status: "next" },
+    { step: 6, title: "2.0 development branch", action: "1.0 live stable rakho; Part 79 se 2.0 development continue karo", owner: "Arun/NAXORA", status: "planned" }
+  ];
+}
+
+function part78DemoInstitutePlan() {
+  return {
+    demoInstituteName: "NAXORA Demo Institute",
+    purpose: "Client ko empty app nahi, real sample data ke saath demo dikhana.",
+    sampleData: {
+      students: 8,
+      teachers: 3,
+      parents: 5,
+      batches: 3,
+      feeRecords: 6,
+      enquiries: 5,
+      liveClasses: 3,
+      aiSamples: ["AI Notes", "AI Mock Test", "VANI Search", "Student AI Planner"]
+    },
+    loginRule: "Demo account credentials public video me reveal mat karna; only private demo me use karo."
+  };
+}
+
+function part78AdminAccountPlan() {
+  return {
+    requiredAccounts: [
+      { role: "naxora_super_admin", purpose: "Platform support and subscription control", accessNote: "Logged technical support only, unrestricted daily institute-private data access nahi." },
+      { role: "institute_owner", purpose: "Demo institute owner account", accessNote: "Full institute access." },
+      { role: "teacher", purpose: "Teacher module demo", accessNote: "Assigned batch only." },
+      { role: "student", purpose: "Student portal demo", accessNote: "Own data only." },
+      { role: "parent", purpose: "Parent portal demo", accessNote: "Linked child only." }
+    ],
+    passwordRule: "Strong passwords use karo. Secrets chat/GitHub/video me share mat karo."
+  };
+}
+
+function part78MonitoringPlan() {
+  return {
+    healthEndpoints: ["/api/health", "/api/part78/status", "/api/part77/run-smoke-test"],
+    renderFreeNote: "Render Free first request slow ho sakta hai; demo se 2 minute pehle site open kar lena.",
+    dailyChecks: ["health", "signup/login", "MongoDB mode", "error logs", "critical pages"],
+    incidentPlan: ["Render logs screenshot", "Git rollback to last good commit", "MongoDB connection check", "report exact route/API failing"]
+  };
+}
+
+function part78BackupPlan() {
+  return {
+    codeBackup: "GitHub repo + previous ZIP artifacts",
+    databaseBackup: "MongoDB Atlas export/backup schedule manually confirm karna before real paid clients.",
+    envBackup: "Render env keys manually re-enterable secure note me store; chat/GitHub me nahi.",
+    rollback: "Last known working commit deploy karo, then fix route/API issue separately.",
+    sensitiveExportRule: "Student/fees/export data ke liye owner verification required."
+  };
+}
+
+function part78ClientOnboardingPlan() {
+  return {
+    betaTarget: "First 1 beta institute",
+    pitchFlow: ["Landing page", "Signup/login", "Dashboard", "Students", "Fees", "Attendance", "Enquiries/CRM", "Live Classes", "AI Hub + VANI", "Pricing/subscription"],
+    onboardingSteps: ["Institute owner details", "Branch/course setup", "5 students demo import", "Fee records", "Teacher login", "Parent/student portal demo", "Feedback form"],
+    feedbackQuestions: ["Most useful feature?", "Fees/attendance currently kaise manage karte ho?", "Monthly budget?", "Missing must-have feature?", "Beta use karna chahoge?"]
+  };
+}
+
+function part78VersionSubscriptions() {
+  return {
+    v1: { label: "NAXORA OS 1.0", status: "launch_ready", access: "Subscribed institute users according to role permissions", purpose: "Digital institute management + basic AI/VANI foundation" },
+    v2: { label: "NAXORA OS 2.0", status: "development_starts_part79", access: "Subscribed institute modules according to role permissions", purpose: "Mobile apps, advanced VANI, native classroom, marketplace, white-label" },
+    v3: { label: "NAXORA OS 3.0 AI-First", status: "future_planned", access: "owner_only", purpose: "Future AI-first Education Operating System", hardRule: "Only institute_owner + valid instituteId + active v3 subscription can access." }
+  };
+}
+
+function part78OwnerOnlyV3Rule(payload = {}) {
+  const role = part78Role(payload.role || "owner");
+  const hasInstituteId = Boolean(part78CleanText(payload.instituteId || payload.institute_id || "", 80));
+  const v3Active = String(payload.v3Active ?? payload.v3_active ?? "false") === "true" || payload.v3Active === true;
+  const allowed = role === "owner" && hasInstituteId && v3Active;
+  return {
+    allowed,
+    role,
+    hasInstituteId,
+    v3Active,
+    required: ["role=institute_owner", "valid instituteId", "active v3 subscription"],
+    message: allowed ? "V3 owner-only access allowed." : "NAXORA OS 3.0 sirf institute owner ke active instituteId + active v3 subscription par open hoga."
+  };
+}
+
+function part78LaunchReadiness() {
+  const checks = [
+    { item: "Backend live", status: "pass", reason: "Part 78 status endpoint active." },
+    { item: "MongoDB", status: part78DbReady() ? "pass" : "warning", reason: part78DbReady() ? "MongoDB connected mode detected." : "Mock/fallback mode detected; Render MONGODB_URI check karo." },
+    { item: "Frontend launch page", status: "pass", reason: "Production launch page route mapped." },
+    { item: "1.0 feature set", status: "pass", reason: "Part 53–78 foundation included." },
+    { item: "Payments", status: "warning", reason: "Razorpay live mode KYC/webhook final verification required before real payment." },
+    { item: "Security", status: "warning", reason: "Owner must rotate exposed secrets and verify Render env before real client." },
+    { item: "Backups", status: "warning", reason: "MongoDB Atlas backup/export schedule manually confirm karna hai." },
+    { item: "Beta institute", status: "ready", reason: "First beta onboarding plan ready." }
+  ];
+  const pass = checks.filter((row) => row.status === "pass").length;
+  const warning = checks.filter((row) => row.status === "warning").length;
+  const score = Math.round(((pass + warning * 0.5) / checks.length) * 100);
+  return { checks, score, launchDecision: score >= 75 ? "soft_launch_ready_for_beta" : "fix_required_before_beta", betaAllowed: score >= 75, realPaidClientRequiresManualSecurityCheck: true };
+}
+
+function part78Vani(command = "v1 launch status dikhao", payload = {}) {
+  const role = part78Role(payload.role || "owner");
+  const text = part78Lower(command);
+  const sensitive = text.includes("export") || text.includes("delete") || text.includes("refund") || text.includes("discount") || text.includes("subscription") || text.includes("v3") || text.includes("approve launch");
+  if (sensitive && role !== "owner") return { allowed: false, role, message: "Ye sensitive launch/subscription action owner-only hai.", ownerVerificationRequired: true, auditLogRequired: true };
+  if (text.includes("v3")) return { allowed: role === "owner", role, responseMode: "private-screen-first", preview: part78OwnerOnlyV3Rule(payload), spokenSummary: "V3 access rule private screen par dikhaya gaya hai.", ownerVerificationRequired: true };
+  const focus = text.includes("backup") ? "backup" : text.includes("monitor") ? "monitoring" : text.includes("client") || text.includes("beta") ? "client_onboarding" : text.includes("demo") ? "demo_institute" : "launch";
+  const preview = focus === "backup" ? part78BackupPlan() : focus === "monitoring" ? part78MonitoringPlan() : focus === "client_onboarding" ? part78ClientOnboardingPlan() : focus === "demo_institute" ? part78DemoInstitutePlan() : part78LaunchReadiness();
+  return { allowed: true, role, command: part78CleanText(command, 400), responseMode: "private-screen-first", spokenSummary: "NAXORA OS 1.0 launch information screen par ready hai.", focus, preview, confirmationRequiredForActions: ["export_launch_report", "approve_paid_client", "change_subscription", "enable_v3_access"], auditLogRequired: true };
+}
+
+app.get("/api/part78/status", (req, res) => res.json({ success: true, part: part78Config.part, status: part78Config.status, releaseVersion: part78Config.releaseVersion, frontend: [part78Config.frontendRoute, ...part78Config.alternateRoutes], apiRoutes: part78Config.apiRoutes, purpose: part78Config.purpose, currentVersionPlan: part78Config.versionPlan, versionSubscriptionNote: part78Config.versionSubscriptionNote, nextPart: part78Config.nextPart }));
+app.get("/api/part78/config", (req, res) => res.json({ success: true, part: part78Config.part, config: part78Config }));
+app.get("/api/part78/release-summary", (req, res) => res.json({ success: true, part: part78Config.part, summary: part78ReleaseSummary() }));
+app.get("/api/part78/launch-checklist", (req, res) => res.json({ success: true, part: part78Config.part, checklist: part78Checklist }));
+app.get("/api/part78/go-live-plan", (req, res) => res.json({ success: true, part: part78Config.part, plan: part78GoLivePlan() }));
+app.get("/api/part78/demo-institute", (req, res) => res.json({ success: true, part: part78Config.part, plan: part78DemoInstitutePlan() }));
+app.get("/api/part78/admin-account-plan", (req, res) => res.json({ success: true, part: part78Config.part, plan: part78AdminAccountPlan() }));
+app.get("/api/part78/monitoring-plan", (req, res) => res.json({ success: true, part: part78Config.part, plan: part78MonitoringPlan() }));
+app.get("/api/part78/backup-plan", (req, res) => res.json({ success: true, part: part78Config.part, plan: part78BackupPlan() }));
+app.get("/api/part78/client-onboarding-plan", (req, res) => res.json({ success: true, part: part78Config.part, plan: part78ClientOnboardingPlan() }));
+app.get("/api/part78/version-subscriptions", (req, res) => res.json({ success: true, part: part78Config.part, subscriptions: part78VersionSubscriptions() }));
+app.get("/api/part78/owner-only-v3-rule", (req, res) => res.json({ success: true, part: part78Config.part, rule: part78OwnerOnlyV3Rule(req.query || {}) }));
+app.get("/api/part78/launch-readiness", async (req, res) => { const readiness = part78LaunchReadiness(); await part78Log("launch_readiness_checked", { role: part78Role(req.query.role || "owner"), score: readiness.score }); res.json({ success: true, part: part78Config.part, readiness }); });
+app.post("/api/part78/vani/command", async (req, res) => { const result = part78Vani(req.body?.command || "v1 launch status dikhao", req.body || {}); await part78Log("vani_launch_command", { role: result.role, command: req.body?.command || "", focus: result.focus || "restricted" }); res.json({ success: true, part: part78Config.part, result }); });
+app.get("/api/part78/activity", (req, res) => res.json({ success: true, part: part78Config.part, activity: globalThis.NAXORA_PART78_ACTIVITY }));
+app.get("/api/part78/checklist", (req, res) => res.json({ success: true, part: part78Config.part, checklist: part78Checklist }));
+app.get("/api/part78/export", (req, res) => res.json({ success: true, part: part78Config.part, exportReady: true, ownerVerificationRequired: true, note: "Production launch report export sensitive hai; owner verification required." }));
+app.get("/api/part78/demo", (req, res) => res.json({ success: true, part: part78Config.part, release: part78ReleaseSummary(), readiness: part78LaunchReadiness(), goLivePlan: part78GoLivePlan(), v3Rule: part78OwnerOnlyV3Rule({ role: "owner", instituteId: "NX-DEMO-INST-001", v3Active: false }), vaniPreview: part78Vani("VANI, v1 launch status aur beta client plan dikhao", { role: "owner" }) }));
+
+for (const route of [part78Config.frontendRoute, ...part78Config.alternateRoutes]) {
+  app.get(route, (req, res) => sendFileSafe(res, "v1-production-launch.html"));
+}
+// ================= END PART 78 =================
+
 const modulePageRoutes = {
   "/dashboard": "dashboard.html",
   "/students": "students.html",
@@ -10028,7 +10263,13 @@ const modulePageRoutes = {
   "/final-testing-v1": "final-production-testing.html",
   "/v1-final-testing": "final-production-testing.html",
   "/launch-testing": "final-production-testing.html",
-  "/release-readiness": "final-production-testing.html"
+  "/release-readiness": "final-production-testing.html",
+  "/v1-production-launch": "v1-production-launch.html",
+  "/production-launch": "v1-production-launch.html",
+  "/naxora-v1-launch": "v1-production-launch.html",
+  "/v1-launch": "v1-production-launch.html",
+  "/launch-v1": "v1-production-launch.html",
+  "/official-launch": "v1-production-launch.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -10070,7 +10311,7 @@ await connectDB();
 
 const server = app.listen(port, () => {
   console.log("✅ PART 59 PUBLIC INSTITUTE PROFILE ACTIVE");
-  console.log("✅ All routes Part 1 to Part 77 loaded + Final Production Testing");
+  console.log("✅ All routes Part 1 to Part 78 loaded + NAXORA OS 1.0 Production Launch");
   console.log("✅ AI Notes route active: /api/ai-notes");
   console.log("✅ AI Mock Tests route active: /api/ai-mock-tests");
   console.log("✅ AI Roadmaps route active: /api/ai-roadmaps");
@@ -10142,6 +10383,7 @@ const server = app.listen(port, () => {
   console.log("✅ Part 75 Student AI Tools active: /api/part75/status + /student-ai-tools");
   console.log("✅ Part 76 Smart Classroom Setup active: /api/part76/status + /smart-classroom-setup");
   console.log("✅ Part 77 Final Production Testing active: /api/part77/status + /final-production-testing");
+  console.log("✅ Part 78 NAXORA OS 1.0 Production Launch active: /api/part78/status + /v1-production-launch");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");
