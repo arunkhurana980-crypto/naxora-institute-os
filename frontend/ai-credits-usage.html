@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA AI Credits & Usage</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/ai-credits-usage.css" />
+</head>
+<body>
+  <main class="naxora-ai-credits-page">
+    <section class="hero-card">
+      <div>
+        <p class="eyebrow">PART 68 • AI CREDITS AND USAGE</p>
+        <h1>NAXORA AI Credits Control Room</h1>
+        <p class="subtitle">AI API cost control, monthly credits, usage logs, remaining credits, extra-credit requests aur plan-wise limits ka safe foundation.</p>
+      </div>
+      <div class="hero-actions">
+        <a href="/ai-hub" class="ghost-btn">← AI Hub</a>
+        <a href="/api/part68/status" class="primary-btn">Status API</a>
+      </div>
+    </section>
+
+    <section class="stats-grid" id="summaryGrid">
+      <article class="stat-card"><span>Loading</span><strong>AI</strong><small>credits summary</small></article>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel wide-panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Plan-wise limits</p>
+            <h2>Monthly AI Credit Plans</h2>
+          </div>
+          <button id="refreshBtn" class="ghost-btn">Refresh</button>
+        </div>
+        <div id="plansGrid" class="plans-grid"></div>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Tool cost catalog</p>
+        <h2>AI Tool Credit Cost</h2>
+        <div id="toolCostList" class="list-stack"></div>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel">
+        <p class="eyebrow">Safe ledger test</p>
+        <h2>Record AI Usage</h2>
+        <form id="consumeForm" class="form-stack">
+          <label>Institute ID <input name="instituteId" value="demo-institute" /></label>
+          <label>Tool
+            <select name="toolId">
+              <option value="ai-doubts">AI Doubts</option>
+              <option value="ai-notes">AI Notes Generator</option>
+              <option value="ai-mock-tests">AI Mock Test Generator</option>
+              <option value="ai-roadmaps">AI Roadmap Generator</option>
+              <option value="vani-ai-v1">VANI AI V1 Search</option>
+            </select>
+          </label>
+          <label>Credits <input type="number" name="credits" min="1" value="5" /></label>
+          <label>Note <textarea name="note" rows="3">Demo safe AI usage log</textarea></label>
+          <button class="primary-btn" type="submit">Record Usage</button>
+        </form>
+        <pre id="consumeResult" class="result-box">No request yet.</pre>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Extra credits</p>
+        <h2>Purchase Request Foundation</h2>
+        <div id="packagesList" class="list-stack"></div>
+        <p class="safe-note">Note: Ye page real payment charge nahi karta. Extra credit request save hoti hai; payment Part 66/Razorpay flow se connect hoga.</p>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="eyebrow">Recent usage</p>
+      <h2>Usage Logs</h2>
+      <div id="logsTable" class="table-wrap"></div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/ai-credits-usage.js"></script>
+</body>
+</html>

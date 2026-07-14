@@ -114,7 +114,11 @@ const publicRoutes = [
   "/ai-features",
   "/ai-tools",
   "/vani-ai",
-  "/vani-assistant"
+  "/vani-assistant",
+  "/ai-credits-usage",
+  "/ai-credits",
+  "/ai-usage",
+  "/credits"
 ];
 
 const internalPageFiles = new Set([
@@ -255,7 +259,7 @@ app.get("/api/health", (req, res) => {
     status: "running",
     dbMode: globalThis.NAXORA_DB_MODE || "starting",
     note: globalThis.NAXORA_DB_MODE === "mock" ? "MongoDB connect nahi hai, par backend crash-free mock mode me chal raha hai." : "MongoDB connected mode.",
-    part: "Part 56 - Smart Student Enrolment",
+    part: "Part 68 - AI Credits and Usage",
     environment: process.env.NODE_ENV || "development",
     timestamp: new Date().toISOString(),
   });
@@ -2534,7 +2538,7 @@ function part56BuildEnrolment(payload = {}, existing = {}) {
     status: existing.status || "submitted",
     source: part56CleanText(payload.source || "smart-enrolment", 60),
     notes: part56CleanText(payload.notes, 240),
-    part: "Part 56 - Smart Student Enrolment",
+    part: "Part 68 - AI Credits and Usage",
     createdAt: existing.createdAt || now,
     updatedAt: now
   };
@@ -2573,7 +2577,7 @@ app.get("/admissions", (req, res) => sendFileSafe(res, "smart-enrolment.html"));
 app.get("/api/part56/status", (req, res) => {
   res.json({
     success: true,
-    part: "Part 56 - Smart Student Enrolment",
+    part: "Part 68 - AI Credits and Usage",
     status: "active",
     currentVersionPlan: "Part 53–78 = NAXORA OS 1.0 completion. Part 79–110 = NAXORA OS 2.0 development.",
     goal: "Complete digital admission form with parent/guardian details, document checklist, unique student ID, course and batch assignment, optional verification and consent.",
@@ -2702,7 +2706,7 @@ app.patch("/api/part56/enrolments/:id/status", async (req, res) => {
 });
 
 app.get("/api/part56/checklist", (req, res) => {
-  res.json({ success: true, part: "Part 56 - Smart Student Enrolment", checklist: part56Checklist });
+  res.json({ success: true, part: "Part 68 - AI Credits and Usage", checklist: part56Checklist });
 });
 
 app.get("/api/part56/export", async (req, res) => {
@@ -2710,7 +2714,7 @@ app.get("/api/part56/export", async (req, res) => {
   const rows = collection ? await collection.find({}).sort({ createdAt: -1 }).limit(500).toArray() : globalThis.NAXORA_PART56_ENROLMENTS;
   res.json({
     success: true,
-    part: "Part 56 - Smart Student Enrolment",
+    part: "Part 68 - AI Credits and Usage",
     exportedAt: new Date().toISOString(),
     count: rows.length,
     records: rows.map(part56PublicEnrolmentView)
@@ -6864,6 +6868,392 @@ app.get("/api/part67/demo", async (req, res) => {
 // ================= END PART 67 =================
 
 
+// ================= PART 68: AI CREDITS AND USAGE =================
+// Part 68 ka goal: AI features ke liye credits, limits, usage logs aur reports ka safe foundation.
+// Ye actual paid AI API call nahi chalata; ye cost-control / fair-usage layer prepare karta hai.
+const part68Config = {
+  part: "Part 68 - AI Credits and Usage",
+  status: "active",
+  purpose: "AI API cost control, plan-wise limits, usage tracking aur profitable pricing foundation.",
+  aiCreditsRoute: "/ai-credits-usage",
+  alternateRoutes: ["/ai-credits", "/ai-usage", "/credits"],
+  apiRoutes: [
+    "/api/part68/status",
+    "/api/part68/config",
+    "/api/part68/credit-plans",
+    "/api/part68/usage-summary",
+    "/api/part68/usage-logs",
+    "/api/part68/consume",
+    "/api/part68/allocate",
+    "/api/part68/reset-cycle",
+    "/api/part68/extra-credit-packages",
+    "/api/part68/purchase-request",
+    "/api/part68/reports",
+    "/api/part68/checklist",
+    "/api/part68/export",
+    "/api/part68/demo"
+  ],
+  safetyMode: "External AI model, real payment, WhatsApp/SMS/email send aur auto-deduction nahi chalaya gaya. Ye controlled credit ledger foundation hai.",
+  currentVersionPlan: "Part 53-78 = NAXORA OS 1.0 completion. Part 79-110 = NAXORA OS 2.0 development.",
+  previousPart: "Part 67 - AI Hub with VANI card",
+  nextPart: "Part 69 - VANI AI V1"
+};
+
+const part68CreditPlans = [
+  {
+    id: "starter",
+    name: "Starter AI",
+    monthlyCredits: 500,
+    includedTools: ["AI Doubts", "AI Notes", "AI Mock Tests"],
+    maxSingleUseCredits: 25,
+    bestFor: "Small coaching / demo institute",
+    guardrail: "High-cost tools limited. Extra credits optional."
+  },
+  {
+    id: "growth",
+    name: "Growth AI",
+    monthlyCredits: 2500,
+    includedTools: ["AI Doubts", "AI Notes", "AI Mock Tests", "AI Roadmaps", "Institute AI Tools"],
+    maxSingleUseCredits: 75,
+    bestFor: "Growing institute with regular AI usage",
+    guardrail: "Daily usage reports and owner visibility."
+  },
+  {
+    id: "pro",
+    name: "Pro AI",
+    monthlyCredits: 10000,
+    includedTools: ["All AI Hub tools", "VANI read-only search from Part 69", "AI admission/follow-up tools later"],
+    maxSingleUseCredits: 200,
+    bestFor: "Large institute / multi-batch setup",
+    guardrail: "Plan-wise limit + anomaly flag foundation."
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise AI",
+    monthlyCredits: 50000,
+    includedTools: ["Custom AI limits", "Priority VANI roadmap", "Advanced analytics"],
+    maxSingleUseCredits: 500,
+    bestFor: "Large chain / white-label future client",
+    guardrail: "Custom contract and manual approval for very high usage."
+  }
+];
+
+const part68ToolCostCatalog = [
+  { toolId: "ai-doubts", label: "AI Doubts", defaultCredits: 5, category: "Student Learning", route: "/ai-doubts" },
+  { toolId: "ai-notes", label: "AI Notes Generator", defaultCredits: 12, category: "Content Generation", route: "/ai-notes" },
+  { toolId: "ai-mock-tests", label: "AI Mock Test Generator", defaultCredits: 18, category: "Assessment", route: "/ai-mock-tests" },
+  { toolId: "ai-roadmaps", label: "AI Roadmap Generator", defaultCredits: 20, category: "Planning", route: "/ai-roadmaps" },
+  { toolId: "vani-ai-v1", label: "VANI AI V1 Search", defaultCredits: 2, category: "Voice AI", route: "/vani-ai", status: "coming-part69" },
+  { toolId: "institute-ai-tools", label: "Institute AI Tools", defaultCredits: 25, category: "Institute Operations", route: "/ai-hub#institute-ai-tools", status: "foundation" }
+];
+
+const part68ExtraCreditPackages = [
+  { id: "extra-1000", credits: 1000, label: "1,000 Extra AI Credits", suggestedPriceInr: 199, status: "purchase-request-only" },
+  { id: "extra-5000", credits: 5000, label: "5,000 Extra AI Credits", suggestedPriceInr: 799, status: "purchase-request-only" },
+  { id: "extra-20000", credits: 20000, label: "20,000 Extra AI Credits", suggestedPriceInr: 2499, status: "purchase-request-only" }
+];
+
+const part68Checklist = [
+  "AI Credits page /ai-credits-usage open ho raha hai.",
+  "Plan-wise monthly credits visible hain.",
+  "Used, remaining aur reserved credits summary visible hai.",
+  "AI tool cost catalog visible hai.",
+  "Usage logs safe mock/MongoDB mode me list hote hain.",
+  "Consume route credit limit check karta hai, external AI API call nahi karta.",
+  "Extra credit purchase request foundation ready hai, real charge nahi karta.",
+  "VANI AI V1 ko Part 69 se credit system ke saath connect karne ka base ready hai.",
+  ".env, secret, paid AI API key, Razorpay secret ZIP me include nahi hai."
+];
+
+globalThis.NAXORA_PART68_LEDGER = globalThis.NAXORA_PART68_LEDGER || [
+  {
+    id: "ledger-demo-growth",
+    instituteId: "demo-institute",
+    instituteName: "NAXORA Demo Institute",
+    planId: "growth",
+    allocatedCredits: 2500,
+    usedCredits: 420,
+    reservedCredits: 80,
+    cycleStart: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
+    cycleEnd: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString(),
+    status: "active",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }
+];
+
+globalThis.NAXORA_PART68_USAGE_LOGS = globalThis.NAXORA_PART68_USAGE_LOGS || [
+  {
+    id: "usage-demo-001",
+    instituteId: "demo-institute",
+    userRole: "teacher",
+    toolId: "ai-notes",
+    toolLabel: "AI Notes Generator",
+    creditsUsed: 12,
+    status: "recorded",
+    note: "Demo AI notes usage log",
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: "usage-demo-002",
+    instituteId: "demo-institute",
+    userRole: "student",
+    toolId: "ai-doubts",
+    toolLabel: "AI Doubts",
+    creditsUsed: 5,
+    status: "recorded",
+    note: "Demo doubt solve usage log",
+    createdAt: new Date().toISOString()
+  }
+];
+
+globalThis.NAXORA_PART68_PURCHASE_REQUESTS = globalThis.NAXORA_PART68_PURCHASE_REQUESTS || [];
+
+function part68CleanText(value, max = 160) {
+  return String(value ?? "").replace(/[<>]/g, "").trim().slice(0, max);
+}
+
+function part68Number(value, fallback = 0) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
+function part68FindPlan(planId) {
+  return part68CreditPlans.find((plan) => plan.id === part68CleanText(planId, 50)) || part68CreditPlans[0];
+}
+
+function part68FindTool(toolId) {
+  return part68ToolCostCatalog.find((tool) => tool.toolId === part68CleanText(toolId, 80)) || part68ToolCostCatalog[0];
+}
+
+function part68LedgerView(row = {}) {
+  const allocated = part68Number(row.allocatedCredits, 0);
+  const used = part68Number(row.usedCredits, 0);
+  const reserved = part68Number(row.reservedCredits, 0);
+  const remaining = Math.max(allocated - used - reserved, 0);
+  const usagePercent = allocated > 0 ? Math.round((used / allocated) * 100) : 0;
+  return {
+    id: row._id || row.id,
+    instituteId: row.instituteId || "demo-institute",
+    instituteName: row.instituteName || "NAXORA Institute",
+    planId: row.planId || "starter",
+    allocatedCredits: allocated,
+    usedCredits: used,
+    reservedCredits: reserved,
+    remainingCredits: remaining,
+    usagePercent,
+    status: row.status || "active",
+    cycleStart: row.cycleStart,
+    cycleEnd: row.cycleEnd,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  };
+}
+
+async function part68List(collectionName, fallbackRows = [], query = {}) {
+  if (mongoose.connection.readyState === 1) {
+    try {
+      const rows = await mongoose.connection.db.collection(collectionName).find(query).sort({ createdAt: -1 }).limit(200).toArray();
+      return { mode: "mongodb", rows };
+    } catch (error) {
+      return { mode: "mongodb-error", rows: fallbackRows, error: error.message };
+    }
+  }
+  return { mode: "mock", rows: fallbackRows };
+}
+
+async function part68Insert(collectionName, fallbackStore, row) {
+  const doc = { ...row, createdAt: row.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString() };
+  if (mongoose.connection.readyState === 1) {
+    try {
+      const result = await mongoose.connection.db.collection(collectionName).insertOne(doc);
+      return { mode: "mongodb", row: { ...doc, _id: result.insertedId } };
+    } catch (error) {
+      fallbackStore.unshift({ ...doc, id: doc.id || `mock-${Date.now()}` });
+      return { mode: "mongodb-error-fallback", row: fallbackStore[0], error: error.message };
+    }
+  }
+  fallbackStore.unshift({ ...doc, id: doc.id || `mock-${Date.now()}` });
+  return { mode: "mock", row: fallbackStore[0] };
+}
+
+function part68Summary(ledgerRows = [], usageRows = []) {
+  const ledgers = ledgerRows.map(part68LedgerView);
+  const totals = ledgers.reduce((acc, item) => {
+    acc.allocatedCredits += item.allocatedCredits;
+    acc.usedCredits += item.usedCredits;
+    acc.reservedCredits += item.reservedCredits;
+    acc.remainingCredits += item.remainingCredits;
+    return acc;
+  }, { allocatedCredits: 0, usedCredits: 0, reservedCredits: 0, remainingCredits: 0 });
+  const toolBreakdown = {};
+  for (const log of usageRows) {
+    const key = log.toolId || "unknown";
+    toolBreakdown[key] = toolBreakdown[key] || { toolId: key, toolLabel: log.toolLabel || key, count: 0, creditsUsed: 0 };
+    toolBreakdown[key].count += 1;
+    toolBreakdown[key].creditsUsed += part68Number(log.creditsUsed, 0);
+  }
+  return {
+    totals,
+    ledgerCount: ledgers.length,
+    usageLogCount: usageRows.length,
+    toolBreakdown: Object.values(toolBreakdown),
+    guardrails: [
+      "Monthly plan limit visible",
+      "Remaining credits visible before AI action",
+      "High-cost action can be blocked or confirmed later",
+      "VANI Part 69 usage can be counted from first version"
+    ]
+  };
+}
+
+app.get("/api/part68/status", (req, res) => {
+  res.json({
+    success: true,
+    part: part68Config.part,
+    status: part68Config.status,
+    purpose: part68Config.purpose,
+    frontend: [part68Config.aiCreditsRoute, ...part68Config.alternateRoutes],
+    apiRoutes: part68Config.apiRoutes,
+    safetyMode: part68Config.safetyMode,
+    nextPart: part68Config.nextPart
+  });
+});
+
+app.get("/api/part68/config", (req, res) => {
+  res.json({ success: true, part: part68Config.part, config: part68Config, toolCostCatalog: part68ToolCostCatalog });
+});
+
+app.get("/api/part68/credit-plans", (req, res) => {
+  res.json({ success: true, part: part68Config.part, plans: part68CreditPlans, toolCostCatalog: part68ToolCostCatalog });
+});
+
+app.get("/api/part68/usage-summary", async (req, res) => {
+  const instituteId = part68CleanText(req.query?.instituteId || "", 80);
+  const query = instituteId ? { instituteId } : {};
+  const ledgers = await part68List("part68ledgers", globalThis.NAXORA_PART68_LEDGER, query);
+  const logs = await part68List("part68usagelogs", globalThis.NAXORA_PART68_USAGE_LOGS, query);
+  res.json({ success: true, part: part68Config.part, mode: ledgers.mode, ledgers: ledgers.rows.map(part68LedgerView), summary: part68Summary(ledgers.rows, logs.rows) });
+});
+
+app.get("/api/part68/usage-logs", async (req, res) => {
+  const instituteId = part68CleanText(req.query?.instituteId || "", 80);
+  const toolId = part68CleanText(req.query?.toolId || "", 80);
+  const query = {};
+  if (instituteId) query.instituteId = instituteId;
+  if (toolId) query.toolId = toolId;
+  const logs = await part68List("part68usagelogs", globalThis.NAXORA_PART68_USAGE_LOGS, query);
+  res.json({ success: true, part: part68Config.part, mode: logs.mode, count: logs.rows.length, logs: logs.rows });
+});
+
+app.post("/api/part68/consume", async (req, res) => {
+  const body = req.body || {};
+  const instituteId = part68CleanText(body.instituteId || req.query?.instituteId || "demo-institute", 80);
+  const tool = part68FindTool(body.toolId || req.query?.toolId || "ai-doubts");
+  const requestedCredits = Math.max(1, part68Number(body.credits || req.query?.credits, tool.defaultCredits));
+  const ledgerRows = await part68List("part68ledgers", globalThis.NAXORA_PART68_LEDGER, { instituteId });
+  const activeLedger = part68LedgerView(ledgerRows.rows[0] || globalThis.NAXORA_PART68_LEDGER[0]);
+  if (requestedCredits > activeLedger.remainingCredits) {
+    return res.status(402).json({
+      success: false,
+      part: part68Config.part,
+      message: "AI credits insufficient hain. Extra credits ya plan upgrade required.",
+      requestedCredits,
+      remainingCredits: activeLedger.remainingCredits,
+      tool,
+      actionMode: "blocked-before-external-ai-call"
+    });
+  }
+  const log = {
+    instituteId,
+    userId: part68CleanText(body.userId || "demo-user", 80),
+    userRole: part68CleanText(body.userRole || "owner", 50),
+    toolId: tool.toolId,
+    toolLabel: tool.label,
+    creditsUsed: requestedCredits,
+    status: "recorded",
+    note: part68CleanText(body.note || "AI credit consumed in safe ledger mode", 240),
+    requestId: `aiuse-${Date.now()}`
+  };
+  const inserted = await part68Insert("part68usagelogs", globalThis.NAXORA_PART68_USAGE_LOGS, log);
+  res.json({ success: true, part: part68Config.part, mode: inserted.mode, message: "AI usage log recorded. External AI API call is build me run nahi hui.", remainingBefore: activeLedger.remainingCredits, creditsUsed: requestedCredits, remainingAfterEstimate: Math.max(activeLedger.remainingCredits - requestedCredits, 0), usage: inserted.row, tool });
+});
+
+app.post("/api/part68/allocate", async (req, res) => {
+  const body = req.body || {};
+  const plan = part68FindPlan(body.planId || "starter");
+  const row = {
+    id: `ledger-${Date.now()}`,
+    instituteId: part68CleanText(body.instituteId || "demo-institute", 80),
+    instituteName: part68CleanText(body.instituteName || "NAXORA Institute", 120),
+    planId: plan.id,
+    allocatedCredits: part68Number(body.allocatedCredits, plan.monthlyCredits),
+    usedCredits: part68Number(body.usedCredits, 0),
+    reservedCredits: part68Number(body.reservedCredits, 0),
+    cycleStart: body.cycleStart || new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
+    cycleEnd: body.cycleEnd || new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString(),
+    status: "active"
+  };
+  const inserted = await part68Insert("part68ledgers", globalThis.NAXORA_PART68_LEDGER, row);
+  res.json({ success: true, part: part68Config.part, mode: inserted.mode, message: "AI credits allocated safely.", ledger: part68LedgerView(inserted.row), plan });
+});
+
+app.post("/api/part68/reset-cycle", (req, res) => {
+  res.json({
+    success: true,
+    part: part68Config.part,
+    message: "Cycle reset foundation ready hai. Production me owner/admin confirmation + subscription status check ke baad monthly reset run hoga.",
+    actionMode: "preview-only",
+    nextSteps: ["Subscription active verify", "Old cycle export", "New cycle allocate", "Owner notification"]
+  });
+});
+
+app.get("/api/part68/extra-credit-packages", (req, res) => {
+  res.json({ success: true, part: part68Config.part, packages: part68ExtraCreditPackages, note: "Real payment capture Part 66/Razorpay live keys ke saath connect hoga. Is route me charge nahi hota." });
+});
+
+app.post("/api/part68/purchase-request", async (req, res) => {
+  const body = req.body || {};
+  const pack = part68ExtraCreditPackages.find((item) => item.id === part68CleanText(body.packageId || "", 80)) || part68ExtraCreditPackages[0];
+  const row = {
+    id: `credit-request-${Date.now()}`,
+    instituteId: part68CleanText(body.instituteId || "demo-institute", 80),
+    instituteName: part68CleanText(body.instituteName || "NAXORA Institute", 120),
+    packageId: pack.id,
+    credits: pack.credits,
+    suggestedPriceInr: pack.suggestedPriceInr,
+    status: "requested",
+    contactPhone: part68CleanText(body.contactPhone || "", 20),
+    note: part68CleanText(body.note || "Extra AI credits request", 240)
+  };
+  const inserted = await part68Insert("part68purchaserequests", globalThis.NAXORA_PART68_PURCHASE_REQUESTS, row);
+  res.json({ success: true, part: part68Config.part, mode: inserted.mode, message: "Extra credit purchase request saved. Real payment charge nahi hua.", request: inserted.row, package: pack });
+});
+
+app.get("/api/part68/reports", async (req, res) => {
+  const ledgers = await part68List("part68ledgers", globalThis.NAXORA_PART68_LEDGER, {});
+  const logs = await part68List("part68usagelogs", globalThis.NAXORA_PART68_USAGE_LOGS, {});
+  res.json({ success: true, part: part68Config.part, mode: ledgers.mode, reportType: "ai-usage-cost-control", summary: part68Summary(ledgers.rows, logs.rows), ledgers: ledgers.rows.map(part68LedgerView), recentLogs: logs.rows.slice(0, 20) });
+});
+
+app.get("/api/part68/checklist", (req, res) => {
+  res.json({ success: true, part: part68Config.part, checklist: part68Checklist });
+});
+
+app.get("/api/part68/export", async (req, res) => {
+  const ledgers = await part68List("part68ledgers", globalThis.NAXORA_PART68_LEDGER, {});
+  const logs = await part68List("part68usagelogs", globalThis.NAXORA_PART68_USAGE_LOGS, {});
+  res.json({ success: true, part: part68Config.part, exportedAt: new Date().toISOString(), config: part68Config, plans: part68CreditPlans, toolCostCatalog: part68ToolCostCatalog, extraCreditPackages: part68ExtraCreditPackages, ledgers: ledgers.rows.map(part68LedgerView), usageLogs: logs.rows, summary: part68Summary(ledgers.rows, logs.rows), checklist: part68Checklist });
+});
+
+app.get("/api/part68/demo", async (req, res) => {
+  const ledgers = await part68List("part68ledgers", globalThis.NAXORA_PART68_LEDGER, {});
+  const logs = await part68List("part68usagelogs", globalThis.NAXORA_PART68_USAGE_LOGS, {});
+  res.json({ success: true, part: part68Config.part, demoTitle: "AI Credits and Usage Demo", plans: part68CreditPlans, toolCostCatalog: part68ToolCostCatalog, ledgers: ledgers.rows.map(part68LedgerView), usageLogs: logs.rows, summary: part68Summary(ledgers.rows, logs.rows), nextPart: part68Config.nextPart });
+});
+// ================= END PART 68 =================
+
+
 // Same-server frontend hosting for Render/Railway/VPS deployment.
 app.use("/landing", express.static(frontendPath));
 
@@ -6984,7 +7374,11 @@ const modulePageRoutes = {
   "/ai-features": "ai-hub.html",
   "/ai-tools": "ai-hub.html",
   "/vani-ai": "ai-hub.html",
-  "/vani-assistant": "ai-hub.html"
+  "/vani-assistant": "ai-hub.html",
+  "/ai-credits-usage": "ai-credits-usage.html",
+  "/ai-credits": "ai-credits-usage.html",
+  "/ai-usage": "ai-credits-usage.html",
+  "/credits": "ai-credits-usage.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -7088,6 +7482,7 @@ const server = app.listen(port, () => {
   console.log("✅ Part 65 communication hub active: /api/part65/status + /communication-hub");
   console.log("✅ Part 66 payments/subscriptions active: /api/part66/status + /payments-subscriptions");
   console.log("✅ Part 67 AI Hub active: /api/part67/status + /ai-hub + VANI card");
+  console.log("✅ Part 68 AI Credits and Usage active: /api/part68/status + /ai-credits-usage");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");
