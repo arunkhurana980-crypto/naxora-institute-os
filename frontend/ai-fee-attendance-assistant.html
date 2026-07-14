@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA AI Fee & Attendance Assistant | Part 72</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/ai-fee-attendance-assistant.css" />
+</head>
+<body>
+  <main class="p72-shell">
+    <section class="p72-hero">
+      <div class="p72-logo">N</div>
+      <div>
+        <p class="p72-kicker">PART 72 • AI FEE & ATTENDANCE ASSISTANT</p>
+        <h1>AI Fee and Attendance Assistant</h1>
+        <p class="p72-subtitle">Pending-fee summary, reminder drafts, frequently absent students, support alerts aur VANI commands — safe draft-only mode me.</p>
+        <div class="p72-actions">
+          <a class="p72-btn primary" href="/api/part72/status" target="_blank">Status API</a>
+          <a class="p72-btn" href="/api/part72/demo" target="_blank">Demo API</a>
+          <a class="p72-btn" href="/ai-hub">AI Hub</a>
+          <a class="p72-btn" href="/dashboard">Dashboard</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="p72-warning">
+      <strong>Safety:</strong> Ye assistant real WhatsApp/SMS/email send nahi karta, payment change nahi karta, refund/discount/delete/export execute nahi karta. Pehle preview + confirmation + owner verification required rahega.
+    </section>
+
+    <section class="p72-stats" id="statsGrid">
+      <article><span id="pendingStudents">0</span><p>Pending Fee Students</p></article>
+      <article><span id="totalPending">₹0</span><p>Total Pending</p></article>
+      <article><span id="absentCount">0</span><p>Attendance Alerts</p></article>
+      <article><span id="activityCount">0</span><p>Audit Logs</p></article>
+    </section>
+
+    <section class="p72-grid">
+      <article class="p72-card">
+        <div class="p72-head"><h2>Pending Fee Summary</h2><button id="loadFees" class="p72-btn small">Refresh</button></div>
+        <div id="feeSummary" class="p72-list">Loading...</div>
+      </article>
+      <article class="p72-card">
+        <div class="p72-head"><h2>Frequently Absent Students</h2><button id="loadAttendance" class="p72-btn small">Refresh</button></div>
+        <div id="attendanceList" class="p72-list">Loading...</div>
+      </article>
+    </section>
+
+    <section class="p72-card">
+      <div class="p72-head">
+        <div>
+          <p class="p72-kicker">VANI INTEGRATION</p>
+          <h2>Ask VANI about Fees or Attendance</h2>
+        </div>
+      </div>
+      <div class="p72-command-row">
+        <input id="vaniCommand" value="VANI, pending fees aur absent students ka summary dikhao" />
+        <select id="roleSelect">
+          <option value="owner">Owner</option>
+          <option value="accountant">Accountant</option>
+          <option value="teacher">Teacher</option>
+          <option value="receptionist">Receptionist</option>
+          <option value="parent">Parent</option>
+          <option value="student">Student</option>
+        </select>
+        <button id="runVani" class="p72-btn primary">Run VANI Preview</button>
+      </div>
+      <pre id="vaniOutput" class="p72-output">VANI result yahan dikhega...</pre>
+    </section>
+
+    <section class="p72-grid">
+      <article class="p72-card">
+        <h2>Features Added</h2>
+        <div id="features" class="p72-list"></div>
+      </article>
+      <article class="p72-card">
+        <h2>Testing Checklist</h2>
+        <ul id="checklist" class="p72-checklist"></ul>
+      </article>
+    </section>
+  </main>
+
+  <script src="/brand-system.js"></script>
+  <script src="/ai-fee-attendance-assistant.js"></script>
+</body>
+</html>

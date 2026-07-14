@@ -122,7 +122,11 @@ const publicRoutes = [
   "/vani-ai-v1",
   "/vani",
   "/voice-search",
-  "/vani-search"
+  "/vani-search",
+  "/ai-fee-attendance-assistant",
+  "/fee-attendance-ai",
+  "/ai-fee-assistant",
+  "/ai-attendance-assistant"
 ];
 
 const internalPageFiles = new Set([
@@ -263,7 +267,7 @@ app.get("/api/health", (req, res) => {
     status: "running",
     dbMode: globalThis.NAXORA_DB_MODE || "starting",
     note: globalThis.NAXORA_DB_MODE === "mock" ? "MongoDB connect nahi hai, par backend crash-free mock mode me chal raha hai." : "MongoDB connected mode.",
-    part: "Part 68 - AI Credits and Usage",
+    part: "Part 72 - AI Fee and Attendance Assistant",
     environment: process.env.NODE_ENV || "development",
     timestamp: new Date().toISOString(),
   });
@@ -2542,7 +2546,7 @@ function part56BuildEnrolment(payload = {}, existing = {}) {
     status: existing.status || "submitted",
     source: part56CleanText(payload.source || "smart-enrolment", 60),
     notes: part56CleanText(payload.notes, 240),
-    part: "Part 68 - AI Credits and Usage",
+    part: "Part 56 - Smart Student Enrolment",
     createdAt: existing.createdAt || now,
     updatedAt: now
   };
@@ -2581,7 +2585,7 @@ app.get("/admissions", (req, res) => sendFileSafe(res, "smart-enrolment.html"));
 app.get("/api/part56/status", (req, res) => {
   res.json({
     success: true,
-    part: "Part 68 - AI Credits and Usage",
+    part: "Part 56 - Smart Student Enrolment",
     status: "active",
     currentVersionPlan: "Part 53–78 = NAXORA OS 1.0 completion. Part 79–110 = NAXORA OS 2.0 development.",
     goal: "Complete digital admission form with parent/guardian details, document checklist, unique student ID, course and batch assignment, optional verification and consent.",
@@ -2710,7 +2714,7 @@ app.patch("/api/part56/enrolments/:id/status", async (req, res) => {
 });
 
 app.get("/api/part56/checklist", (req, res) => {
-  res.json({ success: true, part: "Part 68 - AI Credits and Usage", checklist: part56Checklist });
+  res.json({ success: true, part: "Part 56 - Smart Student Enrolment", checklist: part56Checklist });
 });
 
 app.get("/api/part56/export", async (req, res) => {
@@ -2718,7 +2722,7 @@ app.get("/api/part56/export", async (req, res) => {
   const rows = collection ? await collection.find({}).sort({ createdAt: -1 }).limit(500).toArray() : globalThis.NAXORA_PART56_ENROLMENTS;
   res.json({
     success: true,
-    part: "Part 68 - AI Credits and Usage",
+    part: "Part 56 - Smart Student Enrolment",
     exportedAt: new Date().toISOString(),
     count: rows.length,
     records: rows.map(part56PublicEnrolmentView)
@@ -8559,6 +8563,474 @@ app.get(/^\/app(?!\/api).*/, (req, res) => {
 // ================= PART 52: LIVE CLEAN ROUTE FIX FOR ALL MODULE PAGES =================
 // Render live URL par /progress.html, /fees.html jaise old sidebar links 404 de rahe the.
 // Is fix me har normal module page ko clean route (/progress) aur old .html redirect dono milte hain.
+
+
+// ================= PART 72: AI FEE AND ATTENDANCE ASSISTANT =================
+const part72Config = {
+  part: "Part 72 - AI Fee and Attendance Assistant",
+  status: "active",
+  frontendRoute: "/ai-fee-attendance-assistant",
+  alternateRoutes: ["/fee-attendance-ai", "/ai-fee-assistant", "/ai-attendance-assistant"],
+  previousPart: "Part 71 - AI Admission Copilot",
+  nextPart: "Part 73 - AI Batch Performance Analyzer",
+  purpose: "Pending-fee summary, fee reminder drafts, frequently absent students, attendance support alerts aur VANI-assisted fee/attendance insights.",
+  safetyMode: "advisory-draft-only-no-direct-message-no-direct-payment-change",
+  vaniMode: "Hindi/English/Hinglish command support with role check, missing-detail questions, preview and audit log.",
+  apiRoutes: [
+    "/api/part72/status",
+    "/api/part72/config",
+    "/api/part72/features",
+    "/api/part72/roles",
+    "/api/part72/fee-summary",
+    "/api/part72/reminder-draft",
+    "/api/part72/frequently-absent",
+    "/api/part72/attendance-alerts",
+    "/api/part72/support-alerts",
+    "/api/part72/vani/command",
+    "/api/part72/activity",
+    "/api/part72/checklist",
+    "/api/part72/export",
+    "/api/part72/demo"
+  ]
+};
+
+const part72Features = [
+  {
+    id: "pending-fee-summary",
+    title: "Pending Fee Summary",
+    problemSolved: "Owner/accountant ko pending fee list manually calculate nahi karni padegi.",
+    ownerBenefit: "Cash collection priority clear hoti hai.",
+    instituteBenefit: "Revenue leakage aur missed dues kam hote hain.",
+    teacherBenefit: "Teacher ko fee data edit access nahi diya gaya; sirf allowed academic support context.",
+    studentBenefit: "Student ko clear due status mil sakta hai.",
+    parentBenefit: "Parent ko polite reminder aur clear payment status milta hai."
+  },
+  {
+    id: "fee-reminder-drafts",
+    title: "AI Fee Reminder Drafts",
+    problemSolved: "Har student/parent ke liye reminder message manually likhne ka time bachta hai.",
+    ownerBenefit: "Professional fee follow-up ready hota hai.",
+    instituteBenefit: "Fee collection process consistent hota hai.",
+    teacherBenefit: "Teacher ko fee reminder send permission nahi di gayi.",
+    studentBenefit: "Message respectful aur clear hota hai.",
+    parentBenefit: "Due date, amount aur contact info samajh aata hai."
+  },
+  {
+    id: "frequently-absent-students",
+    title: "Frequently Absent Students",
+    problemSolved: "Low attendance students late identify nahi honge.",
+    ownerBenefit: "Retention risk early dikhta hai.",
+    instituteBenefit: "Student dropout risk reduce hota hai.",
+    teacherBenefit: "Teacher ko support-needed students list milti hai.",
+    studentBenefit: "Timely help aur counselling mil sakti hai.",
+    parentBenefit: "Child absence pattern clear hota hai."
+  },
+  {
+    id: "attendance-support-alerts",
+    title: "Attendance Support Alerts",
+    problemSolved: "Absent student ko sirf warning nahi, support path milta hai.",
+    ownerBenefit: "Institute care quality improve hoti hai.",
+    instituteBenefit: "Parent trust aur student retention improve hota hai.",
+    teacherBenefit: "Teacher ko call/notes/remedial follow-up plan milta hai.",
+    studentBenefit: "Missed class recovery support milta hai.",
+    parentBenefit: "Parent ko next action clear hota hai."
+  },
+  {
+    id: "vani-fee-attendance",
+    title: "VANI Fee + Attendance Commands",
+    problemSolved: "Owner/counsellor voice se pending fee/attendance insight nikal sakta hai.",
+    ownerBenefit: "Fast voice reporting without risky direct action.",
+    instituteBenefit: "Daily operations faster hote hain.",
+    teacherBenefit: "Assigned batch attendance insight mil sakta hai.",
+    studentBenefit: "Own info only access model ready hai.",
+    parentBenefit: "Linked child info only access model ready hai."
+  }
+];
+
+const part72RolePermissions = {
+  naxora_super_admin: {
+    label: "NAXORA Super Admin",
+    allowed: ["view_platform_status", "technical_support_view", "audit_log_view"],
+    sensitiveVerification: true,
+    note: "Institute-private data ka daily unrestricted access nahi; logged support mode only."
+  },
+  owner: {
+    label: "Institute Owner",
+    allowed: ["fee_summary", "attendance_summary", "reminder_draft", "support_alerts", "vani_fee_attendance", "audit_log_view", "export_request"],
+    sensitiveVerification: true
+  },
+  branch_manager: {
+    label: "Branch Manager",
+    allowed: ["fee_summary_assigned_branch", "attendance_summary_assigned_branch", "reminder_draft", "support_alerts", "vani_fee_attendance"],
+    sensitiveVerification: true
+  },
+  accountant: {
+    label: "Accountant",
+    allowed: ["fee_summary", "reminder_draft", "payment_followup_view", "vani_fee_attendance"],
+    sensitiveVerification: true
+  },
+  teacher: {
+    label: "Teacher",
+    allowed: ["attendance_summary_assigned_batches", "support_alerts", "vani_attendance_only"],
+    sensitiveVerification: false
+  },
+  receptionist: {
+    label: "Receptionist/Counsellor",
+    allowed: ["reminder_draft", "support_alerts", "followup_view", "vani_fee_attendance_limited"],
+    sensitiveVerification: false
+  },
+  student: {
+    label: "Student",
+    allowed: ["own_fee_status", "own_attendance_status"],
+    sensitiveVerification: false
+  },
+  parent: {
+    label: "Parent",
+    allowed: ["linked_child_fee_status", "linked_child_attendance_status"],
+    sensitiveVerification: false
+  }
+};
+
+const part72Checklist = [
+  "AI Fee and Attendance Assistant page /ai-fee-attendance-assistant open ho raha hai.",
+  "/api/part72/status success true return karta hai.",
+  "Pending-fee summary data safe/demo fallback ke saath return hota hai.",
+  "Fee reminder draft create hota hai lekin real WhatsApp/SMS/email send nahi hota.",
+  "Frequently absent students list return hoti hai.",
+  "Attendance support alerts role-safe mode me generate hote hain.",
+  "VANI command missing details politely poochti hai.",
+  "VANI create/send/delete/refund/export direct execute nahi karti.",
+  "Sensitive financial details speaker par loudly bolne ke bajay private display rule return hota hai.",
+  "Activity/audit log me VANI and assistant actions save hote hain.",
+  "Previous Part 71 AI Admission Copilot routes preserved hain."
+];
+
+const part72DemoStudents = [
+  { studentId: "NX-STU-1001", studentName: "Aman Sharma", parentName: "Rakesh Sharma", parentPhone: "9876543210", batch: "JEE Foundation Evening", branch: "Main Branch", pendingFee: 12500, dueDate: "2026-07-20", attendancePercent: 68, absences30Days: 7, lastAbsentDate: "2026-07-12", risk: "high" },
+  { studentId: "NX-STU-1002", studentName: "Riya Verma", parentName: "Sunita Verma", parentPhone: "9876500001", batch: "Class 10 Board Morning", branch: "Main Branch", pendingFee: 0, dueDate: "2026-08-01", attendancePercent: 91, absences30Days: 1, lastAbsentDate: "2026-07-02", risk: "low" },
+  { studentId: "NX-STU-1003", studentName: "Karan Mehta", parentName: "Pooja Mehta", parentPhone: "9876500002", batch: "NEET Foundation", branch: "West Branch", pendingFee: 8000, dueDate: "2026-07-18", attendancePercent: 74, absences30Days: 5, lastAbsentDate: "2026-07-10", risk: "medium" },
+  { studentId: "NX-STU-1004", studentName: "Simran Kaur", parentName: "Harpreet Kaur", parentPhone: "9876500003", batch: "Class 12 Physics", branch: "West Branch", pendingFee: 15000, dueDate: "2026-07-16", attendancePercent: 59, absences30Days: 9, lastAbsentDate: "2026-07-13", risk: "critical" }
+];
+
+if (!globalThis.NAXORA_PART72_ACTIVITY) globalThis.NAXORA_PART72_ACTIVITY = [];
+
+function part72CleanText(value, max = 500) {
+  return String(value ?? "").replace(/[<>]/g, "").trim().slice(0, max);
+}
+
+function part72Lower(value) {
+  return part72CleanText(value, 500).toLowerCase();
+}
+
+function part72DbReady() {
+  return mongoose.connection.readyState === 1 && globalThis.NAXORA_DB_MODE !== "mock";
+}
+
+function part72Role(role = "owner") {
+  const key = part72CleanText(role, 80).toLowerCase().replace(/[ -]+/g, "_") || "owner";
+  if (key === "institute_owner") return "owner";
+  if (key === "staff" || key === "counsellor") return "receptionist";
+  return part72RolePermissions[key] ? key : "owner";
+}
+
+function part72Can(role, permission) {
+  const resolved = part72Role(role);
+  const allowed = part72RolePermissions[resolved]?.allowed || [];
+  return allowed.includes(permission) || allowed.includes("vani_fee_attendance") || allowed.some((item) => permission.startsWith(item.replace("_assigned_branch", "").replace("_assigned_batches", "")));
+}
+
+async function part72Log(type, payload = {}) {
+  const row = {
+    id: `part72-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+    type: part72CleanText(type, 80),
+    payload,
+    createdAt: new Date().toISOString(),
+    part: part72Config.part
+  };
+  globalThis.NAXORA_PART72_ACTIVITY.unshift(row);
+  globalThis.NAXORA_PART72_ACTIVITY = globalThis.NAXORA_PART72_ACTIVITY.slice(0, 80);
+  if (part72DbReady()) {
+    try { await mongoose.connection.db.collection("part72feeattendanceassistantlogs").insertOne(row); } catch (error) { /* non-blocking */ }
+  }
+  return row;
+}
+
+function part72MaskPhone(value = "") {
+  const raw = String(value || "").replace(/\D/g, "");
+  if (raw.length < 4) return "hidden";
+  return `${raw.slice(0, 2)}******${raw.slice(-2)}`;
+}
+
+function part72NormalizeStudent(row = {}) {
+  return {
+    studentId: part72CleanText(row.studentId || row.rollNo || row._id || `NX-${Date.now()}`, 80),
+    studentName: part72CleanText(row.studentName || row.name || row.student || "Unknown Student", 100),
+    parentName: part72CleanText(row.parentName || row.guardianName || "Parent/Guardian", 100),
+    parentPhoneMasked: part72MaskPhone(row.parentPhone || row.phone || row.mobile),
+    batch: part72CleanText(row.batch || row.batchName || "General Batch", 100),
+    branch: part72CleanText(row.branch || row.branchName || "Main Branch", 100),
+    pendingFee: Number(row.pendingFee ?? row.pendingAmount ?? row.dueAmount ?? 0) || 0,
+    dueDate: part72CleanText(row.dueDate || row.nextDueDate || "Not set", 40),
+    attendancePercent: Math.max(0, Math.min(100, Number(row.attendancePercent ?? row.attendance ?? 85) || 0)),
+    absences30Days: Math.max(0, Number(row.absences30Days ?? row.absentCount ?? 0) || 0),
+    lastAbsentDate: part72CleanText(row.lastAbsentDate || row.absentDate || "Not available", 40),
+    risk: part72CleanText(row.risk || "medium", 30)
+  };
+}
+
+function part72FilterRows(rows = [], filters = {}) {
+  const q = part72Lower(filters.q || filters.search || "");
+  const branch = part72Lower(filters.branch || "");
+  const batch = part72Lower(filters.batch || "");
+  return rows.map(part72NormalizeStudent).filter((row) => {
+    const full = part72Lower(JSON.stringify(row));
+    if (q && !full.includes(q)) return false;
+    if (branch && part72Lower(row.branch) !== branch) return false;
+    if (batch && !part72Lower(row.batch).includes(batch)) return false;
+    return true;
+  });
+}
+
+async function part72BaseRows(filters = {}) {
+  if (part72DbReady()) {
+    try {
+      const collection = mongoose.connection.db.collection("part72feeattendanceassistants");
+      const rows = await collection.find({}).limit(100).toArray();
+      if (rows.length) return { mode: "mongodb", rows: part72FilterRows(rows, filters) };
+    } catch (error) { /* fallback below */ }
+    try {
+      const students = await mongoose.connection.db.collection("students").find({}).limit(60).toArray();
+      if (students.length) return { mode: "mongodb-students-safe-fallback", rows: part72FilterRows(students, filters) };
+    } catch (error) { /* fallback below */ }
+  }
+  return { mode: part72DbReady() ? "mongodb-empty-demo-fallback" : "mock-demo", rows: part72FilterRows(part72DemoStudents, filters) };
+}
+
+async function part72FeeSummary(filters = {}) {
+  const data = await part72BaseRows(filters);
+  const rows = data.rows;
+  const pendingRows = rows.filter((row) => row.pendingFee > 0).sort((a, b) => b.pendingFee - a.pendingFee);
+  const totalPending = pendingRows.reduce((sum, row) => sum + row.pendingFee, 0);
+  const urgent = pendingRows.filter((row) => ["critical", "high"].includes(part72Lower(row.risk)) || row.pendingFee >= 10000);
+  return {
+    mode: data.mode,
+    totalStudents: rows.length,
+    pendingStudents: pendingRows.length,
+    totalPending,
+    urgentCount: urgent.length,
+    currency: "INR",
+    privateSpeakerRule: "Pending amount/phone number ko public speaker par loudly bolne ke bajay private screen preview me show karo.",
+    rows: pendingRows
+  };
+}
+
+async function part72AbsentStudents(filters = {}) {
+  const data = await part72BaseRows(filters);
+  const rows = data.rows
+    .filter((row) => row.attendancePercent < 75 || row.absences30Days >= 4)
+    .sort((a, b) => a.attendancePercent - b.attendancePercent);
+  return { mode: data.mode, count: rows.length, threshold: "attendance below 75% or 4+ absences in 30 days", rows };
+}
+
+function part72ReminderDraft(student = {}, options = {}) {
+  const row = part72NormalizeStudent(student);
+  const channel = part72CleanText(options.channel || "whatsapp", 30).toLowerCase();
+  const tone = part72CleanText(options.tone || "polite", 30);
+  const draft = `Namaste ${row.parentName} ji,\n\n${row.studentName} ke fee record me ₹${row.pendingFee} pending dikh raha hai. Due date: ${row.dueDate}. Kripya payment status confirm karein ya institute office se contact karein.\n\nAgar payment already ho chuki hai to receipt/share karke update karwa dein.\n\n- NAXORA Institute OS`;
+  return {
+    student: row,
+    channel,
+    tone,
+    draft,
+    sendMode: "draft-only",
+    warning: "Ye message abhi send nahi hua. Part 65 communication queue/provider verification ke baad explicit confirmation se send hoga.",
+    requiresConfirmationBeforeSend: true,
+    sensitiveVerificationRequiredForDiscountRefundDelete: true
+  };
+}
+
+function part72AttendanceSupportPlan(student = {}) {
+  const row = part72NormalizeStudent(student);
+  const severity = row.attendancePercent < 60 ? "critical" : row.attendancePercent < 75 ? "high" : "medium";
+  return {
+    student: row,
+    severity,
+    alerts: [
+      `${row.studentName} ki attendance ${row.attendancePercent}% hai.`,
+      `Last 30 days me ${row.absences30Days} absence record hai.`,
+      "Teacher/counsellor ko support follow-up create karna chahiye."
+    ],
+    recommendedActions: [
+      "Parent ko respectful check-in call draft bhejo.",
+      "Student se missed topics aur class reason poochho.",
+      "Teacher se remedial/revision plan confirm karo.",
+      "Agle 7 din attendance monitor karo."
+    ],
+    privateSpeakerRule: "Health/personal reasons public speaker par loudly discuss na karein; screen par privately show karein."
+  };
+}
+
+async function part72SupportAlerts(filters = {}) {
+  const absent = await part72AbsentStudents(filters);
+  return { mode: absent.mode, count: absent.rows.length, alerts: absent.rows.map(part72AttendanceSupportPlan) };
+}
+
+async function part72VaniCommand(commandInput = "", context = {}) {
+  const role = part72Role(context.role || context.userRole || "owner");
+  const command = part72CleanText(commandInput || context.command || "pending fees summary", 800);
+  const lower = part72Lower(command);
+  const filters = { q: context.q || context.studentName || "", batch: context.batch || "", branch: context.branch || "" };
+  const sensitive = /(refund|delete|discount|export|subscription|remove|waive|maaf|delete karo|refund do)/i.test(command);
+  if (sensitive && !part72RolePermissions[role]?.sensitiveVerification) {
+    return {
+      allowed: false,
+      role,
+      command,
+      action: "sensitive_action_blocked",
+      message: "Is action ke liye owner verification required hai. Main bina verification refund/discount/delete/export execute nahi karungi.",
+      auditRequired: true
+    };
+  }
+  let action = "fee_summary";
+  let preview;
+  if (/(absent|attendance|hazri|haazri|present|support alert|retention)/i.test(lower)) {
+    action = "attendance_support";
+    if (!part72Can(role, "attendance_summary")) {
+      return { allowed: false, role, command, action, message: "Is role ko attendance summary access nahi hai ya assigned-batch restriction required hai." };
+    }
+    preview = await part72SupportAlerts(filters);
+  } else if (/(reminder|message|whatsapp|sms|email|draft)/i.test(lower)) {
+    action = "reminder_draft";
+    if (!part72Can(role, "reminder_draft")) {
+      return { allowed: false, role, command, action, message: "Is role ko reminder draft permission nahi hai." };
+    }
+    const summary = await part72FeeSummary(filters);
+    const first = summary.rows[0] || part72DemoStudents[0];
+    preview = part72ReminderDraft(first, { channel: lower.includes("email") ? "email" : lower.includes("sms") ? "sms" : "whatsapp" });
+  } else {
+    action = "fee_summary";
+    if (!part72Can(role, "fee_summary")) {
+      return { allowed: false, role, command, action, message: "Is role ko fee summary access nahi hai." };
+    }
+    preview = await part72FeeSummary(filters);
+  }
+  const missingDetails = [];
+  if (/(student|bachcha|parent)/i.test(lower) && !filters.q) missingDetails.push("studentName ya studentId");
+  if (/(branch)/i.test(lower) && !filters.branch) missingDetails.push("branch");
+  const responseMode = preview?.privateSpeakerRule ? "screen-private-for-sensitive-data" : "speaker-safe-summary";
+  return {
+    allowed: true,
+    role,
+    command,
+    action,
+    responseMode,
+    missingDetails,
+    asksPolitelyForMissingDetails: missingDetails.length ? `Kripya ${missingDetails.join(", ")} bata dijiye.` : "No missing required detail for summary.",
+    preview,
+    requiresConfirmationBeforeExecution: action === "reminder_draft",
+    executesDirectly: false,
+    auditRequired: true
+  };
+}
+
+app.get("/api/part72/status", (req, res) => {
+  res.json({
+    success: true,
+    part: part72Config.part,
+    status: part72Config.status,
+    purpose: part72Config.purpose,
+    frontend: [part72Config.frontendRoute, ...part72Config.alternateRoutes],
+    apiRoutes: part72Config.apiRoutes,
+    previousPart: part72Config.previousPart,
+    nextPart: part72Config.nextPart,
+    vaniMode: part72Config.vaniMode,
+    safetyMode: part72Config.safetyMode,
+    masterProgressRecord: "docs/NAXORA_MASTER_PROGRESS_RECORD.md updated to Part 72"
+  });
+});
+
+app.get("/api/part72/config", (req, res) => {
+  res.json({ success: true, part: part72Config.part, config: part72Config, roles: part72RolePermissions });
+});
+
+app.get("/api/part72/features", (req, res) => {
+  res.json({ success: true, part: part72Config.part, count: part72Features.length, features: part72Features });
+});
+
+app.get("/api/part72/roles", (req, res) => {
+  res.json({ success: true, part: part72Config.part, roles: part72RolePermissions });
+});
+
+app.get("/api/part72/fee-summary", async (req, res) => {
+  const role = part72Role(req.query.role || "owner");
+  if (!part72Can(role, "fee_summary")) return res.status(403).json({ success: false, part: part72Config.part, role, message: "Is role ko fee summary access nahi hai." });
+  const result = await part72FeeSummary(req.query);
+  await part72Log("fee_summary_viewed", { role, totalPending: result.totalPending, pendingStudents: result.pendingStudents });
+  res.json({ success: true, part: part72Config.part, role, result });
+});
+
+app.post("/api/part72/reminder-draft", async (req, res) => {
+  const role = part72Role(req.body?.role || "owner");
+  if (!part72Can(role, "reminder_draft")) return res.status(403).json({ success: false, part: part72Config.part, role, message: "Is role ko reminder draft permission nahi hai." });
+  const draft = part72ReminderDraft(req.body?.student || req.body || {}, { channel: req.body?.channel, tone: req.body?.tone });
+  await part72Log("fee_reminder_draft_created", { role, studentId: draft.student.studentId, channel: draft.channel, sendMode: draft.sendMode });
+  res.json({ success: true, part: part72Config.part, role, result: draft });
+});
+
+app.get("/api/part72/frequently-absent", async (req, res) => {
+  const role = part72Role(req.query.role || "owner");
+  if (!part72Can(role, "attendance_summary")) return res.status(403).json({ success: false, part: part72Config.part, role, message: "Is role ko attendance summary access nahi hai." });
+  const result = await part72AbsentStudents(req.query);
+  await part72Log("frequently_absent_viewed", { role, count: result.count });
+  res.json({ success: true, part: part72Config.part, role, result });
+});
+
+app.get("/api/part72/attendance-alerts", async (req, res) => {
+  const role = part72Role(req.query.role || "owner");
+  if (!part72Can(role, "attendance_summary")) return res.status(403).json({ success: false, part: part72Config.part, role, message: "Is role ko attendance alerts access nahi hai." });
+  const result = await part72SupportAlerts(req.query);
+  await part72Log("attendance_alerts_viewed", { role, count: result.count });
+  res.json({ success: true, part: part72Config.part, role, result });
+});
+
+app.get("/api/part72/support-alerts", async (req, res) => {
+  const role = part72Role(req.query.role || "owner");
+  if (!part72Can(role, "support_alerts")) return res.status(403).json({ success: false, part: part72Config.part, role, message: "Is role ko support alerts permission nahi hai." });
+  const result = await part72SupportAlerts(req.query);
+  await part72Log("support_alerts_viewed", { role, count: result.count });
+  res.json({ success: true, part: part72Config.part, role, result });
+});
+
+app.post("/api/part72/vani/command", async (req, res) => {
+  const result = await part72VaniCommand(req.body?.command || req.body?.transcript || req.body?.text || "pending fees summary", req.body || {});
+  await part72Log("vani_fee_attendance_command", { role: result.role, action: result.action, allowed: result.allowed, responseMode: result.responseMode });
+  res.status(result.allowed === false ? 403 : 200).json({ success: result.allowed !== false, part: part72Config.part, result });
+});
+
+app.get("/api/part72/activity", (req, res) => {
+  res.json({ success: true, part: part72Config.part, count: globalThis.NAXORA_PART72_ACTIVITY.length, activity: globalThis.NAXORA_PART72_ACTIVITY });
+});
+
+app.get("/api/part72/checklist", (req, res) => {
+  res.json({ success: true, part: part72Config.part, checklist: part72Checklist });
+});
+
+app.get("/api/part72/export", async (req, res) => {
+  const [feeSummary, absent, support] = await Promise.all([part72FeeSummary(req.query), part72AbsentStudents(req.query), part72SupportAlerts(req.query)]);
+  res.json({ success: true, part: part72Config.part, exportedAt: new Date().toISOString(), config: part72Config, features: part72Features, roles: part72RolePermissions, feeSummary, absent, support, checklist: part72Checklist, activity: globalThis.NAXORA_PART72_ACTIVITY });
+});
+
+app.get("/api/part72/demo", async (req, res) => {
+  const feeSummary = await part72FeeSummary({});
+  const absent = await part72AbsentStudents({});
+  const support = await part72SupportAlerts({});
+  const reminder = part72ReminderDraft(part72DemoStudents[0]);
+  const vani = await part72VaniCommand("VANI, pending fees aur absent students ka summary dikhao", { role: "owner" });
+  await part72Log("demo_generated", { pendingStudents: feeSummary.pendingStudents, absentStudents: absent.count });
+  res.json({ success: true, part: part72Config.part, demoTitle: "AI Fee and Attendance Assistant Demo", demo: { feeSummary, absent, support, reminder, vani }, checklist: part72Checklist });
+});
+// ================= END PART 72 =================
+
 const modulePageRoutes = {
   "/dashboard": "dashboard.html",
   "/students": "students.html",
@@ -8671,7 +9143,11 @@ const modulePageRoutes = {
   "/admission-copilot": "ai-admission-copilot.html",
   "/admission-ai": "ai-admission-copilot.html",
   "/ai-counsellor": "ai-admission-copilot.html",
-  "/copilot-admission": "ai-admission-copilot.html"
+  "/copilot-admission": "ai-admission-copilot.html",
+  "/ai-fee-attendance-assistant": "ai-fee-attendance-assistant.html",
+  "/fee-attendance-ai": "ai-fee-attendance-assistant.html",
+  "/ai-fee-assistant": "ai-fee-attendance-assistant.html",
+  "/ai-attendance-assistant": "ai-fee-attendance-assistant.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -8713,7 +9189,7 @@ await connectDB();
 
 const server = app.listen(port, () => {
   console.log("✅ PART 59 PUBLIC INSTITUTE PROFILE ACTIVE");
-  console.log("✅ All routes Part 1 to Part 71 loaded + AI Admission Copilot");
+  console.log("✅ All routes Part 1 to Part 72 loaded + AI Fee and Attendance Assistant");
   console.log("✅ AI Notes route active: /api/ai-notes");
   console.log("✅ AI Mock Tests route active: /api/ai-mock-tests");
   console.log("✅ AI Roadmaps route active: /api/ai-roadmaps");
@@ -8779,6 +9255,7 @@ const server = app.listen(port, () => {
   console.log("✅ Part 69 VANI AI V1 active: /api/part69/status + /vani-ai-v1");
   console.log("✅ Part 70 VANI AI V2 active: /api/part70/status + /vani-ai-v2");
   console.log("✅ Part 71 AI Admission Copilot active: /api/part71/status + /ai-admission-copilot");
+  console.log("✅ Part 72 AI Fee and Attendance Assistant active: /api/part72/status + /ai-fee-attendance-assistant");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");
