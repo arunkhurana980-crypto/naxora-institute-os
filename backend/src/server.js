@@ -9496,6 +9496,161 @@ for (const route of [part75Config.frontendRoute, ...part75Config.alternateRoutes
   app.get(route, (req, res) => sendFileSafe(res, "student-ai-tools.html"));
 }
 
+
+// ============================================================
+// NAXORA Institute OS - Part 76: Smart Classroom Setup Module
+// Site survey, hardware quotation, advance payment status, vendor details, installation tracking, warranty details
+// ============================================================
+const part76Config = {
+  part: "Part 76 — Smart Classroom Setup Module",
+  status: "active",
+  frontendRoute: "/smart-classroom-setup",
+  alternateRoutes: ["/smart-classroom", "/classroom-setup", "/hardware-setup", "/studio-setup", "/smart-classroom-module"],
+  apiRoutes: [
+    "/api/part76/status",
+    "/api/part76/config",
+    "/api/part76/features",
+    "/api/part76/roles",
+    "/api/part76/site-survey",
+    "/api/part76/hardware-quotation",
+    "/api/part76/advance-payment-status",
+    "/api/part76/vendor-details",
+    "/api/part76/installation-tracking",
+    "/api/part76/warranty-details",
+    "/api/part76/vani/command",
+    "/api/part76/activity",
+    "/api/part76/checklist",
+    "/api/part76/export",
+    "/api/part76/demo"
+  ],
+  purpose: "NAXORA software ke saath smart classroom hardware/setup service ko manage karna: site survey, quotation, advance payment, vendors, installation aur warranty.",
+  nextPart: "Part 77 — Final Production Testing",
+  versionPlan: "Part 53-78 = NAXORA OS 1.0 completion. Part 79-110 = NAXORA OS 2.0 development. Future 3.0 = owner-only AI-first subscription.",
+  versionSubscriptionNote: "1.0, 2.0 aur future 3.0 ke alag subscription guards planned hain; 3.0 institute-owner-only access hoga."
+};
+
+const part76Features = [
+  { key: "site_survey", name: "Site Survey", why: "Room size, internet, power, teaching mode aur camera/audio needs capture karna.", problemSolved: "Hardware setup guesswork kam hota hai.", benefits: { owner: "Clear setup requirement", institute: "Professional classroom planning", teacher: "Better teaching environment", student: "Better class audio/video", parent: "Reliable online/offline learning" } },
+  { key: "hardware_quotation", name: "Hardware Quotation", why: "Camera, mic, speaker, board, router, installation aur warranty cost estimate dena.", problemSolved: "Owner ko transparent budget milta hai.", benefits: { owner: "Budget decision easy", institute: "Upsell service possible", teacher: "Correct equipment", student: "Better class experience", parent: "Quality trust" } },
+  { key: "advance_payment_status", name: "Advance Payment Status", why: "Setup order start karne se pehle payment tracking.", problemSolved: "Unpaid setup work aur confusion kam hota hai.", benefits: { owner: "Payment clarity", institute: "Work starts on confirmed advance", accountant: "Payment record", teacher: "Installation timeline clear", parent: "No direct impact" } },
+  { key: "vendor_details", name: "Vendor Details", why: "Hardware vendor/install partner details store karna.", problemSolved: "Vendor follow-up scattered nahi rehta.", benefits: { owner: "Vendor accountability", institute: "Service tracking", staff: "Contact quickly milta hai", teacher: "Issue escalation easy", student: "Faster issue resolution" } },
+  { key: "installation_tracking", name: "Installation Tracking", why: "Survey se installation complete tak stages track karna.", problemSolved: "Setup delay aur responsibility confusion kam hota hai.", benefits: { owner: "Live status", institute: "Operational planning", teacher: "Classroom ready date", student: "Classes stable", parent: "Better delivery" } },
+  { key: "warranty_details", name: "Warranty Details", why: "Camera/mic/board/router warranty record maintain karna.", problemSolved: "After-sales service aur warranty claims easy hote hain.", benefits: { owner: "Asset protection", institute: "Support cost control", staff: "Warranty lookup", teacher: "Faster replacements", student: "Less disruption" } }
+];
+
+const part76RolePermissions = {
+  owner: { allowed: ["view_all_setups", "approve_quote", "view_payment_status", "vendor_manage", "installation_track", "warranty_view", "export_with_verification"], limits: "Full institute and authorised branch setup access." },
+  branch_manager: { allowed: ["view_branch_setups", "installation_track", "warranty_view"], limits: "Assigned branch only." },
+  accountant: { allowed: ["view_payment_status", "record_advance_status", "invoice_context"], limits: "Financial setup records according to permission." },
+  teacher: { allowed: ["view_assigned_classroom_status", "report_classroom_issue"], limits: "Only assigned classroom/live class setup status." },
+  receptionist: { allowed: ["view_installation_schedule", "vendor_contact_limited"], limits: "Operational schedule only." },
+  student: { allowed: ["view_classroom_ready_status"], limits: "Only class availability/status, no vendor/payment data." },
+  parent: { allowed: ["view_classroom_ready_status"], limits: "Only linked child class availability/status." },
+  naxora_super_admin: { allowed: ["logged_technical_support"], limits: "Platform technical support with audit log, not unrestricted daily private access." }
+};
+
+const part76Checklist = [
+  "Smart Classroom page /smart-classroom-setup open ho raha hai.",
+  "Site survey required fields capture ho rahe hain.",
+  "Hardware quotation transparent item-wise amount show karta hai.",
+  "Advance payment status draft/status mode me hai, real charge nahi karta.",
+  "Vendor details contact/status ke saath visible hain.",
+  "Installation stages track ho rahe hain.",
+  "Warranty details item-wise visible hain.",
+  "VANI setup status/quotation/install commands accept karti hai.",
+  "Sensitive payment/vendor/export actions owner verification ke bina final nahi hote.",
+  "No .env, no secret, no API key, no node_modules, no .bat in ZIP.",
+  "Previous Part 52-75 features preserved hain."
+];
+
+const part76Demo = {
+  setups: [{ id: "SC-SETUP-0001", instituteName: "NAXORA Demo Institute", branch: "Main Branch", room: "Room 2", status: "quotation_ready" }],
+  siteSurvey: {
+    id: "SURVEY-0001",
+    points: [
+      { label: "Room Size", value: "22 x 16 ft classroom with 45 students capacity", status: "captured" },
+      { label: "Teaching Mode", value: "Hybrid live class + recording workflow", status: "captured" },
+      { label: "Internet", value: "100 Mbps broadband recommended with backup hotspot", status: "needs_check" },
+      { label: "Power", value: "2 dedicated sockets near teacher table + UPS recommended", status: "needs_check" }
+    ]
+  },
+  quotation: {
+    currency: "INR",
+    items: [
+      { item: "HD PTZ/USB Camera", amount: 18000, reason: "Clear board + teacher coverage" },
+      { item: "Wireless Collar Mic + Receiver", amount: 6500, reason: "Teacher voice clarity" },
+      { item: "Classroom Speaker", amount: 3500, reason: "VANI/recording playback and class audio" },
+      { item: "Tripod/Wall Mount + Cables", amount: 2500, reason: "Stable installation" },
+      { item: "Installation + Testing", amount: 5500, reason: "On-site setup and training" }
+    ],
+    total: 36000,
+    advanceRequired: 15000,
+    note: "Final amount site survey ke baad change ho sakta hai."
+  },
+  advancePayment: { required: 15000, received: 5000, pending: 10000, status: "partial", realPaymentNotChargedHere: true },
+  vendors: [
+    { name: "NAXORA Smart Classroom Partner A", type: "Installation", contact: "vendor-contact-hidden-demo", status: "shortlisted" },
+    { name: "Audio/Video Hardware Supplier", type: "Hardware", contact: "vendor-contact-hidden-demo", status: "quotation shared" }
+  ],
+  installation: {
+    currentStage: "Quotation",
+    stages: [
+      { stage: "Site Survey", status: "complete", note: "Room requirement captured." },
+      { stage: "Quotation", status: "in_progress", note: "Owner review pending." },
+      { stage: "Advance", status: "partial", note: "Advance pending before installation date lock." },
+      { stage: "Installation", status: "pending", note: "Vendor visit after advance confirmation." },
+      { stage: "Training", status: "pending", note: "Teacher usage demo pending." }
+    ]
+  },
+  warranty: {
+    items: [
+      { item: "Camera", months: 12, note: "Manufacturer warranty; physical damage excluded." },
+      { item: "Microphone", months: 6, note: "Service warranty as per vendor." },
+      { item: "Installation", months: 3, note: "Setup support warranty." }
+    ]
+  }
+};
+
+if (!globalThis.NAXORA_PART76_ACTIVITY) globalThis.NAXORA_PART76_ACTIVITY = [];
+function part76CleanText(value, max = 600) { return String(value ?? "").replace(/[<>]/g, "").trim().slice(0, max); }
+function part76Lower(value) { return part76CleanText(value, 600).toLowerCase(); }
+function part76DbReady() { return mongoose.connection.readyState === 1 && globalThis.NAXORA_DB_MODE !== "mock"; }
+function part76Role(role = "owner") { const key = part76CleanText(role, 80).toLowerCase().replace(/[ -]+/g, "_") || "owner"; if (key === "institute_owner") return "owner"; if (key === "staff" || key === "counsellor") return "receptionist"; return part76RolePermissions[key] ? key : "owner"; }
+function part76Allowed(role, permission) { const resolved = part76Role(role); return (part76RolePermissions[resolved]?.allowed || []).includes(permission); }
+async function part76Log(type, payload = {}) { const row = { id: `part76-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`, type: part76CleanText(type, 80), payload, createdAt: new Date().toISOString(), part: part76Config.part }; globalThis.NAXORA_PART76_ACTIVITY.unshift(row); globalThis.NAXORA_PART76_ACTIVITY = globalThis.NAXORA_PART76_ACTIVITY.slice(0, 100); if (part76DbReady()) { try { await mongoose.connection.db.collection("part76smartclassroomlogs").insertOne(row); } catch (error) {} } return row; }
+
+function part76MakeSurvey(input = {}) {
+  const instituteName = part76CleanText(input.instituteName || "NAXORA Demo Institute", 140);
+  const room = part76CleanText(input.room || "Main Branch Room", 140);
+  const roomSize = part76CleanText(input.roomSize || "22 x 16 ft", 80);
+  const teachingMode = part76CleanText(input.teachingMode || "Hybrid live + recording", 160);
+  return { id: `SURVEY-${Date.now()}`, instituteName, room, points: [ { label: "Institute", value: instituteName, status: "captured" }, { label: "Room", value: room, status: "captured" }, { label: "Room Size", value: roomSize, status: "captured" }, { label: "Teaching Mode", value: teachingMode, status: "captured" }, { label: "Next Step", value: "Internet/power check aur owner quotation approval required.", status: "pending" } ], directInstallationDisabled: true };
+}
+function part76MakeQuotation(input = {}) { const camera = Number(input.cameraAmount || 18000); const mic = Number(input.micAmount || 6500); const speaker = Number(input.speakerAmount || 3500); const install = Number(input.installAmount || 5500); const cables = Number(input.cablesAmount || 2500); const items = [ { item: "HD Camera", amount: camera, reason: "Teacher and board visibility" }, { item: "Microphone", amount: mic, reason: "Voice clarity" }, { item: "Speaker", amount: speaker, reason: "Classroom/VANI audio" }, { item: "Mounts and Cables", amount: cables, reason: "Stable setup" }, { item: "Installation and Testing", amount: install, reason: "On-site setup" } ]; const total = items.reduce((sum, row) => sum + row.amount, 0); return { currency: "INR", items, total, advanceRequired: Math.ceil(total * 0.4), ownerApprovalRequired: true, note: "Quotation preview hai; final vendor quote owner approval ke baad lock hogi." }; }
+function part76Vani(command = "setup status dikhao", payload = {}) { const role = part76Role(payload.role || "owner"); const text = part76Lower(command); const sensitive = text.includes("refund") || text.includes("discount") || text.includes("delete") || text.includes("export") || text.includes("subscription") || text.includes("vendor payment"); if (sensitive) { return { allowed: false, role, ownerVerificationRequired: true, message: "Ye sensitive smart-classroom action hai. Owner verification ke bina execute nahi hoga.", auditLogRequired: true }; } if (!["owner", "branch_manager", "accountant", "teacher", "receptionist", "naxora_super_admin"].includes(role)) { return { allowed: true, role, responseMode: "limited", spokenSummary: "Classroom setup status screen par dikhaya gaya hai.", preview: { status: "Classroom setup under progress", privateFieldsHidden: true } }; } const survey = part76MakeSurvey(payload); const quotation = part76MakeQuotation(payload); return { allowed: true, role, command: part76CleanText(command, 400), responseMode: "private-screen-first", spokenSummary: "Smart classroom survey, quotation aur installation status ready hai. Payment/vendor details screen par private mode me dikhaye gaye hain.", preview: { survey, quotation, advancePayment: part76Demo.advancePayment, installation: part76Demo.installation, warranty: part76Demo.warranty }, confirmationRequiredForActions: ["approve_quote", "record_advance", "assign_vendor", "final_installation", "export"], auditLogRequired: true, directRefundDiscountDeleteDisabled: true };
+}
+
+app.get("/api/part76/status", (req, res) => res.json({ success: true, part: part76Config.part, status: part76Config.status, frontend: [part76Config.frontendRoute, ...part76Config.alternateRoutes], apiRoutes: part76Config.apiRoutes, purpose: part76Config.purpose, currentVersionPlan: part76Config.versionPlan, versionSubscriptionNote: part76Config.versionSubscriptionNote, nextPart: part76Config.nextPart }));
+app.get("/api/part76/config", (req, res) => res.json({ success: true, part: part76Config.part, config: part76Config }));
+app.get("/api/part76/features", (req, res) => res.json({ success: true, part: part76Config.part, features: part76Features }));
+app.get("/api/part76/roles", (req, res) => res.json({ success: true, part: part76Config.part, roles: part76RolePermissions }));
+app.get("/api/part76/site-survey", async (req, res) => { const role = part76Role(req.query.role || "owner"); const survey = part76MakeSurvey(req.query); await part76Log("site_survey_preview", { role, instituteName: survey.instituteName }); res.json({ success: true, part: part76Config.part, role, survey }); });
+app.post("/api/part76/site-survey", async (req, res) => { const role = part76Role(req.body?.role || "owner"); if (!["owner", "branch_manager", "receptionist", "naxora_super_admin"].includes(role)) return res.status(403).json({ success: false, part: part76Config.part, role, message: "Site survey create/update ke liye authorised role required hai." }); const survey = part76MakeSurvey(req.body || {}); await part76Log("site_survey_submitted", { role, instituteName: survey.instituteName }); res.json({ success: true, part: part76Config.part, role, survey, savedAsDraft: true, finalApprovalRequired: true }); });
+app.get("/api/part76/hardware-quotation", async (req, res) => { const role = part76Role(req.query.role || "owner"); const quotation = part76MakeQuotation(req.query); await part76Log("quotation_preview", { role, total: quotation.total }); res.json({ success: true, part: part76Config.part, role, quotation }); });
+app.get("/api/part76/advance-payment-status", async (req, res) => { const role = part76Role(req.query.role || "owner"); await part76Log("advance_payment_status_viewed", { role }); res.json({ success: true, part: part76Config.part, role, advancePayment: part76Demo.advancePayment, realPaymentChargeDisabledHere: true }); });
+app.get("/api/part76/vendor-details", async (req, res) => { const role = part76Role(req.query.role || "owner"); const canView = ["owner", "branch_manager", "receptionist", "naxora_super_admin"].includes(role); await part76Log("vendor_details_viewed", { role, canView }); res.json({ success: true, part: part76Config.part, role, vendors: canView ? part76Demo.vendors : [], message: canView ? "Vendor details visible as per role." : "Vendor details restricted for this role." }); });
+app.get("/api/part76/installation-tracking", async (req, res) => { const role = part76Role(req.query.role || "owner"); await part76Log("installation_tracking_viewed", { role }); res.json({ success: true, part: part76Config.part, role, installation: part76Demo.installation }); });
+app.get("/api/part76/warranty-details", async (req, res) => { const role = part76Role(req.query.role || "owner"); await part76Log("warranty_details_viewed", { role }); res.json({ success: true, part: part76Config.part, role, warranty: part76Demo.warranty }); });
+app.post("/api/part76/vani/command", async (req, res) => { const result = part76Vani(req.body?.command || "setup status dikhao", req.body || {}); await part76Log("vani_command", { role: result.role, command: req.body?.command || "" }); res.json({ success: true, part: part76Config.part, result }); });
+app.get("/api/part76/activity", (req, res) => res.json({ success: true, part: part76Config.part, activity: globalThis.NAXORA_PART76_ACTIVITY }));
+app.get("/api/part76/checklist", (req, res) => res.json({ success: true, part: part76Config.part, checklist: part76Checklist }));
+app.get("/api/part76/export", (req, res) => res.json({ success: true, part: part76Config.part, exportReady: true, ownerVerificationRequired: true, note: "Vendor/payment/quotation export sensitive hai; owner verification required." }));
+app.get("/api/part76/demo", (req, res) => res.json({ success: true, part: part76Config.part, demo: part76Demo, vaniPreview: part76Vani("VANI, smart classroom setup ka quotation aur installation status dikhao", { role: "owner", instituteName: "NAXORA Demo Institute", room: "Room 2" }) }));
+
+for (const route of [part76Config.frontendRoute, ...part76Config.alternateRoutes]) {
+  app.get(route, (req, res) => sendFileSafe(res, "smart-classroom-setup.html"));
+}
+
 const modulePageRoutes = {
   "/dashboard": "dashboard.html",
   "/students": "students.html",
@@ -9733,6 +9888,7 @@ const server = app.listen(port, () => {
   console.log("✅ Part 73 AI Batch Performance Analyzer active: /api/part73/status + /ai-batch-performance-analyzer");
   console.log("✅ Part 74 AI Parent Communication active: /api/part74/status + /ai-parent-weekly-summary");
   console.log("✅ Part 75 Student AI Tools active: /api/part75/status + /student-ai-tools");
+  console.log("✅ Part 76 Smart Classroom Setup active: /api/part76/status + /smart-classroom-setup");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");

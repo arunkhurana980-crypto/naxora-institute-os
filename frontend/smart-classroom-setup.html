@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA Part 76 | Smart Classroom Setup Module</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/smart-classroom-setup.css" />
+</head>
+<body>
+  <main class="part76-shell">
+    <section class="part76-hero">
+      <div class="part76-logo">N</div>
+      <div>
+        <p class="part76-kicker">PART 76 • SMART CLASSROOM SETUP MODULE</p>
+        <h1>Smart Classroom Setup</h1>
+        <p class="part76-subtitle">Site survey, hardware quotation, advance payment status, vendor details, installation tracking aur warranty management — NAXORA software ke saath classroom setup service sell karne ke liye.</p>
+        <div class="part76-actions">
+          <a href="/api/part76/status" target="_blank" class="part76-btn primary">Status API</a>
+          <a href="/api/part76/demo" target="_blank" class="part76-btn">Demo API</a>
+          <a href="/dashboard" class="part76-btn">Dashboard</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="part76-grid part76-stats">
+      <article><span id="setupCount">0</span><p>Setup Requests</p></article>
+      <article><span id="quoteTotal">₹0</span><p>Quotation Value</p></article>
+      <article><span id="installStage">Survey</span><p>Current Stage</p></article>
+      <article><span id="warrantyCount">0</span><p>Warranty Items</p></article>
+    </section>
+
+    <section class="part76-card">
+      <div class="part76-section-head">
+        <div><p class="part76-kicker">SITE SURVEY</p><h2>Classroom requirement capture</h2></div>
+        <button id="surveyBtn" class="part76-btn small primary">Generate Survey Preview</button>
+      </div>
+      <div class="part76-form-grid">
+        <label>Institute name <input id="instituteInput" value="NAXORA Demo Institute" /></label>
+        <label>Branch / room <input id="roomInput" value="Main Branch • Room 2" /></label>
+        <label>Room size <input id="sizeInput" value="22 x 16 ft" /></label>
+        <label>Teaching mode <input id="modeInput" value="Hybrid live + recording" /></label>
+      </div>
+      <div id="surveyOutput" class="part76-list loading">Survey preview yahan dikhega.</div>
+    </section>
+
+    <section class="part76-grid">
+      <article class="part76-card"><h2>Hardware Quotation</h2><div id="quoteOutput" class="part76-list loading">Loading...</div></article>
+      <article class="part76-card"><h2>Vendor Details</h2><div id="vendorOutput" class="part76-list loading">Loading...</div></article>
+    </section>
+
+    <section class="part76-grid">
+      <article class="part76-card"><h2>Installation Tracking</h2><div id="installOutput" class="part76-list loading">Loading...</div></article>
+      <article class="part76-card"><h2>Warranty Details</h2><div id="warrantyOutput" class="part76-list loading">Loading...</div></article>
+    </section>
+
+    <section class="part76-card">
+      <div class="part76-section-head"><div><p class="part76-kicker">VANI SMART CLASSROOM</p><h2>Ask VANI for setup status</h2></div></div>
+      <div class="part76-command-row">
+        <input id="vaniCommand" value="VANI, smart classroom setup ka quotation aur installation status dikhao" />
+        <button id="vaniBtn" class="part76-btn primary">Run VANI</button>
+      </div>
+      <pre id="vaniOutput" class="part76-output">VANI result yahan dikhega.</pre>
+    </section>
+
+    <section class="part76-card"><h2>Part 76 Checklist</h2><ul id="checklist" class="part76-checklist"></ul></section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/smart-classroom-setup.js"></script>
+</body>
+</html>
