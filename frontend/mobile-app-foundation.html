@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — Mobile App Foundation</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/mobile-app-foundation.css" />
+</head>
+<body>
+  <main class="nx-mobile-page">
+    <section class="nx-hero">
+      <div>
+        <p class="nx-kicker">Part 79 • NAXORA OS 2.0 Begins</p>
+        <h1>Mobile App Foundation</h1>
+        <p class="nx-lead">
+          Shared mobile architecture for owner, teacher, student and parent apps,
+          with secure login, API connection, role-based navigation, offline handling and VANI mobile readiness.
+        </p>
+      </div>
+      <div class="nx-status-card">
+        <span class="nx-dot"></span>
+        <strong id="statusText">Checking Part 79 status...</strong>
+        <small id="statusSub">Connecting to backend</small>
+      </div>
+    </section>
+
+    <section class="nx-grid nx-metrics">
+      <article>
+        <span>Version</span>
+        <strong>2.0 Foundation</strong>
+      </article>
+      <article>
+        <span>Next</span>
+        <strong>Part 80 Owner App</strong>
+      </article>
+      <article>
+        <span>Security</span>
+        <strong>Role + Institute ID</strong>
+      </article>
+      <article>
+        <span>VANI</span>
+        <strong>Mobile Ready</strong>
+      </article>
+    </section>
+
+    <section class="nx-panel">
+      <div class="nx-panel-head">
+        <div>
+          <p class="nx-kicker">Role-Based Mobile Navigation</p>
+          <h2>Preview mobile app menu by role</h2>
+        </div>
+        <select id="roleSelect">
+          <option value="institute_owner">Institute Owner</option>
+          <option value="branch_manager">Branch Manager</option>
+          <option value="accountant">Accountant</option>
+          <option value="teacher">Teacher</option>
+          <option value="receptionist_counsellor">Receptionist / Counsellor</option>
+          <option value="student">Student</option>
+          <option value="parent">Parent</option>
+          <option value="naxora_super_admin">NAXORA Super Admin</option>
+        </select>
+      </div>
+      <div id="navPreview" class="nx-chip-wrap"></div>
+      <p class="nx-note">UI hiding is not enough. Final permission must always be checked on backend APIs.</p>
+    </section>
+
+    <section class="nx-grid">
+      <article class="nx-panel">
+        <p class="nx-kicker">Mobile Foundation Features</p>
+        <div id="featuresList" class="nx-list"></div>
+      </article>
+
+      <article class="nx-panel">
+        <p class="nx-kicker">VANI Mobile Rule</p>
+        <h2>Private-screen-first AI assistant</h2>
+        <p>
+          VANI can respond through laptop, mobile or optional speaker/hub, but sensitive fees,
+          student, parent or payment data should be shown privately on screen when appropriate.
+        </p>
+        <button id="vaniBtn" class="nx-btn">Test VANI mobile command</button>
+        <pre id="vaniOutput" class="nx-code">Waiting...</pre>
+      </article>
+    </section>
+
+    <section class="nx-panel">
+      <p class="nx-kicker">Offline and Loading Policy</p>
+      <div id="offlinePolicy" class="nx-list"></div>
+    </section>
+
+    <section class="nx-panel">
+      <p class="nx-kicker">Part 79 Testing</p>
+      <div class="nx-links">
+        <a href="/api/part79/status" target="_blank">Status API</a>
+        <a href="/api/part79/demo" target="_blank">Demo API</a>
+        <a href="/api/part79/api-connection-test" target="_blank">Connection Test</a>
+        <a href="/api/part79/checklist" target="_blank">Checklist</a>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/mobile-app-foundation.js"></script>
+</body>
+</html>

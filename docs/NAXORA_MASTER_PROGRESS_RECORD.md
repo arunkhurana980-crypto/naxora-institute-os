@@ -1,170 +1,54 @@
 # NAXORA Master Progress Record
 
 ## Latest completed part
-Part 75 — Student AI Tools
+Part 79 — Mobile App Foundation
 
 ## Date completed
-2026-07-14
+2026-07-15
 
 ## Feature name
-AI Study Planner, Weak Topic Coach, AI Flashcards, VANI Revision Assistant, Institute Recommendation AI
+NAXORA OS 2.0 Mobile App Foundation
 
 ## Files changed
-- `backend/src/server.js`
-- `frontend/student-ai-tools.html`
-- `frontend/student-ai-tools.css`
-- `frontend/student-ai-tools.js`
-- `frontend/ai-hub.html`
-- `README_PART75_STUDENT_AI_TOOLS.md`
-- `START_HERE_PART75_ARUN.md`
-- `ARUN_READ_ME_FIRST_PART75_COMPLETE.txt`
-- `docs/PART75_STUDENT_AI_TOOLS_CHECKLIST.md`
-- `docs/NAXORA_MASTER_PROGRESS_RECORD.md`
+- backend/src/server.js
+- frontend/mobile-app-foundation.html
+- frontend/mobile-app-foundation.css
+- frontend/mobile-app-foundation.js
+- README_PART79_MOBILE_APP_FOUNDATION.md
+- START_HERE_PART79_ARUN.md
+- docs/PART79_MOBILE_APP_FOUNDATION_CHECKLIST.md
+- docs/NAXORA_MASTER_PROGRESS_RECORD.md
 
 ## Database/API changes
-Optional log collection: `part75studentaitoolslogs`.
-APIs added under `/api/part75/*`.
+No required database migration.
+Added `/api/part79/*` mobile foundation APIs.
 
 ## VANI commands added
-- VANI, revision plan banao
-- VANI, weak topic coach karo
-- VANI, flashcards banao
-- VANI, institute recommend karo
+- VANI, mobile app foundation status dikhao
+- VANI, owner mobile app ka menu dikhao
+- VANI, offline policy dikhao
+- VANI, student mobile navigation dikhao
 
 ## Tests passed
-- `backend/src/server.js` syntax check pass
+- backend/src/server.js syntax check
 - frontend files present
-- no `.env`
+- no .env
+- no node_modules
+- no .bat scripts
 - no secrets/API keys
-- no `node_modules`
-- no `.bat` script
 
 ## Errors remaining
-- Real AI API integration pending
-- Production schema hard-connect pending
+- Native apps are pending.
+- Mobile app store deployment pending.
+- Offline write sync pending.
+- Parts 80–83 role apps pending.
 
 ## Next part
-Part 76 — Smart Classroom Setup Module
+Part 80 — Institute Owner App
 
-
----
-
-## Latest Update — Part 76
-
-- Latest completed part: Part 76
-- Date completed: 2026-07-14
-- Feature name: Smart Classroom Setup Module
-- Files changed:
-  - backend/src/server.js
-  - frontend/smart-classroom-setup.html
-  - frontend/smart-classroom-setup.css
-  - frontend/smart-classroom-setup.js
-  - README_PART76_SMART_CLASSROOM_SETUP.md
-  - START_HERE_PART76_ARUN.md
-  - docs/PART76_SMART_CLASSROOM_SETUP_CHECKLIST.md
-- Database/API changes:
-  - Optional future log collection: part76smartclassroomlogs
-  - APIs added under /api/part76/*
-- VANI commands added:
-  - smart classroom setup status dikhao
-  - hardware quotation dikhao
-  - installation stage kya hai
-  - warranty details dikhao
-- Tests passed:
-  - backend/src/server.js syntax check
-  - no .env/no secrets/no node_modules/no .bat check
-- Errors remaining:
-  - Real vendor/payment/warranty claim integration pending
-- Next part:
-  - Part 77 — Final Production Testing
-- Locked future planning:
-  - NAXORA OS 1.0 ends at Part 78
-  - NAXORA OS 2.0 covers Parts 79–110
-  - Future 3.0 AI-first subscription will be institute-owner-only and protected by institute login + active subscription
-
----
-
-## Part 77 — Final Production Testing
-
-- Latest completed part: Part 77
-- Date completed: 2026-07-14
-- Feature name: Final Production Testing
-- Files changed:
-  - backend/src/server.js
-  - frontend/final-production-testing.html
-  - frontend/final-production-testing.css
-  - frontend/final-production-testing.js
-  - README_PART77_FINAL_PRODUCTION_TESTING.md
-  - START_HERE_PART77_ARUN.md
-  - ARUN_READ_ME_FIRST_PART77_COMPLETE.txt
-  - docs/PART77_FINAL_PRODUCTION_TESTING_CHECKLIST.md
-  - docs/NAXORA_MASTER_PROGRESS_RECORD.md
-- Database/API changes:
-  - Added Part 77 testing/audit APIs
-  - Optional audit log collection: part77productiontestinglogs
-- VANI commands added:
-  - VANI, production testing report dikhao
-  - VANI, security audit dikhao
-  - VANI, payment audit dikhao
-  - VANI, database audit dikhao
-  - VANI, AI limits audit dikhao
-- Tests passed:
-  - backend/src/server.js syntax check
-  - frontend files present
-  - no .env
-  - no secrets/API keys
-  - no node_modules
-  - no .bat script
-- Errors remaining:
-  - Manual mobile/laptop/role/CRUD testing still required before Part 78.
-  - Razorpay live/KYC/webhook verification pending.
-  - MongoDB backup/export schedule should be configured before real clients.
-- Next part:
-  - Part 78 — NAXORA OS 1.0 Production Launch
-- Locked future rule:
-  - Version 1.0, 2.0, 3.0 will have separate subscription access.
-  - NAXORA OS 3.0 is owner-only AI-first subscription and opens only with institute owner login + valid instituteId + active v3 subscription.
-
----
-
-## Part 78 — NAXORA OS 1.0 Production Launch
-
-- Latest completed part: Part 78
-- Date completed: 2026-07-14
-- Feature name: NAXORA OS 1.0 Production Launch
-- Files changed:
-  - backend/src/server.js
-  - frontend/v1-production-launch.html
-  - frontend/v1-production-launch.css
-  - frontend/v1-production-launch.js
-  - README_PART78_NAXORA_OS_1_PRODUCTION_LAUNCH.md
-  - START_HERE_PART78_ARUN.md
-  - ARUN_READ_ME_FIRST_PART78_COMPLETE.txt
-  - docs/PART78_NAXORA_OS_1_PRODUCTION_LAUNCH_CHECKLIST.md
-  - docs/NAXORA_MASTER_PROGRESS_RECORD.md
-- Database/API changes:
-  - Added Part 78 launch APIs under /api/part78/*
-  - Optional audit/log collection: part78productionlaunchlogs
-- VANI commands added:
-  - VANI, v1 launch status dikhao
-  - VANI, beta client plan dikhao
-  - VANI, backup plan dikhao
-  - VANI, monitoring plan dikhao
-  - VANI, 3.0 access rule dikhao
-- Tests passed:
-  - backend/src/server.js syntax check
-  - frontend files present
-  - no .env
-  - no secrets/API keys
-  - no node_modules
-  - no .bat script
-- Errors remaining:
-  - Real beta institute onboarding pending
-  - Razorpay live KYC/webhook pending
-  - MongoDB backup/export schedule manual confirmation pending
-  - Demo institute sample data manual setup pending
-- Next part:
-  - Part 79 — Mobile App Foundation
-- Locked future rule:
-  - NAXORA OS 1.0, 2.0 and future 3.0 have separate subscription access.
-  - NAXORA OS 3.0 is future AI-first and owner-only: institute owner login + valid instituteId + active v3 subscription required.
+## Locked subscription rule
+NAXORA OS 1.0, 2.0 and future 3.0 will have separate subscriptions.
+NAXORA OS 3.0 is future AI-first and owner-only:
+- role must be institute_owner
+- valid instituteId required
+- active v3 subscription required

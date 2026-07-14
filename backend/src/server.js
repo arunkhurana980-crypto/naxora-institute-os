@@ -10269,7 +10269,12 @@ const modulePageRoutes = {
   "/naxora-v1-launch": "v1-production-launch.html",
   "/v1-launch": "v1-production-launch.html",
   "/launch-v1": "v1-production-launch.html",
-  "/official-launch": "v1-production-launch.html"
+  "/official-launch": "v1-production-launch.html",
+  "/mobile-app-foundation": "mobile-app-foundation.html",
+  "/mobile-foundation": "mobile-app-foundation.html",
+  "/mobile-apps": "mobile-app-foundation.html",
+  "/naxora-mobile": "mobile-app-foundation.html",
+  "/app-foundation": "mobile-app-foundation.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -10300,6 +10305,361 @@ app.get("/api/part52/status", (req, res) => {
     productionSafe: true
   });
 });
+
+// ================= PART 79 — MOBILE APP FOUNDATION =================
+// NAXORA OS 2.0 begins here. This part adds a safe mobile-app foundation
+// without breaking NAXORA OS 1.0 production routes.
+
+const part79MobileRoles = [
+  {
+    role: "institute_owner",
+    label: "Institute Owner",
+    access: "Full institute mobile command center after login and active instituteId.",
+    navigation: ["Overview", "Revenue", "Admissions", "Fees", "Attendance", "Leads", "Branches", "Alerts"]
+  },
+  {
+    role: "branch_manager",
+    label: "Branch Manager",
+    access: "Assigned branches only.",
+    navigation: ["Branch Overview", "Students", "Batches", "Attendance", "Fees", "Reports"]
+  },
+  {
+    role: "accountant",
+    label: "Accountant",
+    access: "Fees, payments, receipts, expenses and financial reports according to permission.",
+    navigation: ["Fees", "Payments", "Receipts", "Invoices", "Renewals", "Finance Reports"]
+  },
+  {
+    role: "teacher",
+    label: "Teacher",
+    access: "Assigned batches, students, attendance, material, tests, assignments and live classes.",
+    navigation: ["My Batches", "Attendance", "Assignments", "Tests", "Notes", "Live Classes"]
+  },
+  {
+    role: "receptionist_counsellor",
+    label: "Receptionist / Counsellor",
+    access: "Admissions, enquiries, follow-ups and permitted student information.",
+    navigation: ["Enquiries", "Follow-ups", "Admissions", "Callback Requests", "Lead Notes"]
+  },
+  {
+    role: "student",
+    label: "Student",
+    access: "Only own learning, timetable, fees, tests, notes and profile.",
+    navigation: ["My Timetable", "Assignments", "Tests", "Notes", "Fees", "AI Study Tools", "VANI Revision"]
+  },
+  {
+    role: "parent",
+    label: "Parent",
+    access: "Only information belonging to linked child.",
+    navigation: ["Child Attendance", "Fees", "Reports", "Notices", "Live Classes", "Teacher Updates"]
+  },
+  {
+    role: "naxora_super_admin",
+    label: "NAXORA Super Admin",
+    access: "Platform administration and logged support access only, not unrestricted daily private data access.",
+    navigation: ["Platform Health", "Institutes", "Subscriptions", "Support Logs", "Release Monitor"]
+  }
+];
+
+const part79MobileFeatures = [
+  {
+    key: "shared_mobile_architecture",
+    name: "Shared Mobile Architecture",
+    why: "Owner, teacher, student and parent apps must use one common API and design foundation.",
+    problemSolved: "Prevents duplicate disconnected mobile code for every role."
+  },
+  {
+    key: "secure_login_foundation",
+    name: "Secure Login Foundation",
+    why: "Mobile apps need token-based login and instituteId binding.",
+    problemSolved: "Prevents unauthorized mobile access to institute data."
+  },
+  {
+    key: "api_connection_layer",
+    name: "API Connection Layer",
+    why: "Mobile apps must connect to the existing Render backend safely.",
+    problemSolved: "Keeps mobile apps connected to the same live SaaS backend."
+  },
+  {
+    key: "role_based_navigation",
+    name: "Role-Based Navigation",
+    why: "Different users need different mobile screens.",
+    problemSolved: "Student/parent/teacher/staff do not see owner-only areas."
+  },
+  {
+    key: "offline_loading_handling",
+    name: "Offline and Loading Handling",
+    why: "Mobile internet can be unstable.",
+    problemSolved: "App can show safe cached/sync-pending states instead of crashing."
+  },
+  {
+    key: "device_session_foundation",
+    name: "Device Session Foundation",
+    why: "Mobile security needs device/session awareness.",
+    problemSolved: "Future logout-all-devices and suspicious-device alerts become possible."
+  },
+  {
+    key: "vani_mobile_ready",
+    name: "VANI Mobile Ready Foundation",
+    why: "VANI must work through laptop, mobile or optional speaker/hub.",
+    problemSolved: "VANI 2.0 can expand across all authorized modules without being trapped in desktop-only UI."
+  }
+];
+
+function getPart79RoleConfig(role) {
+  const normalized = String(role || "student").toLowerCase().replace(/\s+/g, "_");
+  return part79MobileRoles.find((item) => item.role === normalized) || part79MobileRoles.find((item) => item.role === "student");
+}
+
+function buildPart79DevicePreview(body = {}) {
+  const roleConfig = getPart79RoleConfig(body.role || "student");
+  const instituteId = body.instituteId || "NX-DEMO-INST-001";
+  const deviceType = body.deviceType || "mobile";
+  return {
+    sessionPreviewId: `NX-MOB-${Date.now()}`,
+    instituteId,
+    role: roleConfig.role,
+    deviceType,
+    loginRequired: true,
+    tokenStorageRule: "Use secure platform storage in native/mobile app. Do not store JWT in public logs.",
+    sessionPolicy: {
+      bindToInstituteId: true,
+      allowLogoutAllDevices: "planned",
+      suspiciousDeviceAlert: "planned",
+      inactivityLock: "planned"
+    },
+    allowedNavigation: roleConfig.navigation,
+    blockedExamples: roleConfig.role === "student" ? ["owner revenue", "staff salary", "other students data"] : ["unauthorized branch data"],
+    createdAt: new Date().toISOString()
+  };
+}
+
+const part79MobileChecklist = [
+  "Mobile foundation page opens on live URL",
+  "Status API returns success true",
+  "Role navigation returns different menus for owner, teacher, student and parent",
+  "API connection test returns backend running state",
+  "Offline policy explains loading, retry and sync-pending behavior",
+  "No .env, secrets, API keys or passwords are included",
+  "VANI mobile readiness rules are documented",
+  "Previous NAXORA OS 1.0 routes remain preserved"
+];
+
+app.get("/api/part79/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 79 — Mobile App Foundation",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0 begins",
+    preservesV1: true,
+    latestCompletedPart: 79,
+    nextPart: "Part 80 — Institute Owner App",
+    productionSafe: true,
+    frontendRoutes: ["/mobile-app-foundation", "/mobile-foundation", "/mobile-apps", "/naxora-mobile", "/app-foundation"],
+    apiRoutes: [
+      "/api/part79/config",
+      "/api/part79/features",
+      "/api/part79/roles",
+      "/api/part79/app-shells",
+      "/api/part79/navigation",
+      "/api/part79/api-connection-test",
+      "/api/part79/offline-policy",
+      "/api/part79/device-session/preview",
+      "/api/part79/vani/command"
+    ],
+    notes: [
+      "This is a mobile foundation, not App Store/Play Store deployment.",
+      "Native mobile apps continue in Parts 80–83.",
+      "VANI mobile access must follow role permissions and private-screen-first rules."
+    ]
+  });
+});
+
+app.get("/api/part79/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "NAXORA Mobile Foundation",
+    version: "2.0-foundation",
+    backendBaseUrl: process.env.FRONTEND_URL || "https://naxora-institute-os.onrender.com",
+    auth: {
+      requiresLogin: true,
+      requiresInstituteId: true,
+      jwtBased: true,
+      ownerOnlyV3RulePreserved: true
+    },
+    supportedClients: ["mobile_web", "future_android", "future_ios", "tablet", "laptop_pwa"],
+    modulesPrepared: [
+      "Owner app", "Teacher app", "Student app", "Parent app",
+      "Role navigation", "Offline handling", "API connection", "VANI mobile readiness"
+    ]
+  });
+});
+
+app.get("/api/part79/features", (req, res) => {
+  res.json({ success: true, features: part79MobileFeatures });
+});
+
+app.get("/api/part79/roles", (req, res) => {
+  res.json({ success: true, roles: part79MobileRoles });
+});
+
+app.get("/api/part79/app-shells", (req, res) => {
+  res.json({
+    success: true,
+    shells: [
+      { key: "owner_app", part: 80, status: "planned_next", route: "/owner-mobile-app", description: "Owner command center mobile app." },
+      { key: "teacher_app", part: 81, status: "planned", route: "/teacher-mobile-app", description: "Teacher daily work mobile app." },
+      { key: "student_app", part: 82, status: "planned", route: "/student-mobile-app", description: "Student learning mobile app." },
+      { key: "parent_app", part: 83, status: "planned", route: "/parent-mobile-app", description: "Parent transparency mobile app." }
+    ],
+    foundationAvailableNow: true
+  });
+});
+
+app.get("/api/part79/navigation", (req, res) => {
+  const roleConfig = getPart79RoleConfig(req.query.role);
+  res.json({
+    success: true,
+    role: roleConfig.role,
+    label: roleConfig.label,
+    access: roleConfig.access,
+    navigation: roleConfig.navigation,
+    permissionReminder: "Final access must always be checked on backend APIs, not only hidden in UI."
+  });
+});
+
+app.get("/api/part79/api-connection-test", (req, res) => {
+  res.json({
+    success: true,
+    backend: "reachable",
+    app: "NAXORA Institute OS",
+    phase: "Part 79 Mobile App Foundation",
+    serverTime: new Date().toISOString(),
+    databaseMode: global.__NAXORA_DB_MODE || "mongodb_or_safe_fallback",
+    healthEndpoint: "/api/health",
+    mobileNote: "Mobile clients should call authenticated APIs after login and instituteId validation."
+  });
+});
+
+app.get("/api/part79/offline-policy", (req, res) => {
+  res.json({
+    success: true,
+    policy: {
+      loadingState: "Show skeleton/loading screen while API responds.",
+      offlineState: "Show offline banner and last-safe cached screen where allowed.",
+      syncPending: "Do not finalize attendance/fees/payments offline without server confirmation.",
+      sensitiveData: "Do not cache private financial/personal data in unsafe public storage.",
+      retry: "Use safe retry for read requests. For write requests, show preview and wait for online confirmation.",
+      vani: "VANI should say network issue politely and avoid speaking private cached data in public areas."
+    }
+  });
+});
+
+app.post("/api/part79/device-session/preview", (req, res) => {
+  res.json({ success: true, deviceSession: buildPart79DevicePreview(req.body || {}) });
+});
+
+app.get("/api/part79/device-session/preview", (req, res) => {
+  res.json({ success: true, deviceSession: buildPart79DevicePreview(req.query || {}) });
+});
+
+app.post("/api/part79/vani/command", (req, res) => {
+  const command = String(req.body?.command || req.query?.command || "").trim();
+  const roleConfig = getPart79RoleConfig(req.body?.role || req.query?.role || "owner");
+  const lower = command.toLowerCase();
+
+  let intent = "mobile_foundation_status";
+  if (lower.includes("owner")) intent = "owner_mobile_app_preview";
+  if (lower.includes("teacher")) intent = "teacher_mobile_app_preview";
+  if (lower.includes("student")) intent = "student_mobile_app_preview";
+  if (lower.includes("parent")) intent = "parent_mobile_app_preview";
+  if (lower.includes("offline")) intent = "offline_policy";
+  if (lower.includes("navigation") || lower.includes("menu")) intent = "role_navigation";
+
+  const response = {
+    success: true,
+    assistant: "VANI",
+    part: "Part 79 — Mobile App Foundation",
+    command: command || "VANI, mobile app foundation status dikhao",
+    detectedIntent: intent,
+    role: roleConfig.role,
+    privateScreenFirst: true,
+    spokenSafeSummary: "NAXORA mobile foundation active hai. Detailed role navigation screen par dekh sakte ho.",
+    screenPreview: {
+      message: "Mobile foundation is active. Native role apps continue in Parts 80–83.",
+      allowedNavigation: roleConfig.navigation,
+      nextPart: "Part 80 — Institute Owner App"
+    },
+    safety: [
+      "VANI will not expose private fees/personal data loudly in public.",
+      "Create/update/send/delete actions require preview and confirmation.",
+      "Sensitive version/subscription actions require owner verification."
+    ],
+    auditLog: {
+      event: "part79_vani_mobile_foundation_command",
+      createdAt: new Date().toISOString()
+    }
+  };
+
+  res.json(response);
+});
+
+app.get("/api/part79/vani/command", (req, res) => {
+  req.body = { command: req.query.q || req.query.command || "", role: req.query.role || "owner" };
+  return res.redirect(307, `/api/part79/vani/command`);
+});
+
+app.get("/api/part79/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      {
+        type: "mobile_foundation_created",
+        message: "Part 79 Mobile App Foundation active.",
+        createdAt: new Date().toISOString()
+      },
+      {
+        type: "vani_mobile_ready_rule",
+        message: "VANI can work on laptop/mobile/speaker with role checks and private-screen-first rules.",
+        createdAt: new Date().toISOString()
+      }
+    ]
+  });
+});
+
+app.get("/api/part79/checklist", (req, res) => {
+  res.json({ success: true, checklist: part79MobileChecklist });
+});
+
+app.get("/api/part79/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part79-mobile-foundation-readiness",
+    generatedAt: new Date().toISOString(),
+    ownerVerificationRequiredForSensitiveExports: true,
+    data: {
+      part: 79,
+      features: part79MobileFeatures,
+      roles: part79MobileRoles,
+      checklist: part79MobileChecklist
+    }
+  });
+});
+
+app.get("/api/part79/demo", (req, res) => {
+  res.json({
+    success: true,
+    demo: {
+      title: "NAXORA OS 2.0 Mobile App Foundation Demo",
+      sampleRoles: part79MobileRoles.slice(0, 4),
+      sampleDeviceSession: buildPart79DevicePreview({ role: "institute_owner", instituteId: "NX-DEMO-INST-001", deviceType: "mobile" }),
+      sampleVaniCommand: "VANI, owner mobile app ka menu dikhao",
+      nextParts: ["Part 80 Owner App", "Part 81 Teacher App", "Part 82 Student App", "Part 83 Parent App"]
+    }
+  });
+});
+// ================= END PART 79 =================
+
 // ================= END PART 52 =================
 
 app.use(notFound);
