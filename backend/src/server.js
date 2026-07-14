@@ -6119,6 +6119,460 @@ app.get("/api/part65/demo", async (req, res) => {
 });
 // ================= END PART 65 =================
 
+// ================= PART 66: PAYMENTS AND SUBSCRIPTION COMPLETION =================
+// Roadmap scope: Razorpay, monthly/yearly plans, payment history, invoice,
+// renewal reminder and failed payment handling. This part is provider-ready but safe:
+// no secret is committed and real payment creation is only attempted when Razorpay
+// keys are present in Render environment variables.
+const part66Checklist = [
+  "Monthly/yearly NAXORA subscription plans visible hain",
+  "Institute subscription create/update ho sakti hai",
+  "Razorpay order safe test/live ready mode me create ho sakta hai",
+  "Payment history record maintain hota hai",
+  "Invoice generate/export foundation ready hai",
+  "Renewal reminders calculate hote hain",
+  "Failed payment handling and retry status ready hai",
+  "No .env, no secret, no key committed in code"
+];
+
+const part66Plans = [
+  {
+    planCode: "starter_monthly",
+    name: "Starter Monthly",
+    billingCycle: "monthly",
+    priceInr: 999,
+    yearlyEquivalentInr: 11988,
+    maxStudents: 100,
+    maxBranches: 1,
+    aiCredits: 500,
+    features: ["Students", "Fees", "Attendance", "Parents", "Basic reports", "Communication queue"]
+  },
+  {
+    planCode: "growth_monthly",
+    name: "Growth Monthly",
+    billingCycle: "monthly",
+    priceInr: 1999,
+    yearlyEquivalentInr: 23988,
+    maxStudents: 500,
+    maxBranches: 3,
+    aiCredits: 2500,
+    features: ["All Starter features", "CRM", "Discovery leads", "Live classes", "Role permissions", "Priority support"]
+  },
+  {
+    planCode: "pro_yearly",
+    name: "Pro Yearly",
+    billingCycle: "yearly",
+    priceInr: 19999,
+    yearlyEquivalentInr: 19999,
+    maxStudents: 2000,
+    maxBranches: 10,
+    aiCredits: 25000,
+    features: ["All Growth features", "Advanced analytics", "Public profile", "Nearby discovery", "Compare listing", "Renewal automation"]
+  },
+  {
+    planCode: "enterprise_yearly",
+    name: "Enterprise Yearly",
+    billingCycle: "yearly",
+    priceInr: 49999,
+    yearlyEquivalentInr: 49999,
+    maxStudents: 10000,
+    maxBranches: 50,
+    aiCredits: 100000,
+    features: ["All Pro features", "Multi-branch controls", "Dedicated onboarding", "Custom limits", "Future white-label ready"]
+  }
+];
+
+const part66Config = {
+  part: "Part 66 - Payments and Subscription Completion",
+  status: "active",
+  purpose: "Razorpay, monthly/yearly plans, payment history, invoice, renewal reminder aur failed payment handling ko ek billing hub me complete karna.",
+  frontend: ["/payments-subscriptions", "/subscription-payments", "/billing", "/invoices"],
+  apiRoutes: [
+    "/api/part66/status",
+    "/api/part66/plans",
+    "/api/part66/subscriptions",
+    "/api/part66/orders/create",
+    "/api/part66/payments",
+    "/api/part66/invoices",
+    "/api/part66/renewals",
+    "/api/part66/analytics"
+  ],
+  safetyMode: "No Razorpay secret is included. Real/test Razorpay order creation only works when Render env has RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.",
+  nextPart: "Part 67 - AI Hub"
+};
+
+function part66CleanText(value, max = 300) {
+  return String(value ?? "").trim().replace(/[<>]/g, "").slice(0, max);
+}
+
+function part66CleanEmail(value) {
+  const email = part66CleanText(value, 160).toLowerCase();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : "";
+}
+
+function part66Number(value, fallback = 0) {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? n : fallback;
+}
+
+function part66AmountPaise(amountInr) {
+  return Math.round(part66Number(amountInr, 0) * 100);
+}
+
+function part66DateAdd(baseDate, cycle = "monthly") {
+  const date = baseDate ? new Date(baseDate) : new Date();
+  if (Number.isNaN(date.getTime())) return new Date().toISOString();
+  if (cycle === "yearly") date.setFullYear(date.getFullYear() + 1);
+  else date.setMonth(date.getMonth() + 1);
+  return date.toISOString();
+}
+
+function part66FindPlan(planCode) {
+  const clean = part66CleanText(planCode, 80).toLowerCase();
+  return part66Plans.find((plan) => plan.planCode.toLowerCase() === clean) || part66Plans[1];
+}
+
+function part66RazorpayStatus() {
+  const keyId = part66CleanText(process.env.RAZORPAY_KEY_ID, 120);
+  const hasSecret = Boolean(process.env.RAZORPAY_KEY_SECRET);
+  const keyMode = keyId.startsWith("rzp_live_") ? "live" : keyId.startsWith("rzp_test_") ? "test" : "missing_or_unknown";
+  return {
+    keyIdPresent: Boolean(keyId),
+    keySecretPresent: hasSecret,
+    keyMode,
+    providerMode: keyId && hasSecret ? `razorpay_${keyMode}_ready` : "mock_safe_mode",
+    publicKeyId: keyId ? `${keyId.slice(0, 10)}...` : "not_set"
+  };
+}
+
+function part66NormalizeSubscription(input = {}) {
+  const plan = part66FindPlan(input.planCode || input.plan || "growth_monthly");
+  const startDate = input.startDate ? new Date(input.startDate) : new Date();
+  const safeStart = Number.isNaN(startDate.getTime()) ? new Date() : startDate;
+  const subscriptionId = part66CleanText(input.subscriptionId || `P66-SUB-${Date.now()}-${Math.floor(Math.random() * 9999)}`, 120);
+  return {
+    subscriptionId,
+    instituteId: part66CleanText(input.instituteId || input.instituteSlug || "demo-institute", 120),
+    instituteName: part66CleanText(input.instituteName || "Demo Institute", 160),
+    ownerName: part66CleanText(input.ownerName || "Institute Owner", 160),
+    ownerEmail: part66CleanEmail(input.ownerEmail || input.email) || "",
+    planCode: plan.planCode,
+    planName: plan.name,
+    billingCycle: plan.billingCycle,
+    amountInr: plan.priceInr,
+    currency: "INR",
+    status: part66CleanText(input.status || "active", 40).toLowerCase(),
+    startDate: safeStart.toISOString(),
+    nextRenewalDate: part66DateAdd(safeStart.toISOString(), plan.billingCycle),
+    autoRenew: input.autoRenew === false ? false : true,
+    featureLimits: { maxStudents: plan.maxStudents, maxBranches: plan.maxBranches, aiCredits: plan.aiCredits },
+    createdAt: input.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+}
+
+function part66NormalizePayment(input = {}) {
+  const plan = part66FindPlan(input.planCode || input.plan || "growth_monthly");
+  const amountInr = part66Number(input.amountInr || input.amount || plan.priceInr, plan.priceInr);
+  const status = part66CleanText(input.status || "created", 40).toLowerCase();
+  return {
+    paymentId: part66CleanText(input.paymentId || `P66-PAY-${Date.now()}-${Math.floor(Math.random() * 9999)}`, 120),
+    orderId: part66CleanText(input.orderId || input.razorpayOrderId || "", 160),
+    razorpayPaymentId: part66CleanText(input.razorpayPaymentId || "", 160),
+    subscriptionId: part66CleanText(input.subscriptionId || "", 120),
+    instituteId: part66CleanText(input.instituteId || "demo-institute", 120),
+    instituteName: part66CleanText(input.instituteName || "Demo Institute", 160),
+    planCode: plan.planCode,
+    planName: plan.name,
+    amountInr,
+    amountPaise: part66AmountPaise(amountInr),
+    currency: "INR",
+    provider: "razorpay",
+    status,
+    failureReason: part66CleanText(input.failureReason || input.reason || "", 300),
+    receipt: part66CleanText(input.receipt || `NAXORA-P66-${Date.now()}`, 120),
+    paidAt: status === "paid" ? (input.paidAt || new Date().toISOString()) : "",
+    createdAt: input.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+}
+
+function part66GenerateInvoice(payment = {}, subscription = {}) {
+  const paymentId = payment.paymentId || `P66-PAY-${Date.now()}`;
+  const amount = part66Number(payment.amountInr || subscription.amountInr, 0);
+  const gstRate = 18;
+  const taxableAmount = Math.round((amount / 1.18) * 100) / 100;
+  const gstAmount = Math.round((amount - taxableAmount) * 100) / 100;
+  return {
+    invoiceId: `P66-INV-${Date.now()}-${Math.floor(Math.random() * 9999)}`,
+    invoiceNumber: `NAXORA/${new Date().getFullYear()}/${String(Math.floor(Math.random() * 99999)).padStart(5, "0")}`,
+    paymentId,
+    subscriptionId: payment.subscriptionId || subscription.subscriptionId || "",
+    instituteId: payment.instituteId || subscription.instituteId || "demo-institute",
+    instituteName: payment.instituteName || subscription.instituteName || "Demo Institute",
+    planCode: payment.planCode || subscription.planCode || "growth_monthly",
+    planName: payment.planName || subscription.planName || "Growth Monthly",
+    taxableAmount,
+    gstRate,
+    gstAmount,
+    totalAmountInr: amount,
+    currency: "INR",
+    status: payment.status === "paid" ? "paid" : "draft",
+    issuedAt: new Date().toISOString(),
+    note: "Demo/legal invoice foundation. Final tax fields can be adjusted before real billing launch."
+  };
+}
+
+const part66DemoSubscription = part66NormalizeSubscription({
+  subscriptionId: "P66-SUB-DEMO-001",
+  instituteId: "naxora-demo-institute",
+  instituteName: "NAXORA Demo Institute",
+  ownerName: "Demo Owner",
+  ownerEmail: "owner@example.com",
+  planCode: "growth_monthly",
+  status: "active",
+  startDate: new Date().toISOString()
+});
+
+const part66DemoPayment = part66NormalizePayment({
+  paymentId: "P66-PAY-DEMO-001",
+  subscriptionId: part66DemoSubscription.subscriptionId,
+  instituteId: part66DemoSubscription.instituteId,
+  instituteName: part66DemoSubscription.instituteName,
+  planCode: part66DemoSubscription.planCode,
+  amountInr: part66DemoSubscription.amountInr,
+  status: "paid",
+  orderId: "order_demo_part66",
+  razorpayPaymentId: "pay_demo_part66"
+});
+
+globalThis.NAXORA_PART66_SUBSCRIPTIONS = globalThis.NAXORA_PART66_SUBSCRIPTIONS || [part66DemoSubscription];
+globalThis.NAXORA_PART66_PAYMENTS = globalThis.NAXORA_PART66_PAYMENTS || [part66DemoPayment];
+globalThis.NAXORA_PART66_INVOICES = globalThis.NAXORA_PART66_INVOICES || [part66GenerateInvoice(part66DemoPayment, part66DemoSubscription)];
+
+async function part66Collection(name) {
+  try {
+    if (mongoose.connection.readyState === 1) return mongoose.connection.collection(name);
+  } catch {}
+  return null;
+}
+
+async function part66List(collectionName, fallbackRows, query = {}) {
+  const collection = await part66Collection(collectionName);
+  if (collection) return { mode: "mongodb", rows: await collection.find({}).sort({ createdAt: -1 }).limit(1000).toArray() };
+  return { mode: "mock", rows: [...fallbackRows] };
+}
+
+function part66FilterByInstitute(rows = [], instituteId = "") {
+  const clean = part66CleanText(instituteId, 120).toLowerCase();
+  return clean ? rows.filter((row) => part66CleanText(row.instituteId, 120).toLowerCase() === clean) : rows;
+}
+
+function part66RenewalRows(subscriptions = []) {
+  const now = Date.now();
+  const dayMs = 24 * 60 * 60 * 1000;
+  return subscriptions.map((sub) => {
+    const renewalTime = new Date(sub.nextRenewalDate).getTime();
+    const daysLeft = Number.isFinite(renewalTime) ? Math.ceil((renewalTime - now) / dayMs) : null;
+    let renewalStatus = "unknown";
+    if (daysLeft !== null) renewalStatus = daysLeft < 0 ? "overdue" : daysLeft <= 7 ? "urgent" : daysLeft <= 30 ? "upcoming" : "healthy";
+    return {
+      subscriptionId: sub.subscriptionId,
+      instituteId: sub.instituteId,
+      instituteName: sub.instituteName,
+      planName: sub.planName,
+      amountInr: sub.amountInr,
+      nextRenewalDate: sub.nextRenewalDate,
+      daysLeft,
+      renewalStatus,
+      reminderMessage: `${sub.instituteName} ka ${sub.planName} renewal ${daysLeft} din me due hai.`
+    };
+  });
+}
+
+function part66Analytics(subscriptions = [], payments = [], invoices = []) {
+  const paidPayments = payments.filter((p) => p.status === "paid");
+  const failedPayments = payments.filter((p) => p.status === "failed");
+  const totalRevenue = paidPayments.reduce((sum, p) => sum + part66Number(p.amountInr, 0), 0);
+  const activeSubscriptions = subscriptions.filter((s) => s.status === "active").length;
+  return {
+    totalSubscriptions: subscriptions.length,
+    activeSubscriptions,
+    totalPayments: payments.length,
+    paidPayments: paidPayments.length,
+    failedPayments: failedPayments.length,
+    totalInvoices: invoices.length,
+    totalRevenueInr: totalRevenue,
+    monthlyRecurringEstimateInr: subscriptions.filter((s) => s.status === "active").reduce((sum, s) => sum + (s.billingCycle === "yearly" ? Math.round(part66Number(s.amountInr, 0) / 12) : part66Number(s.amountInr, 0)), 0),
+    renewalReminders: part66RenewalRows(subscriptions).filter((r) => ["urgent", "upcoming", "overdue"].includes(r.renewalStatus)).length,
+    razorpay: part66RazorpayStatus()
+  };
+}
+
+async function part66TryCreateRazorpayOrder(orderPayload) {
+  const status = part66RazorpayStatus();
+  if (!status.keyIdPresent || !status.keySecretPresent) {
+    return { mode: "mock", order: { id: `order_mock_${Date.now()}`, status: "created", ...orderPayload }, note: "Razorpay keys missing. Mock order created safely." };
+  }
+  try {
+    const { default: Razorpay } = await import("razorpay");
+    const razorpay = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
+    const order = await razorpay.orders.create(orderPayload);
+    return { mode: status.keyMode === "live" ? "razorpay_live" : "razorpay_test", order, note: "Razorpay order created using environment keys." };
+  } catch (error) {
+    return { mode: "mock_after_provider_error", order: { id: `order_mock_${Date.now()}`, status: "created", ...orderPayload }, note: `Razorpay provider error aaya, safe mock order returned: ${error.message}` };
+  }
+}
+
+app.get("/payments-subscriptions", (req, res) => sendFileSafe(res, "payments-subscriptions.html"));
+app.get("/subscription-payments", (req, res) => sendFileSafe(res, "payments-subscriptions.html"));
+app.get("/billing", (req, res) => sendFileSafe(res, "payments-subscriptions.html"));
+app.get("/invoices", (req, res) => sendFileSafe(res, "payments-subscriptions.html"));
+app.get("/renewals", (req, res) => sendFileSafe(res, "payments-subscriptions.html"));
+
+app.get("/api/part66/status", (req, res) => {
+  res.json({
+    success: true,
+    part: part66Config.part,
+    status: "active",
+    purpose: part66Config.purpose,
+    frontend: part66Config.frontend,
+    apiRoutes: part66Config.apiRoutes,
+    razorpay: part66RazorpayStatus(),
+    safetyMode: part66Config.safetyMode,
+    nextPart: part66Config.nextPart
+  });
+});
+
+app.get("/api/part66/config", (req, res) => {
+  res.json({ success: true, part: part66Config.part, config: part66Config, razorpay: part66RazorpayStatus() });
+});
+
+app.get("/api/part66/plans", (req, res) => {
+  res.json({ success: true, part: part66Config.part, count: part66Plans.length, plans: part66Plans });
+});
+
+app.get("/api/part66/subscriptions", async (req, res) => {
+  const result = await part66List("part66subscriptions", globalThis.NAXORA_PART66_SUBSCRIPTIONS, req.query || {});
+  const rows = part66FilterByInstitute(result.rows, req.query?.instituteId);
+  res.json({ success: true, part: part66Config.part, mode: result.mode, count: rows.length, subscriptions: rows });
+});
+
+app.post("/api/part66/subscriptions", async (req, res) => {
+  const subscription = part66NormalizeSubscription(req.body || {});
+  const collection = await part66Collection("part66subscriptions");
+  if (collection) await collection.updateOne({ subscriptionId: subscription.subscriptionId }, { $set: subscription }, { upsert: true });
+  else globalThis.NAXORA_PART66_SUBSCRIPTIONS.unshift(subscription);
+  res.status(201).json({ success: true, part: part66Config.part, message: "Subscription created/updated.", subscription });
+});
+
+app.get("/api/part66/subscriptions/:subscriptionId", async (req, res) => {
+  const subscriptionId = part66CleanText(req.params.subscriptionId, 120);
+  const collection = await part66Collection("part66subscriptions");
+  const row = collection ? await collection.findOne({ subscriptionId }) : globalThis.NAXORA_PART66_SUBSCRIPTIONS.find((s) => s.subscriptionId === subscriptionId);
+  if (!row) return res.status(404).json({ success: false, message: "Subscription nahi mili." });
+  res.json({ success: true, part: part66Config.part, subscription: row });
+});
+
+app.patch("/api/part66/subscriptions/:subscriptionId/status", async (req, res) => {
+  const subscriptionId = part66CleanText(req.params.subscriptionId, 120);
+  const status = part66CleanText(req.body?.status || "active", 40).toLowerCase();
+  const update = { status, updatedAt: new Date().toISOString() };
+  const collection = await part66Collection("part66subscriptions");
+  if (collection) await collection.updateOne({ subscriptionId }, { $set: update });
+  else {
+    const index = globalThis.NAXORA_PART66_SUBSCRIPTIONS.findIndex((s) => s.subscriptionId === subscriptionId);
+    if (index >= 0) Object.assign(globalThis.NAXORA_PART66_SUBSCRIPTIONS[index], update);
+  }
+  res.json({ success: true, part: part66Config.part, message: "Subscription status updated.", subscriptionId, update });
+});
+
+app.post("/api/part66/orders/create", async (req, res) => {
+  const plan = part66FindPlan(req.body?.planCode || req.body?.plan);
+  const amountInr = part66Number(req.body?.amountInr || req.body?.amount || plan.priceInr, plan.priceInr);
+  const receipt = part66CleanText(req.body?.receipt || `NAXORA-P66-${Date.now()}`, 120);
+  const orderPayload = { amount: part66AmountPaise(amountInr), currency: "INR", receipt, notes: { planCode: plan.planCode, instituteId: part66CleanText(req.body?.instituteId || "demo-institute", 120), source: "part66" } };
+  const created = await part66TryCreateRazorpayOrder(orderPayload);
+  const payment = part66NormalizePayment({ ...(req.body || {}), planCode: plan.planCode, amountInr, status: "created", orderId: created.order?.id || "" });
+  const collection = await part66Collection("part66payments");
+  if (collection) await collection.updateOne({ paymentId: payment.paymentId }, { $set: payment }, { upsert: true });
+  else globalThis.NAXORA_PART66_PAYMENTS.unshift(payment);
+  res.status(201).json({ success: true, part: part66Config.part, message: "Order created safely.", providerResult: created, paymentRecord: payment, razorpay: part66RazorpayStatus() });
+});
+
+app.get("/api/part66/payments", async (req, res) => {
+  const result = await part66List("part66payments", globalThis.NAXORA_PART66_PAYMENTS, req.query || {});
+  const rows = part66FilterByInstitute(result.rows, req.query?.instituteId).filter((row) => req.query?.status ? row.status === part66CleanText(req.query.status, 40).toLowerCase() : true);
+  res.json({ success: true, part: part66Config.part, mode: result.mode, count: rows.length, payments: rows });
+});
+
+app.post("/api/part66/payments/record", async (req, res) => {
+  const payment = part66NormalizePayment({ ...(req.body || {}), status: req.body?.status || "paid" });
+  const collection = await part66Collection("part66payments");
+  if (collection) await collection.updateOne({ paymentId: payment.paymentId }, { $set: payment }, { upsert: true });
+  else globalThis.NAXORA_PART66_PAYMENTS.unshift(payment);
+  res.status(201).json({ success: true, part: part66Config.part, message: "Payment record saved.", payment });
+});
+
+app.post("/api/part66/payments/:paymentId/failed", async (req, res) => {
+  const paymentId = part66CleanText(req.params.paymentId, 120);
+  const failureReason = part66CleanText(req.body?.failureReason || req.body?.reason || "Payment failed or cancelled", 300);
+  const update = { status: "failed", failureReason, updatedAt: new Date().toISOString() };
+  const collection = await part66Collection("part66payments");
+  if (collection) await collection.updateOne({ paymentId }, { $set: update });
+  else {
+    const index = globalThis.NAXORA_PART66_PAYMENTS.findIndex((p) => p.paymentId === paymentId);
+    if (index >= 0) Object.assign(globalThis.NAXORA_PART66_PAYMENTS[index], update);
+    else globalThis.NAXORA_PART66_PAYMENTS.unshift(part66NormalizePayment({ paymentId, status: "failed", failureReason }));
+  }
+  res.json({ success: true, part: part66Config.part, message: "Failed payment marked and retry/reminder foundation ready.", paymentId, update });
+});
+
+app.get("/api/part66/invoices", async (req, res) => {
+  const result = await part66List("part66invoices", globalThis.NAXORA_PART66_INVOICES, req.query || {});
+  const rows = part66FilterByInstitute(result.rows, req.query?.instituteId);
+  res.json({ success: true, part: part66Config.part, mode: result.mode, count: rows.length, invoices: rows });
+});
+
+app.post("/api/part66/invoices/generate", async (req, res) => {
+  const payment = part66NormalizePayment(req.body?.payment || req.body || {});
+  const subscription = part66NormalizeSubscription(req.body?.subscription || req.body || {});
+  const invoice = part66GenerateInvoice(payment, subscription);
+  const collection = await part66Collection("part66invoices");
+  if (collection) await collection.updateOne({ invoiceId: invoice.invoiceId }, { $set: invoice }, { upsert: true });
+  else globalThis.NAXORA_PART66_INVOICES.unshift(invoice);
+  res.status(201).json({ success: true, part: part66Config.part, message: "Invoice generated.", invoice });
+});
+
+app.get("/api/part66/renewals", async (req, res) => {
+  const result = await part66List("part66subscriptions", globalThis.NAXORA_PART66_SUBSCRIPTIONS, req.query || {});
+  const rows = part66RenewalRows(part66FilterByInstitute(result.rows, req.query?.instituteId));
+  res.json({ success: true, part: part66Config.part, mode: result.mode, count: rows.length, renewals: rows });
+});
+
+app.get("/api/part66/analytics", async (req, res) => {
+  const subscriptions = await part66List("part66subscriptions", globalThis.NAXORA_PART66_SUBSCRIPTIONS, {});
+  const payments = await part66List("part66payments", globalThis.NAXORA_PART66_PAYMENTS, {});
+  const invoices = await part66List("part66invoices", globalThis.NAXORA_PART66_INVOICES, {});
+  res.json({ success: true, part: part66Config.part, mode: subscriptions.mode, analytics: part66Analytics(subscriptions.rows, payments.rows, invoices.rows) });
+});
+
+app.get("/api/part66/checklist", (req, res) => {
+  res.json({ success: true, part: part66Config.part, checklist: part66Checklist });
+});
+
+app.get("/api/part66/export", async (req, res) => {
+  const subscriptions = await part66List("part66subscriptions", globalThis.NAXORA_PART66_SUBSCRIPTIONS, {});
+  const payments = await part66List("part66payments", globalThis.NAXORA_PART66_PAYMENTS, {});
+  const invoices = await part66List("part66invoices", globalThis.NAXORA_PART66_INVOICES, {});
+  res.json({ success: true, part: part66Config.part, exportedAt: new Date().toISOString(), config: part66Config, plans: part66Plans, subscriptions: subscriptions.rows, payments: payments.rows, invoices: invoices.rows, analytics: part66Analytics(subscriptions.rows, payments.rows, invoices.rows) });
+});
+
+app.get("/api/part66/demo", async (req, res) => {
+  res.json({ success: true, part: part66Config.part, config: part66Config, plans: part66Plans, subscriptions: globalThis.NAXORA_PART66_SUBSCRIPTIONS, payments: globalThis.NAXORA_PART66_PAYMENTS, invoices: globalThis.NAXORA_PART66_INVOICES, renewals: part66RenewalRows(globalThis.NAXORA_PART66_SUBSCRIPTIONS), checklist: part66Checklist });
+});
+// ================= END PART 66 =================
+
 
 // Same-server frontend hosting for Render/Railway/VPS deployment.
 app.use("/landing", express.static(frontendPath));
@@ -6230,7 +6684,12 @@ const modulePageRoutes = {
   "/live-classes-completion": "live-classes-completion.html",
   "/online-classroom": "live-classes-completion.html",
   "/live-classroom": "live-classes-completion.html",
-  "/classroom-live": "live-classes-completion.html"
+  "/classroom-live": "live-classes-completion.html",
+  "/payments-subscriptions": "payments-subscriptions.html",
+  "/subscription-payments": "payments-subscriptions.html",
+  "/billing": "payments-subscriptions.html",
+  "/invoices": "payments-subscriptions.html",
+  "/renewals": "payments-subscriptions.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -6329,6 +6788,10 @@ const server = app.listen(port, () => {
   console.log("✅ Part 60 request callback active: /api/part60/status + /request-callback");
   console.log("✅ Part 61 nearby institutes active: /api/part61/status + /nearby-institutes");
   console.log("✅ Part 62 compare institutes active: /api/part62/status + /compare-institutes");
+  console.log("✅ Part 63 discovery leads integration active: /api/part63/status + /discovery-leads-integration");
+  console.log("✅ Part 64 live classes completion active: /api/part64/status + /live-classes-completion");
+  console.log("✅ Part 65 communication hub active: /api/part65/status + /communication-hub");
+  console.log("✅ Part 66 payments/subscriptions active: /api/part66/status + /payments-subscriptions");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");

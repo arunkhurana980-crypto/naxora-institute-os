@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAXORA Part 66 | Payments & Subscriptions</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/payments-subscriptions.css" />
+</head>
+<body>
+  <main class="p66-shell">
+    <section class="p66-hero">
+      <div>
+        <p class="p66-kicker">PART 66 • PAYMENTS AND SUBSCRIPTION COMPLETION</p>
+        <h1>NAXORA Billing Control Room</h1>
+        <p>Razorpay readiness, monthly/yearly plans, payment history, invoices, renewal reminders aur failed payment handling ek jagah.</p>
+      </div>
+      <a class="p66-back" href="/dashboard">← Dashboard</a>
+    </section>
+
+    <section class="p66-grid" id="summaryGrid">
+      <article class="p66-card"><span id="subsCount">0</span><p>Total Subscriptions</p></article>
+      <article class="p66-card"><span id="activeSubs">0</span><p>Active Subscriptions</p></article>
+      <article class="p66-card"><span id="revenue">₹0</span><p>Total Paid Revenue</p></article>
+      <article class="p66-card"><span id="failedPayments">0</span><p>Failed Payments</p></article>
+    </section>
+
+    <section class="p66-panel">
+      <div class="p66-panel-head">
+        <div>
+          <h2>Plan Catalog</h2>
+          <p>Monthly/yearly SaaS subscription plans for beta institutes.</p>
+        </div>
+        <button id="refreshBtn">Refresh</button>
+      </div>
+      <div class="p66-plans" id="plansBox"></div>
+    </section>
+
+    <section class="p66-two">
+      <form class="p66-panel" id="orderForm">
+        <h2>Create Safe Order</h2>
+        <p>Razorpay keys missing hon to safe mock order create hoga. Secret kabhi browser me expose nahi hota.</p>
+        <label>Institute Name <input name="instituteName" value="NAXORA Demo Institute" /></label>
+        <label>Institute ID <input name="instituteId" value="naxora-demo-institute" /></label>
+        <label>Plan
+          <select name="planCode" id="planSelect"></select>
+        </label>
+        <label>Amount INR <input name="amountInr" type="number" value="1999" /></label>
+        <button type="submit">Create Order</button>
+        <pre id="orderResult">Order result yahan dikhega.</pre>
+      </form>
+
+      <form class="p66-panel" id="invoiceForm">
+        <h2>Generate Invoice</h2>
+        <p>Payment record ke basis par invoice foundation ready hota hai.</p>
+        <label>Institute Name <input name="instituteName" value="NAXORA Demo Institute" /></label>
+        <label>Plan
+          <select name="planCode" id="invoicePlanSelect"></select>
+        </label>
+        <label>Amount INR <input name="amountInr" type="number" value="1999" /></label>
+        <button type="submit">Generate Invoice</button>
+        <pre id="invoiceResult">Invoice result yahan dikhega.</pre>
+      </form>
+    </section>
+
+    <section class="p66-two">
+      <div class="p66-panel">
+        <h2>Renewal Reminders</h2>
+        <div id="renewalsBox" class="p66-list"></div>
+      </div>
+      <div class="p66-panel">
+        <h2>Payment History</h2>
+        <div id="paymentsBox" class="p66-list"></div>
+      </div>
+    </section>
+
+    <section class="p66-panel">
+      <h2>Razorpay Readiness</h2>
+      <pre id="razorpayBox">Loading...</pre>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/payments-subscriptions.js"></script>
+</body>
+</html>
