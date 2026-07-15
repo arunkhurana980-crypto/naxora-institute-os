@@ -10308,7 +10308,13 @@ const modulePageRoutes = {
   "/vani-admissions": "vani-admission-assistant.html",
   "/admission-assistant": "vani-admission-assistant.html",
   "/ai-admission-assistant": "vani-admission-assistant.html",
-  "/vani-admission-counsellor": "vani-admission-assistant.html"
+  "/vani-admission-counsellor": "vani-admission-assistant.html",
+  "/vani-fee-attendance-actions": "vani-fee-attendance-actions.html",
+  "/fee-attendance-vani": "vani-fee-attendance-actions.html",
+  "/vani-fees-attendance": "vani-fee-attendance-actions.html",
+  "/vani-fee-actions": "vani-fee-attendance-actions.html",
+  "/vani-attendance-actions": "vani-fee-attendance-actions.html",
+  "/fee-attendance-actions": "vani-fee-attendance-actions.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -13734,6 +13740,781 @@ app.get("/api/part85/demo", (req, res) => {
 });
 // ================= END PART 85 =================
 
+// ================= PART 86 — VANI FEE AND ATTENDANCE ACTIONS =================
+// VANI Fee and Attendance Actions build on the Part 84 action engine and Part 85
+// admission workflow. This part focuses on safe preview-first fee reminders,
+// attendance drafts, payment follow-up drafts and low-attendance alerts.
+// No real money movement, refund, discount or final attendance save happens here.
+
+const part86Features = [
+  {
+    key: "fee_status_lookup",
+    name: "Fee Status Lookup",
+    module: "fees",
+    summary: "VANI can prepare fee status summaries for authorized roles.",
+    problemSolved: "Owner/accountant can quickly understand pending fee cases."
+  },
+  {
+    key: "fee_reminder_draft",
+    name: "Fee Reminder Draft",
+    module: "fees",
+    summary: "VANI drafts polite fee reminder messages without sending automatically.",
+    problemSolved: "Follow-ups become faster while keeping confirmation control."
+  },
+  {
+    key: "payment_followup_draft",
+    name: "Payment Follow-up Draft",
+    module: "payments",
+    summary: "VANI drafts follow-up messages for pending or failed payments.",
+    problemSolved: "Payment communication is more consistent."
+  },
+  {
+    key: "receipt_preview",
+    name: "Receipt Preview",
+    module: "payments",
+    summary: "VANI can prepare receipt preview before final official generation.",
+    problemSolved: "Mistakes can be caught before issuing a receipt."
+  },
+  {
+    key: "attendance_draft",
+    name: "Attendance Draft",
+    module: "attendance",
+    summary: "VANI creates attendance draft preview for assigned teacher/batch.",
+    problemSolved: "Attendance can be prepared faster without accidental final save."
+  },
+  {
+    key: "low_attendance_alerts",
+    name: "Low Attendance Alerts",
+    module: "attendance",
+    summary: "VANI finds students below attendance threshold and prepares alert summary.",
+    problemSolved: "Teacher/owner can support students earlier."
+  },
+  {
+    key: "private_screen_first",
+    name: "Private-Screen-First Finance Rule",
+    module: "security",
+    summary: "Sensitive fee/payment data is shown on screen and not spoken loudly.",
+    problemSolved: "Private financial information is protected."
+  },
+  {
+    key: "owner_verification_for_sensitive_actions",
+    name: "Owner Verification for Sensitive Actions",
+    module: "security",
+    summary: "Discount, refund, delete, export and subscription changes require owner verification.",
+    problemSolved: "VANI cannot accidentally perform risky actions."
+  }
+];
+
+const part86RoleRules = [
+  {
+    role: "institute_owner",
+    allowedModules: ["fees", "payments", "attendance", "reports"],
+    allowedActions: ["lookup", "draft", "preview", "execute_safe_draft", "audit"],
+    sensitiveActionsNeedOwnerVerification: true,
+    note: "Owner has full authorized institute/branch scope."
+  },
+  {
+    role: "branch_manager",
+    allowedModules: ["fees", "attendance", "reports"],
+    allowedActions: ["lookup", "draft", "preview"],
+    assignedScopeOnly: true,
+    note: "Branch manager sees assigned branch only."
+  },
+  {
+    role: "accountant",
+    allowedModules: ["fees", "payments", "reports"],
+    allowedActions: ["lookup", "draft", "preview"],
+    note: "Accountant can handle finance workflow according to permission."
+  },
+  {
+    role: "teacher",
+    allowedModules: ["attendance"],
+    allowedActions: ["lookup", "draft", "preview"],
+    assignedScopeOnly: true,
+    note: "Teacher can work on assigned batch attendance only."
+  },
+  {
+    role: "receptionist_counsellor",
+    allowedModules: ["fees", "attendance"],
+    allowedActions: ["lookup", "draft"],
+    note: "Can draft communication if institute permission allows."
+  },
+  {
+    role: "student",
+    allowedModules: ["own_fees_summary", "own_attendance_summary"],
+    allowedActions: ["lookup"],
+    ownDataOnly: true,
+    note: "Student can only see own safe summary, no execution."
+  },
+  {
+    role: "parent",
+    allowedModules: ["linked_child_fees_summary", "linked_child_attendance_summary"],
+    allowedActions: ["lookup"],
+    linkedChildOnly: true,
+    note: "Parent can only see linked child safe summary, no execution."
+  },
+  {
+    role: "naxora_super_admin",
+    allowedModules: ["platform_support"],
+    allowedActions: ["audit"],
+    note: "Platform support only, no unrestricted institute-private action access."
+  }
+];
+
+const part86ActionCatalog = [
+  {
+    action: "fee_status_lookup",
+    module: "fees",
+    requiredDetails: ["role", "instituteId", "studentId"],
+    confirmationRequired: false,
+    ownerVerificationRequired: false,
+    privateScreenFirst: true
+  },
+  {
+    action: "fee_reminder_draft",
+    module: "fees",
+    requiredDetails: ["role", "instituteId", "studentId", "amountOrReason"],
+    confirmationRequired: true,
+    ownerVerificationRequired: false,
+    privateScreenFirst: true
+  },
+  {
+    action: "payment_followup_draft",
+    module: "payments",
+    requiredDetails: ["role", "instituteId", "studentId", "paymentStatus"],
+    confirmationRequired: true,
+    ownerVerificationRequired: false,
+    privateScreenFirst: true
+  },
+  {
+    action: "receipt_preview",
+    module: "payments",
+    requiredDetails: ["role", "instituteId", "studentId", "amount"],
+    confirmationRequired: true,
+    ownerVerificationRequired: true,
+    privateScreenFirst: true
+  },
+  {
+    action: "attendance_draft",
+    module: "attendance",
+    requiredDetails: ["role", "instituteId", "batchId", "date"],
+    confirmationRequired: true,
+    ownerVerificationRequired: false,
+    privateScreenFirst: false
+  },
+  {
+    action: "low_attendance_alerts",
+    module: "attendance",
+    requiredDetails: ["role", "instituteId", "threshold"],
+    confirmationRequired: false,
+    ownerVerificationRequired: false,
+    privateScreenFirst: true
+  },
+  {
+    action: "fee_discount_request",
+    module: "fees",
+    requiredDetails: ["role", "instituteId", "studentId", "discountReason"],
+    confirmationRequired: true,
+    ownerVerificationRequired: true,
+    privateScreenFirst: true
+  },
+  {
+    action: "refund_request",
+    module: "payments",
+    requiredDetails: ["role", "instituteId", "studentId", "paymentId", "refundReason"],
+    confirmationRequired: true,
+    ownerVerificationRequired: true,
+    privateScreenFirst: true
+  }
+];
+
+function normalizePart86Role(role) {
+  const r = String(role || "institute_owner").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part86DetectAction(command = "") {
+  const lower = String(command || "").toLowerCase();
+
+  if (lower.includes("refund")) return "refund_request";
+  if (lower.includes("discount") || lower.includes("scholarship") || lower.includes("fee kam")) return "fee_discount_request";
+  if (lower.includes("receipt") || lower.includes("rasid") || lower.includes("invoice")) return "receipt_preview";
+  if (lower.includes("payment follow") || lower.includes("failed payment") || lower.includes("payment pending")) return "payment_followup_draft";
+  if (lower.includes("reminder") || lower.includes("fee message") || lower.includes("fees message") || lower.includes("fee reminder")) return "fee_reminder_draft";
+  if (lower.includes("low attendance") || lower.includes("attendance below") || lower.includes("kam attendance")) return "low_attendance_alerts";
+  if (lower.includes("attendance") || lower.includes("present") || lower.includes("absent")) return "attendance_draft";
+  if (lower.includes("fee") || lower.includes("fees") || lower.includes("pending")) return "fee_status_lookup";
+
+  return "fee_status_lookup";
+}
+
+function part86ExtractDetails(command = "", input = {}) {
+  const text = String(command || "");
+  const lower = text.toLowerCase();
+  const amountMatch = text.match(/(?:₹|rs\.?|inr)?\s*([0-9]{3,7})/i);
+  const phoneMatch = text.match(/\b[6-9][0-9]{9}\b/);
+  const classMatch = text.match(/class\s*([0-9]{1,2})/i);
+  const thresholdMatch = text.match(/([0-9]{2})\s*%/);
+
+  let studentName = input.studentName || null;
+  const nameMatch = text.match(/\b(?:student|for|of)\s+([A-Z][a-z]+)\b/);
+  if (!studentName && nameMatch) studentName = nameMatch[1];
+  if (!studentName && lower.includes("aman")) studentName = "Aman";
+  if (!studentName && lower.includes("riya")) studentName = "Riya";
+  if (!studentName && lower.includes("kabir")) studentName = "Kabir";
+
+  return {
+    role: input.role || "institute_owner",
+    instituteId: input.instituteId || null,
+    studentId: input.studentId || (studentName ? `STU-${String(studentName).toUpperCase()}-DEMO` : null),
+    studentName,
+    batchId: input.batchId || (classMatch ? `BAT-CLASS-${classMatch[1]}` : null),
+    date: input.date || (lower.includes("today") || lower.includes("aaj") ? "today" : null),
+    amount: input.amount || (amountMatch ? Number(amountMatch[1]) : null),
+    amountOrReason: input.amountOrReason || (amountMatch ? `Pending amount around ₹${amountMatch[1]}` : null),
+    paymentStatus: input.paymentStatus || (lower.includes("failed") ? "failed" : lower.includes("pending") ? "pending" : null),
+    threshold: input.threshold || (thresholdMatch ? Number(thresholdMatch[1]) : lower.includes("low attendance") ? 75 : null),
+    parentPhone: input.parentPhone || (phoneMatch ? phoneMatch[0] : null),
+    discountReason: input.discountReason || (lower.includes("discount") ? "Requested by voice command; owner verification required." : null),
+    refundReason: input.refundReason || (lower.includes("refund") ? "Refund requested by voice command; owner verification required." : null),
+    paymentId: input.paymentId || null
+  };
+}
+
+function part86MissingDetails(action, details) {
+  const catalog = part86ActionCatalog.find((item) => item.action === action);
+  if (!catalog) return ["supported action"];
+  return catalog.requiredDetails.filter((field) => {
+    if (field === "role") return !details.role;
+    if (field === "amountOrReason") return !details.amountOrReason && !details.amount;
+    if (field === "amount") return !details.amount;
+    return !details[field];
+  });
+}
+
+function part86AccessCheck(input = {}) {
+  const role = normalizePart86Role(input.role);
+  const action = input.action || part86DetectAction(input.command || "");
+  const catalog = part86ActionCatalog.find((item) => item.action === action) || part86ActionCatalog[0];
+  const rule = part86RoleRules.find((r) => r.role === role) || {
+    role,
+    allowedModules: [],
+    allowedActions: [],
+    note: "Unknown role."
+  };
+
+  const moduleAllowed = rule.allowedModules.includes(catalog.module) ||
+    (role === "student" && ["fees", "attendance"].includes(catalog.module)) ||
+    (role === "parent" && ["fees", "attendance"].includes(catalog.module));
+
+  const actionAllowed = rule.allowedActions.includes("lookup") && action.endsWith("_lookup") ||
+    rule.allowedActions.includes("draft") && action.includes("draft") ||
+    rule.allowedActions.includes("preview") && action.includes("preview") ||
+    rule.allowedActions.includes("audit") && action.includes("audit") ||
+    (role === "institute_owner" && ["fee_discount_request", "refund_request"].includes(action));
+
+  const hasInstituteId = Boolean(String(input.instituteId || "").trim());
+  const allowed = Boolean(moduleAllowed && actionAllowed && hasInstituteId);
+
+  return {
+    role,
+    action,
+    module: catalog.module,
+    allowed,
+    reason: !hasInstituteId
+      ? "Institute ID missing."
+      : !moduleAllowed
+        ? `Role ${role} is not allowed for module ${catalog.module}.`
+        : !actionAllowed
+          ? `Role ${role} is not allowed for action ${action}.`
+          : "Action preview allowed.",
+    assignedScopeOnly: Boolean(rule.assignedScopeOnly),
+    ownDataOnly: Boolean(rule.ownDataOnly),
+    linkedChildOnly: Boolean(rule.linkedChildOnly),
+    confirmationRequired: catalog.confirmationRequired,
+    ownerVerificationRequired: catalog.ownerVerificationRequired,
+    privateScreenFirst: catalog.privateScreenFirst,
+    safeExecutionOnly: true
+  };
+}
+
+function part86BuildPreview({ action, details, access }) {
+  const now = new Date().toISOString();
+  const studentName = details.studentName || "Selected Student";
+  const amount = details.amount || 2500;
+  const batchId = details.batchId || "BAT-DEMO-001";
+
+  let preview = {
+    previewId: `VANI86-${Date.now()}`,
+    action,
+    createdAt: now,
+    privateScreenFirst: access.privateScreenFirst,
+    confirmationRequired: access.confirmationRequired,
+    ownerVerificationRequired: access.ownerVerificationRequired,
+    title: "VANI action preview",
+    spokenSafeSummary: "VANI preview ready hai. Sensitive details screen par dikhaye gaye hain.",
+    screenData: {}
+  };
+
+  if (action === "fee_status_lookup") {
+    preview.title = "Fee Status Lookup Preview";
+    preview.spokenSafeSummary = "Fee status summary ready hai. Amount details screen par privately dikhaye gaye hain.";
+    preview.screenData = {
+      studentName,
+      studentId: details.studentId || "STU-DEMO-001",
+      pendingAmount: amount,
+      dueDate: "Next Monday",
+      status: "pending",
+      nextAction: "Draft polite reminder if required."
+    };
+  } else if (action === "fee_reminder_draft") {
+    preview.title = "Fee Reminder Draft Preview";
+    preview.spokenSafeSummary = "Fee reminder draft ready hai. Send karne se pehle confirmation required hai.";
+    preview.screenData = {
+      studentName,
+      messageDraft: `Namaste, ${studentName} ke fee status ke regarding polite reminder. Kripya pending payment update share karein. - NAXORA Institute`,
+      sendAutomatically: false
+    };
+  } else if (action === "payment_followup_draft") {
+    preview.title = "Payment Follow-up Draft Preview";
+    preview.spokenSafeSummary = "Payment follow-up draft ready hai. Send karne se pehle confirmation required hai.";
+    preview.screenData = {
+      studentName,
+      paymentStatus: details.paymentStatus || "pending",
+      messageDraft: `Namaste, payment status ${details.paymentStatus || "pending"} dikh raha hai. Kripya payment confirmation share karein.`,
+      sendAutomatically: false
+    };
+  } else if (action === "receipt_preview") {
+    preview.title = "Receipt Preview";
+    preview.spokenSafeSummary = "Receipt preview ready hai. Official receipt generate karne se pehle owner verification required hai.";
+    preview.screenData = {
+      studentName,
+      amount,
+      receiptMode: "preview_only",
+      officialGeneration: "blocked_until_confirmation"
+    };
+  } else if (action === "attendance_draft") {
+    preview.title = "Attendance Draft Preview";
+    preview.spokenSafeSummary = "Attendance draft ready hai. Final save se pehle confirmation required hai.";
+    preview.screenData = {
+      batchId,
+      date: details.date || "today",
+      presentCount: 32,
+      absentCount: 4,
+      draftOnly: true
+    };
+  } else if (action === "low_attendance_alerts") {
+    preview.title = "Low Attendance Alerts";
+    preview.spokenSafeSummary = "Low attendance alert list screen par privately dikhayi gayi hai.";
+    preview.screenData = {
+      threshold: details.threshold || 75,
+      students: [
+        { name: "Aman", attendance: 68, batch: "Class 10 Maths A" },
+        { name: "Riya", attendance: 72, batch: "Class 10 Maths B" },
+        { name: "Kabir", attendance: 65, batch: "Class 9 Science A" }
+      ]
+    };
+  } else if (action === "fee_discount_request") {
+    preview.title = "Fee Discount Request Preview";
+    preview.spokenSafeSummary = "Discount request preview ready hai. Owner verification ke bina ye execute nahi hoga.";
+    preview.screenData = {
+      studentName,
+      discountReason: details.discountReason || "Reason required",
+      status: "owner_verification_required"
+    };
+  } else if (action === "refund_request") {
+    preview.title = "Refund Request Preview";
+    preview.spokenSafeSummary = "Refund request preview ready hai. Owner verification ke bina ye execute nahi hoga.";
+    preview.screenData = {
+      studentName,
+      paymentId: details.paymentId || "missing",
+      refundReason: details.refundReason || "Reason required",
+      status: "owner_verification_required"
+    };
+  }
+
+  return preview;
+}
+
+function part86ParseCommand(input = {}) {
+  const command = String(input.command || input.q || "").trim();
+  const action = input.action || part86DetectAction(command);
+  const details = part86ExtractDetails(command, input);
+  const missingDetails = part86MissingDetails(action, details);
+  const access = part86AccessCheck({ ...details, role: input.role || details.role, instituteId: input.instituteId || details.instituteId, action, command });
+  const preview = part86BuildPreview({ action, details, access });
+  return {
+    command,
+    action,
+    module: access.module,
+    details,
+    missingDetails,
+    access,
+    preview,
+    status: missingDetails.length ? "needs_more_details" : access.allowed ? "preview_ready" : "blocked_by_permission"
+  };
+}
+
+const part86Checklist = [
+  "VANI Fee and Attendance Actions page opens",
+  "Status API returns success true",
+  "Fee status lookup creates private-screen-first preview",
+  "Fee reminder draft does not send automatically",
+  "Attendance draft does not final-save automatically",
+  "Low attendance alert preview works",
+  "Discount/refund actions require owner verification",
+  "Student/parent only get own/linked child safe summary",
+  "Audit log endpoint returns safe event preview",
+  "Previous Part 1–85 routes remain preserved"
+];
+
+app.get("/api/part86/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 86 — VANI Fee and Attendance Actions",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 86,
+    nextPart: "Part 87 — VANI Voice Reports",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/vani-fee-attendance-actions", "/fee-attendance-vani", "/vani-fees-attendance", "/vani-fee-actions", "/vani-attendance-actions", "/fee-attendance-actions"],
+    apiRoutes: [
+      "/api/part86/config",
+      "/api/part86/features",
+      "/api/part86/roles",
+      "/api/part86/actions",
+      "/api/part86/access-check",
+      "/api/part86/command/parse",
+      "/api/part86/action/preview",
+      "/api/part86/action/execute",
+      "/api/part86/fee/status",
+      "/api/part86/fee/reminder-draft",
+      "/api/part86/payment/followup-draft",
+      "/api/part86/payment/receipt-preview",
+      "/api/part86/attendance/draft",
+      "/api/part86/attendance/low-alerts",
+      "/api/part86/vani/greeting",
+      "/api/part86/vani/command"
+    ],
+    safeMode: true
+  });
+});
+
+app.get("/api/part86/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "VANI Fee and Attendance Actions",
+    appType: "vani_safe_action_workflow",
+    version: "2.0-fee-attendance-actions",
+    safeMode: {
+      realMoneyMovement: false,
+      finalAttendanceSave: false,
+      autoSendMessages: false,
+      previewRequired: true,
+      confirmationRequired: true,
+      ownerVerificationForSensitiveActions: true
+    },
+    voice: {
+      listenReplySupported: true,
+      greeting: "Namaste, main VANI hoon. Main fees ya attendance me kya help kar sakti hoon?"
+    }
+  });
+});
+
+app.get("/api/part86/features", (req, res) => {
+  res.json({ success: true, features: part86Features });
+});
+
+app.get("/api/part86/roles", (req, res) => {
+  res.json({ success: true, roles: part86RoleRules });
+});
+
+app.get("/api/part86/actions", (req, res) => {
+  res.json({ success: true, actions: part86ActionCatalog });
+});
+
+app.get("/api/part86/permissions", (req, res) => {
+  res.json({ success: true, roles: part86RoleRules, actions: part86ActionCatalog });
+});
+
+app.get("/api/part86/access-check", (req, res) => {
+  const action = req.query.action || part86DetectAction(req.query.q || req.query.command || "");
+  res.json({ success: true, access: part86AccessCheck({ ...req.query, action }) });
+});
+
+app.get("/api/part86/command/parse", (req, res) => {
+  res.json({ success: true, parsed: part86ParseCommand(req.query || {}) });
+});
+
+app.post("/api/part86/command/parse", (req, res) => {
+  res.json({ success: true, parsed: part86ParseCommand(req.body || {}) });
+});
+
+app.get("/api/part86/action/preview", (req, res) => {
+  const parsed = part86ParseCommand(req.query || {});
+  res.json({
+    success: true,
+    preview: parsed.preview,
+    missingDetails: parsed.missingDetails,
+    access: parsed.access,
+    status: parsed.status
+  });
+});
+
+app.post("/api/part86/action/preview", (req, res) => {
+  const parsed = part86ParseCommand(req.body || {});
+  res.json({
+    success: true,
+    preview: parsed.preview,
+    missingDetails: parsed.missingDetails,
+    access: parsed.access,
+    status: parsed.status
+  });
+});
+
+app.post("/api/part86/action/execute", (req, res) => {
+  const parsed = part86ParseCommand(req.body || {});
+  if (!parsed.access.allowed) {
+    return res.status(403).json({ success: false, message: parsed.access.reason, parsed });
+  }
+  if (parsed.missingDetails.length) {
+    return res.status(400).json({ success: false, message: "Missing details required before execution preview.", missingDetails: parsed.missingDetails, parsed });
+  }
+  if (parsed.access.ownerVerificationRequired && req.body?.ownerVerified !== true) {
+    return res.status(403).json({
+      success: false,
+      message: "Owner verification required for this sensitive action.",
+      ownerVerificationRequired: true,
+      parsed
+    });
+  }
+  if (parsed.access.confirmationRequired && req.body?.confirmed !== true) {
+    return res.status(409).json({
+      success: false,
+      message: "Confirmation required. This endpoint remains safe and does not perform real production write without confirmation.",
+      confirmationRequired: true,
+      preview: parsed.preview
+    });
+  }
+  res.json({
+    success: true,
+    mode: "safe_simulation_executed",
+    realProductionWrite: false,
+    message: "Safe simulated execution completed. Production DB write is intentionally disabled in Part 86.",
+    auditEvent: {
+      action: parsed.action,
+      role: parsed.access.role,
+      module: parsed.module,
+      createdAt: new Date().toISOString()
+    },
+    preview: parsed.preview
+  });
+});
+
+app.get("/api/part86/fee/status", (req, res) => {
+  const parsed = part86ParseCommand({ ...req.query, action: "fee_status_lookup" });
+  res.json({ success: true, feeStatus: parsed.preview, access: parsed.access, missingDetails: parsed.missingDetails });
+});
+
+app.get("/api/part86/fee/reminder-draft", (req, res) => {
+  const parsed = part86ParseCommand({ ...req.query, action: "fee_reminder_draft" });
+  res.json({ success: true, reminderDraft: parsed.preview, access: parsed.access, missingDetails: parsed.missingDetails, autoSend: false });
+});
+
+app.get("/api/part86/payment/followup-draft", (req, res) => {
+  const parsed = part86ParseCommand({ ...req.query, action: "payment_followup_draft" });
+  res.json({ success: true, followupDraft: parsed.preview, access: parsed.access, missingDetails: parsed.missingDetails, autoSend: false });
+});
+
+app.get("/api/part86/payment/receipt-preview", (req, res) => {
+  const parsed = part86ParseCommand({ ...req.query, action: "receipt_preview" });
+  res.json({ success: true, receiptPreview: parsed.preview, access: parsed.access, missingDetails: parsed.missingDetails, officialReceiptGenerated: false });
+});
+
+app.get("/api/part86/attendance/draft", (req, res) => {
+  const parsed = part86ParseCommand({ ...req.query, action: "attendance_draft" });
+  res.json({ success: true, attendanceDraft: parsed.preview, access: parsed.access, missingDetails: parsed.missingDetails, finalSaved: false });
+});
+
+app.get("/api/part86/attendance/low-alerts", (req, res) => {
+  const parsed = part86ParseCommand({ ...req.query, action: "low_attendance_alerts" });
+  res.json({ success: true, lowAttendanceAlerts: parsed.preview, access: parsed.access, missingDetails: parsed.missingDetails });
+});
+
+app.get("/api/part86/missing-details", (req, res) => {
+  const parsed = part86ParseCommand(req.query || {});
+  res.json({
+    success: true,
+    action: parsed.action,
+    missingDetails: parsed.missingDetails,
+    questions: parsed.missingDetails.map((field) => {
+      const map = {
+        instituteId: "Institute ID kya hai?",
+        studentId: "Student ka ID ya naam kya hai?",
+        batchId: "Kaunsa batch?",
+        date: "Kaunsi date ke liye attendance/fee action chahiye?",
+        amount: "Amount kitna hai?",
+        amountOrReason: "Pending amount ya reason kya hai?",
+        paymentStatus: "Payment status pending hai ya failed?",
+        threshold: "Low attendance threshold kitna percent rakhna hai?",
+        discountReason: "Discount ka reason kya hai?",
+        refundReason: "Refund ka reason kya hai?",
+        paymentId: "Payment ID kya hai?"
+      };
+      return map[field] || `${field} kya hai?`;
+    })
+  });
+});
+
+app.get("/api/part86/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI",
+    language: "Hindi/Hinglish",
+    greeting: "Namaste, main VANI hoon. Main fees ya attendance me kya help kar sakti hoon?",
+    exampleCommands: [
+      "VANI, Aman ki fee status dikhao",
+      "VANI, Aman ko fee reminder draft banao",
+      "VANI, Class 10 Maths attendance draft banao",
+      "VANI, low attendance students dikhao",
+      "VANI, receipt preview banao"
+    ],
+    privateScreenFirstReminder: "Fee/payment data screen par privately dikhaya jayega, loudly nahi bola jayega."
+  });
+});
+
+app.post("/api/part86/vani/command", (req, res) => {
+  const parsed = part86ParseCommand(req.body || {});
+  const base = {
+    success: parsed.access.allowed && parsed.missingDetails.length === 0,
+    assistant: "VANI",
+    part: "Part 86 — VANI Fee and Attendance Actions",
+    command: parsed.command || "VANI, fee attendance help dikhao",
+    detectedAction: parsed.action,
+    module: parsed.module,
+    access: parsed.access,
+    missingDetails: parsed.missingDetails,
+    privateScreenFirst: parsed.access.privateScreenFirst,
+    spokenSafeSummary: parsed.missingDetails.length
+      ? "Mujhe kuch details chahiye. Missing details screen par dikh rahi hain."
+      : parsed.preview.spokenSafeSummary,
+    screenPreview: parsed.preview,
+    confirmationRequired: parsed.access.confirmationRequired,
+    ownerVerificationRequired: parsed.access.ownerVerificationRequired,
+    auditLog: {
+      event: "part86_vani_fee_attendance_command",
+      action: parsed.action,
+      status: parsed.status,
+      createdAt: new Date().toISOString()
+    }
+  };
+  res.status(base.success ? 200 : parsed.access.allowed ? 400 : 403).json(base);
+});
+
+app.get("/api/part86/vani/command", (req, res) => {
+  const parsed = part86ParseCommand(req.query || {});
+  res.json({
+    success: parsed.access.allowed && parsed.missingDetails.length === 0,
+    assistant: "VANI",
+    part: "Part 86 — VANI Fee and Attendance Actions",
+    command: parsed.command || "VANI, fee attendance help dikhao",
+    detectedAction: parsed.action,
+    module: parsed.module,
+    access: parsed.access,
+    missingDetails: parsed.missingDetails,
+    privateScreenFirst: parsed.access.privateScreenFirst,
+    spokenSafeSummary: parsed.missingDetails.length
+      ? "Mujhe kuch details chahiye. Missing details screen par dikh rahi hain."
+      : parsed.preview.spokenSafeSummary,
+    screenPreview: parsed.preview,
+    confirmationRequired: parsed.access.confirmationRequired,
+    ownerVerificationRequired: parsed.access.ownerVerificationRequired,
+    auditLog: {
+      event: "part86_vani_fee_attendance_command_get",
+      action: parsed.action,
+      status: parsed.status,
+      createdAt: new Date().toISOString()
+    }
+  });
+});
+
+app.get("/api/part86/audit-log", (req, res) => {
+  res.json({
+    success: true,
+    auditLog: [
+      {
+        event: "part86_fee_attendance_actions_loaded",
+        action: "system_ready",
+        module: "vani",
+        safeMode: true,
+        createdAt: new Date().toISOString()
+      },
+      {
+        event: "sensitive_action_policy",
+        action: "refund_discount_export_delete_subscription_change",
+        ownerVerificationRequired: true,
+        confirmationRequired: true,
+        createdAt: new Date().toISOString()
+      }
+    ]
+  });
+});
+
+app.get("/api/part86/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "part86_created", message: "VANI Fee and Attendance Actions active.", createdAt: new Date().toISOString() },
+      { type: "safe_preview_first", message: "Fee reminders and attendance drafts require preview/confirmation.", createdAt: new Date().toISOString() },
+      { type: "private_screen_first", message: "Fee/payment details are private-screen-first.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part86/checklist", (req, res) => {
+  res.json({ success: true, checklist: part86Checklist });
+});
+
+app.get("/api/part86/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part86-vani-fee-attendance-readiness",
+    ownerVerificationRequiredForSensitiveExports: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      features: part86Features,
+      roles: part86RoleRules,
+      actions: part86ActionCatalog,
+      checklist: part86Checklist
+    }
+  });
+});
+
+app.get("/api/part86/demo", (req, res) => {
+  const command = req.query.q || "VANI, Aman ko fee reminder draft banao amount 2500";
+  const parsed = part86ParseCommand({
+    q: command,
+    role: req.query.role || "accountant",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    studentName: req.query.studentName || "Aman",
+    studentId: req.query.studentId || "STU-DEMO-001"
+  });
+  res.json({
+    success: true,
+    demo: {
+      command,
+      parsed,
+      vaniGreeting: "Namaste, main VANI hoon. Main fees ya attendance me kya help kar sakti hoon?",
+      nextPart: "Part 87 — VANI Voice Reports"
+    }
+  });
+});
+// ================= END PART 86 =================
+
+
 
 
 
@@ -13824,6 +14605,7 @@ const server = app.listen(port, () => {
   console.log("✅ Part 76 Smart Classroom Setup active: /api/part76/status + /smart-classroom-setup");
   console.log("✅ Part 77 Final Production Testing active: /api/part77/status + /final-production-testing");
   console.log("✅ Part 78 NAXORA OS 1.0 Production Launch active: /api/part78/status + /v1-production-launch");
+  console.log("✅ Part 86 VANI Fee and Attendance Actions active: /api/part86/status + /vani-fee-attendance-actions");
   console.log("✅ Branding guide frontend: /branding");
   console.log("✅ Launch Package frontend: /app/launch-package.html");
   console.log("✅ Frontend static hosting available at /app");

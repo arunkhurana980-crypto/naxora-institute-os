@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — VANI Fee and Attendance Actions</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/vani-fee-attendance-actions.css" />
+</head>
+<body>
+  <main class="vani86">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 86 • NAXORA OS 2.0</p>
+        <h1>VANI Fee and Attendance Actions</h1>
+        <p class="lead">
+          Safe VANI workflows for fee status, fee reminders, payment follow-ups,
+          receipt previews, attendance drafts and low-attendance alerts.
+        </p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">VANI Safe Action Mode</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Preview → confirmation → verification → audit</p>
+        <div class="voice-actions">
+          <button id="startVaniBtn">Start VANI</button>
+          <button id="listenVaniBtn">Listen</button>
+          <button id="muteVaniBtn">Mute</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <p class="kicker">Command Tester</p>
+          <h2>Speak or type a fee/attendance command</h2>
+        </div>
+      </div>
+      <div class="controls">
+        <select id="roleSelect">
+          <option value="institute_owner">Institute Owner</option>
+          <option value="accountant">Accountant</option>
+          <option value="teacher">Teacher</option>
+          <option value="branch_manager">Branch Manager</option>
+          <option value="receptionist_counsellor">Receptionist / Counsellor</option>
+          <option value="student">Student</option>
+          <option value="parent">Parent</option>
+        </select>
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="studentId" value="STU-DEMO-001" />
+        <input id="batchId" value="BAT-10-MATH-A" />
+      </div>
+      <div class="controls">
+        <input id="vaniCommand" class="wide" value="VANI, Aman ko fee reminder draft banao amount 2500" />
+        <button id="parseBtn">Parse</button>
+        <button id="previewBtn">Preview</button>
+        <button id="askVaniBtn">Ask VANI</button>
+      </div>
+      <pre id="output" class="code">Waiting...</pre>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Features</p>
+        <div id="features" class="list"></div>
+      </article>
+      <article class="panel">
+        <p class="kicker">Safety Rules</p>
+        <div class="list">
+          <div class="item"><strong>Preview first</strong><p>No final fee/attendance action without preview.</p></div>
+          <div class="item"><strong>Confirmation required</strong><p>Reminder drafts, attendance drafts and receipts need confirmation.</p></div>
+          <div class="item"><strong>Owner verification</strong><p>Refund, discount, delete, export and subscription changes need owner verification.</p></div>
+          <div class="item"><strong>Private-screen-first</strong><p>Fee/payment data is shown privately on screen, not spoken loudly.</p></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Quick API Tests</p>
+      <div class="links">
+        <a href="/api/part86/status" target="_blank">Status</a>
+        <a href="/api/part86/demo" target="_blank">Demo</a>
+        <a href="/api/part86/fee/reminder-draft?role=accountant&instituteId=NX-DEMO-INST-001&studentId=STU-DEMO-001&q=VANI,%20Aman%20fee%20reminder%20amount%202500" target="_blank">Fee Reminder</a>
+        <a href="/api/part86/attendance/draft?role=teacher&instituteId=NX-DEMO-INST-001&batchId=BAT-10-MATH-A&date=today&q=attendance%20draft" target="_blank">Attendance Draft</a>
+        <a href="/api/part86/attendance/low-alerts?role=institute_owner&instituteId=NX-DEMO-INST-001&threshold=75&q=low%20attendance" target="_blank">Low Attendance</a>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/vani-voice-starter.js"></script>
+  <script src="/vani-fee-attendance-actions.js"></script>
+</body>
+</html>

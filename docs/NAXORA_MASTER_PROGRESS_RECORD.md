@@ -1,33 +1,36 @@
 # NAXORA Master Progress Record
 
 ## Latest completed part
-Part 85 — VANI Admission Assistant
+Part 86 — VANI Fee and Attendance Actions
 
 ## Date completed
 2026-07-15
 
 ## Feature name
-NAXORA OS 2.0 VANI Admission Assistant
+NAXORA OS 2.0 VANI Fee and Attendance Actions
 
 ## Files changed
 - backend/src/server.js
-- frontend/vani-admission-assistant.html
-- frontend/vani-admission-assistant.css
-- frontend/vani-admission-assistant.js
-- README_PART85_VANI_ADMISSION_ASSISTANT.md
-- START_HERE_PART85_ARUN.md
-- docs/PART85_VANI_ADMISSION_ASSISTANT_CHECKLIST.md
+- frontend/vani-fee-attendance-actions.html
+- frontend/vani-fee-attendance-actions.css
+- frontend/vani-fee-attendance-actions.js
+- frontend/vani-voice-starter.js
+- README_PART86_VANI_FEE_ATTENDANCE_ACTIONS.md
+- START_HERE_PART86_ARUN.md
+- docs/PART86_VANI_FEE_ATTENDANCE_ACTIONS_CHECKLIST.md
 - docs/NAXORA_MASTER_PROGRESS_RECORD.md
 
 ## Database/API changes
 No required database migration.
-Added `/api/part85/*` VANI admission APIs.
+Added `/api/part86/*` fee and attendance VANI action APIs.
 
 ## VANI commands added
-- VANI, Class 10 Maths ke liye admission draft banao
-- VANI, Aman ke liye demo class book karo
-- VANI, lead qualify karo
-- VANI, parent ko follow-up message draft karo
+- VANI, Aman ki fee status dikhao
+- VANI, Aman ko fee reminder draft banao amount 2500
+- VANI, Class 10 Maths attendance draft banao
+- VANI, low attendance students dikhao
+- VANI, receipt preview banao
+- VANI, fee discount request banao
 
 ## Tests passed
 - backend/src/server.js syntax check
@@ -38,12 +41,13 @@ Added `/api/part85/*` VANI admission APIs.
 - no secrets/API keys
 
 ## Errors remaining
-- Production DB write hard-connect pending.
-- Real admission creation confirmation workflow pending.
-- Browser mic support depends on browser permission/support.
+- Production DB write disabled/simulated.
+- Real gateway refund/payment action pending.
+- Final attendance save pending production schema hard-connect.
+- Browser mic depends on browser support and permission.
 
 ## Next part
-Part 86 — VANI Fee and Attendance Actions
+Part 87 — VANI Voice Reports
 
 ## Locked subscription rule
 NAXORA OS 1.0, 2.0 and future 3.0 have separate subscriptions.
