@@ -1,36 +1,37 @@
 # NAXORA Master Progress Record
 
 ## Latest completed part
-Part 86 — VANI Fee and Attendance Actions
+Part 87 — VANI Voice Reports
 
 ## Date completed
 2026-07-15
 
 ## Feature name
-NAXORA OS 2.0 VANI Fee and Attendance Actions
+NAXORA OS 2.0 VANI Voice Reports
 
 ## Files changed
 - backend/src/server.js
-- frontend/vani-fee-attendance-actions.html
-- frontend/vani-fee-attendance-actions.css
-- frontend/vani-fee-attendance-actions.js
+- frontend/vani-voice-reports.html
+- frontend/vani-voice-reports.css
+- frontend/vani-voice-reports.js
 - frontend/vani-voice-starter.js
-- README_PART86_VANI_FEE_ATTENDANCE_ACTIONS.md
-- START_HERE_PART86_ARUN.md
-- docs/PART86_VANI_FEE_ATTENDANCE_ACTIONS_CHECKLIST.md
+- README_PART87_VANI_VOICE_REPORTS.md
+- START_HERE_PART87_ARUN.md
+- docs/PART87_VANI_VOICE_REPORTS_CHECKLIST.md
 - docs/NAXORA_MASTER_PROGRESS_RECORD.md
 
 ## Database/API changes
 No required database migration.
-Added `/api/part86/*` fee and attendance VANI action APIs.
+Added `/api/part87/*` voice report APIs.
 
 ## VANI commands added
-- VANI, Aman ki fee status dikhao
-- VANI, Aman ko fee reminder draft banao amount 2500
-- VANI, Class 10 Maths attendance draft banao
-- VANI, low attendance students dikhao
-- VANI, receipt preview banao
-- VANI, fee discount request banao
+- VANI, owner daily report sunao
+- VANI, fee collection report sunao
+- VANI, attendance report batao
+- VANI, admission report sunao
+- VANI, teacher class report sunao
+- VANI, student learning report batao
+- VANI, child weekly report sunao
 
 ## Tests passed
 - backend/src/server.js syntax check
@@ -41,13 +42,13 @@ Added `/api/part86/*` fee and attendance VANI action APIs.
 - no secrets/API keys
 
 ## Errors remaining
-- Production DB write disabled/simulated.
-- Real gateway refund/payment action pending.
-- Final attendance save pending production schema hard-connect.
-- Browser mic depends on browser support and permission.
+- Scheduled reports pending.
+- Production DB persistence pending.
+- Full Hindi/Hinglish conversation pending Part 88.
+- Native app background voice pending.
 
 ## Next part
-Part 87 — VANI Voice Reports
+Part 88 — Hindi/Hinglish VANI Conversation
 
 ## Locked subscription rule
 NAXORA OS 1.0, 2.0 and future 3.0 have separate subscriptions.

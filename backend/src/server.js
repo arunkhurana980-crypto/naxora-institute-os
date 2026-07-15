@@ -10314,7 +10314,13 @@ const modulePageRoutes = {
   "/vani-fees-attendance": "vani-fee-attendance-actions.html",
   "/vani-fee-actions": "vani-fee-attendance-actions.html",
   "/vani-attendance-actions": "vani-fee-attendance-actions.html",
-  "/fee-attendance-actions": "vani-fee-attendance-actions.html"
+  "/fee-attendance-actions": "vani-fee-attendance-actions.html",
+  "/vani-voice-reports": "vani-voice-reports.html",
+  "/voice-reports": "vani-voice-reports.html",
+  "/vani-reports": "vani-voice-reports.html",
+  "/voice-reporting": "vani-voice-reports.html",
+  "/vani-report-reader": "vani-voice-reports.html",
+  "/ai-voice-reports": "vani-voice-reports.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -14513,6 +14519,606 @@ app.get("/api/part86/demo", (req, res) => {
   });
 });
 // ================= END PART 86 =================
+
+// ================= PART 87 — VANI VOICE REPORTS =================
+// NAXORA OS 2.0 VANI Voice Reports. This part adds report generation,
+// safe spoken summaries, role-based report access, private-screen-first
+// sensitive data handling, and browser voice report reader foundation.
+
+const part87ReportTypes = [
+  {
+    key: "owner_daily_brief",
+    name: "Owner Daily Brief",
+    roles: ["institute_owner"],
+    modules: ["revenue", "admissions", "fees", "attendance", "leads", "alerts"],
+    privateScreenFirst: true,
+    safeSpokenSummary: "Aaj ka owner daily brief ready hai. Sensitive finance details screen par privately dikhaye gaye hain."
+  },
+  {
+    key: "fee_collection_report",
+    name: "Fee Collection Report",
+    roles: ["institute_owner", "accountant", "branch_manager"],
+    modules: ["fees", "payments", "pending_dues", "reminders"],
+    privateScreenFirst: true,
+    safeSpokenSummary: "Fee collection report ready hai. Amount details screen par privately dikhaye gaye hain."
+  },
+  {
+    key: "attendance_report",
+    name: "Attendance Report",
+    roles: ["institute_owner", "branch_manager", "teacher"],
+    modules: ["student_attendance", "teacher_attendance", "low_attendance_alerts"],
+    privateScreenFirst: false,
+    safeSpokenSummary: "Attendance report ready hai. Low attendance alerts screen par dikh rahe hain."
+  },
+  {
+    key: "admission_report",
+    name: "Admission and Lead Report",
+    roles: ["institute_owner", "branch_manager", "receptionist_counsellor"],
+    modules: ["enquiries", "followups", "demo_classes", "conversions"],
+    privateScreenFirst: false,
+    safeSpokenSummary: "Admission report ready hai. Hot leads aur follow-up priorities screen par dikh rahe hain."
+  },
+  {
+    key: "teacher_class_report",
+    name: "Teacher Class Report",
+    roles: ["teacher", "institute_owner", "branch_manager"],
+    modules: ["assigned_batches", "classes", "homework", "tests", "student_support"],
+    privateScreenFirst: true,
+    safeSpokenSummary: "Teacher class report ready hai. Student support details screen par privately dikhaye gaye hain."
+  },
+  {
+    key: "student_learning_report",
+    name: "Student Learning Report",
+    roles: ["student", "teacher", "parent", "institute_owner"],
+    modules: ["timetable", "homework", "tests", "notes", "ai_study_plan"],
+    privateScreenFirst: true,
+    safeSpokenSummary: "Student learning report ready hai. Private learning details screen par dikhaye gaye hain."
+  },
+  {
+    key: "parent_child_report",
+    name: "Parent Child Report",
+    roles: ["parent"],
+    modules: ["linked_child_attendance", "fees_safe_view", "results", "teacher_messages", "weekly_summary"],
+    privateScreenFirst: true,
+    safeSpokenSummary: "Child report ready hai. Fee aur child details screen par privately dikhaye gaye hain."
+  }
+];
+
+const part87RoleRules = [
+  {
+    role: "institute_owner",
+    allowedReports: ["owner_daily_brief", "fee_collection_report", "attendance_report", "admission_report", "teacher_class_report", "student_learning_report"],
+    scope: "Full institute and authorised branches after login and instituteId."
+  },
+  {
+    role: "branch_manager",
+    allowedReports: ["fee_collection_report", "attendance_report", "admission_report", "teacher_class_report"],
+    scope: "Assigned branch only."
+  },
+  {
+    role: "accountant",
+    allowedReports: ["fee_collection_report"],
+    scope: "Fees/payments/finance reports only."
+  },
+  {
+    role: "teacher",
+    allowedReports: ["attendance_report", "teacher_class_report", "student_learning_report"],
+    scope: "Assigned batches/students only."
+  },
+  {
+    role: "receptionist_counsellor",
+    allowedReports: ["admission_report"],
+    scope: "Admissions, enquiries and follow-ups only."
+  },
+  {
+    role: "student",
+    allowedReports: ["student_learning_report"],
+    scope: "Own learning report only."
+  },
+  {
+    role: "parent",
+    allowedReports: ["parent_child_report", "student_learning_report"],
+    scope: "Linked child only."
+  },
+  {
+    role: "naxora_super_admin",
+    allowedReports: [],
+    scope: "Platform support only, not unrestricted institute-private voice reports."
+  }
+];
+
+function normalizePart87Role(role) {
+  const r = String(role || "institute_owner").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part87DetectReportType(input = "") {
+  const lower = String(input || "").toLowerCase();
+  if (lower.includes("fee") || lower.includes("payment") || lower.includes("collection") || lower.includes("pending")) return "fee_collection_report";
+  if (lower.includes("attendance") || lower.includes("absent") || lower.includes("present")) return "attendance_report";
+  if (lower.includes("admission") || lower.includes("lead") || lower.includes("enquiry") || lower.includes("demo")) return "admission_report";
+  if (lower.includes("teacher") || lower.includes("class report") || lower.includes("batch report")) return "teacher_class_report";
+  if (lower.includes("student") || lower.includes("learning") || lower.includes("study") || lower.includes("homework") || lower.includes("test")) return "student_learning_report";
+  if (lower.includes("parent") || lower.includes("child") || lower.includes("weekly")) return "parent_child_report";
+  return "owner_daily_brief";
+}
+
+function part87AccessCheck({ role, instituteId, reportType, branchId, teacherId, studentId, parentId, childId }) {
+  const normalizedRole = normalizePart87Role(role);
+  const type = reportType || "owner_daily_brief";
+  const rule = part87RoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole,
+    allowedReports: [],
+    scope: "Unknown or unsupported role."
+  };
+  const report = part87ReportTypes.find((r) => r.key === type);
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const reportExists = Boolean(report);
+  const reportAllowed = reportExists && rule.allowedReports.includes(type);
+
+  let missingContext = [];
+  if (normalizedRole === "teacher" && !teacherId) missingContext.push("teacherId");
+  if (normalizedRole === "student" && !studentId) missingContext.push("studentId");
+  if (normalizedRole === "parent" && !parentId) missingContext.push("parentId");
+  if (type === "parent_child_report" && normalizedRole === "parent" && !childId) missingContext.push("childId");
+
+  const allowed = hasInstituteId && reportExists && reportAllowed && missingContext.length === 0;
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    reportType: type,
+    branchId: branchId || null,
+    teacherId: teacherId || null,
+    studentId: studentId || null,
+    parentId: parentId || null,
+    childId: childId || null,
+    allowed,
+    reportExists,
+    reportAllowed,
+    missingContext,
+    reason: !hasInstituteId
+      ? "Institute ID missing."
+      : !reportExists
+        ? "Unknown report type."
+        : !reportAllowed
+          ? "This role is not allowed to access this report."
+          : missingContext.length
+            ? `Missing required context: ${missingContext.join(", ")}`
+            : "Voice report access allowed.",
+    scope: rule.scope,
+    privateScreenFirst: report?.privateScreenFirst || false,
+    requiresLogin: true,
+    requiresInstituteId: true
+  };
+}
+
+function part87BuildReport({ reportType, role, instituteId, branchId, teacherId, studentId, parentId, childId }) {
+  const type = reportType || "owner_daily_brief";
+  const report = part87ReportTypes.find((r) => r.key === type) || part87ReportTypes[0];
+
+  const common = {
+    reportId: `VR-${Date.now()}`,
+    reportType: type,
+    reportName: report.name,
+    generatedAt: new Date().toISOString(),
+    instituteId: instituteId || "NX-DEMO-INST-001",
+    branchId: branchId || "ALL",
+    requestedByRole: normalizePart87Role(role),
+    privateScreenFirst: report.privateScreenFirst,
+    safeSpokenSummary: report.safeSpokenSummary
+  };
+
+  const samples = {
+    owner_daily_brief: {
+      headline: "Institute health overview",
+      metrics: [
+        { label: "Today Collection", value: "₹42,500", private: true },
+        { label: "New Enquiries", value: "18", private: false },
+        { label: "Hot Leads", value: "6", private: false },
+        { label: "Attendance Avg", value: "87%", private: false },
+        { label: "Pending Fees", value: "₹1,38,000", private: true },
+        { label: "Urgent Alerts", value: "4", private: false }
+      ],
+      recommendations: [
+        "Hot leads ko same-day callback do.",
+        "Overdue fee follow-up private screen se review karo.",
+        "Low attendance students ke parent update schedule karo."
+      ]
+    },
+    fee_collection_report: {
+      headline: "Fee collection and pending dues",
+      metrics: [
+        { label: "Collected Today", value: "₹42,500", private: true },
+        { label: "Collected This Month", value: "₹8,42,000", private: true },
+        { label: "Pending Amount", value: "₹1,38,000", private: true },
+        { label: "Overdue Students", value: "12", private: true },
+        { label: "Reminder Drafts", value: "8", private: false }
+      ],
+      recommendations: [
+        "Reminder drafts preview karo.",
+        "High overdue accounts owner/accountant screen par privately review karo.",
+        "Auto-send disabled rakho jab tak confirmation na ho."
+      ]
+    },
+    attendance_report: {
+      headline: "Attendance overview",
+      metrics: [
+        { label: "Student Avg", value: "87%", private: false },
+        { label: "Teacher Avg", value: "96%", private: false },
+        { label: "Low Attendance", value: "7 students", private: true },
+        { label: "Attendance Pending", value: "1 batch", private: false }
+      ],
+      recommendations: [
+        "Low attendance list screen par privately review karo.",
+        "Assigned teacher ko support action plan do.",
+        "Parent weekly summary ke liye attendance notes draft karo."
+      ]
+    },
+    admission_report: {
+      headline: "Admission and lead movement",
+      metrics: [
+        { label: "New Enquiries", value: "18", private: false },
+        { label: "Hot Leads", value: "6", private: false },
+        { label: "Demo Scheduled", value: "5", private: false },
+        { label: "Converted Today", value: "3", private: false },
+        { label: "Missed Follow-ups", value: "2", private: false }
+      ],
+      recommendations: [
+        "Hot leads ko priority do.",
+        "Missed follow-ups ke liye VANI draft banao.",
+        "Demo class conversion track karo."
+      ]
+    },
+    teacher_class_report: {
+      headline: "Teacher class execution",
+      metrics: [
+        { label: "Classes Today", value: "4", private: false },
+        { label: "Attendance Pending", value: "1", private: false },
+        { label: "Homework Review", value: "18", private: false },
+        { label: "Tests to Evaluate", value: "2", private: false },
+        { label: "Student Support Alerts", value: "3", private: true }
+      ],
+      recommendations: [
+        "Attendance draft complete karo.",
+        "Homework pending review finish karo.",
+        "Student support alerts screen par privately dekho."
+      ]
+    },
+    student_learning_report: {
+      headline: "Student learning progress",
+      metrics: [
+        { label: "Classes Today", value: "3", private: false },
+        { label: "Homework Pending", value: "2", private: false },
+        { label: "Upcoming Tests", value: "1", private: false },
+        { label: "Attendance", value: "86%", private: true },
+        { label: "Weak Topic", value: "Quadratic Equations", private: true }
+      ],
+      recommendations: [
+        "Weak topic ke liye 20 minute revision karo.",
+        "Pending homework complete karo.",
+        "Upcoming test ke liye flashcards revise karo."
+      ]
+    },
+    parent_child_report: {
+      headline: "Linked child weekly update",
+      metrics: [
+        { label: "Attendance", value: "86%", private: true },
+        { label: "Homework Pending", value: "2", private: true },
+        { label: "Upcoming Test", value: "1", private: false },
+        { label: "Fee Summary", value: "Safe view available", private: true },
+        { label: "Teacher Messages", value: "2", private: true }
+      ],
+      recommendations: [
+        "Child ke pending homework par support do.",
+        "Teacher message screen par privately padho.",
+        "Fee detail screen par privately review karo."
+      ]
+    }
+  };
+
+  return {
+    ...common,
+    content: samples[type] || samples.owner_daily_brief,
+    voiceRules: {
+      speakOnlySafeSummary: true,
+      hidePrivateAmountsInSpeaker: true,
+      showSensitiveDetailsOnScreen: report.privateScreenFirst,
+      confirmationRequiredForExport: true
+    }
+  };
+}
+
+function part87BuildVoiceScript(report) {
+  const content = report.content || {};
+  const publicMetrics = (content.metrics || []).filter((m) => !m.private);
+  const safeMetricLine = publicMetrics.length
+    ? publicMetrics.map((m) => `${m.label}: ${m.value}`).join(". ")
+    : "Detailed report screen par privately dikhaya gaya hai.";
+  const recommendation = (content.recommendations || [])[0] || "Details screen par check karo.";
+  return `${report.safeSpokenSummary} ${content.headline || ""}. ${safeMetricLine}. Recommendation: ${recommendation}`;
+}
+
+const part87Checklist = [
+  "Voice reports page opens on live URL",
+  "Status API returns success true",
+  "Owner daily brief generates report",
+  "Fee report uses private-screen-first",
+  "Attendance report returns safe spoken summary",
+  "Role permissions block unauthorized report types",
+  "VANI can generate voice report reply",
+  "Browser voice reader speaks safe script",
+  "Export requires verification in policy",
+  "Previous Part 1–86 routes remain preserved"
+];
+
+app.get("/api/part87/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 87 — VANI Voice Reports",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 87,
+    nextPart: "Part 88 — Hindi/Hinglish VANI Conversation",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/vani-voice-reports", "/voice-reports", "/vani-reports", "/voice-reporting", "/vani-report-reader", "/ai-voice-reports"],
+    apiRoutes: [
+      "/api/part87/config",
+      "/api/part87/report-types",
+      "/api/part87/roles",
+      "/api/part87/access-check",
+      "/api/part87/report/generate",
+      "/api/part87/report/voice-script",
+      "/api/part87/report/summary",
+      "/api/part87/vani/greeting",
+      "/api/part87/vani/command"
+    ],
+    voiceReportsEnabled: true
+  });
+});
+
+app.get("/api/part87/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "VANI Voice Reports",
+    appType: "voice_report_reader",
+    version: "2.0-vani-voice-reports",
+    reportPolicy: {
+      privateScreenFirst: true,
+      speakOnlySafeSummary: true,
+      sensitiveAmountsNotSpokenLoudly: true,
+      exportNeedsVerification: true
+    },
+    browserVoice: {
+      speechSynthesis: true,
+      startAfterUserClick: true,
+      language: "Hindi/Hinglish"
+    }
+  });
+});
+
+app.get("/api/part87/report-types", (req, res) => {
+  res.json({ success: true, reportTypes: part87ReportTypes });
+});
+
+app.get("/api/part87/roles", (req, res) => {
+  res.json({ success: true, roles: part87RoleRules });
+});
+
+app.get("/api/part87/access-check", (req, res) => {
+  const reportType = req.query.reportType || part87DetectReportType(req.query.q || req.query.command || "");
+  res.json({ success: true, access: part87AccessCheck({ ...req.query, reportType }) });
+});
+
+app.get("/api/part87/report/generate", (req, res) => {
+  const reportType = req.query.reportType || part87DetectReportType(req.query.q || req.query.command || "");
+  const access = part87AccessCheck({ ...req.query, reportType });
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const report = part87BuildReport({ ...req.query, reportType, role: access.role });
+  res.json({
+    success: true,
+    access,
+    report,
+    voiceScript: part87BuildVoiceScript(report)
+  });
+});
+
+app.post("/api/part87/report/generate", (req, res) => {
+  const body = req.body || {};
+  const reportType = body.reportType || part87DetectReportType(body.q || body.command || "");
+  const access = part87AccessCheck({ ...body, reportType });
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const report = part87BuildReport({ ...body, reportType, role: access.role });
+  res.json({
+    success: true,
+    access,
+    report,
+    voiceScript: part87BuildVoiceScript(report)
+  });
+});
+
+app.get("/api/part87/report/voice-script", (req, res) => {
+  const reportType = req.query.reportType || part87DetectReportType(req.query.q || req.query.command || "");
+  const access = part87AccessCheck({ ...req.query, reportType });
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const report = part87BuildReport({ ...req.query, reportType, role: access.role });
+  res.json({
+    success: true,
+    access,
+    reportType,
+    privateScreenFirst: report.privateScreenFirst,
+    voiceScript: part87BuildVoiceScript(report),
+    warning: report.privateScreenFirst ? "Sensitive details screen par dikhaye gaye hain, speaker me nahi." : "Safe summary can be spoken."
+  });
+});
+
+app.get("/api/part87/report/summary", (req, res) => {
+  const reportType = req.query.reportType || part87DetectReportType(req.query.q || req.query.command || "");
+  const report = part87BuildReport({ ...req.query, reportType, role: req.query.role || "institute_owner" });
+  res.json({
+    success: true,
+    reportType,
+    headline: report.content.headline,
+    safeSpokenSummary: report.safeSpokenSummary,
+    publicMetrics: report.content.metrics.filter((m) => !m.private),
+    privateMetricsCount: report.content.metrics.filter((m) => m.private).length
+  });
+});
+
+app.get("/api/part87/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI",
+    greeting: "Namaste, main VANI hoon. Aap kaunsa voice report sunna chahte ho?",
+    exampleCommands: [
+      "VANI, owner daily report sunao",
+      "VANI, fee collection report sunao",
+      "VANI, attendance report batao",
+      "VANI, admission report sunao",
+      "VANI, teacher class report sunao",
+      "VANI, student learning report batao",
+      "VANI, child weekly report sunao"
+    ],
+    privateScreenFirstReminder: "Sensitive finance, child, student aur payment details loudly nahi bole jayenge."
+  });
+});
+
+app.post("/api/part87/vani/command", (req, res) => {
+  const body = req.body || {};
+  const command = String(body.command || body.q || "").trim();
+  const reportType = body.reportType || part87DetectReportType(command);
+  const access = part87AccessCheck({ ...body, reportType });
+
+  if (!access.allowed) {
+    return res.status(403).json({
+      success: false,
+      assistant: "VANI",
+      access,
+      spokenSafeSummary: "Is role ko ye voice report access karne ki permission nahi hai.",
+      privateScreenFirst: true
+    });
+  }
+
+  const report = part87BuildReport({ ...body, reportType, role: access.role });
+  const voiceScript = part87BuildVoiceScript(report);
+  res.json({
+    success: true,
+    assistant: "VANI",
+    part: "Part 87 — VANI Voice Reports",
+    command: command || "VANI, owner daily report sunao",
+    detectedReportType: reportType,
+    access,
+    report,
+    voiceScript,
+    spokenSafeSummary: report.safeSpokenSummary,
+    privateScreenFirst: report.privateScreenFirst,
+    confirmationRequiredFor: ["export", "send_report", "download_sensitive_report"],
+    auditLog: {
+      event: "part87_vani_voice_report",
+      reportType,
+      createdAt: new Date().toISOString()
+    }
+  });
+});
+
+app.get("/api/part87/vani/command", (req, res) => {
+  const command = String(req.query.command || req.query.q || "").trim();
+  const reportType = req.query.reportType || part87DetectReportType(command);
+  const access = part87AccessCheck({ ...req.query, reportType });
+  if (!access.allowed) {
+    return res.status(403).json({
+      success: false,
+      assistant: "VANI",
+      access,
+      spokenSafeSummary: "Is role ko ye voice report access karne ki permission nahi hai.",
+      privateScreenFirst: true
+    });
+  }
+  const report = part87BuildReport({ ...req.query, reportType, role: access.role });
+  res.json({
+    success: true,
+    assistant: "VANI",
+    part: "Part 87 — VANI Voice Reports",
+    command: command || "VANI, owner daily report sunao",
+    detectedReportType: reportType,
+    access,
+    report,
+    voiceScript: part87BuildVoiceScript(report),
+    spokenSafeSummary: report.safeSpokenSummary,
+    privateScreenFirst: report.privateScreenFirst,
+    auditLog: { event: "part87_vani_voice_report_get", reportType, createdAt: new Date().toISOString() }
+  });
+});
+
+app.get("/api/part87/audit-log", (req, res) => {
+  res.json({
+    success: true,
+    auditLog: [
+      {
+        event: "voice_report_generated",
+        reportType: "owner_daily_brief",
+        role: "institute_owner",
+        privateScreenFirst: true,
+        createdAt: new Date().toISOString()
+      },
+      {
+        event: "voice_report_policy_loaded",
+        rule: "speakOnlySafeSummary",
+        createdAt: new Date().toISOString()
+      }
+    ]
+  });
+});
+
+app.get("/api/part87/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "vani_voice_reports_created", message: "Part 87 VANI Voice Reports active.", createdAt: new Date().toISOString() },
+      { type: "private_screen_first_policy", message: "Sensitive report details are screen-first and not spoken loudly.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part87/checklist", (req, res) => {
+  res.json({ success: true, checklist: part87Checklist });
+});
+
+app.get("/api/part87/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part87-vani-voice-reports-readiness",
+    ownerVerificationRequiredForSensitiveExports: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      reportTypes: part87ReportTypes,
+      roleRules: part87RoleRules,
+      checklist: part87Checklist
+    }
+  });
+});
+
+app.get("/api/part87/demo", (req, res) => {
+  const report = part87BuildReport({
+    reportType: "owner_daily_brief",
+    role: "institute_owner",
+    instituteId: "NX-DEMO-INST-001"
+  });
+  res.json({
+    success: true,
+    demo: {
+      access: part87AccessCheck({ role: "institute_owner", instituteId: "NX-DEMO-INST-001", reportType: "owner_daily_brief" }),
+      report,
+      voiceScript: part87BuildVoiceScript(report),
+      vaniCommand: "VANI, owner daily report sunao",
+      nextPart: "Part 88 — Hindi/Hinglish VANI Conversation"
+    }
+  });
+});
+// ================= END PART 87 =================
+
 
 
 
