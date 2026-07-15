@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — Live Chat, Polls and Hand Raise</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/live-chat-polls-hand-raise.css" />
+</head>
+<body>
+  <main class="classroom-interactions">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 96 • NAXORA OS 2.0</p>
+        <h1>Live Chat, Polls and Hand Raise</h1>
+        <p class="lead">
+          Classroom interaction foundation with moderated chat, teacher polls,
+          student votes and hand raise queue. Socket-ready preview mode.
+        </p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">VANI Classroom Interaction</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Tap Start, then ask chat or poll status.</p>
+        <div class="voice-actions">
+          <button id="startVaniBtn">Start VANI</button>
+          <button id="listenVaniBtn">Listen</button>
+          <button id="muteVaniBtn">Mute</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Access</p>
+      <div class="controls">
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="branchId" value="BR-DEMO-001" />
+        <input id="batchId" value="BAT-10-MATH-A" />
+        <input id="teacherId" value="TCH-DEMO-001" />
+        <input id="studentId" value="STU-DEMO-001" />
+        <select id="roleSelect">
+          <option value="teacher" selected>Teacher Moderator</option>
+          <option value="student">Student Participant</option>
+          <option value="parent">Parent View Only</option>
+          <option value="institute_owner">Institute Owner Monitor</option>
+          <option value="branch_manager">Branch Manager Monitor</option>
+          <option value="receptionist_counsellor">Receptionist Demo View</option>
+          <option value="accountant">Accountant Block Test</option>
+        </select>
+        <button id="demoBtn">Load Demo</button>
+      </div>
+      <pre id="accessBox" class="code">Waiting...</pre>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">VANI Command</p>
+        <h2>Speak or type</h2>
+        <p>Example: “VANI, live chat status dikhao aur hand raise queue batao”.</p>
+        <div class="controls">
+          <input id="vaniCommand" value="VANI, live chat status dikhao aur hand raise queue batao" />
+          <button id="askVaniBtn">Ask VANI</button>
+        </div>
+        <pre id="vaniOutput" class="code">Waiting...</pre>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Session</p>
+        <div id="sessionBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Live Chat Preview</p>
+        <div class="controls">
+          <input id="chatText" value="Ma'am, example 2 repeat kar dijiye." />
+          <button id="chatBtn">Send Preview</button>
+        </div>
+        <div id="chatBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Poll Preview</p>
+        <div class="controls">
+          <input id="pollQuestion" value="Is topic clear hai?" />
+          <button id="pollBtn">Create Poll Preview</button>
+        </div>
+        <div id="pollBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Hand Raise Queue</p>
+        <div class="controls">
+          <input id="raiseReason" value="Doubt in example 2" />
+          <button id="raiseBtn">Raise Hand Preview</button>
+        </div>
+        <div id="handRaiseBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Policy + Moderation</p>
+        <div id="policyBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Testing links</p>
+      <div class="links">
+        <a href="/api/part96/status" target="_blank">Status</a>
+        <a href="/api/part96/demo" target="_blank">Demo</a>
+        <a href="/api/part96/chat/policy?role=teacher&instituteId=NX-DEMO-INST-001&teacherId=TCH-DEMO-001&batchId=BAT-10-MATH-A" target="_blank">Chat Policy</a>
+        <a href="/api/part96/hand-raise/queue?role=teacher&instituteId=NX-DEMO-INST-001&teacherId=TCH-DEMO-001&batchId=BAT-10-MATH-A" target="_blank">Hand Raise Queue</a>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/vani-voice-starter.js"></script>
+  <script src="/live-chat-polls-hand-raise.js"></script>
+</body>
+</html>

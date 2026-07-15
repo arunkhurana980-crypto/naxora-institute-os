@@ -1,35 +1,35 @@
 # NAXORA Master Progress Record
 
 ## Latest completed part
-Part 94 — Native Live Classroom Foundation
+Part 96 — Live Chat, Polls and Hand Raise
 
 ## Date completed
 2026-07-15
 
 ## Feature name
-NAXORA OS 2.0 Native Live Classroom Foundation
+NAXORA OS 2.0 Live Chat, Polls and Hand Raise
 
 ## Files changed
 - backend/src/server.js
-- frontend/native-live-classroom-foundation.html
-- frontend/native-live-classroom-foundation.css
-- frontend/native-live-classroom-foundation.js
+- frontend/live-chat-polls-hand-raise.html
+- frontend/live-chat-polls-hand-raise.css
+- frontend/live-chat-polls-hand-raise.js
 - frontend/vani-voice-starter.js
-- README_PART94_NATIVE_LIVE_CLASSROOM_FOUNDATION.md
-- START_HERE_PART94_ARUN.md
-- docs/PART94_NATIVE_LIVE_CLASSROOM_FOUNDATION_CHECKLIST.md
+- README_PART96_LIVE_CHAT_POLLS_HAND_RAISE.md
+- START_HERE_PART96_ARUN.md
+- docs/PART96_LIVE_CHAT_POLLS_HAND_RAISE_CHECKLIST.md
 - docs/NAXORA_MASTER_PROGRESS_RECORD.md
 
 ## Database/API changes
 No required database migration.
-Added `/api/part94/*` Native Live Classroom Foundation APIs.
+Added `/api/part96/*` Live Chat, Polls and Hand Raise APIs.
 
 ## VANI commands added
-- VANI, Class 10 Maths live classroom preview dikhao
-- VANI, device check karo
-- VANI, network check batao
-- VANI, teacher live class launch preview banao
-- VANI, student join preview dikhao
+- VANI, live chat status dikhao
+- VANI, poll create preview banao
+- VANI, student vote preview dikhao
+- VANI, hand raise queue dikhao
+- VANI, chat moderation policy batao
 
 ## Tests passed
 - backend/src/server.js syntax check
@@ -41,14 +41,13 @@ Added `/api/part94/*` Native Live Classroom Foundation APIs.
 - no secrets/API keys
 
 ## Errors remaining
-- Production WebRTC signalling pending.
-- Screen sharing and digital whiteboard pending Part 95.
-- Live chat, polls and hand raise pending Part 96.
+- Production realtime WebSocket persistence pending.
+- Multi-user live sync pending production connection.
 - Recording and automatic attendance pending Part 97.
-- Real session persistence pending.
+- AI class notes pending Part 98.
 
 ## Next part
-Part 95 — Screen Sharing and Digital Whiteboard
+Part 97 — Recording and Automatic Attendance
 
 ## Locked subscription rule
 NAXORA OS 1.0, 2.0 and future 3.0 have separate subscriptions.
