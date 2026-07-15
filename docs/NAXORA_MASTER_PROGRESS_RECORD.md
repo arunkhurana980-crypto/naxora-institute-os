@@ -1,36 +1,36 @@
 # NAXORA Master Progress Record
 
 ## Latest completed part
-Part 97 — Recording and Automatic Attendance
+Part 98 — AI Class Notes and Summary
 
 ## Date completed
 2026-07-15
 
 ## Feature name
-NAXORA OS 2.0 Recording and Automatic Attendance
+NAXORA OS 2.0 AI Class Notes and Summary
 
 ## Files changed
 - backend/src/server.js
-- frontend/recording-automatic-attendance.html
-- frontend/recording-automatic-attendance.css
-- frontend/recording-automatic-attendance.js
+- frontend/ai-class-notes-summary.html
+- frontend/ai-class-notes-summary.css
+- frontend/ai-class-notes-summary.js
 - frontend/vani-voice-starter.js
-- README_PART97_RECORDING_AUTOMATIC_ATTENDANCE.md
-- START_HERE_PART97_ARUN.md
-- docs/PART97_RECORDING_AUTOMATIC_ATTENDANCE_CHECKLIST.md
+- README_PART98_AI_CLASS_NOTES_SUMMARY.md
+- START_HERE_PART98_ARUN.md
+- docs/PART98_AI_CLASS_NOTES_SUMMARY_CHECKLIST.md
 - docs/NAXORA_MASTER_PROGRESS_RECORD.md
 
 ## Database/API changes
 No required database migration.
-Added `/api/part97/*` Recording and Automatic Attendance APIs.
+Added `/api/part98/*` AI Class Notes and Summary APIs.
 
 ## VANI commands added
-- VANI, recording capability check karo
-- VANI, recording start preview banao
-- VANI, recording stop preview banao
-- VANI, automatic attendance draft dikhao
-- VANI, manual review queue batao
-- VANI, parent attendance summary draft banao
+- VANI, class notes generate karo
+- VANI, class summary banao
+- VANI, homework draft banao
+- VANI, quiz draft banao
+- VANI, parent summary draft banao
+- VANI, student revision notes dikhao
 
 ## Tests passed
 - backend/src/server.js syntax check
@@ -42,13 +42,14 @@ Added `/api/part97/*` Recording and Automatic Attendance APIs.
 - no secrets/API keys
 
 ## Errors remaining
-- Recording upload/storage not production-connected.
-- Attendance database persistence pending.
-- Real live participant tracking pending.
-- AI class notes pending Part 98.
+- Rule-based foundation only.
+- External AI/LLM API not connected yet.
+- Production transcript capture pending.
+- Notes database persistence pending.
+- Real publish/send workflow pending.
 
 ## Next part
-Part 98 — AI Class Notes and Summary
+Part 99 — Biometric Attendance Integration
 
 ## Locked subscription rule
 NAXORA OS 1.0, 2.0 and future 3.0 have separate subscriptions.

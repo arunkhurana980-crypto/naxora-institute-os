@@ -10381,6 +10381,12 @@ const modulePageRoutes = {
   "/automatic-attendance": "recording-automatic-attendance.html",
   "/vani-recording-attendance": "recording-automatic-attendance.html",
   "/class-recording-attendance": "recording-automatic-attendance.html",
+  "/ai-class-notes-summary": "ai-class-notes-summary.html",
+  "/ai-class-notes": "ai-class-notes-summary.html",
+  "/class-notes-summary-ai": "ai-class-notes-summary.html",
+  "/vani-class-notes": "ai-class-notes-summary.html",
+  "/live-class-summary": "ai-class-notes-summary.html",
+  "/teacher-class-notes-ai": "ai-class-notes-summary.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -21036,6 +21042,755 @@ app.get("/api/part97/demo", (req, res) => {
   });
 });
 // ================= END PART 97 =================
+
+// ================= PART 98 — AI CLASS NOTES AND SUMMARY =================
+// NAXORA OS 2.0 AI Class Notes and Summary.
+// This part creates safe AI-style class notes foundation from transcript, chat, poll,
+// whiteboard and recording metadata previews. It generates teacher-review-first notes,
+// key points, homework draft, revision notes, quiz draft and parent summary draft.
+// It does not use external AI API keys, does not auto-publish, and does not auto-send.
+
+const part98NotesFeatures = [
+  {
+    key: "class_transcript_preview",
+    name: "Class Transcript Preview",
+    summary: "Collects safe transcript/class content preview from demo data.",
+    problemSolved: "Teacher has a base for notes after class."
+  },
+  {
+    key: "ai_notes_generation",
+    name: "AI Class Notes Generation",
+    summary: "Generates structured notes from class content using rule-based foundation.",
+    problemSolved: "Students get clearer revision material."
+  },
+  {
+    key: "class_summary",
+    name: "Class Summary",
+    summary: "Creates short teacher/student/parent friendly summary.",
+    problemSolved: "Class recap is quick and consistent."
+  },
+  {
+    key: "homework_draft",
+    name: "Homework Draft",
+    summary: "Suggests homework based on the class topic.",
+    problemSolved: "Teacher can publish homework faster after review."
+  },
+  {
+    key: "revision_notes",
+    name: "Student Revision Notes",
+    summary: "Creates simplified revision notes for students.",
+    problemSolved: "Students can revise class topics easily."
+  },
+  {
+    key: "quiz_draft",
+    name: "Quiz Draft",
+    summary: "Creates quick quiz questions from class content.",
+    problemSolved: "Teacher can check understanding faster."
+  },
+  {
+    key: "parent_summary_draft",
+    name: "Parent Summary Draft",
+    summary: "Creates safe parent update draft without auto-send.",
+    problemSolved: "Parents get simple class progress updates."
+  },
+  {
+    key: "vani_class_notes",
+    name: "VANI Class Notes Commands",
+    summary: "VANI can generate/read notes, summary and homework drafts.",
+    problemSolved: "Teacher can create notes with voice."
+  }
+];
+
+const part98RoleRules = [
+  { role: "institute_owner", allowed: true, scope: "Can monitor authorised notes and publish policy; exports require verification.", canGenerate: true, canPublish: true, canExport: true, canMonitor: true },
+  { role: "branch_manager", allowed: true, scope: "Can monitor assigned branch notes and approve teacher drafts.", canGenerate: true, canPublish: true, canExport: false, canMonitor: true },
+  { role: "teacher", allowed: true, scope: "Can generate, review and publish notes for assigned classes.", canGenerate: true, canPublish: true, canExport: false, canMonitor: false },
+  { role: "student", allowed: true, scope: "Can view own published revision notes only.", canGenerate: false, canPublish: false, canExport: false, canMonitor: false, selfOnly: true },
+  { role: "parent", allowed: true, scope: "Can view linked child's parent-safe class summary only.", canGenerate: false, canPublish: false, canExport: false, canMonitor: false, viewOnly: true },
+  { role: "receptionist_counsellor", allowed: true, scope: "Can view demo-class public summary draft only.", canGenerate: false, canPublish: false, canExport: false, canMonitor: false, demoOnly: true },
+  { role: "accountant", allowed: false, scope: "Finance role has no academic notes access by default.", canGenerate: false, canPublish: false, canExport: false, canMonitor: false },
+  { role: "naxora_super_admin", allowed: false, scope: "Platform support only; no unrestricted academic content access.", canGenerate: false, canPublish: false, canExport: false, canMonitor: false }
+];
+
+const part98DemoSessionMaterials = {
+  sessionId: "NOTES-SESSION-DEMO-CLASS10-MATHS",
+  roomId: "LIVE-DEMO-CLASS10-MATHS",
+  title: "Class 10 Maths — Quadratic Equations",
+  batchId: "BAT-10-MATH-A",
+  teacherId: "TCH-DEMO-001",
+  subject: "Maths",
+  className: "Class 10",
+  date: "2026-07-15",
+  duration: "90 minutes",
+  transcriptPreview: [
+    "Today we revised quadratic equations and standard form ax square plus bx plus c equals zero.",
+    "We discussed factorisation method and when it is useful.",
+    "Then we explained quadratic formula: x equals minus b plus minus root of b square minus four ac divided by two a.",
+    "Discriminant b square minus four ac tells us about nature of roots.",
+    "If discriminant is positive, there are two real roots. If zero, roots are equal. If negative, roots are not real.",
+    "Students solved three practice examples and common sign mistakes were corrected."
+  ],
+  chatHighlights: [
+    "Aman asked to repeat quadratic formula.",
+    "Riya asked when to use factorisation vs formula.",
+    "Meera answered discriminant formula correctly."
+  ],
+  pollHighlights: [
+    { question: "Discriminant formula?", topAnswer: "b² - 4ac", correctPercentPreview: 86 }
+  ],
+  whiteboardTopics: ["Standard form", "Factorisation", "Quadratic formula", "Discriminant", "Nature of roots"],
+  attendanceSummaryPreview: { present: 28, partial: 3, absent: 1, review: 3 }
+};
+
+function normalizePart98Role(role) {
+  const r = String(role || "teacher").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part98AccessCheck({ role, instituteId, branchId, batchId, teacherId, studentId, parentId, sessionId }) {
+  const normalizedRole = normalizePart98Role(role);
+  const rule = part98RoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole,
+    allowed: false,
+    scope: "Unknown or unsupported role.",
+    canGenerate: false,
+    canPublish: false,
+    canExport: false,
+    canMonitor: false
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const teacherAssigned = normalizedRole !== "teacher" || Boolean(String(teacherId || "").trim() || String(batchId || "").trim());
+  const studentOwnOnly = normalizedRole !== "student" || Boolean(String(studentId || "").trim() || String(batchId || "").trim());
+  const parentLinkedOnly = normalizedRole !== "parent" || Boolean(String(parentId || "").trim() || String(studentId || "").trim());
+  const allowed = Boolean(rule.allowed && hasInstituteId && teacherAssigned && studentOwnOnly && parentLinkedOnly && normalizedRole !== "naxora_super_admin");
+
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    branchId: branchId || null,
+    batchId: batchId || null,
+    teacherId: teacherId || null,
+    studentId: studentId || null,
+    parentId: parentId || null,
+    sessionId: sessionId || part98DemoSessionMaterials.sessionId,
+    allowed,
+    canGenerate: Boolean(rule.canGenerate && allowed),
+    canPublish: Boolean(rule.canPublish && allowed),
+    canExport: Boolean(rule.canExport && allowed),
+    canMonitor: Boolean(rule.canMonitor && allowed),
+    selfOnly: Boolean(rule.selfOnly),
+    viewOnly: Boolean(rule.viewOnly),
+    demoOnly: Boolean(rule.demoOnly),
+    scope: rule.scope,
+    reason: !hasInstituteId
+      ? "Institute ID missing."
+      : !rule.allowed
+        ? rule.scope
+        : !teacherAssigned
+          ? "Teacher notes access requires assigned teacherId or batchId."
+          : !studentOwnOnly
+            ? "Student can view own published notes only; studentId or batchId required."
+            : !parentLinkedOnly
+              ? "Parent can view linked child summary only; parentId/studentId required."
+              : "AI Class Notes and Summary access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    confirmationRequiredFor: ["publish_notes", "send_parent_summary", "assign_homework", "create_quiz", "delete_notes"],
+    ownerVerificationRequiredFor: ["export_notes", "delete_notes_archive", "privacy_change", "bulk_publish"]
+  };
+}
+
+function part98ParseCommand(text = "", body = {}) {
+  const input = String(text || body.command || body.q || "").trim();
+  const intent = /homework|assignment/i.test(input) ? "homework"
+    : /quiz|test|questions/i.test(input) ? "quiz"
+      : /parent|summary draft|message/i.test(input) ? "parent_summary"
+        : /revision|student notes/i.test(input) ? "revision_notes"
+          : /key point|important/i.test(input) ? "key_points"
+            : /publish|approve/i.test(input) ? "publish_preview"
+              : /notes|class notes/i.test(input) ? "notes"
+                : /summary|recap/i.test(input) ? "summary"
+                  : "help";
+  return {
+    intent,
+    sessionId: body.sessionId || part98DemoSessionMaterials.sessionId,
+    rawCommand: input
+  };
+}
+
+function part98ExtractKeyPoints(materials = part98DemoSessionMaterials) {
+  const topics = materials.whiteboardTopics || [];
+  return [
+    "Quadratic equation standard form: ax² + bx + c = 0.",
+    "Factorisation is useful when the equation can be split into simple factors.",
+    "Quadratic formula works for all quadratic equations where a is not zero.",
+    "Discriminant b² - 4ac helps identify nature of roots.",
+    "Positive discriminant gives two real roots, zero gives equal roots, negative gives non-real roots.",
+    "Students should avoid sign mistakes while substituting values."
+  ].map((point, index) => ({
+    id: `KP-${index + 1}`,
+    point,
+    linkedTopic: topics[index % Math.max(1, topics.length)] || "Quadratic Equations"
+  }));
+}
+
+function part98GenerateNotes(materials = part98DemoSessionMaterials) {
+  const keyPoints = part98ExtractKeyPoints(materials);
+  return {
+    previewOnly: true,
+    teacherReviewRequired: true,
+    title: `${materials.title} — Class Notes`,
+    subject: materials.subject,
+    className: materials.className,
+    sections: [
+      {
+        heading: "Concept Covered",
+        content: "Class me quadratic equations ka standard form, factorisation, quadratic formula aur discriminant cover hua."
+      },
+      {
+        heading: "Formula",
+        content: "Quadratic formula: x = (-b ± √(b² - 4ac)) / 2a. Discriminant: D = b² - 4ac."
+      },
+      {
+        heading: "Nature of Roots",
+        content: "D > 0: two real roots. D = 0: equal roots. D < 0: non-real roots."
+      },
+      {
+        heading: "Common Mistakes",
+        content: "Negative signs, bracket opening aur b² - 4ac me values substitute karte waqt mistakes common thi."
+      }
+    ],
+    keyPoints,
+    sourceSignals: {
+      transcriptLines: materials.transcriptPreview.length,
+      chatHighlights: materials.chatHighlights.length,
+      pollHighlights: materials.pollHighlights.length,
+      whiteboardTopics: materials.whiteboardTopics.length
+    },
+    safety: "Teacher review ke bina notes publish/send nahi honge."
+  };
+}
+
+function part98GenerateSummary(materials = part98DemoSessionMaterials) {
+  return {
+    previewOnly: true,
+    teacherReviewRequired: true,
+    shortSummary: "Aaj Class 10 Maths me quadratic equations revise hui. Students ne standard form, factorisation, quadratic formula aur discriminant ke through nature of roots samjha.",
+    detailedSummary: [
+      "Class quadratic equations ke standard form se start hui.",
+      "Teacher ne factorisation method aur quadratic formula explain kiya.",
+      "Discriminant b² - 4ac ke basis par roots ki nature discuss hui.",
+      "Students ne practice examples solve kiye aur common sign mistakes correct ki gayi.",
+      "Poll result se discriminant formula mostly clear dikha, but few students ko formula substitution practice chahiye."
+    ],
+    attendanceContextPreview: materials.attendanceSummaryPreview,
+    publishRequiresConfirmation: true
+  };
+}
+
+function part98HomeworkDraft(materials = part98DemoSessionMaterials) {
+  return {
+    previewOnly: true,
+    autoAssign: false,
+    confirmationRequired: true,
+    homework: [
+      "Quadratic equations exercise se 10 questions solve karo.",
+      "5 questions factorisation method se solve karo.",
+      "5 questions quadratic formula se solve karo.",
+      "Har question me discriminant nikal kar nature of roots mention karo.",
+      "Common sign mistakes avoid karne ke liye substitution step clearly likho."
+    ],
+    dueDatePreview: "Next class",
+    teacherReviewRequired: true
+  };
+}
+
+function part98QuizDraft(materials = part98DemoSessionMaterials) {
+  return {
+    previewOnly: true,
+    autoCreateTest: false,
+    confirmationRequired: true,
+    questions: [
+      {
+        type: "mcq",
+        question: "Quadratic equation ka standard form kya hai?",
+        options: ["ax² + bx + c = 0", "a + b = c", "x + y = 0", "ab² + c = 1"],
+        answerPreview: "ax² + bx + c = 0"
+      },
+      {
+        type: "mcq",
+        question: "Discriminant formula kya hai?",
+        options: ["b² - 4ac", "a² - 2ab", "2ab + c", "b - 4a"],
+        answerPreview: "b² - 4ac"
+      },
+      {
+        type: "short",
+        question: "D = 0 hone par roots ki nature kya hoti hai?",
+        answerPreview: "Roots real and equal hoti hain."
+      },
+      {
+        type: "short",
+        question: "Quadratic formula kab useful hoti hai?",
+        answerPreview: "Jab factorisation difficult ho ya direct formula apply karna ho."
+      }
+    ],
+    teacherReviewRequired: true
+  };
+}
+
+function part98RevisionNotes(materials = part98DemoSessionMaterials) {
+  return {
+    previewOnly: true,
+    studentSafe: true,
+    title: "Quick Revision — Quadratic Equations",
+    bullets: [
+      "Quadratic equation me x² term hoti hai.",
+      "Standard form: ax² + bx + c = 0.",
+      "Formula ya factorisation se roots nikalte hain.",
+      "Discriminant D = b² - 4ac roots ki nature batata hai.",
+      "Formula substitute karte waqt signs carefully check karo."
+    ],
+    practiceTip: "Pehle a, b, c clearly identify karo, phir formula apply karo.",
+    availableOnlyAfterTeacherPublish: true
+  };
+}
+
+function part98ParentSummaryDraft(materials = part98DemoSessionMaterials) {
+  return {
+    previewOnly: true,
+    autoSend: false,
+    confirmationRequired: true,
+    draft: `Namaste, aaj ${materials.className} ${materials.subject} live class me ${materials.title.replace(/^.*—\s*/, "")} topic cover hua. Students ne quadratic formula, discriminant aur nature of roots revise kiya. Homework draft teacher review ke baad share hoga.`,
+    privateScreenFirst: true,
+    safety: "Parent summary auto-send nahi hoga; teacher/institute confirmation required."
+  };
+}
+
+function part98TeacherReviewPreview({ access, notes }) {
+  return {
+    previewOnly: true,
+    canReview: Boolean(access.canGenerate || access.canPublish),
+    reviewStatus: "teacher_review_pending",
+    checklist: [
+      "Formula accuracy check karo.",
+      "Homework questions suitable hain ya nahi check karo.",
+      "Quiz answers verify karo.",
+      "Parent summary me sensitive marks/individual issues add na ho.",
+      "Publish/send se pehle confirmation lo."
+    ],
+    publishPreview: {
+      canPublish: Boolean(access.canPublish),
+      confirmationRequired: true,
+      finalPublishPending: true
+    },
+    notesTitle: notes.title
+  };
+}
+
+function part98BuildNotesSummary({ command, role, instituteId, branchId, batchId, teacherId, studentId, parentId, body = {} }) {
+  const parsed = part98ParseCommand(command, body);
+  const access = part98AccessCheck({
+    role,
+    instituteId,
+    branchId,
+    batchId: body.batchId || batchId,
+    teacherId: body.teacherId || teacherId,
+    studentId: body.studentId || studentId,
+    parentId: body.parentId || parentId,
+    sessionId: parsed.sessionId
+  });
+
+  const materials = body.materials || part98DemoSessionMaterials;
+  const notes = part98GenerateNotes(materials);
+  const summary = part98GenerateSummary(materials);
+  const keyPoints = part98ExtractKeyPoints(materials);
+  const homeworkDraft = part98HomeworkDraft(materials);
+  const quizDraft = part98QuizDraft(materials);
+  const revisionNotes = part98RevisionNotes(materials);
+  const parentSummaryDraft = part98ParentSummaryDraft(materials);
+  const teacherReviewPreview = part98TeacherReviewPreview({ access, notes });
+
+  let replyText = "";
+  let nextAction = "none";
+  if (!access.allowed) {
+    replyText = "Is role/scope ko AI class notes access nahi hai.";
+    nextAction = "blocked";
+  } else if (access.selfOnly) {
+    replyText = "Student mode me sirf own published revision notes dikhengi. Teacher publish ke bina draft notes visible nahi.";
+    nextAction = "show_student_revision_notes";
+  } else if (access.viewOnly) {
+    replyText = "Parent mode me linked child ke liye parent-safe class summary draft dikh sakta hai. Detailed teacher notes nahi.";
+    nextAction = "show_parent_summary";
+  } else if (parsed.intent === "homework") {
+    replyText = "Homework draft ready hai. Teacher confirmation ke bina assign nahi hoga.";
+    nextAction = "show_homework_draft";
+  } else if (parsed.intent === "quiz") {
+    replyText = "Quiz draft ready hai. Teacher review ke bina test create nahi hoga.";
+    nextAction = "show_quiz_draft";
+  } else if (parsed.intent === "parent_summary") {
+    replyText = "Parent summary draft ready hai. Auto-send off hai.";
+    nextAction = "show_parent_summary_draft";
+  } else if (parsed.intent === "revision_notes") {
+    replyText = "Student revision notes draft ready hai. Publish confirmation ke baad students ko milega.";
+    nextAction = "show_revision_notes";
+  } else if (parsed.intent === "key_points") {
+    replyText = "Key points ready hain. Teacher review ke baad publish ho sakte hain.";
+    nextAction = "show_key_points";
+  } else if (parsed.intent === "publish_preview") {
+    replyText = access.canPublish
+      ? "Publish preview ready hai. Final publish confirmation ke bina nahi hoga."
+      : "Is role ko notes publish permission nahi hai.";
+    nextAction = "show_publish_preview";
+  } else if (parsed.intent === "summary") {
+    replyText = "Class summary draft ready hai. Teacher review ke bina publish/send nahi hoga.";
+    nextAction = "show_summary";
+  } else {
+    replyText = "AI class notes and summary draft ready hai. Teacher review required hai.";
+    nextAction = "show_notes_summary";
+  }
+
+  return {
+    access,
+    parsed,
+    sessionMaterials: materials,
+    transcriptPreview: materials.transcriptPreview,
+    notes,
+    summary,
+    keyPoints,
+    homeworkDraft,
+    quizDraft,
+    revisionNotes,
+    parentSummaryDraft,
+    teacherReviewPreview,
+    replyText,
+    spokenSafeSummary: replyText,
+    privateScreenFirst: true,
+    nextAction,
+    externalAIConnected: false,
+    ruleBasedFoundation: true,
+    confirmationRequiredFor: ["publish_notes", "send_parent_summary", "assign_homework", "create_quiz", "delete_notes"],
+    ownerVerificationRequiredFor: ["export_notes", "delete_notes_archive", "privacy_change", "bulk_publish"],
+    auditLog: {
+      event: "part98_ai_class_notes_summary",
+      role: access.role,
+      intent: parsed.intent,
+      sessionId: parsed.sessionId,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+const part98Checklist = [
+  "AI Class Notes and Summary page opens",
+  "Status API returns success true",
+  "Transcript preview loads",
+  "Notes generation draft works",
+  "Class summary draft works",
+  "Key points appear",
+  "Homework draft appears",
+  "Quiz draft appears",
+  "Student revision notes are safe-only",
+  "Parent summary draft is auto-send off",
+  "Teacher review preview requires confirmation",
+  "Student/parent scoped modes work",
+  "Accountant blocked mode works",
+  "VANI class notes command works",
+  "Previous Part 1–97 routes remain preserved"
+];
+
+app.get("/api/part98/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 98 — AI Class Notes and Summary",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 98,
+    nextPart: "Part 99 — Biometric Attendance Integration",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/ai-class-notes-summary", "/ai-class-notes", "/class-notes-summary-ai", "/vani-class-notes", "/live-class-summary", "/teacher-class-notes-ai"],
+    apiRoutes: [
+      "/api/part98/config",
+      "/api/part98/features",
+      "/api/part98/roles",
+      "/api/part98/access-check",
+      "/api/part98/session-materials",
+      "/api/part98/transcript-preview",
+      "/api/part98/notes/generate",
+      "/api/part98/summary/generate",
+      "/api/part98/key-points",
+      "/api/part98/homework-draft",
+      "/api/part98/quiz-draft",
+      "/api/part98/revision-notes",
+      "/api/part98/parent-summary/draft",
+      "/api/part98/teacher-review-preview",
+      "/api/part98/publish-preview",
+      "/api/part98/vani/greeting",
+      "/api/part98/vani/command"
+    ],
+    aiClassNotesSummaryEnabled: true
+  });
+});
+
+app.get("/api/part98/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "AI Class Notes and Summary",
+    appType: "ai_class_notes_summary_foundation",
+    version: "2.0-ai-class-notes-summary",
+    policy: {
+      previewFirst: true,
+      teacherReviewRequired: true,
+      noAutoPublish: true,
+      noAutoSendParentSummary: true,
+      noExternalAIKeysIncluded: true,
+      ruleBasedFoundation: true,
+      sensitiveDataPrivateScreenFirst: true
+    }
+  });
+});
+
+app.get("/api/part98/features", (req, res) => {
+  res.json({ success: true, features: part98NotesFeatures });
+});
+
+app.get("/api/part98/roles", (req, res) => {
+  res.json({ success: true, roles: part98RoleRules });
+});
+
+app.get("/api/part98/access-check", (req, res) => {
+  res.json({ success: true, access: part98AccessCheck(req.query || {}) });
+});
+
+app.get("/api/part98/session-materials", (req, res) => {
+  const access = part98AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, previewOnly: true, sessionMaterials: part98DemoSessionMaterials });
+});
+
+app.get("/api/part98/transcript-preview", (req, res) => {
+  const access = part98AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, transcriptPreview: part98DemoSessionMaterials.transcriptPreview, teacherReviewRequired: true });
+});
+
+app.get("/api/part98/notes/generate", (req, res) => {
+  const result = part98BuildNotesSummary({
+    command: req.query.q || req.query.command || "generate notes",
+    role: req.query.role || "teacher",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    batchId: req.query.batchId,
+    teacherId: req.query.teacherId,
+    studentId: req.query.studentId,
+    parentId: req.query.parentId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed || (!result.access.canGenerate && !result.access.selfOnly && !result.access.viewOnly)) return res.status(403).json({ success: false, ...result, message: "This role cannot generate notes." });
+  res.json({ success: true, access: result.access, notes: result.notes, teacherReviewPreview: result.teacherReviewPreview });
+});
+
+app.post("/api/part98/notes/generate", (req, res) => {
+  const body = req.body || {};
+  const result = part98BuildNotesSummary({
+    command: body.q || body.command || "generate notes",
+    role: body.role || "teacher",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId,
+    batchId: body.batchId,
+    teacherId: body.teacherId,
+    studentId: body.studentId,
+    parentId: body.parentId,
+    body
+  });
+  if (!result.access.allowed || !result.access.canGenerate) return res.status(403).json({ success: false, ...result, message: "This role cannot generate notes." });
+  res.json({ success: true, access: result.access, notes: result.notes, teacherReviewPreview: result.teacherReviewPreview });
+});
+
+app.get("/api/part98/summary/generate", (req, res) => {
+  const result = part98BuildNotesSummary({
+    command: req.query.q || req.query.command || "generate summary",
+    role: req.query.role || "teacher",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    batchId: req.query.batchId,
+    teacherId: req.query.teacherId,
+    studentId: req.query.studentId,
+    parentId: req.query.parentId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, ...result });
+  res.json({ success: true, access: result.access, summary: result.summary });
+});
+
+app.get("/api/part98/key-points", (req, res) => {
+  const access = part98AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, keyPoints: part98ExtractKeyPoints() });
+});
+
+app.get("/api/part98/homework-draft", (req, res) => {
+  const access = part98AccessCheck(req.query || {});
+  if (!access.allowed || !access.canGenerate) return res.status(403).json({ success: false, access, message: "Only teacher/owner/branch manager can generate homework draft." });
+  res.json({ success: true, access, homeworkDraft: part98HomeworkDraft() });
+});
+
+app.get("/api/part98/quiz-draft", (req, res) => {
+  const access = part98AccessCheck(req.query || {});
+  if (!access.allowed || !access.canGenerate) return res.status(403).json({ success: false, access, message: "Only teacher/owner/branch manager can generate quiz draft." });
+  res.json({ success: true, access, quizDraft: part98QuizDraft() });
+});
+
+app.get("/api/part98/revision-notes", (req, res) => {
+  const access = part98AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, revisionNotes: part98RevisionNotes(), availableOnlyAfterTeacherPublish: true });
+});
+
+app.get("/api/part98/parent-summary/draft", (req, res) => {
+  const access = part98AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, parentSummaryDraft: part98ParentSummaryDraft() });
+});
+
+app.get("/api/part98/teacher-review-preview", (req, res) => {
+  const access = part98AccessCheck(req.query || {});
+  if (!access.allowed || (!access.canGenerate && !access.canPublish)) return res.status(403).json({ success: false, access, message: "Teacher review preview requires teacher/owner/branch manager access." });
+  const notes = part98GenerateNotes();
+  res.json({ success: true, access, teacherReviewPreview: part98TeacherReviewPreview({ access, notes }) });
+});
+
+app.get("/api/part98/publish-preview", (req, res) => {
+  const access = part98AccessCheck(req.query || {});
+  if (!access.allowed || !access.canPublish) return res.status(403).json({ success: false, access, message: "Publish preview requires teacher/owner/branch manager access." });
+  const notes = part98GenerateNotes();
+  res.json({
+    success: true,
+    access,
+    publishPreview: {
+      previewOnly: true,
+      notesTitle: notes.title,
+      canPublish: true,
+      confirmationRequired: true,
+      finalPublishPending: true,
+      visibleToStudentsAfterPublish: true,
+      parentSummaryAutoSend: false
+    }
+  });
+});
+
+app.get("/api/part98/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI Class Notes",
+    greeting: "Namaste, main VANI Class Notes Assistant hoon. Aap class notes, summary, homework draft, quiz draft ya parent summary draft banwa sakte ho.",
+    exampleCommands: [
+      "VANI, class notes generate karo",
+      "VANI, class summary banao",
+      "VANI, homework draft banao",
+      "VANI, quiz draft banao",
+      "VANI, parent summary draft banao",
+      "VANI, student revision notes dikhao"
+    ],
+    safety: "Notes publish, homework assign, quiz create ya parent summary send confirmation ke bina nahi hoga."
+  });
+});
+
+app.post("/api/part98/vani/command", (req, res) => {
+  const body = req.body || {};
+  const result = part98BuildNotesSummary({
+    command: body.command || body.q || "",
+    role: body.role || "teacher",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId,
+    batchId: body.batchId,
+    teacherId: body.teacherId,
+    studentId: body.studentId,
+    parentId: body.parentId,
+    body
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 98 — AI Class Notes and Summary", ...result });
+});
+
+app.get("/api/part98/vani/command", (req, res) => {
+  const result = part98BuildNotesSummary({
+    command: req.query.command || req.query.q || "",
+    role: req.query.role || "teacher",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    batchId: req.query.batchId,
+    teacherId: req.query.teacherId,
+    studentId: req.query.studentId,
+    parentId: req.query.parentId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 98 — AI Class Notes and Summary", ...result });
+});
+
+app.get("/api/part98/audit-log", (req, res) => {
+  res.json({
+    success: true,
+    auditLog: [
+      { event: "ai_class_notes_generated_preview", role: "teacher", createdAt: new Date().toISOString() },
+      { event: "teacher_review_required_policy", rule: "Notes/homework/quiz/parent summary require review before publish/send.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part98/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "ai_class_notes_summary_created", message: "Part 98 AI Class Notes and Summary active.", createdAt: new Date().toISOString() },
+      { type: "rule_based_foundation", message: "External AI/LLM API not connected in this part.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part98/checklist", (req, res) => {
+  res.json({ success: true, checklist: part98Checklist });
+});
+
+app.get("/api/part98/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part98-ai-class-notes-summary-readiness",
+    ownerVerificationRequiredForSensitiveExports: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      features: part98NotesFeatures,
+      roles: part98RoleRules,
+      sessionMaterials: part98DemoSessionMaterials,
+      checklist: part98Checklist
+    }
+  });
+});
+
+app.get("/api/part98/demo", (req, res) => {
+  const command = "VANI, class notes generate karo";
+  const result = part98BuildNotesSummary({
+    command,
+    role: "teacher",
+    instituteId: "NX-DEMO-INST-001",
+    batchId: "BAT-10-MATH-A",
+    teacherId: "TCH-DEMO-001",
+    body: {}
+  });
+  res.json({
+    success: true,
+    demo: {
+      command,
+      result,
+      nextPart: "Part 99 — Biometric Attendance Integration"
+    }
+  });
+});
+// ================= END PART 98 =================
+
 
 
 

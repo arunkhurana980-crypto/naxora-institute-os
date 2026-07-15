@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — AI Class Notes and Summary</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/ai-class-notes-summary.css" />
+</head>
+<body>
+  <main class="class-notes">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 98 • NAXORA OS 2.0</p>
+        <h1>AI Class Notes and Summary</h1>
+        <p class="lead">
+          Teacher-review-first class notes, summary, homework draft, quiz draft,
+          student revision notes and parent summary draft from class content.
+        </p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">VANI Class Notes</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Tap Start, then ask notes or summary.</p>
+        <div class="voice-actions">
+          <button id="startVaniBtn">Start VANI</button>
+          <button id="listenVaniBtn">Listen</button>
+          <button id="muteVaniBtn">Mute</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Access</p>
+      <div class="controls">
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="branchId" value="BR-DEMO-001" />
+        <input id="batchId" value="BAT-10-MATH-A" />
+        <input id="teacherId" value="TCH-DEMO-001" />
+        <input id="studentId" value="STU-DEMO-001" />
+        <select id="roleSelect">
+          <option value="teacher" selected>Teacher Notes Review</option>
+          <option value="student">Student Revision View</option>
+          <option value="parent">Parent Summary View</option>
+          <option value="institute_owner">Institute Owner Monitor</option>
+          <option value="branch_manager">Branch Manager Approver</option>
+          <option value="receptionist_counsellor">Receptionist Demo View</option>
+          <option value="accountant">Accountant Block Test</option>
+        </select>
+        <button id="demoBtn">Load Demo</button>
+      </div>
+      <pre id="accessBox" class="code">Waiting...</pre>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">VANI Command</p>
+        <h2>Speak or type</h2>
+        <p>Example: “VANI, class notes generate karo”.</p>
+        <div class="controls">
+          <input id="vaniCommand" value="VANI, class notes generate karo" />
+          <button id="askVaniBtn">Ask VANI</button>
+        </div>
+        <pre id="vaniOutput" class="code">Waiting...</pre>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Session Materials</p>
+        <div id="sessionBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">AI Notes Draft</p>
+        <div id="notesBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Class Summary</p>
+        <div id="summaryBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Homework Draft</p>
+        <div id="homeworkBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Quiz Draft</p>
+        <div id="quizBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Student Revision Notes</p>
+        <div id="revisionBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Parent Summary + Review</p>
+        <div id="parentReviewBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Testing links</p>
+      <div class="links">
+        <a href="/api/part98/status" target="_blank">Status</a>
+        <a href="/api/part98/demo" target="_blank">Demo</a>
+        <a href="/api/part98/session-materials?role=teacher&instituteId=NX-DEMO-INST-001&teacherId=TCH-DEMO-001&batchId=BAT-10-MATH-A" target="_blank">Session Materials</a>
+        <a href="/api/part98/notes/generate?role=teacher&instituteId=NX-DEMO-INST-001&teacherId=TCH-DEMO-001&batchId=BAT-10-MATH-A" target="_blank">Generate Notes</a>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/vani-voice-starter.js"></script>
+  <script src="/ai-class-notes-summary.js"></script>
+</body>
+</html>
