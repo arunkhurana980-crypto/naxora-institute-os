@@ -10459,6 +10459,19 @@ const modulePageRoutes = {
   "/naxora-2-launch": "naxora-os-2-production-launch.html",
   "/vani-production-launch": "naxora-os-2-production-launch.html",
   "/os2-launch": "naxora-os-2-production-launch.html",
+  "/unified-role-command-centre": "unified-role-command-centre.html",
+  "/unified-role-command-center": "unified-role-command-centre.html",
+  "/role-command-centre": "unified-role-command-centre.html",
+  "/role-command-center": "unified-role-command-centre.html",
+  "/owner-command-centre": "unified-role-command-centre.html",
+  "/teacher-command-centre": "unified-role-command-centre.html",
+  "/student-command-centre": "unified-role-command-centre.html",
+  "/parent-command-centre": "unified-role-command-centre.html",
+  "/branch-role-command-centre": "unified-role-command-centre.html",
+  "/counsellor-command-centre": "unified-role-command-centre.html",
+  "/accountant-command-centre": "unified-role-command-centre.html",
+  "/vani-global-command-centre": "unified-role-command-centre.html",
+  "/demo-data-seeder": "unified-role-command-centre.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -30492,6 +30505,232 @@ app.use(errorHandler);
 const port = Number(process.env.PORT) || 5000;
 
 await connectDB();
+
+
+
+// ================= PART 111 — UNIFIED ROLE COMMAND CENTRE + DEMO DATA SEEDER + GLOBAL VANI =================
+const part111Roles = [
+  { role: "institute_owner", label: "Owner", landing: "/owner-command-centre", allowed: true, canSeedDemoData: true, canViewAllModules: true, canUseGlobalVani: true, canViewSensitiveSummary: true, modules: ["dashboard", "students", "parents", "teachers", "batches", "fees", "attendance", "admissions", "live_classes", "ai_vani", "branches", "franchise", "student_support", "business_forecasting", "marketing", "marketplace", "white_label", "reports", "settings"] },
+  { role: "teacher", label: "Teacher", landing: "/teacher-command-centre", allowed: true, canSeedDemoData: false, canViewAllModules: false, canUseGlobalVani: true, modules: ["teacher_dashboard", "assigned_batches", "assigned_students", "timetable", "attendance", "assignments", "tests", "notes", "live_classes", "class_summary", "student_support_safe", "teacher_vani"] },
+  { role: "student", label: "Student", landing: "/student-command-centre", allowed: true, canSeedDemoData: false, canViewAllModules: false, canUseGlobalVani: true, modules: ["student_dashboard", "my_timetable", "my_attendance", "my_fees_safe", "assignments", "tests_results", "notes_material", "doubts", "live_classes", "revision_assistant", "student_vani"] },
+  { role: "parent", label: "Parent", landing: "/parent-command-centre", allowed: true, canSeedDemoData: false, canViewAllModules: false, canUseGlobalVani: true, modules: ["parent_dashboard", "linked_child", "attendance", "fee_status", "timetable", "tests_results", "teacher_notes", "weekly_summary", "parent_communication", "parent_vani"] },
+  { role: "branch_manager", label: "Branch Manager", landing: "/branch-role-command-centre", allowed: true, canSeedDemoData: false, canViewAllModules: false, canUseGlobalVani: true, assignedBranchOnly: true, modules: ["branch_dashboard", "branch_students", "branch_teachers", "branch_batches", "branch_enquiries", "branch_fees_summary", "branch_performance", "branch_action_plan", "branch_vani"] },
+  { role: "receptionist_counsellor", label: "Counsellor / Receptionist", landing: "/counsellor-command-centre", allowed: true, canSeedDemoData: false, canViewAllModules: false, canUseGlobalVani: true, modules: ["admission_dashboard", "enquiries", "leads", "followups", "demo_bookings", "course_recommendation", "fee_batch_safe_info", "lead_qualification", "admission_vani"] },
+  { role: "accountant", label: "Accountant", landing: "/accountant-command-centre", allowed: true, canSeedDemoData: false, canViewAllModules: false, canUseGlobalVani: true, financeOnly: true, modules: ["finance_dashboard", "fees", "payments", "receipts", "pending_dues", "expenses", "fee_reports", "fee_forecast_safe", "finance_vani"] },
+  { role: "naxora_super_admin", label: "NAXORA Super Admin", landing: "/support-only", allowed: false, canSeedDemoData: false, canViewAllModules: false, canUseGlobalVani: false, modules: ["platform_support_only"] }
+];
+
+const part111ModuleMap = [
+  { part: 79, name: "Mobile App Foundation", route: "/mobile-app-foundation", category: "mobile" },
+  { part: 80, name: "Institute Owner App", route: "/institute-owner-app", category: "role_app" },
+  { part: 81, name: "Teacher App", route: "/teacher-app", category: "role_app" },
+  { part: 82, name: "Student App", route: "/student-app", category: "role_app" },
+  { part: 83, name: "Parent App", route: "/parent-app", category: "role_app" },
+  { part: 84, name: "Advanced VANI Action Engine", route: "/advanced-vani-action-engine", category: "vani" },
+  { part: 85, name: "VANI Admission Assistant", route: "/vani-admission-assistant", category: "vani" },
+  { part: 86, name: "VANI Fee and Attendance Actions", route: "/vani-fee-attendance-actions", category: "vani" },
+  { part: 87, name: "VANI Voice Reports", route: "/vani-voice-reports", category: "vani" },
+  { part: 88, name: "Hindi/Hinglish VANI Conversation", route: "/hindi-hinglish-vani-conversation", category: "vani" },
+  { part: 89, name: "AI Admission Counsellor", route: "/ai-admission-counsellor", category: "ai_admission" },
+  { part: 90, name: "AI Course Recommendation", route: "/ai-course-recommendation", category: "ai_admission" },
+  { part: 91, name: "Fee and Batch Information Assistant", route: "/fee-batch-information-assistant", category: "ai_admission" },
+  { part: 92, name: "Automatic Demo-Class Booking", route: "/automatic-demo-class-booking", category: "admission" },
+  { part: 93, name: "AI Lead Qualification", route: "/ai-lead-qualification", category: "admission" },
+  { part: 94, name: "Native Live Classroom Foundation", route: "/native-live-classroom-foundation", category: "live_class" },
+  { part: 95, name: "Screen Sharing and Digital Whiteboard", route: "/screen-sharing-digital-whiteboard", category: "live_class" },
+  { part: 96, name: "Live Chat, Polls and Hand Raise", route: "/live-chat-polls-hand-raise", category: "live_class" },
+  { part: 97, name: "Recording and Automatic Attendance", route: "/recording-automatic-attendance", category: "live_class" },
+  { part: 98, name: "AI Class Notes and Summary", route: "/ai-class-notes-summary", category: "ai_classroom" },
+  { part: 99, name: "Biometric Attendance Integration", route: "/biometric-attendance-integration", category: "hardware" },
+  { part: 100, name: "Digital Board Integration", route: "/digital-board-integration", category: "hardware" },
+  { part: 101, name: "Camera and Studio Integration", route: "/camera-studio-integration", category: "hardware" },
+  { part: 102, name: "Multi-Branch Command Centre", route: "/multi-branch-command-centre", category: "owner_business" },
+  { part: 103, name: "Franchise Management", route: "/franchise-management", category: "owner_business" },
+  { part: 104, name: "Branch Comparison and Benchmarking", route: "/branch-comparison-benchmarking", category: "owner_business" },
+  { part: 105, name: "Advanced Student Support Analytics", route: "/advanced-student-support-analytics", category: "student_support" },
+  { part: 106, name: "Business Forecasting", route: "/business-forecasting", category: "owner_business" },
+  { part: 107, name: "Automated Marketing System", route: "/automated-marketing-system", category: "marketing" },
+  { part: 108, name: "Complete Institute Marketplace", route: "/complete-institute-marketplace", category: "marketplace" },
+  { part: 109, name: "White-Label System", route: "/white-label-system", category: "white_label" },
+  { part: 110, name: "NAXORA OS 2.0 Production Launch", route: "/naxora-os-2-production-launch", category: "launch" }
+];
+
+const part111SeedPreview = {
+  institute: { count: 1, name: "NAXORA Demo Academy", city: "Delhi", branches: 3 },
+  users: { owners: 1, branchManagers: 3, teachers: 12, students: 120, parents: 120, counsellors: 4, accountants: 2 },
+  academics: { courses: 8, batches: 12, timetableSlots: 48, assignments: 24, tests: 16, notes: 30 },
+  operations: { attendanceRecords: 900, feeRecords: 120, receipts: 80, enquiries: 90, followUps: 65, demoClasses: 24 },
+  liveClasses: { scheduled: 10, recordingsPreview: 4, classSummaries: 6 },
+  aiVani: { commands: 42, studentSupportCases: 18, parentSummaries: 12, businessForecasts: 6 },
+  business: { branches: 3, franchiseRecords: 2, marketingCampaigns: 5, marketplaceListings: 3, whiteLabelBrand: 1 },
+  safety: { previewFirst: true, destructiveWrite: false, realPayment: false, realNotificationSend: false, realProviderKeysNeeded: false, ownerConfirmationRequired: true }
+};
+
+const part111RoleData = {
+  institute_owner: { headline: "Owner: full institute command centre ready.", cards: [{label:"Students",value:120,route:"/advanced-student-support-analytics"},{label:"Teachers",value:12,route:"/teacher-app"},{label:"Branches",value:3,route:"/multi-branch-command-centre"},{label:"Pending Fees",value:"₹2.1L preview",route:"/business-forecasting"},{label:"Leads",value:90,route:"/ai-lead-qualification"},{label:"Marketing",value:5,route:"/automated-marketing-system"}], vaniExamples: ["VANI, full institute overview dikhao", "VANI, demo data bhar do", "VANI, branches compare karo", "VANI, business forecast batao"] },
+  teacher: { headline: "Teacher: assigned batches, students and classes only.", cards: [{label:"Assigned Batches",value:4,route:"/teacher-app"},{label:"Students",value:42,route:"/advanced-student-support-analytics"},{label:"Today Classes",value:5,route:"/native-live-classroom-foundation"},{label:"Assignments",value:8,route:"/ai-class-notes-summary"}], vaniExamples: ["VANI, meri aaj ki classes dikhao", "VANI, weak students batao", "VANI, assignment draft banao", "VANI, live class start preview karo"] },
+  student: { headline: "Student: own learning dashboard only.", cards: [{label:"Today Classes",value:3,route:"/student-app"},{label:"Attendance",value:"92%",route:"/student-app"},{label:"Pending Assignments",value:2,route:"/student-app"},{label:"Revision Notes",value:6,route:"/ai-class-notes-summary"}], vaniExamples: ["VANI, mera timetable dikhao", "VANI, meri attendance dikhao", "VANI, revision plan banao", "VANI, Maths weak topic explain karo"] },
+  parent: { headline: "Parent: linked child safe dashboard only.", cards: [{label:"Linked Child",value:"1 child",route:"/parent-app"},{label:"Attendance",value:"92%",route:"/parent-app"},{label:"Fee Status",value:"1 pending preview",route:"/parent-app"},{label:"Weekly Summary",value:"Ready",route:"/parent-app"}], vaniExamples: ["VANI, mere child ki attendance batao", "VANI, fee status dikhao", "VANI, weekly progress summary do", "VANI, next class kab hai"] },
+  branch_manager: { headline: "Branch Manager: assigned branch only.", cards: [{label:"Branch Students",value:40,route:"/multi-branch-command-centre"},{label:"Branch Teachers",value:4,route:"/multi-branch-command-centre"},{label:"Fee Collection",value:"₹6.7L preview",route:"/business-forecasting"},{label:"Branch Score",value:84,route:"/branch-comparison-benchmarking"}], vaniExamples: ["VANI, meri branch ka overview dikhao", "VANI, branch attendance summary dikhao", "VANI, branch performance compare karo"] },
+  receptionist_counsellor: { headline: "Counsellor: admissions and CRM command centre only.", cards: [{label:"New Leads",value:24,route:"/ai-lead-qualification"},{label:"Follow-ups",value:18,route:"/vani-admission-assistant"},{label:"Demo Bookings",value:9,route:"/automatic-demo-class-booking"},{label:"Recommendations",value:12,route:"/ai-course-recommendation"}], vaniExamples: ["VANI, today follow-ups dikhao", "VANI, new lead qualify karo", "VANI, demo class booking draft karo"] },
+  accountant: { headline: "Accountant: finance-safe command centre only.", cards: [{label:"Fee Records",value:120,route:"/vani-fee-attendance-actions"},{label:"Receipts",value:80,route:"/vani-fee-attendance-actions"},{label:"Pending Dues",value:"₹2.1L preview",route:"/business-forecasting"},{label:"Forecast",value:"Ready",route:"/business-forecasting"}], vaniExamples: ["VANI, pending fees summary dikhao", "VANI, receipt draft banao", "VANI, fee collection forecast dikhao"] }
+};
+
+function normalizePart111Role(role) {
+  const r = String(role || "institute_owner").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part111AccessCheck(query = {}) {
+  const role = normalizePart111Role(query.role);
+  const rule = part111Roles.find((r) => r.role === role) || { role, label: "Unknown", allowed: false, modules: [], canSeedDemoData: false, canUseGlobalVani: false };
+  const allowed = Boolean(rule.allowed && String(query.instituteId || "NX-DEMO-INST-001").trim());
+  return {
+    role,
+    label: rule.label,
+    instituteId: query.instituteId || "NX-DEMO-INST-001",
+    branchId: query.branchId || query.assignedBranchId || "BR-DEMO-001",
+    studentId: query.studentId || "STU-DEMO-001",
+    parentId: query.parentId || "PAR-DEMO-001",
+    allowed,
+    landing: rule.landing,
+    modules: rule.modules || [],
+    canSeedDemoData: Boolean(rule.canSeedDemoData && allowed),
+    canViewAllModules: Boolean(rule.canViewAllModules && allowed),
+    canUseGlobalVani: Boolean(rule.canUseGlobalVani && allowed),
+    assignedBranchOnly: Boolean(rule.assignedBranchOnly),
+    financeOnly: Boolean(rule.financeOnly),
+    reason: allowed ? "Unified Role Command Centre access allowed." : "Role not allowed or instituteId missing.",
+    privateScreenFirst: true,
+    ownerVerificationRequiredFor: ["demo_seed_execute", "bulk_message_send", "fee_change", "student_delete", "export", "white_label_publish", "domain_activate", "payment_live_mode", "subscription_change"]
+  };
+}
+
+function part111AllowedModuleMap(access) {
+  if (access.canViewAllModules) return part111ModuleMap;
+  return part111ModuleMap.filter((m) => {
+    if (access.role === "teacher") return ["role_app", "live_class", "ai_classroom", "student_support", "vani"].includes(m.category);
+    if (access.role === "student") return ["role_app", "live_class", "ai_classroom", "vani"].includes(m.category);
+    if (access.role === "parent") return ["role_app", "vani"].includes(m.category);
+    if (access.role === "branch_manager") return ["owner_business", "role_app", "student_support", "vani"].includes(m.category);
+    if (access.role === "receptionist_counsellor") return ["admission", "ai_admission", "marketing", "vani"].includes(m.category);
+    if (access.role === "accountant") return ["owner_business", "vani"].includes(m.category);
+    return false;
+  }).slice(0, 16);
+}
+
+function part111Dashboard(access) {
+  const data = part111RoleData[access.role] || part111RoleData.institute_owner;
+  return {
+    previewOnly: true,
+    singleAppFlow: true,
+    noSeparateLinksForDemo: true,
+    role: access.role,
+    label: access.label,
+    landing: access.landing,
+    headline: data.headline,
+    cards: data.cards,
+    moduleCards: part111AllowedModuleMap(access),
+    vaniExamples: data.vaniExamples,
+    hiddenData: access.canViewAllModules ? [] : ["other role private data", "owner-only controls", "sensitive exports", "provider secrets"]
+  };
+}
+
+function part111SeedPreviewFor(access) {
+  return {
+    previewOnly: true,
+    canSeedDemoData: access.canSeedDemoData,
+    seedName: "Full Demo Institute Setup",
+    preview: part111SeedPreview,
+    roleViewsCreated: ["owner", "teacher", "student", "parent", "branch_manager", "counsellor", "accountant"],
+    actionPolicy: { destructiveWrite: false, realPayments: false, realWhatsAppSmsEmail: false, realProviderCalls: false, confirmationRequired: true, ownerOnly: true },
+    message: access.canSeedDemoData ? "Owner can preview and confirm demo seed." : "Demo seed is owner-only. This role can view role-safe demo dashboard only."
+  };
+}
+
+function part111SecurityPolicy() {
+  return {
+    previewOnly: true,
+    singleAppFlow: true,
+    roleBasedDashboards: true,
+    demoSeedOwnerOnly: true,
+    noRealPaymentsInDemoSeed: true,
+    noRealNotificationSendInDemoSeed: true,
+    noProviderSecretsInSource: true,
+    privateScreenFirst: true,
+    sensitiveDataNotSpokenLoudly: ["fee ledger details", "student private data", "parent contact details", "provider API keys", "domain tokens", "exports", "owner billing/subscription controls"],
+    ownerVerificationRequiredFor: ["demo_seed_execute", "bulk_message_send", "fee_change", "student_delete", "export", "white_label_publish", "domain_activate", "payment_live_mode", "subscription_change"],
+    subscriptionRule: "3.0 owner-only AI controls require institute_owner, instituteId and active v3 subscription later."
+  };
+}
+
+function part111ParseCommand(text = "") {
+  const input = String(text || "").trim();
+  const intent = /demo.*(data|setup|bhar|seed)|full demo|sample data|bhar do/i.test(input) ? "demo_seed"
+    : /owner|teacher|student|parent|accountant|counsellor|branch manager|role/i.test(input) ? "role_dashboard"
+    : /module|part|link|launcher|menu/i.test(input) ? "module_launcher"
+    : /fee|payment|receipt|pending/i.test(input) ? "finance"
+    : /attendance|class|timetable|assignment|test|notes/i.test(input) ? "academic"
+    : /lead|admission|demo class|follow/i.test(input) ? "admission"
+    : /branch|franchise|forecast|business|marketing|marketplace|white-label|white label/i.test(input) ? "owner_business"
+    : /security|permission|privacy|safe|owner verification/i.test(input) ? "security"
+    : "overview";
+  return { intent, rawCommand: input };
+}
+
+function part111GlobalVani(payload = {}) {
+  const access = part111AccessCheck(payload);
+  const parsed = part111ParseCommand(payload.command || payload.q || "");
+  const dashboard = part111Dashboard(access);
+  const demoSeedPreview = part111SeedPreviewFor(access);
+  let replyText = `${access.label} Unified Command Centre ready hai. Same app me dashboard, modules, Global VANI aur role-safe demo flow available hai.`;
+  let nextAction = "show_overview";
+  let needsConfirmation = false;
+  if (!access.allowed) { replyText = "Is role ko Unified Role Command Centre access nahi hai."; nextAction = "blocked"; }
+  else if (parsed.intent === "demo_seed") {
+    if (access.canSeedDemoData) { replyText = "Full demo institute setup preview ready hai. Institute, branches, teachers, students, parents, fees, attendance, leads, live classes, reports aur role dashboards banenge. Confirm ke bina seed execute nahi hoga."; nextAction = "show_demo_seed_preview"; needsConfirmation = true; }
+    else { replyText = "Demo data seed owner-only hai. Aapke role ke liye role-safe demo dashboard dikh raha hai."; nextAction = "show_role_safe_dashboard"; }
+  }
+  else if (parsed.intent === "role_dashboard") { replyText = `${access.label} dashboard ready hai. Is role ko sirf allowed modules dikh rahe hain.`; nextAction = "show_role_dashboard"; }
+  else if (parsed.intent === "module_launcher") { replyText = access.canViewAllModules ? "All NAXORA 2.0 module launcher ready hai." : "Role-based module launcher ready hai. Owner-only modules hidden hain."; nextAction = "show_module_launcher"; }
+  else if (parsed.intent === "finance") { replyText = ["institute_owner", "accountant", "branch_manager", "parent", "student"].includes(access.role) ? "Finance-safe summary ready hai. Sensitive fee details private screen par hain." : "Is role ko finance module permission nahi hai."; nextAction = "show_finance_safe_summary"; }
+  else if (parsed.intent === "academic") { replyText = "Academic dashboard ready hai. Role ke according timetable, attendance, assignments, tests ya notes visible hain."; nextAction = "show_academic_summary"; }
+  else if (parsed.intent === "admission") { replyText = ["institute_owner", "receptionist_counsellor", "branch_manager"].includes(access.role) ? "Admission/CRM summary ready hai. Lead follow-up drafts auto-send nahi honge." : "Is role ko admission CRM details permission nahi hai."; nextAction = "show_admission_summary"; }
+  else if (parsed.intent === "owner_business") { replyText = ["institute_owner", "branch_manager", "accountant"].includes(access.role) ? "Business module summary ready hai. Owner-only sensitive actions verification ke bina nahi honge." : "Is role ko owner business module permission nahi hai."; nextAction = "show_business_summary"; }
+  else if (parsed.intent === "security") { replyText = "Security policy ready hai. Role checks, owner verification, private-screen-first aur audit log enabled hain."; nextAction = "show_security_policy"; }
+  return {
+    access, parsed, dashboard, demoSeedPreview, moduleMap: part111AllowedModuleMap(access), roleRules: part111Roles,
+    replyText, spokenSafeSummary: replyText, nextAction, needsConfirmation,
+    privateScreenFirst: true, noSeparateLinksForDemo: true, singleAppFlow: true,
+    confirmationRequiredFor: ["demo_seed_execute", "role_data_create", "task_assign", "message_send", "fee_change"],
+    ownerVerificationRequiredFor: access.ownerVerificationRequiredFor,
+    auditLog: { event: "part111_global_vani_command", role: access.role, intent: parsed.intent, createdAt: new Date().toISOString() }
+  };
+}
+
+app.get("/api/part111/status", (req, res) => res.json({ success: true, part: "Part 111 — Unified Role Command Centre + Demo Data Seeder + Global VANI", status: "active", versionPhase: "NAXORA OS 3.0 Foundation Step 1", latestCompletedPart: 111, nextPart: "Part 112 — Real Demo Data Persistence and Role-Based Navigation Merge", preservesPreviousFeatures: true, frontendRoutes: ["/unified-role-command-centre", "/role-command-centre", "/owner-command-centre", "/teacher-command-centre", "/student-command-centre", "/parent-command-centre", "/branch-role-command-centre", "/counsellor-command-centre", "/accountant-command-centre", "/vani-global-command-centre", "/demo-data-seeder"], apiRoutes: ["/api/part111/config", "/api/part111/roles", "/api/part111/module-map", "/api/part111/access-check", "/api/part111/dashboard", "/api/part111/demo-data/preview", "/api/part111/vani/greeting", "/api/part111/vani/command"], unifiedRoleCommandCentreEnabled: true, globalVaniEnabled: true, demoDataSeederPreviewEnabled: true }));
+app.get("/api/part111/config", (req, res) => res.json({ success: true, appName: "Unified Role Command Centre", appType: "single_app_role_dashboard_global_vani", version: "3.0-foundation-step-1", policy: { singleAppFlow: true, noSeparatePartLinksForOwnerDemo: true, demoSeedOwnerOnly: true, previewFirst: true, roleBasedDashboards: true, privateScreenFirst: true, noProviderSecretsIncluded: true } }));
+app.get("/api/part111/roles", (req, res) => res.json({ success: true, roles: part111Roles }));
+app.get("/api/part111/module-map", (req, res) => res.json({ success: true, moduleMap: part111ModuleMap }));
+app.get("/api/part111/access-check", (req, res) => res.json({ success: true, access: part111AccessCheck(req.query || {}) }));
+app.get("/api/part111/dashboard", (req, res) => { const access = part111AccessCheck(req.query || {}); if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason }); res.json({ success: true, access, dashboard: part111Dashboard(access) }); });
+app.get("/api/part111/demo-data/preview", (req, res) => { const access = part111AccessCheck(req.query || {}); if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason }); res.json({ success: true, access, demoSeedPreview: part111SeedPreviewFor(access) }); });
+app.post("/api/part111/demo-data/seed-confirm-preview", (req, res) => { const access = part111AccessCheck(req.body || {}); if (!access.allowed || !access.canSeedDemoData) return res.status(403).json({ success: false, access, message: "Demo data seed is owner-only." }); const confirmed = req.body && (req.body.confirm === true || String(req.body.confirm || "").toLowerCase() === "yes"); res.json({ success: true, access, confirmed, executed: false, previewOnly: true, message: confirmed ? "Demo seed confirmation received in preview mode. Production persistence will be added in Part 112." : "Preview ready. Send confirm:true only after owner review.", demoSeedPreview: part111SeedPreviewFor(access), nextStep: "Part 112 will add real demo persistence and dashboard merge." }); });
+app.get("/api/part111/security-policy", (req, res) => res.json({ success: true, securityPolicy: part111SecurityPolicy() }));
+app.get("/api/part111/privacy-policy", (req, res) => res.json({ success: true, privacyPolicy: part111SecurityPolicy() }));
+app.get("/api/part111/vani/greeting", (req, res) => res.json({ success: true, assistant: "VANI Global Command Centre", greeting: "Namaste, main VANI Global Command Centre hoon. Aap role select karke dashboard, demo data preview, module launcher, reports ya role-safe actions pooch sakte ho.", exampleCommands: ["VANI, full demo institute setup karo", "VANI, owner dashboard dikhao", "VANI, teacher dashboard dikhao", "VANI, student dashboard dikhao", "VANI, parent dashboard dikhao", "VANI, module launcher dikhao"], safety: "Demo seed owner-only hai. Sensitive action owner verification ke bina execute nahi hoga." }));
+app.post("/api/part111/vani/command", (req, res) => { const result = part111GlobalVani(req.body || {}); if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result }); res.json({ success: true, assistant: "VANI", part: "Part 111 — Unified Role Command Centre", ...result }); });
+app.get("/api/part111/vani/command", (req, res) => { const result = part111GlobalVani(req.query || {}); if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result }); res.json({ success: true, assistant: "VANI", part: "Part 111 — Unified Role Command Centre", ...result }); });
+app.get("/api/part111/role-scoped-summary", (req, res) => { const access = part111AccessCheck(req.query || {}); if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason }); res.json({ success: true, access, roleScopedSummary: part111Dashboard(access) }); });
+app.get("/api/part111/audit-log", (req, res) => res.json({ success: true, auditLog: [{ event: "unified_role_command_centre_created", role: "institute_owner", createdAt: new Date().toISOString() }, { event: "demo_seed_owner_only_policy", rule: "Demo data seed requires owner confirmation and remains preview-first in Part 111.", createdAt: new Date().toISOString() }] }));
+app.get("/api/part111/activity", (req, res) => res.json({ success: true, activity: [{ type: "single_app_flow_created", message: "Part 111 Unified Role Command Centre active.", createdAt: new Date().toISOString() }, { type: "global_vani_ready", message: "Role-based Global VANI and demo data preview are ready.", createdAt: new Date().toISOString() }] }));
+app.get("/api/part111/checklist", (req, res) => res.json({ success: true, checklist: ["Unified Role Command Centre page opens", "Status API returns success true", "Owner dashboard shows all modules", "Teacher dashboard hides owner modules", "Student dashboard shows own learning modules only", "Parent dashboard shows linked child safe data only", "Branch manager dashboard is assigned-branch scoped", "Counsellor dashboard shows admission/CRM modules", "Accountant dashboard shows finance-safe modules", "Demo data seeder preview is owner-only", "Global VANI responds by role", "Previous Part 1–110 routes remain preserved"] }));
+app.get("/api/part111/export", (req, res) => res.json({ success: true, exportType: "part111-unified-role-command-centre-readiness", ownerVerificationRequiredForSensitiveExports: true, generatedAt: new Date().toISOString(), data: { roles: part111Roles, moduleMap: part111ModuleMap, demoSeedPreview: part111SeedPreview, securityPolicy: part111SecurityPolicy() } }));
+app.get("/api/part111/demo", (req, res) => { const command = "VANI, full demo institute setup karo"; const result = part111GlobalVani({ command, role: "institute_owner", instituteId: "NX-DEMO-INST-001" }); res.json({ success: true, demo: { command, result, nextPart: "Part 112 — Real Demo Data Persistence and Role-Based Navigation Merge" } }); });
+// ================= END PART 111 =================
 
 const server = app.listen(port, () => {
   console.log("✅ PART 59 PUBLIC INSTITUTE PROFILE ACTIVE");

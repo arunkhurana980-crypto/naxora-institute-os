@@ -1,36 +1,36 @@
 # NAXORA Master Progress Record
 
 ## Latest completed part
-Part 110 — NAXORA OS 2.0 Production Launch
+Part 111 — Unified Role Command Centre + Demo Data Seeder + Global VANI
 
 ## Date completed
 2026-07-15
 
 ## Feature name
-NAXORA OS 2.0 Production Launch
+NAXORA OS 3.0 Foundation — Unified Role Command Centre
 
 ## Files changed
 - backend/src/server.js
-- frontend/naxora-os-2-production-launch.html
-- frontend/naxora-os-2-production-launch.css
-- frontend/naxora-os-2-production-launch.js
+- frontend/unified-role-command-centre.html
+- frontend/unified-role-command-centre.css
+- frontend/unified-role-command-centre.js
 - frontend/vani-voice-starter.js
-- README_PART110_NAXORA_OS_2_PRODUCTION_LAUNCH.md
-- START_HERE_PART110_ARUN.md
-- docs/PART110_NAXORA_OS_2_PRODUCTION_LAUNCH_CHECKLIST.md
+- README_PART111_UNIFIED_ROLE_COMMAND_CENTRE.md
+- START_HERE_PART111_ARUN.md
+- docs/PART111_UNIFIED_ROLE_COMMAND_CENTRE_CHECKLIST.md
 - docs/NAXORA_MASTER_PROGRESS_RECORD.md
 
 ## Database/API changes
-No required database migration.
-Added `/api/part110/*` NAXORA OS 2.0 Production Launch APIs.
+No required database migration. Added `/api/part111/*` Unified Role Command Centre APIs.
 
 ## VANI commands added
-- VANI, 2.0 launch readiness dikhao
-- VANI, Part 79 se 110 module map dikhao
-- VANI, VANI 2.0 readiness batao
-- VANI, deployment checklist dikhao
-- VANI, known limitations batao
-- VANI, subscription policy dikhao
+- VANI, full demo institute setup karo
+- VANI, owner dashboard dikhao
+- VANI, teacher dashboard dikhao
+- VANI, student dashboard dikhao
+- VANI, parent dashboard dikhao
+- VANI, module launcher dikhao
+- VANI, security policy batao
 
 ## Tests passed
 - backend/src/server.js syntax check
@@ -42,19 +42,13 @@ Added `/api/part110/*` NAXORA OS 2.0 Production Launch APIs.
 - no secrets/API keys
 
 ## Errors remaining
-- External LLM/AI provider integration pending.
-- Real WhatsApp/SMS/email sending provider pending.
-- Real hardware vendor SDKs pending.
-- Real custom domain/DNS/SSL automation pending.
-- Production persistence for some 2.0 preview modules pending.
+- Demo data seed is preview-first only.
+- Real database seed persistence pending.
+- Login/JWT role auto-redirect merge pending.
+- Old role page sidebars still need central navigation merge.
 
-## Next phase
-Post-110 provider integrations, production persistence, human-level VANI, and future NAXORA OS 3.0 planning.
+## Next part
+Part 112 — Real Demo Data Persistence and Role-Based Navigation Merge
 
 ## Locked subscription rule
-NAXORA OS 1.0, 2.0 and future 3.0 have separate subscriptions.
-NAXORA OS 3.0 is future AI-first and owner-only:
-- role must be institute_owner
-- valid instituteId required
-- active v3 subscription required
-- plan must not be expired
+NAXORA OS 1.0, 2.0 and future 3.0 have separate subscriptions. NAXORA OS 3.0 is future AI-first and owner-only with institute_owner + valid instituteId + active v3 subscription required.

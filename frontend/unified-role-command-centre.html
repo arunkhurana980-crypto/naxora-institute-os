@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 3.0 — Unified Role Command Centre</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/unified-role-command-centre.css" />
+</head>
+<body>
+  <main class="command-centre">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 111 • NAXORA OS 3.0 Foundation</p>
+        <h1>Unified Role Command Centre</h1>
+        <p class="lead">One NAXORA app for owner, teacher, student, parent, branch manager, counsellor and accountant — with Global VANI and demo-data seeder preview.</p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">Global VANI</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Select role, then ask dashboard or demo setup.</p>
+        <div class="voice-actions"><button id="startVaniBtn">Start VANI</button><button id="listenVaniBtn">Listen</button><button id="muteVaniBtn">Mute</button></div>
+      </aside>
+    </section>
+    <section class="panel role-panel">
+      <p class="kicker">Single App Role Switcher</p>
+      <h2>Demo me owner ko alag links nahi dikhane — yahi central app hai.</h2>
+      <div class="controls">
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="branchId" value="BR-DEMO-001" />
+        <input id="studentId" value="STU-DEMO-001" />
+        <input id="parentId" value="PAR-DEMO-001" />
+        <select id="roleSelect">
+          <option value="institute_owner" selected>Owner</option>
+          <option value="teacher">Teacher</option>
+          <option value="student">Student</option>
+          <option value="parent">Parent</option>
+          <option value="branch_manager">Branch Manager</option>
+          <option value="receptionist_counsellor">Counsellor / Receptionist</option>
+          <option value="accountant">Accountant</option>
+        </select>
+        <button id="loadRoleBtn">Load Role Dashboard</button>
+        <button id="demoSeedBtn">Demo Data Preview</button>
+      </div>
+      <pre id="accessBox" class="code">Waiting...</pre>
+    </section>
+    <section class="grid">
+      <article class="panel"><p class="kicker">Global VANI Command</p><h2>Speak or type</h2><p>Example: “VANI, full demo institute setup karo”.</p><div class="controls"><input id="vaniCommand" value="VANI, full demo institute setup karo" /><button id="askVaniBtn">Ask VANI</button></div><pre id="vaniOutput" class="code">Waiting...</pre></article>
+      <article class="panel"><p class="kicker">Current Role Dashboard</p><h2 id="roleHeadline">Loading...</h2><div id="dashboardCards" class="metrics"></div></article>
+    </section>
+    <section class="grid"><article class="panel"><p class="kicker">Demo Data Seeder Preview</p><div id="seedBox" class="list"></div></article><article class="panel"><p class="kicker">Role VANI Examples</p><div id="examplesBox" class="list"></div></article></section>
+    <section class="panel"><p class="kicker">Role-Based Module Launcher</p><div id="moduleLauncher" class="module-grid"></div></section>
+    <section class="grid"><article class="panel"><p class="kicker">Security Policy</p><div id="securityBox" class="list"></div></article><article class="panel"><p class="kicker">Testing Links</p><div class="links"><a href="/api/part111/status" target="_blank">Status</a><a href="/api/part111/demo" target="_blank">Demo</a><a href="/api/part111/module-map" target="_blank">Module Map</a><a href="/api/part111/dashboard?role=institute_owner&instituteId=NX-DEMO-INST-001" target="_blank">Owner Dashboard API</a><a href="/api/part111/security-policy" target="_blank">Security Policy</a></div></article></section>
+  </main>
+  <script src="/brand-system.js"></script><script src="/vani-voice-starter.js"></script><script src="/unified-role-command-centre.js"></script>
+</body>
+</html>
