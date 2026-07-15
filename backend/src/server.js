@@ -10351,6 +10351,12 @@ const modulePageRoutes = {
   "/vani-demo-booking": "automatic-demo-class-booking.html",
   "/demo-booking-assistant": "automatic-demo-class-booking.html",
   "/ai-demo-class-booking": "automatic-demo-class-booking.html",
+  "/ai-lead-qualification": "ai-lead-qualification.html",
+  "/lead-qualification-ai": "ai-lead-qualification.html",
+  "/smart-lead-qualification": "ai-lead-qualification.html",
+  "/vani-lead-qualification": "ai-lead-qualification.html",
+  "/lead-score-ai": "ai-lead-qualification.html",
+  "/lead-priority-ai": "ai-lead-qualification.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -18348,6 +18354,625 @@ app.get("/api/part92/demo", (req, res) => {
   });
 });
 // ================= END PART 92 =================
+
+// ================= PART 93 — AI LEAD QUALIFICATION =================
+// NAXORA OS 2.0 AI Lead Qualification.
+// This part qualifies admission leads using source, course interest, class, subject,
+// budget, urgency, parent phone, demo interest, objection risk and follow-up status.
+// It is preview-first and never sends messages, changes fees, books demos or creates
+// final admissions without confirmation.
+
+const part93LeadSources = [
+  { key: "whatsapp", label: "WhatsApp", baseScore: 18, priority: "high", reason: "Direct chat source usually has higher intent." },
+  { key: "walk-in", label: "Walk-in", baseScore: 22, priority: "high", reason: "Physical visit indicates strong intent." },
+  { key: "referral", label: "Referral", baseScore: 20, priority: "high", reason: "Trusted referral source." },
+  { key: "google", label: "Google", baseScore: 14, priority: "medium", reason: "Search intent is useful but needs follow-up." },
+  { key: "website", label: "Website", baseScore: 12, priority: "medium", reason: "Website enquiry needs quick response." },
+  { key: "facebook", label: "Facebook/Instagram", baseScore: 10, priority: "medium", reason: "Social lead requires qualification." },
+  { key: "unknown", label: "Unknown", baseScore: 5, priority: "low", reason: "Source missing; needs clarification." }
+];
+
+const part93QualificationCriteria = [
+  { key: "parentPhone", label: "Parent phone available", weight: 18 },
+  { key: "className", label: "Class known", weight: 10 },
+  { key: "subjectOrCourse", label: "Subject/course interest clear", weight: 16 },
+  { key: "urgency", label: "Urgency detected", weight: 14 },
+  { key: "demoInterest", label: "Demo class interest", weight: 14 },
+  { key: "budget", label: "Budget mentioned", weight: 8 },
+  { key: "source", label: "Lead source quality", weight: 22 },
+  { key: "objectionRisk", label: "Low objection risk", weight: 8 }
+];
+
+const part93Features = [
+  {
+    key: "lead_parser",
+    name: "Lead Parser",
+    summary: "Extracts student name, class, subject/course, phone, source, urgency, budget and objections.",
+    problemSolved: "Admission team gets structured leads from raw messages."
+  },
+  {
+    key: "lead_score",
+    name: "Lead Score",
+    summary: "Scores leads from 0 to 100 with reasons.",
+    problemSolved: "Team knows which leads need fastest call."
+  },
+  {
+    key: "qualification_category",
+    name: "Qualification Category",
+    summary: "Marks leads as hot, warm, nurture or cold.",
+    problemSolved: "Counsellors can prioritise work."
+  },
+  {
+    key: "followup_plan",
+    name: "Follow-up Plan",
+    summary: "Suggests call, WhatsApp, demo or nurture next steps.",
+    problemSolved: "No lead stays unclear after qualification."
+  },
+  {
+    key: "objection_risk",
+    name: "Objection Risk",
+    summary: "Detects fee, timing, distance, trust and urgency objections.",
+    problemSolved: "Counsellor prepares the right reply."
+  },
+  {
+    key: "assignment_preview",
+    name: "Assignment Preview",
+    summary: "Suggests owner/counsellor/branch assignment without final save.",
+    problemSolved: "Leads can be routed safely."
+  },
+  {
+    key: "vani_lead_qualification",
+    name: "VANI Lead Qualification",
+    summary: "Hindi/Hinglish voice commands for lead qualification.",
+    problemSolved: "Staff can say: 'VANI, is lead ko qualify karo'."
+  }
+];
+
+const part93RoleRules = [
+  { role: "institute_owner", allowed: true, scope: "Full authorised lead qualification and routing preview.", canApproveSensitive: true },
+  { role: "branch_manager", allowed: true, scope: "Assigned branch leads only.", canApproveSensitive: false },
+  { role: "receptionist_counsellor", allowed: true, scope: "Lead qualification, follow-up plan and demo/admission preview.", canApproveSensitive: false },
+  { role: "teacher", allowed: true, previewOnly: true, scope: "Academic course-fit note only; no lead routing or follow-up action.", canApproveSensitive: false },
+  { role: "accountant", allowed: true, previewOnly: true, scope: "Fee objection and affordability note only.", canApproveSensitive: false },
+  { role: "student", allowed: false, scope: "Student app/learning support only.", canApproveSensitive: false },
+  { role: "parent", allowed: false, scope: "Parent app/linked child support only.", canApproveSensitive: false },
+  { role: "naxora_super_admin", allowed: false, scope: "Platform support only; no unrestricted institute lead access.", canApproveSensitive: false }
+];
+
+function normalizePart93Role(role) {
+  const r = String(role || "receptionist_counsellor").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor", "admission_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part93AccessCheck({ role, instituteId, branchId }) {
+  const normalizedRole = normalizePart93Role(role);
+  const rule = part93RoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole,
+    allowed: false,
+    scope: "Unknown or unsupported role.",
+    canApproveSensitive: false
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const allowed = Boolean(rule.allowed && hasInstituteId && normalizedRole !== "naxora_super_admin");
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    branchId: branchId || null,
+    allowed,
+    previewOnly: Boolean(rule.previewOnly),
+    canApproveSensitive: Boolean(rule.canApproveSensitive),
+    scope: rule.scope,
+    reason: !hasInstituteId
+      ? "Institute ID missing."
+      : !rule.allowed
+        ? rule.scope
+        : rule.previewOnly
+          ? "Preview-only access. Final lead routing/follow-up requires counsellor/owner role."
+          : "AI Lead Qualification access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    confirmationRequiredFor: ["lead_save", "followup_send", "demo_book", "assign_lead", "admission_create"],
+    ownerVerificationRequiredFor: ["discount", "fee_commitment", "refund", "delete", "export", "subscription_change"]
+  };
+}
+
+function part93NormalizeSource(source = "", text = "") {
+  const input = `${source || ""} ${text || ""}`.toLowerCase();
+  if (input.includes("whatsapp")) return "whatsapp";
+  if (input.includes("walk") || input.includes("visit")) return "walk-in";
+  if (input.includes("referral") || input.includes("refer")) return "referral";
+  if (input.includes("google")) return "google";
+  if (input.includes("website") || input.includes("site")) return "website";
+  if (input.includes("facebook") || input.includes("instagram") || input.includes("social")) return "facebook";
+  return "unknown";
+}
+
+function part93ParseLead(text = "", body = {}) {
+  const input = String(text || body.command || body.q || body.message || "").trim();
+  const classMatch = input.match(/class\s*([0-9]{1,2})/i);
+  const phoneMatch = input.match(/(?:phone|mobile|number|contact|parent phone)\s*[:\-]?\s*([6-9][0-9]{9})/i);
+  const budgetMatch = input.match(/(?:budget|fee|fees|amount)\s*[:\-]?\s*([0-9]{3,7})/i);
+  const subjectMatch = input.match(/\b(maths|math|science|english|physics|chemistry|biology|commerce|accounts|sst|social science)\b/i);
+  const nameMatch = input.match(/(?:student|name|lead|for)\s+([A-Z][a-zA-Z]{2,20})/) || input.match(/\b([A-Z][a-zA-Z]{2,20})\b/);
+  const urgency = /today|urgent|jaldi|abhi|immediate|same day|this week|demo/i.test(input)
+    ? "high"
+    : /next month|later|baad|soch/i.test(input)
+      ? "low"
+      : "medium";
+  const demoInterest = /demo|trial|visit|class dekhna|free class/i.test(input);
+  const source = part93NormalizeSource(body.source, input);
+  const objectionText = /fee|expensive|mehenga|time|timing|distance|door|trust|result|guarantee/i.test(input)
+    ? input
+    : String(body.objection || "");
+  return {
+    leadId: body.leadId || `LEAD-PREVIEW-${Date.now()}`,
+    studentName: body.studentName || nameMatch?.[1] || null,
+    className: body.className || (classMatch ? `Class ${classMatch[1]}` : null),
+    subject: body.subject || (subjectMatch ? subjectMatch[1].toLowerCase().replace("math", "maths").replace("social science", "sst") : null),
+    courseInterest: body.courseInterest || (/jee/i.test(input) ? "JEE Foundation" : /neet/i.test(input) ? "NEET Foundation" : /board/i.test(input) ? "Board Booster" : null),
+    parentPhone: body.parentPhone || phoneMatch?.[1] || null,
+    source,
+    budget: body.budget || budgetMatch?.[1] || null,
+    urgency,
+    demoInterest: body.demoInterest !== undefined ? Boolean(body.demoInterest) : demoInterest,
+    objectionText,
+    rawCommand: input
+  };
+}
+
+function part93MissingDetails(lead = {}) {
+  const missing = [];
+  if (!lead.studentName) missing.push({ key: "studentName", question: "Student ka naam kya hai?" });
+  if (!lead.parentPhone) missing.push({ key: "parentPhone", question: "Parent ka mobile number kya hai?" });
+  if (!lead.className) missing.push({ key: "className", question: "Student kis class me hai?" });
+  if (!lead.subject && !lead.courseInterest) missing.push({ key: "subjectOrCourse", question: "Kaunsa subject ya course interest hai?" });
+  if (!lead.source || lead.source === "unknown") missing.push({ key: "source", question: "Lead source kya hai: WhatsApp, walk-in, referral, Google ya website?" });
+  return missing;
+}
+
+function part93ObjectionRisk(lead = {}) {
+  const text = String(lead.objectionText || lead.rawCommand || "").toLowerCase();
+  const risks = [];
+  if (text.includes("fee") || text.includes("expensive") || text.includes("mehenga")) risks.push({ type: "fee", level: "medium", response: "Demo aur learning plan explain karein. Discount owner approval ke bina commit na karein." });
+  if (text.includes("time") || text.includes("timing")) risks.push({ type: "timing", level: "medium", response: "Suitable batch timing aur demo slot preview dikhayein." });
+  if (text.includes("distance") || text.includes("door")) risks.push({ type: "distance", level: "medium", response: "Online/hybrid option available ho to explain karein." });
+  if (text.includes("trust") || text.includes("result") || text.includes("guarantee")) risks.push({ type: "trust_result", level: "high", response: "Result guarantee na dein. Demo, teacher profile aur progress tracking explain karein." });
+  const level = risks.some((r) => r.level === "high") ? "high" : risks.length ? "medium" : "low";
+  return {
+    level,
+    risks,
+    summary: level === "low" ? "Objection risk low hai." : `Objection risk ${level} hai; counsellor prepared response use kare.`
+  };
+}
+
+function part93LeadScore(lead = {}) {
+  const sourceInfo = part93LeadSources.find((s) => s.key === lead.source) || part93LeadSources.find((s) => s.key === "unknown");
+  const objection = part93ObjectionRisk(lead);
+  let score = 20;
+  const reasons = [];
+
+  if (lead.parentPhone) { score += 18; reasons.push("parent phone available"); }
+  if (lead.className) { score += 10; reasons.push("class known"); }
+  if (lead.subject || lead.courseInterest) { score += 16; reasons.push("course/subject interest clear"); }
+  if (lead.urgency === "high") { score += 14; reasons.push("high urgency"); }
+  else if (lead.urgency === "medium") { score += 7; reasons.push("medium urgency"); }
+  if (lead.demoInterest) { score += 14; reasons.push("demo interest"); }
+  if (lead.budget) { score += 8; reasons.push("budget mentioned"); }
+  score += sourceInfo.baseScore;
+  reasons.push(`source: ${sourceInfo.label}`);
+  if (objection.level === "low") { score += 8; reasons.push("low objection risk"); }
+  if (objection.level === "high") { score -= 8; reasons.push("high objection risk"); }
+
+  score = Math.max(0, Math.min(100, score));
+  const category = score >= 78 ? "hot" : score >= 58 ? "warm" : score >= 38 ? "nurture" : "cold";
+  const priority = category === "hot"
+    ? "Call within 15 minutes and offer demo preview."
+    : category === "warm"
+      ? "Follow up today and clarify missing details."
+      : category === "nurture"
+        ? "Send helpful course information and re-check later."
+        : "Low priority; keep in nurture list.";
+
+  return { score, category, priority, reasons, sourceInfo, objectionRisk: objection };
+}
+
+function part93FollowupPlan(lead = {}, qualification = {}) {
+  const category = qualification.category || "warm";
+  const name = lead.studentName || "student";
+  const course = lead.courseInterest || lead.subject || "course";
+  if (category === "hot") {
+    return {
+      priority: "urgent",
+      nextStep: "call_now",
+      timeline: "within 15 minutes",
+      script: `Namaste, NAXORA Institute se baat kar rahe hain. ${name} ke liye ${course} interest mila. Aapke liye demo class preview ready kar sakte hain. Kya aaj ya kal ka slot theek rahega?`,
+      autoSend: false,
+      confirmationRequired: true
+    };
+  }
+  if (category === "warm") {
+    return {
+      priority: "today",
+      nextStep: "same_day_followup",
+      timeline: "today",
+      script: `Namaste, ${name} ke course interest ke liye thanks. Hum class, batch timing aur fee preview share kar sakte hain. Demo class dekhna chahenge?`,
+      autoSend: false,
+      confirmationRequired: true
+    };
+  }
+  if (category === "nurture") {
+    return {
+      priority: "nurture",
+      nextStep: "send_info_then_followup",
+      timeline: "2-3 days",
+      script: `Namaste, NAXORA Institute se. Aapke interest ke hisaab se course details aur demo option available hain. Jab convenient ho, hum guide kar denge.`,
+      autoSend: false,
+      confirmationRequired: true
+    };
+  }
+  return {
+    priority: "low",
+    nextStep: "nurture_list",
+    timeline: "weekly",
+    script: "Lead details incomplete hain. Pehle basic details collect karein.",
+    autoSend: false,
+    confirmationRequired: true
+  };
+}
+
+function part93NextAction(lead = {}, qualification = {}) {
+  if (part93MissingDetails(lead).length) return { action: "ask_missing_details", label: "Missing details collect karo", confirmationRequired: false };
+  if (qualification.category === "hot") return { action: "call_and_demo_preview", label: "Call now + demo slot preview", confirmationRequired: true };
+  if (qualification.category === "warm") return { action: "followup_today", label: "Same-day follow-up", confirmationRequired: true };
+  if (qualification.category === "nurture") return { action: "nurture_sequence", label: "Course info + later follow-up", confirmationRequired: true };
+  return { action: "hold_low_priority", label: "Low priority nurture list", confirmationRequired: false };
+}
+
+function part93AssignmentPreview(lead = {}, access = {}, qualification = {}) {
+  const category = qualification.category || "warm";
+  let assignTo = "receptionist_counsellor";
+  if (category === "hot") assignTo = access.role === "branch_manager" ? "branch_manager" : "senior_counsellor";
+  if (lead.source === "walk-in") assignTo = "front_desk_counsellor";
+  if (qualification.objectionRisk?.level === "high") assignTo = "senior_counsellor";
+  return {
+    previewOnly: true,
+    assignTo,
+    reason: "Assignment preview based on category, source and objection risk.",
+    finalAssignmentRequiresConfirmation: true,
+    ownerReviewRecommended: category === "hot" || qualification.objectionRisk?.level === "high"
+  };
+}
+
+function part93BuildQualification({ command, role, instituteId, branchId, body = {} }) {
+  const access = part93AccessCheck({ role, instituteId, branchId });
+  const lead = part93ParseLead(command, body);
+  const missing = access.allowed ? part93MissingDetails(lead) : [];
+  const qualification = part93LeadScore(lead);
+  const followupPlan = part93FollowupPlan(lead, qualification);
+  const nextAction = part93NextAction(lead, qualification);
+  const assignmentPreview = part93AssignmentPreview(lead, access, qualification);
+
+  let replyText = "";
+  let action = "none";
+  if (!access.allowed) {
+    replyText = "Is role ko AI Lead Qualification access nahi hai.";
+    action = "blocked";
+  } else if (access.previewOnly) {
+    replyText = "Aap preview dekh sakte ho. Final lead routing ya follow-up counsellor/owner confirmation se hoga.";
+    action = "preview_only";
+  } else if (missing.length) {
+    replyText = missing[0].question;
+    action = "ask_missing_detail";
+  } else {
+    replyText = `${lead.studentName} lead ${qualification.category} hai. Score ${qualification.score}/100 hai. Next action: ${nextAction.label}. Final save/send/assign confirmation ke bina nahi hoga.`;
+    action = "show_qualification_preview";
+  }
+
+  return {
+    access,
+    lead,
+    missingDetails: missing,
+    qualification,
+    followupPlan,
+    objectionRisk: qualification.objectionRisk,
+    nextAction,
+    assignmentPreview,
+    crmPayloadPreview: {
+      previewOnly: true,
+      leadId: lead.leadId,
+      instituteId: access.instituteId,
+      branchId: access.branchId,
+      category: qualification.category,
+      score: qualification.score,
+      stage: missing.length ? "needs_details" : "qualified_preview",
+      finalSaveRequiresConfirmation: true
+    },
+    replyText,
+    spokenSafeSummary: replyText,
+    privateScreenFirst: true,
+    confirmationRequiredFor: ["lead_save", "followup_send", "demo_book", "assign_lead", "admission_create"],
+    ownerVerificationRequiredFor: ["discount", "fee_commitment", "refund", "delete", "export", "subscription_change"],
+    auditLog: {
+      event: "part93_ai_lead_qualification",
+      role: access.role,
+      category: qualification.category,
+      score: qualification.score,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+const part93Checklist = [
+  "AI Lead Qualification page opens",
+  "Status API returns success true",
+  "Lead parser extracts student/class/subject/phone/source",
+  "Missing details are asked instead of guessed",
+  "Lead score returns 0-100",
+  "Lead category returns hot/warm/nurture/cold",
+  "Follow-up plan is draft-only",
+  "Objection risk is detected",
+  "Assignment preview requires confirmation",
+  "VANI lead qualification works",
+  "Previous Part 1–92 routes remain preserved"
+];
+
+app.get("/api/part93/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 93 — AI Lead Qualification",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 93,
+    nextPart: "Part 94 — Native Live Classroom Foundation",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/ai-lead-qualification", "/lead-qualification-ai", "/smart-lead-qualification", "/vani-lead-qualification", "/lead-score-ai", "/lead-priority-ai"],
+    apiRoutes: [
+      "/api/part93/config",
+      "/api/part93/features",
+      "/api/part93/roles",
+      "/api/part93/access-check",
+      "/api/part93/lead-sources",
+      "/api/part93/criteria",
+      "/api/part93/lead/parse",
+      "/api/part93/lead/score",
+      "/api/part93/lead/qualify",
+      "/api/part93/lead/prioritize",
+      "/api/part93/lead/followup-plan",
+      "/api/part93/lead/objection-risk",
+      "/api/part93/lead/next-action",
+      "/api/part93/lead/assignment-preview",
+      "/api/part93/vani/greeting",
+      "/api/part93/vani/command"
+    ],
+    aiLeadQualificationEnabled: true
+  });
+});
+
+app.get("/api/part93/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "AI Lead Qualification",
+    appType: "lead_qualification_foundation",
+    version: "2.0-ai-lead-qualification",
+    policy: {
+      previewFirst: true,
+      noAutoSend: true,
+      noAutoAssign: true,
+      noAutoAdmission: true,
+      noDiscountCommitmentWithoutOwnerVerification: true,
+      crmPayloadPreviewOnly: true,
+      externalAIKeysNotIncluded: true
+    }
+  });
+});
+
+app.get("/api/part93/features", (req, res) => {
+  res.json({ success: true, features: part93Features });
+});
+
+app.get("/api/part93/roles", (req, res) => {
+  res.json({ success: true, roles: part93RoleRules });
+});
+
+app.get("/api/part93/access-check", (req, res) => {
+  res.json({ success: true, access: part93AccessCheck(req.query || {}) });
+});
+
+app.get("/api/part93/lead-sources", (req, res) => {
+  res.json({ success: true, leadSources: part93LeadSources });
+});
+
+app.get("/api/part93/criteria", (req, res) => {
+  res.json({ success: true, criteria: part93QualificationCriteria });
+});
+
+app.get("/api/part93/lead/parse", (req, res) => {
+  const lead = part93ParseLead(req.query.q || req.query.command || "", req.query || {});
+  res.json({ success: true, lead, missingDetails: part93MissingDetails(lead) });
+});
+
+app.post("/api/part93/lead/parse", (req, res) => {
+  const body = req.body || {};
+  const lead = part93ParseLead(body.q || body.command || body.message || "", body);
+  res.json({ success: true, lead, missingDetails: part93MissingDetails(lead) });
+});
+
+app.get("/api/part93/lead/score", (req, res) => {
+  const lead = part93ParseLead(req.query.q || req.query.command || "", req.query || {});
+  res.json({ success: true, lead, qualification: part93LeadScore(lead) });
+});
+
+app.get("/api/part93/lead/qualify", (req, res) => {
+  const result = part93BuildQualification({
+    command: req.query.q || req.query.command || "",
+    role: req.query.role || "receptionist_counsellor",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, ...result });
+  res.json({ success: true, ...result });
+});
+
+app.post("/api/part93/lead/qualify", (req, res) => {
+  const body = req.body || {};
+  const result = part93BuildQualification({
+    command: body.q || body.command || body.message || "",
+    role: body.role || "receptionist_counsellor",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId,
+    body
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, ...result });
+  res.json({ success: true, ...result });
+});
+
+app.get("/api/part93/lead/prioritize", (req, res) => {
+  const lead = part93ParseLead(req.query.q || req.query.command || "", req.query || {});
+  const qualification = part93LeadScore(lead);
+  res.json({ success: true, lead, qualification, nextAction: part93NextAction(lead, qualification) });
+});
+
+app.get("/api/part93/lead/followup-plan", (req, res) => {
+  const lead = part93ParseLead(req.query.q || req.query.command || "", req.query || {});
+  const qualification = part93LeadScore(lead);
+  res.json({ success: true, lead, qualification, followupPlan: part93FollowupPlan(lead, qualification) });
+});
+
+app.get("/api/part93/lead/objection-risk", (req, res) => {
+  const lead = part93ParseLead(req.query.q || req.query.command || "", req.query || {});
+  res.json({ success: true, lead, objectionRisk: part93ObjectionRisk(lead) });
+});
+
+app.get("/api/part93/lead/next-action", (req, res) => {
+  const lead = part93ParseLead(req.query.q || req.query.command || "", req.query || {});
+  const qualification = part93LeadScore(lead);
+  res.json({ success: true, lead, qualification, nextAction: part93NextAction(lead, qualification) });
+});
+
+app.get("/api/part93/lead/assignment-preview", (req, res) => {
+  const access = part93AccessCheck(req.query || {});
+  if (!access.allowed || access.previewOnly) return res.status(403).json({ success: false, access, message: access.previewOnly ? "Preview-only role cannot assign lead." : access.reason });
+  const lead = part93ParseLead(req.query.q || req.query.command || "", req.query || {});
+  const qualification = part93LeadScore(lead);
+  res.json({ success: true, access, lead, qualification, assignmentPreview: part93AssignmentPreview(lead, access, qualification) });
+});
+
+app.get("/api/part93/lead/export-preview", (req, res) => {
+  const result = part93BuildQualification({
+    command: req.query.q || req.query.command || "",
+    role: req.query.role || "institute_owner",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed || !result.access.canApproveSensitive) return res.status(403).json({ success: false, ...result, message: "Lead export preview requires owner-level access." });
+  res.json({ success: true, exportPreviewOnly: true, ownerVerificationRequired: true, crmPayloadPreview: result.crmPayloadPreview, qualification: result.qualification });
+});
+
+app.get("/api/part93/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI Lead Qualification",
+    greeting: "Namaste, main VANI Lead Qualification Assistant hoon. Lead ka message boliye, main score, category aur next action bataungi.",
+    exampleCommands: [
+      "VANI, Aman Class 10 Maths lead WhatsApp se hai parent phone 9876543210 urgent demo chahiye",
+      "VANI, is lead ko qualify karo",
+      "VANI, lead score batao",
+      "VANI, follow-up plan banao",
+      "VANI, fee objection risk check karo"
+    ],
+    safety: "Final lead save, follow-up send, demo booking ya assignment confirmation ke bina nahi hoga."
+  });
+});
+
+app.post("/api/part93/vani/command", (req, res) => {
+  const body = req.body || {};
+  const result = part93BuildQualification({
+    command: body.command || body.q || body.message || "",
+    role: body.role || "receptionist_counsellor",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId,
+    body
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 93 — AI Lead Qualification", ...result });
+});
+
+app.get("/api/part93/vani/command", (req, res) => {
+  const result = part93BuildQualification({
+    command: req.query.command || req.query.q || "",
+    role: req.query.role || "receptionist_counsellor",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 93 — AI Lead Qualification", ...result });
+});
+
+app.get("/api/part93/audit-log", (req, res) => {
+  res.json({
+    success: true,
+    auditLog: [
+      { event: "ai_lead_qualification_preview", role: "receptionist_counsellor", createdAt: new Date().toISOString() },
+      { event: "no_auto_followup_policy", rule: "Follow-up drafts require confirmation.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part93/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "ai_lead_qualification_created", message: "Part 93 AI Lead Qualification active.", createdAt: new Date().toISOString() },
+      { type: "crm_payload_preview", message: "CRM payload is preview-only until confirmation and DB connection.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part93/checklist", (req, res) => {
+  res.json({ success: true, checklist: part93Checklist });
+});
+
+app.get("/api/part93/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part93-ai-lead-qualification-readiness",
+    ownerVerificationRequiredForSensitiveExports: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      features: part93Features,
+      roles: part93RoleRules,
+      leadSources: part93LeadSources,
+      criteria: part93QualificationCriteria,
+      checklist: part93Checklist
+    }
+  });
+});
+
+app.get("/api/part93/demo", (req, res) => {
+  const command = "VANI, Aman Class 10 Maths lead WhatsApp se hai parent phone 9876543210 urgent demo chahiye";
+  const result = part93BuildQualification({
+    command,
+    role: "receptionist_counsellor",
+    instituteId: "NX-DEMO-INST-001",
+    body: {}
+  });
+  res.json({
+    success: true,
+    demo: {
+      command,
+      result,
+      nextPart: "Part 94 — Native Live Classroom Foundation"
+    }
+  });
+});
+// ================= END PART 93 =================
+
 
 
 

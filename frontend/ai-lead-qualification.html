@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — AI Lead Qualification</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/ai-lead-qualification.css" />
+</head>
+<body>
+  <main class="lead-qualification">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 93 • NAXORA OS 2.0</p>
+        <h1>AI Lead Qualification</h1>
+        <p class="lead">
+          Qualify admission leads using source, urgency, course interest, phone, demo interest,
+          budget and objection risk. Preview-first, no auto-send or final CRM write.
+        </p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">VANI Lead Qualification</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Tap Start, then ask lead score.</p>
+        <div class="voice-actions">
+          <button id="startVaniBtn">Start VANI</button>
+          <button id="listenVaniBtn">Listen</button>
+          <button id="muteVaniBtn">Mute</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Access</p>
+      <div class="controls">
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="branchId" value="BR-DEMO-001" />
+        <select id="roleSelect">
+          <option value="receptionist_counsellor" selected>Receptionist / Counsellor</option>
+          <option value="institute_owner">Institute Owner</option>
+          <option value="branch_manager">Branch Manager</option>
+          <option value="teacher">Teacher Preview</option>
+          <option value="accountant">Accountant Preview</option>
+          <option value="student">Student Block Test</option>
+          <option value="parent">Parent Block Test</option>
+        </select>
+        <button id="demoBtn">Load Demo</button>
+      </div>
+      <pre id="accessBox" class="code">Waiting...</pre>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Qualify Lead</p>
+        <h2>Speak or type</h2>
+        <p>Example: “VANI, Aman Class 10 Maths lead WhatsApp se hai parent phone 9876543210 urgent demo chahiye”.</p>
+        <div class="controls">
+          <input id="vaniCommand" value="VANI, Aman Class 10 Maths lead WhatsApp se hai parent phone 9876543210 urgent demo chahiye" />
+          <button id="askVaniBtn">Qualify Lead</button>
+        </div>
+        <pre id="vaniOutput" class="code">Waiting...</pre>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Lead Score</p>
+        <div id="scoreBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Lead Details</p>
+        <div id="leadBox" class="list"></div>
+      </article>
+      <article class="panel">
+        <p class="kicker">Follow-up Plan</p>
+        <div id="followupBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Objection Risk</p>
+        <div id="objectionBox" class="list"></div>
+      </article>
+      <article class="panel">
+        <p class="kicker">Assignment + CRM Preview</p>
+        <div id="assignmentBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Qualification Criteria</p>
+      <div id="criteriaBox" class="feature-grid"></div>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Testing links</p>
+      <div class="links">
+        <a href="/api/part93/status" target="_blank">Status</a>
+        <a href="/api/part93/demo" target="_blank">Demo</a>
+        <a href="/api/part93/criteria" target="_blank">Criteria</a>
+        <a href="/api/part93/lead/qualify?role=receptionist_counsellor&instituteId=NX-DEMO-INST-001&q=VANI,%20Aman%20Class%2010%20Maths%20lead%20WhatsApp%20se%20hai%20parent%20phone%209876543210%20urgent%20demo%20chahiye" target="_blank">Qualify</a>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/vani-voice-starter.js"></script>
+  <script src="/ai-lead-qualification.js"></script>
+</body>
+</html>
