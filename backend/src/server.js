@@ -10296,7 +10296,13 @@ const modulePageRoutes = {
   "/mobile-parent-dashboard": "parent-mobile-app.html",
   "/parent-portal-mobile": "parent-mobile-app.html",
   "/parent-child-updates": "parent-mobile-app.html",
-  "/parent-communication-app": "parent-mobile-app.html"
+  "/parent-communication-app": "parent-mobile-app.html",
+  "/advanced-vani-action-engine": "advanced-vani-action-engine.html",
+  "/vani-action-engine": "advanced-vani-action-engine.html",
+  "/vani-actions": "advanced-vani-action-engine.html",
+  "/advanced-vani": "advanced-vani-action-engine.html",
+  "/vani-command-engine": "advanced-vani-action-engine.html",
+  "/vani-engine": "advanced-vani-action-engine.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -12738,6 +12744,468 @@ app.get("/api/part83/demo", (req, res) => {
   });
 });
 // ================= END PART 83 =================
+
+// ================= PART 84 — ADVANCED VANI ACTION ENGINE =================
+// NAXORA OS 2.0 Advanced VANI Action Engine foundation.
+// This part upgrades VANI from simple Q&A into a safe preview-confirm-execute engine.
+// Destructive/sensitive real DB actions are still simulation/foundation until final schema hard-connect.
+
+const part84Modules = [
+  { key: "admissions", name: "Admissions", actions: ["create_student_draft", "schedule_demo_class", "lead_followup"], roles: ["institute_owner", "branch_manager", "receptionist_counsellor"] },
+  { key: "attendance", name: "Attendance", actions: ["mark_attendance_draft", "attendance_alert"], roles: ["institute_owner", "branch_manager", "teacher"] },
+  { key: "fees", name: "Fees", actions: ["fee_summary", "send_fee_reminder_draft"], roles: ["institute_owner", "accountant"] },
+  { key: "assignments", name: "Assignments", actions: ["create_assignment_draft", "homework_status"], roles: ["institute_owner", "teacher"] },
+  { key: "tests", name: "Tests", actions: ["test_schedule_draft", "marks_publish_preview"], roles: ["institute_owner", "teacher"] },
+  { key: "parent_communication", name: "Parent Communication", actions: ["parent_message_draft", "weekly_summary_draft"], roles: ["institute_owner", "branch_manager", "teacher"] },
+  { key: "live_classes", name: "Live Classes", actions: ["live_class_schedule_draft", "class_readiness"], roles: ["institute_owner", "teacher"] },
+  { key: "reports", name: "Reports", actions: ["owner_summary", "branch_summary", "student_support_summary"], roles: ["institute_owner", "branch_manager", "teacher"] },
+  { key: "subscriptions", name: "Subscriptions", actions: ["subscription_view", "v3_access_rule_view"], roles: ["institute_owner"] }
+];
+
+const part84SensitiveActions = ["refund", "discount", "delete", "export", "subscription_change", "v3_access_change", "salary", "bank", "payment_capture"];
+
+const part84RoleMatrix = {
+  institute_owner: { label: "Institute Owner", canPreview: true, canExecuteSafe: true, canSensitiveWithVerification: true, scope: "authorised institute and branch scope" },
+  branch_manager: { label: "Branch Manager", canPreview: true, canExecuteSafe: true, canSensitiveWithVerification: false, scope: "assigned branches only" },
+  accountant: { label: "Accountant", canPreview: true, canExecuteSafe: true, canSensitiveWithVerification: false, scope: "fees/payments/finance only by permission" },
+  teacher: { label: "Teacher", canPreview: true, canExecuteSafe: true, canSensitiveWithVerification: false, scope: "assigned batches/students only" },
+  receptionist_counsellor: { label: "Receptionist / Counsellor", canPreview: true, canExecuteSafe: true, canSensitiveWithVerification: false, scope: "admissions/enquiries/follow-ups only" },
+  student: { label: "Student", canPreview: true, canExecuteSafe: false, canSensitiveWithVerification: false, scope: "own learning data only" },
+  parent: { label: "Parent", canPreview: true, canExecuteSafe: false, canSensitiveWithVerification: false, scope: "linked child only" },
+  naxora_super_admin: { label: "NAXORA Super Admin", canPreview: true, canExecuteSafe: false, canSensitiveWithVerification: false, scope: "logged platform support, not unrestricted institute-private data" }
+};
+
+function normalizePart84Role(role) {
+  const r = String(role || "institute_owner").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part84ModuleForAction(action) {
+  return part84Modules.find((m) => m.actions.includes(action)) || null;
+}
+
+function part84IsSensitive(textOrAction = "") {
+  const value = String(textOrAction || "").toLowerCase();
+  return part84SensitiveActions.some((word) => value.includes(word));
+}
+
+function part84AccessCheck({ role, instituteId, module, action, branchId, studentId, childId }) {
+  const normalizedRole = normalizePart84Role(role);
+  const roleRule = part84RoleMatrix[normalizedRole] || { label: "Unknown", canPreview: false, canExecuteSafe: false, canSensitiveWithVerification: false, scope: "unsupported role" };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const selectedModule = module ? part84Modules.find((m) => m.key === module) : part84ModuleForAction(action);
+  const moduleAllowed = !selectedModule || selectedModule.roles.includes(normalizedRole) || normalizedRole === "naxora_super_admin";
+  const sensitive = part84IsSensitive(action);
+
+  let scopeOk = true;
+  let scopeMessage = roleRule.scope;
+  if (normalizedRole === "teacher" && !studentId && ["attendance", "assignments", "tests", "parent_communication"].includes(selectedModule?.key)) {
+    scopeMessage = "Teacher action needs assigned student/batch context.";
+  }
+  if (normalizedRole === "parent" && !childId && selectedModule?.key) {
+    scopeOk = false;
+    scopeMessage = "Parent action needs linked child context.";
+  }
+  if (normalizedRole === "branch_manager" && !branchId && selectedModule?.key && selectedModule.key !== "reports") {
+    scopeMessage = "Branch manager should provide assigned branchId for final execution.";
+  }
+
+  const allowedPreview = Boolean(roleRule.canPreview && hasInstituteId && moduleAllowed && scopeOk);
+  const allowedExecute = Boolean(roleRule.canExecuteSafe && hasInstituteId && moduleAllowed && scopeOk && (!sensitive || roleRule.canSensitiveWithVerification));
+
+  return {
+    role: normalizedRole,
+    roleLabel: roleRule.label,
+    instituteId: instituteId || null,
+    module: selectedModule?.key || module || null,
+    action: action || null,
+    branchId: branchId || null,
+    studentId: studentId || null,
+    childId: childId || null,
+    allowedPreview,
+    allowedExecute,
+    sensitive,
+    ownerVerificationRequired: Boolean(sensitive),
+    reason: !hasInstituteId
+      ? "Institute ID missing. VANI actions require logged institute context."
+      : !moduleAllowed
+        ? `${roleRule.label} is not allowed for module ${selectedModule?.name || module}.`
+        : !scopeOk
+          ? scopeMessage
+          : sensitive && !roleRule.canSensitiveWithVerification
+            ? "Sensitive action requires institute owner verification."
+            : allowedPreview
+              ? "Preview allowed. Execution depends on confirmation and verification rules."
+              : "Access not allowed.",
+    scope: scopeMessage
+  };
+}
+
+function part84ParseCommand(command = "", context = {}) {
+  const text = String(command || "").trim();
+  const lower = text.toLowerCase();
+  let action = "general_help";
+  let module = "assistant";
+  const missingDetails = [];
+  const ambiguityOptions = [];
+
+  if (lower.includes("admission") || lower.includes("enrol") || lower.includes("enroll") || lower.includes("student add") || lower.includes("new student")) {
+    module = "admissions"; action = "create_student_draft";
+    if (!context.studentName && !/name|naam/i.test(text)) missingDetails.push("studentName");
+    if (!context.course && !/course|class|batch/i.test(text)) missingDetails.push("course");
+    if (!context.phone && !/phone|mobile|number/i.test(text)) missingDetails.push("phone");
+  } else if (lower.includes("demo") && (lower.includes("class") || lower.includes("book") || lower.includes("schedule"))) {
+    module = "admissions"; action = "schedule_demo_class";
+    if (!context.studentName) missingDetails.push("studentName");
+    if (!context.course) missingDetails.push("course");
+    if (!context.date) missingDetails.push("date");
+  } else if (lower.includes("attendance") || lower.includes("present") || lower.includes("absent")) {
+    module = "attendance"; action = "mark_attendance_draft";
+    if (!context.batchId && !/batch|class/i.test(text)) missingDetails.push("batchId");
+    if (!context.date && !/today|aaj|date/i.test(text)) missingDetails.push("date");
+  } else if (lower.includes("fee") || lower.includes("fees") || lower.includes("payment") || lower.includes("reminder")) {
+    module = "fees"; action = lower.includes("reminder") || lower.includes("message") ? "send_fee_reminder_draft" : "fee_summary";
+    if (action === "send_fee_reminder_draft" && !context.studentName && !context.studentId) missingDetails.push("studentName_or_studentId");
+  } else if (lower.includes("assignment") || lower.includes("homework")) {
+    module = "assignments"; action = "create_assignment_draft";
+    if (!context.batchId) missingDetails.push("batchId");
+    if (!context.topic && !/topic|chapter/i.test(text)) missingDetails.push("topic");
+    if (!context.dueDate && !/due|kal|tomorrow|date/i.test(text)) missingDetails.push("dueDate");
+  } else if (lower.includes("test") || lower.includes("marks") || lower.includes("result")) {
+    module = "tests"; action = lower.includes("publish") ? "marks_publish_preview" : "test_schedule_draft";
+    if (!context.batchId) missingDetails.push("batchId");
+    if (!context.topic) missingDetails.push("topic");
+  } else if (lower.includes("parent") || lower.includes("message") || lower.includes("weekly summary")) {
+    module = "parent_communication"; action = lower.includes("weekly") ? "weekly_summary_draft" : "parent_message_draft";
+    if (!context.studentName && !context.studentId) missingDetails.push("studentName_or_studentId");
+  } else if (lower.includes("live class") || lower.includes("online class")) {
+    module = "live_classes"; action = "live_class_schedule_draft";
+    if (!context.batchId) missingDetails.push("batchId");
+    if (!context.topic) missingDetails.push("topic");
+    if (!context.time) missingDetails.push("time");
+  } else if (lower.includes("report") || lower.includes("summary") || lower.includes("revenue") || lower.includes("branch")) {
+    module = "reports"; action = lower.includes("branch") ? "branch_summary" : "owner_summary";
+  } else if (lower.includes("3.0") || lower.includes("v3") || lower.includes("subscription")) {
+    module = "subscriptions"; action = part84IsSensitive(lower) ? "v3_access_change" : "v3_access_rule_view";
+  }
+
+  if (lower.includes("delete")) action = "delete";
+  if (lower.includes("export")) action = "export";
+  if (lower.includes("refund")) action = "refund";
+  if (lower.includes("discount")) action = "discount";
+
+  if (lower.includes("aman") && !context.studentId) {
+    ambiguityOptions.push({ type: "student", name: "Aman", options: ["Aman Sharma — Class 10 Maths", "Aman Verma — Class 9 Science"] });
+  }
+
+  const sensitive = part84IsSensitive(`${action} ${text}`);
+  return {
+    command: text,
+    module,
+    action,
+    confidence: text ? 0.82 : 0.2,
+    sensitive,
+    missingDetails,
+    ambiguityOptions,
+    needsMoreInfo: missingDetails.length > 0 || ambiguityOptions.length > 0,
+    questions: missingDetails.map((field) => `Please provide ${field}.`),
+    detectedAt: new Date().toISOString()
+  };
+}
+
+function part84BuildPreview(parseResult, access, context = {}) {
+  const token = `PX84-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`.toUpperCase();
+  const steps = [
+    "Validate role, instituteId and module permission",
+    "Resolve missing details and ambiguous records",
+    "Show complete action preview",
+    "Ask explicit confirmation",
+    "For sensitive actions, verify institute owner",
+    "Write audit log"
+  ];
+  return {
+    previewId: token,
+    confirmationToken: token,
+    command: parseResult.command,
+    module: parseResult.module,
+    action: parseResult.action,
+    sensitive: parseResult.sensitive,
+    ownerVerificationRequired: Boolean(parseResult.sensitive || access.ownerVerificationRequired),
+    confirmationRequired: true,
+    executionMode: "safe_simulation_foundation",
+    willNotExecuteUntilConfirmed: true,
+    access,
+    contextPreview: {
+      instituteId: context.instituteId || access.instituteId,
+      branchId: context.branchId || access.branchId || null,
+      studentId: context.studentId || access.studentId || null,
+      childId: context.childId || access.childId || null,
+      providedDetails: Object.keys(context || {}).filter((k) => context[k])
+    },
+    steps,
+    safeMessage: parseResult.sensitive
+      ? "Sensitive action detected. Owner verification is required and VANI will not execute it directly."
+      : "Action preview ready. Please confirm before execution.",
+    createdAt: new Date().toISOString()
+  };
+}
+
+function part84ExecutePreview(body = {}) {
+  const confirmed = body.confirmed === true || body.confirmed === "true";
+  const token = body.confirmationToken || body.previewId;
+  const sensitive = body.sensitive === true || body.sensitive === "true" || part84IsSensitive(body.action);
+  const ownerVerified = body.ownerVerified === true || body.ownerVerified === "true" || body.ownerVerificationCode === "DEMO-OWNER-VERIFY";
+
+  if (!token) return { success: false, code: "TOKEN_MISSING", message: "Confirmation token missing." };
+  if (!confirmed) return { success: false, code: "CONFIRMATION_REQUIRED", message: "Please confirm before VANI executes this action." };
+  if (sensitive && !ownerVerified) {
+    return { success: false, code: "OWNER_VERIFICATION_REQUIRED", message: "Sensitive action needs institute owner verification." };
+  }
+
+  return {
+    success: true,
+    executionMode: "safe_simulation_foundation",
+    executed: true,
+    realDatabaseWrite: false,
+    message: "Action safely simulated and audit log prepared. Production DB write will be connected after final schema hardening.",
+    auditLog: {
+      event: "part84_vani_action_execute_simulation",
+      action: body.action || "unknown",
+      module: body.module || "unknown",
+      sensitive,
+      ownerVerified: Boolean(ownerVerified),
+      confirmationToken: token,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+app.get("/api/part84/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 84 — Advanced VANI Action Engine",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 84,
+    nextPart: "Part 85 — VANI Admission Assistant",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/advanced-vani-action-engine", "/vani-action-engine", "/vani-actions", "/advanced-vani", "/vani-command-engine", "/vani-engine"],
+    apiRoutes: [
+      "/api/part84/config", "/api/part84/features", "/api/part84/modules", "/api/part84/roles", "/api/part84/permissions",
+      "/api/part84/command/parse", "/api/part84/action/preview", "/api/part84/action/execute", "/api/part84/vani/command"
+    ],
+    engineRules: ["parse", "missing-details", "ambiguity-resolution", "permission-check", "preview", "confirmation", "owner-verification", "audit-log"]
+  });
+});
+
+app.get("/api/part84/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "Advanced VANI Action Engine",
+    engineMode: "preview_confirm_execute_foundation",
+    languages: ["Hindi", "English", "Hinglish"],
+    voice: { greeting: "Namaste, main VANI hoon. Main action karne se pehle preview aur confirmation loongi.", listenReplySupported: true },
+    safety: {
+      backendPermissionRequired: true,
+      explicitConfirmationRequired: true,
+      ownerVerificationForSensitiveActions: true,
+      privateScreenFirst: true,
+      auditLogRequired: true,
+      realWritesInThisPart: false
+    }
+  });
+});
+
+app.get("/api/part84/features", (req, res) => {
+  res.json({
+    success: true,
+    features: [
+      { key: "intent_parser", name: "Intent Parser", why: "VANI must understand what the user wants." },
+      { key: "missing_detail_questions", name: "Missing Detail Questions", why: "VANI should ask politely instead of guessing." },
+      { key: "ambiguity_resolver", name: "Ambiguity Resolver", why: "Same names/records must be resolved safely." },
+      { key: "role_permission_guard", name: "Role Permission Guard", why: "Every action must respect role and institute scope." },
+      { key: "preview_confirmation", name: "Preview + Confirmation", why: "Create/update/send/delete actions need explicit approval." },
+      { key: "owner_verification", name: "Owner Verification", why: "Refunds, discounts, deletes, exports and subscription changes are sensitive." },
+      { key: "audit_log", name: "Audit Log", why: "Every executed VANI action must be traceable." }
+    ]
+  });
+});
+
+app.get("/api/part84/modules", (req, res) => res.json({ success: true, modules: part84Modules }));
+app.get("/api/part84/roles", (req, res) => res.json({ success: true, roles: part84RoleMatrix }));
+app.get("/api/part84/permissions", (req, res) => res.json({ success: true, permissions: { roles: part84RoleMatrix, modules: part84Modules, sensitiveActions: part84SensitiveActions } }));
+
+app.post("/api/part84/command/parse", (req, res) => {
+  const parse = part84ParseCommand(req.body?.command || req.query?.command || "", req.body || {});
+  const access = part84AccessCheck({ ...(req.body || {}), module: parse.module, action: parse.action });
+  res.json({ success: true, parse, access });
+});
+
+app.get("/api/part84/command/parse", (req, res) => {
+  const parse = part84ParseCommand(req.query.q || req.query.command || "", req.query || {});
+  const access = part84AccessCheck({ ...(req.query || {}), module: parse.module, action: parse.action });
+  res.json({ success: true, parse, access });
+});
+
+app.post("/api/part84/action/preview", (req, res) => {
+  const parse = req.body?.parse || part84ParseCommand(req.body?.command || "", req.body || {});
+  const access = part84AccessCheck({ ...(req.body || {}), module: parse.module, action: parse.action });
+  if (!access.allowedPreview) return res.status(403).json({ success: false, access, message: access.reason });
+  if (parse.needsMoreInfo) return res.json({ success: true, needsMoreInfo: true, parse, access, questions: parse.questions, ambiguityOptions: parse.ambiguityOptions });
+  res.json({ success: true, preview: part84BuildPreview(parse, access, req.body || {}) });
+});
+
+app.post("/api/part84/action/execute", (req, res) => {
+  const access = part84AccessCheck(req.body || {});
+  if (!access.allowedExecute && !(access.sensitive && access.role === "institute_owner")) {
+    return res.status(403).json({ success: false, access, message: access.reason });
+  }
+  const result = part84ExecutePreview(req.body || {});
+  res.status(result.success ? 200 : 400).json(result);
+});
+
+app.get("/api/part84/missing-details", (req, res) => {
+  const parse = part84ParseCommand(req.query.q || req.query.command || "", req.query || {});
+  res.json({ success: true, needsMoreInfo: parse.needsMoreInfo, missingDetails: parse.missingDetails, questions: parse.questions });
+});
+
+app.get("/api/part84/ambiguity-check", (req, res) => {
+  const parse = part84ParseCommand(req.query.q || req.query.command || "", req.query || {});
+  res.json({ success: true, ambiguityFound: parse.ambiguityOptions.length > 0, ambiguityOptions: parse.ambiguityOptions });
+});
+
+app.get("/api/part84/audit-log", (req, res) => {
+  res.json({
+    success: true,
+    mode: "demo_audit_log",
+    logs: [
+      { event: "vani_command_parsed", module: "admissions", action: "create_student_draft", createdAt: new Date().toISOString() },
+      { event: "vani_preview_generated", module: "attendance", action: "mark_attendance_draft", createdAt: new Date().toISOString() },
+      { event: "sensitive_action_blocked_without_owner_verification", module: "fees", action: "refund", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part84/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI",
+    greeting: "Namaste, main VANI hoon. Main action karne se pehle preview aur confirmation loongi. Aap kya karna chahte hain?",
+    exampleCommands: [
+      "VANI, new student admission draft banao",
+      "VANI, attendance draft banao",
+      "VANI, fee reminder draft banao",
+      "VANI, homework assignment banao",
+      "VANI, branch summary dikhao"
+    ],
+    privateScreenFirstReminder: "Sensitive finance/student data screen par dikhaya jayega, loudly nahi bola jayega."
+  });
+});
+
+app.post("/api/part84/vani/command", (req, res) => {
+  const command = String(req.body?.command || req.query?.command || "").trim();
+  const parse = part84ParseCommand(command, req.body || {});
+  const access = part84AccessCheck({ ...(req.body || {}), module: parse.module, action: parse.action });
+
+  if (!access.allowedPreview) {
+    return res.status(403).json({
+      success: false,
+      assistant: "VANI",
+      parse,
+      access,
+      spokenSafeSummary: "Is action ke liye aapke role ya institute scope me permission nahi hai.",
+      privateScreenFirst: true
+    });
+  }
+
+  if (parse.needsMoreInfo) {
+    return res.json({
+      success: true,
+      assistant: "VANI",
+      mode: "needs_more_info",
+      parse,
+      access,
+      spokenSafeSummary: "Mujhe kuch details chahiye. Screen par questions dikh rahe hain.",
+      questions: parse.questions,
+      ambiguityOptions: parse.ambiguityOptions,
+      privateScreenFirst: true
+    });
+  }
+
+  const preview = part84BuildPreview(parse, access, req.body || {});
+  res.json({
+    success: true,
+    assistant: "VANI",
+    mode: "preview_ready",
+    parse,
+    access,
+    preview,
+    spokenSafeSummary: preview.sensitive
+      ? "Sensitive action preview ready hai. Owner verification ke bina execute nahi hoga."
+      : "Action preview ready hai. Confirm karne ke baad safe execution hoga.",
+    privateScreenFirst: Boolean(preview.sensitive)
+  });
+});
+
+app.get("/api/part84/vani/command", (req, res) => {
+  const command = String(req.query.q || req.query.command || "").trim();
+  const parse = part84ParseCommand(command, req.query || {});
+  const access = part84AccessCheck({ ...(req.query || {}), module: parse.module, action: parse.action });
+  if (!access.allowedPreview) {
+    return res.status(403).json({ success: false, assistant: "VANI", parse, access, spokenSafeSummary: "Is action ke liye permission nahi hai.", privateScreenFirst: true });
+  }
+  if (parse.needsMoreInfo) {
+    return res.json({ success: true, assistant: "VANI", mode: "needs_more_info", parse, access, questions: parse.questions, ambiguityOptions: parse.ambiguityOptions, spokenSafeSummary: "Mujhe kuch details chahiye." });
+  }
+  const preview = part84BuildPreview(parse, access, req.query || {});
+  res.json({ success: true, assistant: "VANI", mode: "preview_ready", parse, access, preview, spokenSafeSummary: "Action preview ready hai. Confirm karne ke baad safe execution hoga." });
+});
+
+app.get("/api/part84/activity", (req, res) => {
+  res.json({ success: true, activity: [
+    { type: "advanced_vani_engine_created", message: "Part 84 Advanced VANI Action Engine active.", createdAt: new Date().toISOString() },
+    { type: "preview_confirmation_rule", message: "VANI must preview and confirm before create/update/send/delete.", createdAt: new Date().toISOString() },
+    { type: "owner_verification_rule", message: "Sensitive actions require owner verification.", createdAt: new Date().toISOString() }
+  ] });
+});
+
+app.get("/api/part84/checklist", (req, res) => {
+  res.json({ success: true, checklist: [
+    "Status API returns success true",
+    "Advanced VANI page opens",
+    "Command parse detects module and action",
+    "Missing detail questions appear instead of guessing",
+    "Ambiguous names show options",
+    "Role permissions block unauthorized users",
+    "Preview generated before execution",
+    "Execution requires confirmation token",
+    "Sensitive actions require owner verification",
+    "Audit log foundation returns entries"
+  ] });
+});
+
+app.get("/api/part84/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part84-advanced-vani-action-engine-readiness",
+    generatedAt: new Date().toISOString(),
+    ownerVerificationRequiredForSensitiveExports: true,
+    data: { modules: part84Modules, roles: part84RoleMatrix, sensitiveActions: part84SensitiveActions }
+  });
+});
+
+app.get("/api/part84/demo", (req, res) => {
+  const command = "VANI, attendance draft banao";
+  const context = { role: "teacher", instituteId: "NX-DEMO-INST-001", batchId: "BAT-10-MATH-A", date: "today", studentId: "STU-DEMO-001" };
+  const parse = part84ParseCommand(command, context);
+  const access = part84AccessCheck({ ...context, module: parse.module, action: parse.action });
+  res.json({ success: true, demo: { command, parse, access, preview: part84BuildPreview(parse, access, context), nextPart: "Part 85 — VANI Admission Assistant" } });
+});
+// ================= END PART 84 =================
+
 
 
 
