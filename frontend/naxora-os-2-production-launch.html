@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — Production Launch</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/naxora-os-2-production-launch.css" />
+</head>
+<body>
+  <main class="launch-page">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 110 • NAXORA OS 2.0</p>
+        <h1>Production Launch Dashboard</h1>
+        <p class="lead">Final 2.0 launch layer with module map, launch gates, VANI readiness, subscription policy, deployment checklist and honest known limitations.</p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">VANI Launch Assistant</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Tap Start, then ask 2.0 launch readiness.</p>
+        <div class="voice-actions">
+          <button id="startVaniBtn">Start VANI</button>
+          <button id="listenVaniBtn">Listen</button>
+          <button id="muteVaniBtn">Mute</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Access</p>
+      <div class="controls">
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="branchId" value="BR-DEMO-001" />
+        <input id="studentId" value="STU-DEMO-001" />
+        <select id="roleSelect">
+          <option value="institute_owner" selected>Owner Full Launch Review</option>
+          <option value="branch_manager">Branch Manager Summary</option>
+          <option value="teacher">Teacher 2.0 Summary</option>
+          <option value="accountant">Finance Launch Summary</option>
+          <option value="receptionist_counsellor">Admissions Launch Summary</option>
+          <option value="student">Student 2.0 Summary</option>
+          <option value="parent">Parent 2.0 Summary</option>
+        </select>
+        <button id="demoBtn">Load Demo</button>
+      </div>
+      <pre id="accessBox" class="code">Waiting...</pre>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">VANI Command</p>
+        <h2>Speak or type</h2>
+        <p>Example: “VANI, 2.0 launch readiness dikhao aur known limitations batao”.</p>
+        <div class="controls">
+          <input id="vaniCommand" value="VANI, 2.0 launch readiness dikhao aur known limitations batao" />
+          <button id="askVaniBtn">Ask VANI</button>
+        </div>
+        <pre id="vaniOutput" class="code">Waiting...</pre>
+      </article>
+      <article class="panel">
+        <p class="kicker">Launch Summary</p>
+        <div id="summaryBox" class="metrics"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel"><p class="kicker">Module Map</p><div id="moduleBox" class="list"></div></article>
+      <article class="panel"><p class="kicker">Launch Gates</p><div id="gatesBox" class="list"></div></article>
+    </section>
+
+    <section class="grid">
+      <article class="panel"><p class="kicker">VANI Readiness</p><div id="vaniBox" class="list"></div></article>
+      <article class="panel"><p class="kicker">Integrations Status</p><div id="integrationsBox" class="list"></div></article>
+    </section>
+
+    <section class="grid">
+      <article class="panel"><p class="kicker">Subscription Policy</p><div id="subscriptionBox" class="list"></div></article>
+      <article class="panel"><p class="kicker">Known Limitations</p><div id="limitationsBox" class="list"></div></article>
+    </section>
+
+    <section class="grid">
+      <article class="panel"><p class="kicker">Deployment Checklist</p><div id="deploymentBox" class="list"></div></article>
+      <article class="panel"><p class="kicker">Role Scoped Summary</p><div id="scopeBox" class="list"></div></article>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Testing links</p>
+      <div class="links">
+        <a href="/api/part110/status" target="_blank">Status</a>
+        <a href="/api/part110/demo" target="_blank">Demo</a>
+        <a href="/api/part110/module-map" target="_blank">Module Map</a>
+        <a href="/api/part110/launch-gates" target="_blank">Launch Gates</a>
+        <a href="/api/part110/vani-readiness" target="_blank">VANI Readiness</a>
+        <a href="/api/part110/known-limitations" target="_blank">Known Limitations</a>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/vani-voice-starter.js"></script>
+  <script src="/naxora-os-2-production-launch.js"></script>
+</body>
+</html>

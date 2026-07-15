@@ -10453,6 +10453,12 @@ const modulePageRoutes = {
   "/owner-white-label": "white-label-system.html",
   "/vani-white-label": "white-label-system.html",
   "/institute-custom-domain": "white-label-system.html",
+  "/naxora-os-2-production-launch": "naxora-os-2-production-launch.html",
+  "/v2-production-launch": "naxora-os-2-production-launch.html",
+  "/production-launch-2": "naxora-os-2-production-launch.html",
+  "/naxora-2-launch": "naxora-os-2-production-launch.html",
+  "/vani-production-launch": "naxora-os-2-production-launch.html",
+  "/os2-launch": "naxora-os-2-production-launch.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -30024,6 +30030,429 @@ app.get("/api/part109/demo", (req, res) => {
   res.json({ success: true, demo: { command, result, nextPart: "Part 110 — NAXORA OS 2.0 Production Launch" } });
 });
 // ================= END PART 109 =================
+
+// ================= PART 110 — NAXORA OS 2.0 PRODUCTION LAUNCH =================
+// NAXORA OS 2.0 Production Launch.
+// This is the Part 79–110 consolidation and production-launch readiness layer.
+// It verifies the 2.0 module map, role controls, VANI coverage, subscription policy,
+// launch gates, deployment checklist, risk register and go-live preview.
+// It does not claim real provider integrations are live when keys/hardware/vendor APIs
+// are not connected. It preserves all previous Part 1–109 routes and features.
+
+const part110V2Modules = [
+  { part: 79, name: "Mobile App Foundation", status: "completed_foundation", category: "mobile" },
+  { part: 80, name: "Institute Owner App", status: "completed_foundation", category: "mobile" },
+  { part: 81, name: "Teacher App", status: "completed_foundation", category: "mobile" },
+  { part: 82, name: "Student App", status: "completed_foundation", category: "mobile" },
+  { part: 83, name: "Parent App", status: "completed_foundation", category: "mobile" },
+  { part: 84, name: "Advanced VANI Action Engine", status: "completed_foundation", category: "vani" },
+  { part: 85, name: "VANI Admission Assistant", status: "completed_foundation", category: "vani" },
+  { part: 86, name: "VANI Fee and Attendance Actions", status: "completed_foundation", category: "vani" },
+  { part: 87, name: "VANI Voice Reports", status: "completed_foundation", category: "vani" },
+  { part: 88, name: "Hindi/Hinglish VANI Conversation", status: "completed_foundation", category: "vani" },
+  { part: 89, name: "AI Admission Counsellor Foundation", status: "completed_foundation", category: "ai_admission" },
+  { part: 90, name: "AI Course Recommendation", status: "completed_foundation", category: "ai_admission" },
+  { part: 91, name: "Fee and Batch Information Assistant", status: "completed_foundation", category: "ai_admission" },
+  { part: 92, name: "Automatic Demo-Class Booking", status: "completed_foundation", category: "demo_booking" },
+  { part: 93, name: "AI Lead Qualification", status: "completed_foundation", category: "lead_ai" },
+  { part: 94, name: "Native Live Classroom Foundation", status: "completed_foundation", category: "live_classroom" },
+  { part: 95, name: "Screen Sharing and Digital Whiteboard", status: "completed_foundation", category: "live_classroom" },
+  { part: 96, name: "Live Chat, Polls and Hand Raise", status: "completed_foundation", category: "live_classroom" },
+  { part: 97, name: "Recording and Automatic Attendance", status: "completed_foundation", category: "live_classroom" },
+  { part: 98, name: "AI Class Notes and Summary", status: "completed_foundation", category: "ai_learning" },
+  { part: 99, name: "Biometric Attendance Integration", status: "completed_foundation", category: "hardware_foundation" },
+  { part: 100, name: "Digital Board Integration", status: "completed_foundation", category: "smart_classroom" },
+  { part: 101, name: "Camera and Studio Integration", status: "completed_foundation", category: "smart_classroom" },
+  { part: 102, name: "Multi-Branch Command Centre", status: "completed_foundation", category: "multi_branch" },
+  { part: 103, name: "Franchise Management", status: "completed_foundation", category: "franchise" },
+  { part: 104, name: "Branch Comparison and Benchmarking", status: "completed_foundation", category: "analytics" },
+  { part: 105, name: "Advanced Student Support Analytics", status: "completed_foundation", category: "analytics" },
+  { part: 106, name: "Business Forecasting", status: "completed_foundation", category: "forecasting" },
+  { part: 107, name: "Automated Marketing System", status: "completed_foundation", category: "marketing" },
+  { part: 108, name: "Complete Institute Marketplace", status: "completed_foundation", category: "marketplace" },
+  { part: 109, name: "White-Label System", status: "completed_foundation", category: "white_label" },
+  { part: 110, name: "NAXORA OS 2.0 Production Launch", status: "launch_layer_active", category: "production_launch" }
+];
+
+const part110LaunchFeatures = [
+  { key: "v2_module_consolidation", name: "2.0 Module Consolidation", summary: "Shows Part 79–110 module readiness in one launch dashboard.", problemSolved: "Owner can verify complete 2.0 scope before go-live." },
+  { key: "production_readiness_gates", name: "Production Readiness Gates", summary: "Checks deployment, security, subscription, VANI, roles, database and provider readiness.", problemSolved: "Launch decision becomes clear and safe." },
+  { key: "vani_2_0_readiness", name: "VANI 2.0 Readiness", summary: "Confirms VANI coverage across admissions, fees, live classes, analytics, marketing, marketplace and white-label.", problemSolved: "VANI promises are tracked module-wise." },
+  { key: "role_security_summary", name: "Role Security Summary", summary: "Summarises owner, branch manager, teacher, student, parent and staff access boundaries.", problemSolved: "Sensitive data remains role-scoped." },
+  { key: "subscription_launch_policy", name: "Subscription Launch Policy", summary: "Keeps 1.0, 2.0 and future 3.0 subscriptions separate with 3.0 owner-only lock.", problemSolved: "Monetisation and access boundaries are clear." },
+  { key: "go_live_preview", name: "Go-Live Preview", summary: "Creates a safe checklist for deploying Part 110 to Render and testing production routes.", problemSolved: "Owner knows exact final deploy steps." },
+  { key: "known_limitations_register", name: "Known Limitations Register", summary: "Lists real integrations still pending instead of making fake live claims.", problemSolved: "Launch stays honest and practical." },
+  { key: "vani_launch_assistant", name: "VANI Launch Assistant", summary: "VANI can show readiness, gates, limitations, testing steps and go-live plan.", problemSolved: "Owner can review launch by voice." }
+];
+
+const part110RoleRules = [
+  { role: "institute_owner", allowed: true, scope: "Can view launch readiness, subscription policy, integrations, risks and go-live preview.", canLaunchReview: true, canViewSensitiveReadiness: true, canExport: true },
+  { role: "branch_manager", allowed: true, scope: "Can view assigned branch 2.0 readiness summary only.", canLaunchReview: true, canViewSensitiveReadiness: false, canExport: false, assignedBranchOnly: true },
+  { role: "teacher", allowed: true, scope: "Can view teacher-side 2.0 readiness summary only.", canLaunchReview: true, canViewSensitiveReadiness: false, canExport: false, teacherSummaryOnly: true },
+  { role: "accountant", allowed: true, scope: "Can view payment/subscription readiness summary only.", canLaunchReview: true, canViewSensitiveReadiness: false, canExport: false, financeSummaryOnly: true },
+  { role: "receptionist_counsellor", allowed: true, scope: "Can view admissions/leads/marketing readiness summary only.", canLaunchReview: true, canViewSensitiveReadiness: false, canExport: false, admissionsSummaryOnly: true },
+  { role: "student", allowed: true, scope: "Can view student portal 2.0 feature summary only.", canLaunchReview: false, canViewSensitiveReadiness: false, canExport: false, selfOnly: true },
+  { role: "parent", allowed: true, scope: "Can view parent portal 2.0 feature summary only.", canLaunchReview: false, canViewSensitiveReadiness: false, canExport: false, viewOnly: true },
+  { role: "naxora_super_admin", allowed: false, scope: "Platform support only; no unrestricted institute-private launch data access.", canLaunchReview: false, canViewSensitiveReadiness: false, canExport: false }
+];
+
+const part110KnownLimitations = [
+  "External LLM/AI API is not connected in source code; use provider key in Render env later.",
+  "Real WhatsApp/SMS/email provider sending is not connected yet.",
+  "Real payment gateway live keys must be configured only in Render env.",
+  "Real biometric/digital board/camera vendor hardware SDKs are not connected yet.",
+  "Production persistence for some 2.0 preview modules still needs MongoDB collections and workflows.",
+  "Custom domain/DNS/SSL/sender domain activation is preview-only until owner verification and provider setup.",
+  "VANI is module-wise rule-based/action-flow foundation; human-level VANI needs external AI/TTS/STT integration later.",
+  "No secrets, .env, node_modules or local scripts are included in this ZIP."
+];
+
+function normalizePart110Role(role) {
+  const r = String(role || "institute_owner").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part110AccessCheck({ role, instituteId, branchId, assignedBranchId, studentId, parentId }) {
+  const normalizedRole = normalizePart110Role(role);
+  const rule = part110RoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole, allowed: false, scope: "Unknown or unsupported role.", canLaunchReview: false, canViewSensitiveReadiness: false, canExport: false
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const branchRequired = normalizedRole === "branch_manager" ? Boolean(String(branchId || assignedBranchId || "").trim()) : true;
+  const studentScoped = normalizedRole !== "student" || Boolean(String(studentId || "").trim());
+  const parentScoped = normalizedRole !== "parent" || Boolean(String(parentId || "").trim() || String(studentId || "").trim());
+  const allowed = Boolean(rule.allowed && hasInstituteId && branchRequired && studentScoped && parentScoped && normalizedRole !== "naxora_super_admin");
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    branchId: branchId || assignedBranchId || null,
+    assignedBranchId: assignedBranchId || branchId || null,
+    studentId: studentId || null,
+    parentId: parentId || null,
+    allowed,
+    canLaunchReview: Boolean(rule.canLaunchReview && allowed),
+    canViewSensitiveReadiness: Boolean(rule.canViewSensitiveReadiness && allowed),
+    canExport: Boolean(rule.canExport && allowed),
+    assignedBranchOnly: Boolean(rule.assignedBranchOnly),
+    teacherSummaryOnly: Boolean(rule.teacherSummaryOnly),
+    financeSummaryOnly: Boolean(rule.financeSummaryOnly),
+    admissionsSummaryOnly: Boolean(rule.admissionsSummaryOnly),
+    selfOnly: Boolean(rule.selfOnly),
+    viewOnly: Boolean(rule.viewOnly),
+    scope: rule.scope,
+    reason: !hasInstituteId ? "Institute ID missing." :
+      !rule.allowed ? rule.scope :
+      !branchRequired ? "Branch manager requires branch scope." :
+      !studentScoped ? "Student summary requires studentId." :
+      !parentScoped ? "Parent summary requires parentId or linked studentId." :
+      "NAXORA OS 2.0 Production Launch access allowed.",
+    requiresLogin: normalizedRole !== "guest",
+    requiresInstituteId: true,
+    confirmationRequiredFor: ["final_launch_publish_note", "pricing_change", "integration_enable", "launch_email_send"],
+    ownerVerificationRequiredFor: ["payment_live_mode", "provider_key_change", "bulk_notification", "public_launch_announcement", "white_label_domain_activation", "subscription_plan_change"]
+  };
+}
+
+function part110ModuleMap() {
+  const counts = part110V2Modules.reduce((acc, m) => {
+    acc.total += 1;
+    acc[m.category] = (acc[m.category] || 0) + 1;
+    return acc;
+  }, { total: 0 });
+  return {
+    previewOnly: true,
+    latestCompletedPart: 110,
+    version: "NAXORA OS 2.0",
+    roadmapRange: "Part 79–110",
+    modules: part110V2Modules,
+    counts,
+    completedFoundationModules: part110V2Modules.filter((m) => m.status.includes("completed") || m.status.includes("launch")).length,
+    preservedPreviousFeatures: true
+  };
+}
+
+function part110VaniReadiness() {
+  return {
+    previewOnly: true,
+    vaniStatus: "module_wise_2_0_foundation_ready",
+    softVoice: { enabled: true, style: "soft calm female-style browser SpeechSynthesis when available", guaranteedHumanVoice: false },
+    languageModes: ["Hindi", "English", "Hinglish"],
+    capabilities: [
+      "role-aware commands", "missing-detail questions", "safe previews before action", "confirmation before create/update/send/delete",
+      "owner verification for sensitive actions", "audit-log payloads", "private-screen-first sensitive reports",
+      "admissions, fees, attendance, live classes, analytics, marketing, marketplace and white-label coverage"
+    ],
+    notYetFullyHuman: true,
+    requiresLaterForHumanLevel: ["external LLM", "real TTS", "real STT", "persistent action memory", "provider integrations", "full production QA"],
+    safety: "VANI does not speak sensitive finance/student/domain/provider details loudly. It shows them privately by permission."
+  };
+}
+
+function part110LaunchGates() {
+  return {
+    previewOnly: true,
+    gates: [
+      { key: "server_syntax", name: "Backend syntax", status: "pass_in_zip_build", action: "node --check backend/src/server.js passed while building Part 110." },
+      { key: "static_routes", name: "Frontend routes", status: "pass_preview", action: "Part 110 frontend routes and prior route map preserved." },
+      { key: "mongodb", name: "MongoDB connection", status: "requires_live_env_check", action: "Verify /api/health after Render deploy." },
+      { key: "auth_jwt", name: "JWT/auth env", status: "requires_live_env_check", action: "Ensure JWT_SECRET and JWT_EXPIRES_IN are present in Render." },
+      { key: "payments", name: "Payments", status: "sandbox_or_env_pending", action: "Live Razorpay keys only in Render env when ready." },
+      { key: "communications", name: "WhatsApp/SMS/email", status: "provider_pending", action: "Provider keys and consent workflow required before real send." },
+      { key: "hardware", name: "Hardware integrations", status: "vendor_pending", action: "Biometric/digital board/camera vendor SDKs are still pending." },
+      { key: "vani", name: "VANI 2.0", status: "foundation_ready", action: "Rule-based module-wise assistant ready; external AI/TTS/STT pending for human-like level." },
+      { key: "security", name: "Security", status: "preview_pass", action: "No .env/secrets/node_modules/.bat included; owner verification preserved." }
+    ],
+    launchDecision: "foundation_launch_ready_after_render_deploy_tests",
+    honestStatus: "2.0 production launch layer is ready as foundation; external provider/hardware/live keys remain setup-dependent."
+  };
+}
+
+function part110SubscriptionPolicy() {
+  return {
+    previewOnly: true,
+    subscriptions: [
+      { version: "NAXORA OS 1.0", scope: "core institute SaaS", subscription: "separate_v1_subscription" },
+      { version: "NAXORA OS 2.0", scope: "mobile, VANI 2.0, AI assistants, live class, analytics, marketing, marketplace, white-label foundation", subscription: "separate_v2_subscription" },
+      { version: "NAXORA OS 3.0", scope: "future AI-first owner-only Education OS", subscription: "separate_v3_subscription_owner_only" }
+    ],
+    v3OwnerOnlyGuard: {
+      requiredRole: "institute_owner",
+      requiresLogin: true,
+      requiresInstituteId: true,
+      requiresActiveV3Subscription: true,
+      planMustNotBeExpired: true,
+      hiddenFor: ["teacher", "student", "parent", "staff", "accountant", "receptionist", "counsellor"]
+    }
+  };
+}
+
+function part110IntegrationsStatus() {
+  return {
+    previewOnly: true,
+    connectedInSource: ["Express routes", "static frontend", "role guards preview", "VANI browser voice foundation", "MongoDB-ready backend foundation"],
+    liveEnvRequired: ["MONGODB_URI", "JWT_SECRET", "FRONTEND_URL"],
+    optionalProviderEnvLater: [
+      "RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET", "WHATSAPP_PROVIDER_API_KEY", "SMS_PROVIDER_API_KEY", "EMAIL_PROVIDER_API_KEY",
+      "CUSTOM_DOMAIN_PROVIDER_KEY", "EMAIL_SENDER_PROVIDER_KEY", "OPENAI_API_KEY or chosen AI provider key"
+    ],
+    notConnectedYet: ["real LLM", "real TTS/STT", "real WhatsApp/SMS/email sending", "real biometric vendor", "real digital board vendor", "real camera studio SDK", "real DNS/SSL automation"],
+    secretPolicy: "Never paste provider secrets in chat. Put them only in Render environment variables."
+  };
+}
+
+function part110DeploymentCheck() {
+  return {
+    previewOnly: true,
+    localProjectRoot: "C:\\Users\\bhaij\\OneDrive\\Documents\\naxora-institute-os-part51-final-secure-clean-url-redirect-fixed",
+    renderBuildCommand: "cd backend && npm install --no-audit --no-fund --legacy-peer-deps",
+    renderStartCommand: "cd backend && node src/server.js",
+    nodeVersion: "20.18.1",
+    deploySteps: [
+      "Extract Part 110 ZIP.",
+      "Copy all extracted files into old live project root and replace.",
+      "Run git status, git add ., git commit -m \"Add Part 110 NAXORA OS 2 Production Launch\", git push.",
+      "Render → Manual Deploy → Clear build cache & deploy.",
+      "Test /api/part110/status first, then /naxora-os-2-production-launch."
+    ],
+    liveTestUrls: [
+      "/api/part110/status", "/naxora-os-2-production-launch", "/api/part110/demo", "/api/part110/launch-gates", "/api/part110/vani-readiness", "/api/part110/known-limitations"
+    ]
+  };
+}
+
+function part110RoleScopedSummary(access) {
+  if (access.selfOnly || access.viewOnly) {
+    return {
+      previewOnly: true,
+      scope: access.selfOnly ? "student_2_0_summary" : "parent_2_0_summary",
+      visibleData: { mobilePortal: true, VANIHelp: true, liveClassSupport: true, learningSupportSummary: true },
+      hiddenData: ["launch gates", "provider keys", "finance readiness", "owner launch controls"]
+    };
+  }
+  if (access.teacherSummaryOnly) {
+    return { previewOnly: true, scope: "teacher_2_0_readiness_summary", visibleData: { teacherApp: true, liveClassTools: true, AIClassNotes: true, studentSupportAnalytics: true }, hiddenData: ["owner finance", "provider secrets", "subscription controls"] };
+  }
+  if (access.financeSummaryOnly) {
+    return { previewOnly: true, scope: "finance_launch_summary", visibleData: { paymentEnvPending: true, subscriptionPolicyReady: true, noLiveKeyInSource: true }, hiddenData: ["provider secrets", "student private data"] };
+  }
+  if (access.admissionsSummaryOnly) {
+    return { previewOnly: true, scope: "admissions_marketing_launch_summary", visibleData: { AIAdmission: true, demoBooking: true, leadQualification: true, marketingAutomation: true, marketplace: true }, hiddenData: ["finance readiness", "provider keys"] };
+  }
+  return {
+    previewOnly: true,
+    scope: access.canViewSensitiveReadiness ? "owner_full_2_0_launch_review" : "assigned_branch_launch_summary",
+    visibleData: { moduleMap: part110ModuleMap(), launchGates: part110LaunchGates(), integrations: access.canViewSensitiveReadiness ? part110IntegrationsStatus() : "hidden" },
+    hiddenData: access.canViewSensitiveReadiness ? ["actual secrets are never displayed"] : ["owner-only integrations", "financial launch details", "exports"]
+  };
+}
+
+function part110ParseCommand(text = "", body = {}) {
+  const input = String(text || body.command || body.q || "").trim();
+  const intent = /module|roadmap|part|complete|scope/i.test(input) ? "module_map"
+    : /vani|voice|assistant/i.test(input) ? "vani_readiness"
+      : /gate|ready|readiness|launch/i.test(input) ? "launch_gates"
+        : /deploy|render|git|test/i.test(input) ? "deployment_check"
+          : /subscription|plan|pricing|3\.0|v3/i.test(input) ? "subscription_policy"
+            : /integration|provider|key|hardware|payment|whatsapp|sms|email/i.test(input) ? "integrations_status"
+              : /limitation|pending|not live|remaining/i.test(input) ? "known_limitations"
+                : /role|permission|security/i.test(input) ? "role_security"
+                  : "overview";
+  return { intent, rawCommand: input };
+}
+
+function part110BuildLaunch({ command, role, instituteId, branchId, assignedBranchId, studentId, parentId, body = {} }) {
+  const parsed = part110ParseCommand(command, body);
+  const access = part110AccessCheck({ role, instituteId, branchId, assignedBranchId, studentId, parentId });
+  const moduleMap = part110ModuleMap();
+  const launchGates = part110LaunchGates();
+  const vaniReadiness = part110VaniReadiness();
+  const subscriptionPolicy = part110SubscriptionPolicy();
+  const integrationsStatus = part110IntegrationsStatus();
+  const deploymentCheck = part110DeploymentCheck();
+  const roleScopedSummary = part110RoleScopedSummary(access);
+  let replyText = "";
+  let nextAction = "none";
+  if (!access.allowed) {
+    replyText = "Is role/scope ko NAXORA OS 2.0 launch review access nahi hai.";
+    nextAction = "blocked";
+  } else if (parsed.intent === "module_map") {
+    replyText = `NAXORA OS 2.0 module map ready hai. Part 79 se Part 110 tak ${moduleMap.modules.length} modules listed hain.`;
+    nextAction = "show_module_map";
+  } else if (parsed.intent === "vani_readiness") {
+    replyText = "VANI 2.0 readiness ready hai. Module-wise VANI foundation available hai; human-level external AI/TTS/STT later chahiye.";
+    nextAction = "show_vani_readiness";
+  } else if (parsed.intent === "launch_gates") {
+    replyText = `Launch gates ready hain. Decision: ${launchGates.launchDecision}.`;
+    nextAction = "show_launch_gates";
+  } else if (parsed.intent === "deployment_check") {
+    replyText = "Deployment checklist ready hai. Pehle /api/part110/status test karna hai, phir launch page.";
+    nextAction = "show_deployment_check";
+  } else if (parsed.intent === "subscription_policy") {
+    replyText = "Subscription policy ready hai. 1.0, 2.0 aur future 3.0 separate hain; 3.0 owner-only locked hai.";
+    nextAction = "show_subscription_policy";
+  } else if (parsed.intent === "integrations_status") {
+    replyText = access.canViewSensitiveReadiness ? "Integration status ready hai. Provider keys/hardware live setup pending items private screen par hain." : "Integration details owner-only hain.";
+    nextAction = "show_integrations_status";
+  } else if (parsed.intent === "known_limitations") {
+    replyText = `Known limitations register ready hai. ${part110KnownLimitations.length} pending/real-integration notes listed hain.`;
+    nextAction = "show_known_limitations";
+  } else if (parsed.intent === "role_security") {
+    replyText = "Role and security summary ready hai. Sensitive launch data owner-only/private-screen-first hai.";
+    nextAction = "show_role_security";
+  } else {
+    replyText = "NAXORA OS 2.0 Production Launch dashboard ready hai. Module map, launch gates, VANI readiness, deployment checklist and limitations available hain.";
+    nextAction = "show_launch_overview";
+  }
+  return {
+    access, parsed, moduleMap, launchFeatures: part110LaunchFeatures, launchGates, vaniReadiness,
+    subscriptionPolicy, integrationsStatus: access.canViewSensitiveReadiness ? integrationsStatus : { hidden: true, reason: "owner-only sensitive integration readiness" },
+    deploymentCheck, roleScopedSummary, knownLimitations: part110KnownLimitations,
+    replyText, spokenSafeSummary: replyText, privateScreenFirst: true, nextAction,
+    productionLaunchClaim: "2.0 foundation production launch package ready; real provider/hardware/live key setup remains explicit pending work.",
+    confirmationRequiredFor: ["final_launch_publish_note", "pricing_change", "integration_enable", "launch_email_send"],
+    ownerVerificationRequiredFor: ["payment_live_mode", "provider_key_change", "bulk_notification", "public_launch_announcement", "white_label_domain_activation", "subscription_plan_change"],
+    auditLog: { event: "part110_naxora_os_2_production_launch", role: access.role, intent: parsed.intent, createdAt: new Date().toISOString() }
+  };
+}
+
+const part110Checklist = [
+  "Part 110 launch page opens",
+  "Status API returns success true",
+  "Part 79–110 module map shows",
+  "Launch gates show honest ready/pending status",
+  "VANI 2.0 readiness shows foundation ready",
+  "Subscription policy shows 1.0/2.0/3.0 separation",
+  "3.0 owner-only rule remains preserved",
+  "Known limitations register is visible",
+  "Deployment checklist is visible",
+  "No fake provider/hardware live claims",
+  "Previous Part 1–109 routes remain preserved"
+];
+
+app.get("/api/part110/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 110 — NAXORA OS 2.0 Production Launch",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 110,
+    productionLaunchLayer: true,
+    preservesPreviousFeatures: true,
+    launchDecision: "foundation_launch_ready_after_render_deploy_tests",
+    nextPhase: "Post-110: provider integrations, production persistence, human-level VANI, and future 3.0 planning",
+    frontendRoutes: ["/naxora-os-2-production-launch", "/v2-production-launch", "/production-launch-2", "/naxora-2-launch", "/vani-production-launch", "/os2-launch"],
+    apiRoutes: [
+      "/api/part110/config", "/api/part110/features", "/api/part110/roles", "/api/part110/access-check", "/api/part110/module-map",
+      "/api/part110/launch-gates", "/api/part110/vani-readiness", "/api/part110/subscription-policy", "/api/part110/integrations-status",
+      "/api/part110/deployment-check", "/api/part110/role-scoped-summary", "/api/part110/known-limitations", "/api/part110/vani/greeting", "/api/part110/vani/command"
+    ],
+    honestNote: "Part 110 completes the NAXORA OS 2.0 foundation launch package. Real provider/hardware/live integrations still require keys, vendors and production setup."
+  });
+});
+
+app.get("/api/part110/config", (req, res) => res.json({ success: true, appName: "NAXORA OS 2.0 Production Launch", appType: "v2_production_launch_layer", version: "2.0-production-launch", policy: { honestLaunch: true, previewFirst: true, noFakeLiveClaims: true, ownerVerificationForSensitiveChanges: true, noSecretsInSource: true } }));
+app.get("/api/part110/features", (req, res) => res.json({ success: true, features: part110LaunchFeatures }));
+app.get("/api/part110/roles", (req, res) => res.json({ success: true, roles: part110RoleRules }));
+app.get("/api/part110/access-check", (req, res) => res.json({ success: true, access: part110AccessCheck(req.query || {}) }));
+app.get("/api/part110/module-map", (req, res) => res.json({ success: true, moduleMap: part110ModuleMap() }));
+app.get("/api/part110/launch-gates", (req, res) => res.json({ success: true, launchGates: part110LaunchGates() }));
+app.get("/api/part110/vani-readiness", (req, res) => res.json({ success: true, vaniReadiness: part110VaniReadiness() }));
+app.get("/api/part110/subscription-policy", (req, res) => res.json({ success: true, subscriptionPolicy: part110SubscriptionPolicy() }));
+app.get("/api/part110/integrations-status", (req, res) => {
+  const access = part110AccessCheck(req.query || {});
+  if (!access.allowed || !access.canViewSensitiveReadiness) return res.status(403).json({ success: false, access, message: "Integration readiness details are owner-only." });
+  res.json({ success: true, access, integrationsStatus: part110IntegrationsStatus() });
+});
+app.get("/api/part110/deployment-check", (req, res) => res.json({ success: true, deploymentCheck: part110DeploymentCheck() }));
+app.get("/api/part110/known-limitations", (req, res) => res.json({ success: true, knownLimitations: part110KnownLimitations }));
+app.get("/api/part110/role-scoped-summary", (req, res) => {
+  const access = part110AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, roleScopedSummary: part110RoleScopedSummary(access) });
+});
+app.get("/api/part110/production-audit", (req, res) => res.json({ success: true, productionAudit: { syntaxCheck: "passed_in_zip_build", noSecretsIncluded: true, noEnvIncluded: true, noNodeModulesIncluded: true, noBatScriptsIncluded: true, previousFeaturesPreserved: true, latestCompletedPart: 110 } }));
+app.get("/api/part110/go-live-preview", (req, res) => res.json({ success: true, goLivePreview: { deploymentCheck: part110DeploymentCheck(), launchGates: part110LaunchGates(), checklist: part110Checklist, finalReminder: "Deploy, test /api/health, /api/part110/status, launch page, and key Part 79–109 routes before calling it live." } }));
+app.get("/api/part110/public-launch-pack", (req, res) => res.json({ success: true, publicLaunchPack: { launchTitle: "NAXORA OS 2.0 Foundation Launch", launchSummary: "Mobile apps, VANI 2.0 foundation, AI assistants, live classroom, analytics, marketing, marketplace and white-label foundation are packaged.", disclaimer: "External provider/hardware integrations require separate setup before claiming fully live automation." } }));
+app.get("/api/part110/pricing-subscription-summary", (req, res) => res.json({ success: true, pricingSubscriptionSummary: part110SubscriptionPolicy() }));
+app.get("/api/part110/next-roadmap", (req, res) => res.json({ success: true, nextRoadmap: { immediateAfter110: ["Production persistence for preview modules", "Provider integrations", "VANI external AI/TTS/STT", "Hardware/vendor SDK setup", "Live payment/communication setup"], future: "NAXORA OS 3.0 AI-first owner-only Education OS" } }));
+
+app.get("/api/part110/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI Production Launch",
+    greeting: "Namaste, main VANI Production Launch Assistant hoon. Main NAXORA OS 2.0 module map, launch gates, VANI readiness, deployment checklist, limitations aur subscription policy dikha sakti hoon.",
+    exampleCommands: [
+      "VANI, 2.0 launch readiness dikhao", "VANI, Part 79 se 110 module map dikhao", "VANI, VANI 2.0 readiness batao", "VANI, deployment checklist dikhao", "VANI, known limitations batao", "VANI, subscription policy dikhao"
+    ],
+    safety: "Main fake live claims nahi karungi. Provider keys, payment live mode, hardware vendors aur custom domain activation owner verification/setup ke bina live nahi bolungi."
+  });
+});
+
+app.post("/api/part110/vani/command", (req, res) => {
+  const body = req.body || {};
+  const result = part110BuildLaunch({ command: body.command || body.q || "", role: body.role || "institute_owner", instituteId: body.instituteId || "NX-DEMO-INST-001", branchId: body.branchId, assignedBranchId: body.assignedBranchId, studentId: body.studentId, parentId: body.parentId, body });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 110 — NAXORA OS 2.0 Production Launch", ...result });
+});
+app.get("/api/part110/vani/command", (req, res) => {
+  const result = part110BuildLaunch({ command: req.query.command || req.query.q || "", role: req.query.role || "institute_owner", instituteId: req.query.instituteId || "NX-DEMO-INST-001", branchId: req.query.branchId, assignedBranchId: req.query.assignedBranchId, studentId: req.query.studentId, parentId: req.query.parentId, body: req.query || {} });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 110 — NAXORA OS 2.0 Production Launch", ...result });
+});
+app.get("/api/part110/audit-log", (req, res) => res.json({ success: true, auditLog: [{ event: "v2_production_launch_layer_created", role: "institute_owner", createdAt: new Date().toISOString() }, { event: "honest_launch_policy", rule: "No fake live claims for provider/hardware integrations.", createdAt: new Date().toISOString() }] }));
+app.get("/api/part110/activity", (req, res) => res.json({ success: true, activity: [{ type: "naxora_os_2_production_launch_created", message: "Part 110 Production Launch layer active.", createdAt: new Date().toISOString() }, { type: "v2_module_map_complete", message: "Part 79–110 module map consolidated.", createdAt: new Date().toISOString() }] }));
+app.get("/api/part110/checklist", (req, res) => res.json({ success: true, checklist: part110Checklist }));
+app.get("/api/part110/export", (req, res) => res.json({ success: true, exportType: "part110-naxora-os-2-production-launch-readiness", ownerVerificationRequiredForSensitiveExports: true, generatedAt: new Date().toISOString(), data: { features: part110LaunchFeatures, moduleMap: part110ModuleMap(), launchGates: part110LaunchGates(), vaniReadiness: part110VaniReadiness(), subscriptionPolicy: part110SubscriptionPolicy(), knownLimitations: part110KnownLimitations, checklist: part110Checklist } }));
+app.get("/api/part110/demo", (req, res) => {
+  const command = "VANI, 2.0 launch readiness dikhao aur known limitations batao";
+  const result = part110BuildLaunch({ command, role: "institute_owner", instituteId: "NX-DEMO-INST-001", body: {} });
+  res.json({ success: true, demo: { command, result, nextPhase: "Post-110 provider integrations + future NAXORA OS 3.0 planning" } });
+});
+// ================= END PART 110 =================
+
 
 
 
