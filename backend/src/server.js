@@ -10423,6 +10423,12 @@ const modulePageRoutes = {
   "/vani-branch-benchmarking": "branch-comparison-benchmarking.html",
   "/owner-branch-benchmark": "branch-comparison-benchmarking.html",
   "/branch-performance-benchmark": "branch-comparison-benchmarking.html",
+  "/advanced-student-support-analytics": "advanced-student-support-analytics.html",
+  "/student-support-analytics": "advanced-student-support-analytics.html",
+  "/student-risk-support": "advanced-student-support-analytics.html",
+  "/vani-student-support": "advanced-student-support-analytics.html",
+  "/teacher-student-support": "advanced-student-support-analytics.html",
+  "/owner-student-support-analytics": "advanced-student-support-analytics.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -26542,6 +26548,869 @@ app.get("/api/part104/demo", (req, res) => {
   });
 });
 // ================= END PART 104 =================
+
+// ================= PART 105 — ADVANCED STUDENT SUPPORT ANALYTICS =================
+// NAXORA OS 2.0 Advanced Student Support Analytics.
+// This part creates a student-support analytics foundation for academic,
+// attendance, engagement, fee-followup-safe, doubt and parent communication signals.
+// It generates support score, risk bands, intervention drafts, teacher/counsellor
+// task previews, parent summary draft and VANI student support commands.
+// It does not diagnose students, label them publicly, auto-message parents,
+// or speak sensitive student details loudly.
+
+const part105SupportFeatures = [
+  {
+    key: "student_support_score",
+    name: "Student Support Score",
+    summary: "Combines academic, attendance, engagement and doubt signals into a support score.",
+    problemSolved: "Teachers can identify students who need extra help earlier."
+  },
+  {
+    key: "support_segments",
+    name: "Support Segments",
+    summary: "Groups students into stable, watch, support-needed and urgent-review academic bands.",
+    problemSolved: "Institute can prioritise support without public labels."
+  },
+  {
+    key: "academic_gap_detection",
+    name: "Academic Gap Detection",
+    summary: "Finds weak topics, low test scores and assignment gaps.",
+    problemSolved: "Teacher knows what to revise for each student."
+  },
+  {
+    key: "attendance_engagement_analysis",
+    name: "Attendance and Engagement Analysis",
+    summary: "Tracks attendance drop, live class participation and homework completion.",
+    problemSolved: "Low engagement can be followed up before performance drops."
+  },
+  {
+    key: "support_intervention_plan",
+    name: "Support Intervention Plan",
+    summary: "Creates teacher/counsellor support steps and revision plan drafts.",
+    problemSolved: "Analytics becomes practical action."
+  },
+  {
+    key: "parent_summary_draft",
+    name: "Parent Summary Draft",
+    summary: "Creates safe parent update draft without auto-send.",
+    problemSolved: "Parents can be informed after teacher review."
+  },
+  {
+    key: "role_scoped_student_support",
+    name: "Role-Scoped Student Support",
+    summary: "Owner sees authorised overview, teacher sees assigned students, parent/student see only own safe summary.",
+    problemSolved: "Student data stays private."
+  },
+  {
+    key: "vani_student_support",
+    name: "VANI Student Support Analytics",
+    summary: "VANI can show support overview, ask missing details, create support plan drafts and parent summaries.",
+    problemSolved: "Teacher/owner can act using voice safely."
+  }
+];
+
+const part105RoleRules = [
+  { role: "institute_owner", allowed: true, scope: "Can view authorised institute-level support analytics and count-level sensitive summaries.", canViewAllStudents: true, canViewStudentDetails: true, canCreateSupportPlan: true, canAssignTasks: true, canExport: true },
+  { role: "branch_manager", allowed: true, scope: "Can view assigned branch support analytics and create branch support plan drafts.", canViewAllStudents: false, canViewStudentDetails: true, canCreateSupportPlan: true, canAssignTasks: true, canExport: false, assignedBranchOnly: true },
+  { role: "teacher", allowed: true, scope: "Can view assigned students/batches and create academic support plan drafts.", canViewAllStudents: false, canViewStudentDetails: true, canCreateSupportPlan: true, canAssignTasks: true, canExport: false, assignedStudentsOnly: true },
+  { role: "receptionist_counsellor", allowed: true, scope: "Can view follow-up safe support queue and create counselling task drafts.", canViewAllStudents: false, canViewStudentDetails: false, canCreateSupportPlan: true, canAssignTasks: true, canExport: false, followupQueueOnly: true },
+  { role: "accountant", allowed: true, scope: "Can view fee-followup safe summary only; no academic private details.", canViewAllStudents: false, canViewStudentDetails: false, canCreateSupportPlan: false, canAssignTasks: false, canExport: false, feeSummaryOnly: true },
+  { role: "student", allowed: true, scope: "Can view own learning support summary and revision plan only.", canViewAllStudents: false, canViewStudentDetails: false, canCreateSupportPlan: false, canAssignTasks: false, canExport: false, selfOnly: true },
+  { role: "parent", allowed: true, scope: "Can view linked child's parent-safe support summary only.", canViewAllStudents: false, canViewStudentDetails: false, canCreateSupportPlan: false, canAssignTasks: false, canExport: false, viewOnly: true },
+  { role: "naxora_super_admin", allowed: false, scope: "Platform support only; no unrestricted student-private analytics access.", canViewAllStudents: false, canViewStudentDetails: false, canCreateSupportPlan: false, canAssignTasks: false, canExport: false }
+];
+
+const part105DemoStudents = [
+  {
+    studentId: "STU-DEMO-001",
+    name: "Aman",
+    branchId: "BR-DEMO-001",
+    batchId: "BAT-10-MATH-A",
+    teacherId: "TCH-DEMO-001",
+    className: "Class 10",
+    subjectFocus: "Maths",
+    attendancePercent: 92,
+    testAvgPercent: 82,
+    homeworkCompletionPercent: 88,
+    liveParticipationScore: 8,
+    doubtsOpen: 1,
+    weakTopics: ["Quadratic word problems"],
+    parentResponseStatus: "active_preview",
+    feeFollowupStatus: "clear_preview",
+    lastSupportAction: "revision_tip_sent_preview"
+  },
+  {
+    studentId: "STU-DEMO-002",
+    name: "Riya",
+    branchId: "BR-DEMO-001",
+    batchId: "BAT-10-MATH-A",
+    teacherId: "TCH-DEMO-001",
+    className: "Class 10",
+    subjectFocus: "Maths",
+    attendancePercent: 74,
+    testAvgPercent: 61,
+    homeworkCompletionPercent: 58,
+    liveParticipationScore: 4,
+    doubtsOpen: 5,
+    weakTopics: ["Quadratic formula", "Discriminant", "Sign mistakes"],
+    parentResponseStatus: "pending_preview",
+    feeFollowupStatus: "clear_preview",
+    lastSupportAction: "none_preview"
+  },
+  {
+    studentId: "STU-DEMO-003",
+    name: "Meera",
+    branchId: "BR-DEMO-002",
+    batchId: "BAT-10-SCI-A",
+    teacherId: "TCH-DEMO-002",
+    className: "Class 10",
+    subjectFocus: "Science",
+    attendancePercent: 81,
+    testAvgPercent: 69,
+    homeworkCompletionPercent: 72,
+    liveParticipationScore: 6,
+    doubtsOpen: 3,
+    weakTopics: ["Chemical equations", "Balancing reactions"],
+    parentResponseStatus: "active_preview",
+    feeFollowupStatus: "gentle_reminder_preview",
+    lastSupportAction: "teacher_checkin_preview"
+  },
+  {
+    studentId: "STU-DEMO-004",
+    name: "Kabir",
+    branchId: "BR-DEMO-002",
+    batchId: "BAT-9-ENG-A",
+    teacherId: "TCH-DEMO-003",
+    className: "Class 9",
+    subjectFocus: "English",
+    attendancePercent: 64,
+    testAvgPercent: 55,
+    homeworkCompletionPercent: 44,
+    liveParticipationScore: 3,
+    doubtsOpen: 6,
+    weakTopics: ["Grammar practice", "Writing structure"],
+    parentResponseStatus: "pending_preview",
+    feeFollowupStatus: "clear_preview",
+    lastSupportAction: "counsellor_call_pending_preview"
+  }
+];
+
+function normalizePart105Role(role) {
+  const r = String(role || "teacher").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part105AccessCheck({ role, instituteId, branchId, batchId, teacherId, studentId, parentId }) {
+  const normalizedRole = normalizePart105Role(role);
+  const rule = part105RoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole,
+    allowed: false,
+    scope: "Unknown or unsupported role.",
+    canViewAllStudents: false,
+    canViewStudentDetails: false,
+    canCreateSupportPlan: false,
+    canAssignTasks: false,
+    canExport: false
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const branchRequired = normalizedRole === "branch_manager" ? Boolean(String(branchId || "").trim()) : true;
+  const teacherScoped = normalizedRole !== "teacher" || Boolean(String(teacherId || "").trim() || String(batchId || "").trim());
+  const studentScoped = normalizedRole !== "student" || Boolean(String(studentId || "").trim());
+  const parentScoped = normalizedRole !== "parent" || Boolean(String(parentId || "").trim() || String(studentId || "").trim());
+  const allowed = Boolean(rule.allowed && hasInstituteId && branchRequired && teacherScoped && studentScoped && parentScoped && normalizedRole !== "naxora_super_admin");
+
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    branchId: branchId || null,
+    batchId: batchId || null,
+    teacherId: teacherId || null,
+    studentId: studentId || null,
+    parentId: parentId || null,
+    allowed,
+    canViewAllStudents: Boolean(rule.canViewAllStudents && allowed),
+    canViewStudentDetails: Boolean(rule.canViewStudentDetails && allowed),
+    canCreateSupportPlan: Boolean(rule.canCreateSupportPlan && allowed),
+    canAssignTasks: Boolean(rule.canAssignTasks && allowed),
+    canExport: Boolean(rule.canExport && allowed),
+    assignedBranchOnly: Boolean(rule.assignedBranchOnly),
+    assignedStudentsOnly: Boolean(rule.assignedStudentsOnly),
+    followupQueueOnly: Boolean(rule.followupQueueOnly),
+    feeSummaryOnly: Boolean(rule.feeSummaryOnly),
+    selfOnly: Boolean(rule.selfOnly),
+    viewOnly: Boolean(rule.viewOnly),
+    scope: rule.scope,
+    reason: !hasInstituteId
+      ? "Institute ID missing."
+      : !rule.allowed
+        ? rule.scope
+        : !branchRequired
+          ? "Branch manager requires branchId."
+          : !teacherScoped
+            ? "Teacher requires teacherId or batchId scope."
+            : !studentScoped
+              ? "Student can view own support summary only; studentId required."
+              : !parentScoped
+                ? "Parent can view linked child summary only."
+                : "Advanced Student Support Analytics access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    confirmationRequiredFor: ["support_plan_assign", "teacher_task_create", "counsellor_task_create", "parent_summary_send", "revision_plan_publish"],
+    ownerVerificationRequiredFor: ["student_support_export", "bulk_parent_message", "support_rule_change", "sensitive_report_export"]
+  };
+}
+
+function part105VisibleStudents(access, students = part105DemoStudents) {
+  if (access.canViewAllStudents) return students;
+  if (access.assignedBranchOnly && access.branchId) return students.filter((s) => s.branchId === access.branchId);
+  if (access.assignedStudentsOnly) {
+    return students.filter((s) => (access.teacherId && s.teacherId === access.teacherId) || (access.batchId && s.batchId === access.batchId));
+  }
+  if ((access.selfOnly || access.viewOnly) && access.studentId) return students.filter((s) => s.studentId === access.studentId);
+  if (access.followupQueueOnly) return students.filter((s) => s.parentResponseStatus === "pending_preview" || s.doubtsOpen >= 4);
+  if (access.feeSummaryOnly) return students.filter((s) => s.feeFollowupStatus !== "clear_preview");
+  return students.slice(0, 1);
+}
+
+function part105FindStudent(studentId, access) {
+  const visible = part105VisibleStudents(access);
+  return visible.find((s) => s.studentId === studentId) || visible[0] || part105DemoStudents[0];
+}
+
+function part105StudentSupportScore(student) {
+  const attendanceScore = Math.max(0, Math.min(100, student.attendancePercent));
+  const academicScore = Math.max(0, Math.min(100, student.testAvgPercent));
+  const homeworkScore = Math.max(0, Math.min(100, student.homeworkCompletionPercent));
+  const participationScore = Math.max(0, Math.min(100, student.liveParticipationScore * 10));
+  const doubtScore = Math.max(0, 100 - student.doubtsOpen * 10);
+  const parentScore = student.parentResponseStatus === "active_preview" ? 90 : 55;
+  const supportScore = Math.round(attendanceScore * 0.22 + academicScore * 0.28 + homeworkScore * 0.2 + participationScore * 0.12 + doubtScore * 0.1 + parentScore * 0.08);
+  const signals = [];
+  if (student.attendancePercent < 75) signals.push("attendance_support_needed");
+  if (student.testAvgPercent < 65) signals.push("academic_revision_needed");
+  if (student.homeworkCompletionPercent < 60) signals.push("homework_followup_needed");
+  if (student.liveParticipationScore < 5) signals.push("participation_support_needed");
+  if (student.doubtsOpen >= 4) signals.push("doubt_resolution_needed");
+  if (student.parentResponseStatus === "pending_preview") signals.push("parent_followup_pending");
+  const band = supportScore >= 82 ? "stable" : supportScore >= 70 ? "watch" : supportScore >= 58 ? "support_needed" : "urgent_review";
+  return {
+    studentId: student.studentId,
+    displayName: student.name,
+    supportScore,
+    band,
+    signals,
+    components: { attendanceScore, academicScore, homeworkScore, participationScore, doubtScore, parentScore },
+    note: "Band is for support prioritisation only, not a public label."
+  };
+}
+
+function part105BuildDashboard(access) {
+  const students = part105VisibleStudents(access);
+  const scorecards = students.map((s) => ({ student: s, scorecard: part105StudentSupportScore(s) }));
+  const byBand = scorecards.reduce((acc, x) => {
+    acc[x.scorecard.band] = (acc[x.scorecard.band] || 0) + 1;
+    return acc;
+  }, {});
+  const avgScore = scorecards.length ? Math.round(scorecards.reduce((sum, x) => sum + x.scorecard.supportScore, 0) / scorecards.length) : 0;
+  return {
+    previewOnly: true,
+    studentCount: students.length,
+    avgSupportScore: avgScore,
+    bands: {
+      stable: byBand.stable || 0,
+      watch: byBand.watch || 0,
+      support_needed: byBand.support_needed || 0,
+      urgent_review: byBand.urgent_review || 0
+    },
+    sensitiveDetailsPrivateScreenFirst: true,
+    scorecards
+  };
+}
+
+function part105SegmentStudents(access) {
+  const dashboard = part105BuildDashboard(access);
+  const segments = {
+    stable: [],
+    watch: [],
+    support_needed: [],
+    urgent_review: []
+  };
+  dashboard.scorecards.forEach((item) => {
+    segments[item.scorecard.band].push({
+      studentId: item.student.studentId,
+      name: item.student.name,
+      className: item.student.className,
+      subjectFocus: item.student.subjectFocus,
+      supportScore: item.scorecard.supportScore,
+      signals: item.scorecard.signals
+    });
+  });
+  return {
+    previewOnly: true,
+    segments,
+    safeVoiceSummary: {
+      stable: segments.stable.length,
+      watch: segments.watch.length,
+      support_needed: segments.support_needed.length,
+      urgent_review: segments.urgent_review.length
+    },
+    privateScreenFirst: true
+  };
+}
+
+function part105AcademicGapAnalysis(student) {
+  const gaps = [];
+  if (student.testAvgPercent < 70) gaps.push({ type: "test_score_gap", priority: "high", message: `${student.subjectFocus} test average needs revision support.` });
+  if (student.homeworkCompletionPercent < 70) gaps.push({ type: "homework_gap", priority: "medium", message: "Homework completion needs follow-up and smaller task chunks." });
+  if (student.weakTopics.length) gaps.push({ type: "weak_topics", priority: "high", message: `Weak topics: ${student.weakTopics.join(", ")}.` });
+  if (student.doubtsOpen >= 3) gaps.push({ type: "open_doubts", priority: "medium", message: `${student.doubtsOpen} doubts need resolution.` });
+  return {
+    previewOnly: true,
+    studentId: student.studentId,
+    name: student.name,
+    gaps,
+    weakTopics: student.weakTopics,
+    teacherReviewRequired: true
+  };
+}
+
+function part105EngagementAnalysis(student) {
+  const items = [];
+  if (student.attendancePercent < 75) items.push({ type: "attendance", status: "needs_support", message: "Attendance is below preferred level." });
+  if (student.liveParticipationScore < 5) items.push({ type: "participation", status: "needs_support", message: "Live class participation is low." });
+  if (student.parentResponseStatus === "pending_preview") items.push({ type: "parent_followup", status: "pending", message: "Parent response/follow-up pending." });
+  if (!items.length) items.push({ type: "engagement", status: "stable", message: "Engagement looks stable." });
+  return {
+    previewOnly: true,
+    studentId: student.studentId,
+    items,
+    privateScreenFirst: true
+  };
+}
+
+function part105SupportPlan(access, student) {
+  const scorecard = part105StudentSupportScore(student);
+  const academicGap = part105AcademicGapAnalysis(student);
+  const steps = [];
+  if (scorecard.signals.includes("academic_revision_needed") || academicGap.weakTopics.length) {
+    steps.push("Teacher 20-minute revision support session draft karein.");
+    steps.push(`Weak topics revision: ${student.weakTopics.join(", ") || student.subjectFocus}.`);
+  }
+  if (scorecard.signals.includes("homework_followup_needed")) {
+    steps.push("Homework ko small daily tasks me split karein.");
+  }
+  if (scorecard.signals.includes("attendance_support_needed")) {
+    steps.push("Attendance follow-up ke liye gentle parent/student check-in draft banayein.");
+  }
+  if (scorecard.signals.includes("doubt_resolution_needed")) {
+    steps.push("Open doubts ke liye doubt-clearing slot schedule draft karein.");
+  }
+  if (!steps.length) steps.push("Weekly light check-in aur normal revision plan continue karein.");
+  return {
+    previewOnly: true,
+    canCreateSupportPlan: Boolean(access.canCreateSupportPlan),
+    studentId: student.studentId,
+    studentName: student.name,
+    supportBand: scorecard.band,
+    steps,
+    teacherTaskDraft: {
+      title: `${student.name} support check-in`,
+      ownerRole: "teacher",
+      due: "This week",
+      autoCreate: false
+    },
+    counsellorTaskDraft: {
+      title: `${student.name} follow-up support`,
+      ownerRole: "receptionist_counsellor",
+      due: "This week",
+      autoCreate: false
+    },
+    confirmationRequired: true,
+    autoAssign: false
+  };
+}
+
+function part105ParentSummaryDraft(student) {
+  const scorecard = part105StudentSupportScore(student);
+  const safeTopicText = student.weakTopics.length ? `Revision focus: ${student.weakTopics.slice(0, 2).join(", ")}.` : "Current revision is going well.";
+  return {
+    previewOnly: true,
+    studentId: student.studentId,
+    studentName: student.name,
+    autoSend: false,
+    confirmationRequired: true,
+    draft: `Namaste, ${student.name} ke learning support summary ke hisaab se ${student.subjectFocus} me regular revision helpful rahega. ${safeTopicText} Teacher review ke baad detailed plan share hoga.`,
+    privateScreenFirst: true,
+    safety: "Parent summary auto-send nahi hoga. Teacher/institute review required hai.",
+    supportBandPrivate: scorecard.band
+  };
+}
+
+function part105TeacherWorkloadPreview(access) {
+  const students = part105VisibleStudents(access);
+  const scorecards = students.map((s) => ({ student: s, scorecard: part105StudentSupportScore(s) }));
+  const supportCount = scorecards.filter((x) => ["support_needed", "urgent_review"].includes(x.scorecard.band)).length;
+  return {
+    previewOnly: true,
+    teacherId: access.teacherId || "assigned_teacher_preview",
+    assignedStudentsPreview: students.length,
+    supportPlanNeeded: supportCount,
+    suggestedSlots: supportCount ? ["Tuesday doubt slot", "Friday revision slot"] : ["Normal weekly review"],
+    autoSchedule: false,
+    confirmationRequired: true
+  };
+}
+
+function part105RoleScopedSummary(access, student) {
+  const scorecard = part105StudentSupportScore(student);
+  if (access.feeSummaryOnly) {
+    return {
+      previewOnly: true,
+      scope: "fee_followup_safe_summary_only",
+      visibleData: {
+        feeFollowupStatus: student.feeFollowupStatus,
+        branchId: student.branchId
+      },
+      hiddenData: ["academic gaps", "private student profile", "parent communication notes"]
+    };
+  }
+  if (access.followupQueueOnly) {
+    return {
+      previewOnly: true,
+      scope: "followup_queue_only",
+      visibleData: {
+        studentName: student.name,
+        parentResponseStatus: student.parentResponseStatus,
+        openDoubts: student.doubtsOpen,
+        suggestedFollowup: "gentle support check-in draft"
+      },
+      hiddenData: ["fees detail", "full academic history", "private notes"]
+    };
+  }
+  if (access.selfOnly) {
+    return {
+      previewOnly: true,
+      scope: "student_own_learning_support",
+      visibleData: {
+        subjectFocus: student.subjectFocus,
+        revisionFocus: student.weakTopics,
+        nextSteps: ["Revise weak topics", "Complete pending practice", "Ask teacher for doubt slot"]
+      },
+      hiddenData: ["internal support band", "teacher private notes", "other students"]
+    };
+  }
+  if (access.viewOnly) {
+    return {
+      previewOnly: true,
+      scope: "parent_child_safe_summary",
+      visibleData: {
+        subjectFocus: student.subjectFocus,
+        attendancePercent: student.attendancePercent,
+        homeworkCompletionPercent: student.homeworkCompletionPercent,
+        revisionFocus: student.weakTopics.slice(0, 2)
+      },
+      hiddenData: ["internal support band", "other students", "private staff notes"]
+    };
+  }
+  return {
+    previewOnly: true,
+    scope: access.canViewAllStudents ? "authorised_student_support_analytics" : "assigned_student_support",
+    visibleData: { student, scorecard },
+    hiddenData: access.canViewAllStudents ? [] : ["non-assigned students"]
+  };
+}
+
+function part105PrivacyPolicy() {
+  return {
+    previewOnly: true,
+    privateScreenFirst: true,
+    noPublicLabels: true,
+    sensitiveDataNotSpokenLoudly: [
+      "individual student support band",
+      "fee follow-up detail",
+      "parent contact or response detail",
+      "private academic notes",
+      "student phone/address",
+      "teacher/counsellor private notes"
+    ],
+    allowedVoiceSummary: [
+      "count-level support bands",
+      "general revision recommendations",
+      "assigned student safe summary",
+      "non-sensitive attendance/academic percentages by permission"
+    ],
+    confirmationRequiredFor: ["support_plan_assign", "teacher_task_create", "counsellor_task_create", "parent_summary_send"],
+    ownerVerificationRequiredFor: ["student_support_export", "bulk_parent_message", "support_rule_change", "sensitive_report_export"],
+    safety: "Student support analytics is for help and early intervention, not public labelling or automated decisions."
+  };
+}
+
+function part105ParseCommand(text = "", body = {}) {
+  const input = String(text || body.command || body.q || "").trim();
+  const intent = /overview|dashboard|support analytics/i.test(input) ? "overview"
+    : /segment|band|risk|support needed|urgent/i.test(input) ? "segments"
+      : /gap|weak|topic|academic/i.test(input) ? "academic_gap"
+        : /attendance|engagement|participation/i.test(input) ? "engagement"
+          : /plan|intervention|support plan|help/i.test(input) ? "support_plan"
+            : /parent|summary|message/i.test(input) ? "parent_summary"
+              : /teacher|workload|slot/i.test(input) ? "teacher_workload"
+                : /privacy|safe|permission/i.test(input) ? "privacy_policy"
+                  : "overview";
+  return {
+    intent,
+    studentId: body.studentId || (/riya|002/i.test(input) ? "STU-DEMO-002" : /meera|003/i.test(input) ? "STU-DEMO-003" : /kabir|004/i.test(input) ? "STU-DEMO-004" : "STU-DEMO-001"),
+    rawCommand: input
+  };
+}
+
+function part105BuildSupportAnalytics({ command, role, instituteId, branchId, batchId, teacherId, studentId, parentId, body = {} }) {
+  const parsed = part105ParseCommand(command, body);
+  const access = part105AccessCheck({
+    role,
+    instituteId,
+    branchId: body.branchId || branchId,
+    batchId: body.batchId || batchId,
+    teacherId: body.teacherId || teacherId,
+    studentId: body.studentId || studentId || parsed.studentId,
+    parentId: body.parentId || parentId
+  });
+
+  const student = part105FindStudent(body.studentId || studentId || parsed.studentId, access);
+  const dashboard = part105BuildDashboard(access);
+  const segments = part105SegmentStudents(access);
+  const selectedScorecard = part105StudentSupportScore(student);
+  const academicGapAnalysis = part105AcademicGapAnalysis(student);
+  const engagementAnalysis = part105EngagementAnalysis(student);
+  const supportPlan = part105SupportPlan(access, student);
+  const parentSummaryDraft = part105ParentSummaryDraft(student);
+  const teacherWorkloadPreview = part105TeacherWorkloadPreview(access);
+  const roleScopedSummary = part105RoleScopedSummary(access, student);
+  const privacyPolicy = part105PrivacyPolicy();
+
+  let replyText = "";
+  let nextAction = "none";
+  if (!access.allowed) {
+    replyText = "Is role/scope ko student support analytics access nahi hai.";
+    nextAction = "blocked";
+  } else if (parsed.intent === "segments") {
+    replyText = `Support segments ready hain. Count-level summary: ${segments.safeVoiceSummary.support_needed} support-needed aur ${segments.safeVoiceSummary.urgent_review} urgent-review students. Details private screen par hain.`;
+    nextAction = "show_segments";
+  } else if (parsed.intent === "academic_gap") {
+    replyText = `${student.name} ka academic gap analysis ready hai. Teacher review required hai.`;
+    nextAction = "show_academic_gap";
+  } else if (parsed.intent === "engagement") {
+    replyText = `${student.name} ka attendance/engagement analysis ready hai.`;
+    nextAction = "show_engagement";
+  } else if (parsed.intent === "support_plan") {
+    replyText = access.canCreateSupportPlan
+      ? `${student.name} ke liye support plan draft ready hai. Auto-assign off hai.`
+      : "Is role ko support plan create permission nahi hai.";
+    nextAction = "show_support_plan";
+  } else if (parsed.intent === "parent_summary") {
+    replyText = `${student.name} ke liye parent-safe summary draft ready hai. Auto-send off hai.`;
+    nextAction = "show_parent_summary";
+  } else if (parsed.intent === "teacher_workload") {
+    replyText = "Teacher support workload preview ready hai. Auto-schedule off hai.";
+    nextAction = "show_teacher_workload";
+  } else if (parsed.intent === "privacy_policy") {
+    replyText = "Student support analytics privacy policy ready hai. Sensitive details loud nahi bole jayenge.";
+    nextAction = "show_privacy_policy";
+  } else {
+    replyText = `Student support analytics overview ready hai. ${dashboard.studentCount} visible students aur average support score ${dashboard.avgSupportScore}/100 hai.`;
+    nextAction = "show_dashboard";
+  }
+
+  return {
+    access,
+    parsed,
+    students: part105VisibleStudents(access),
+    selectedStudent: student,
+    dashboard,
+    segments,
+    selectedScorecard,
+    academicGapAnalysis,
+    engagementAnalysis,
+    supportPlan,
+    parentSummaryDraft,
+    teacherWorkloadPreview,
+    roleScopedSummary,
+    privacyPolicy,
+    replyText,
+    spokenSafeSummary: replyText,
+    privateScreenFirst: true,
+    nextAction,
+    confirmationRequiredFor: ["support_plan_assign", "teacher_task_create", "counsellor_task_create", "parent_summary_send", "revision_plan_publish"],
+    ownerVerificationRequiredFor: ["student_support_export", "bulk_parent_message", "support_rule_change", "sensitive_report_export"],
+    auditLog: {
+      event: "part105_advanced_student_support_analytics",
+      role: access.role,
+      intent: parsed.intent,
+      studentId: student?.studentId || parsed.studentId,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+const part105Checklist = [
+  "Advanced Student Support Analytics page opens",
+  "Status API returns success true",
+  "Support scorecard works",
+  "Support segment counts work",
+  "Academic gap analysis works",
+  "Engagement analysis works",
+  "Support intervention plan draft works",
+  "Parent summary draft is auto-send off",
+  "Role scoped summaries hide sensitive data",
+  "VANI student support command works",
+  "Previous Part 1–104 routes remain preserved"
+];
+
+app.get("/api/part105/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 105 — Advanced Student Support Analytics",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 105,
+    nextPart: "Part 106 — Business Forecasting",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/advanced-student-support-analytics", "/student-support-analytics", "/student-risk-support", "/vani-student-support", "/teacher-student-support", "/owner-student-support-analytics"],
+    apiRoutes: [
+      "/api/part105/config",
+      "/api/part105/features",
+      "/api/part105/roles",
+      "/api/part105/access-check",
+      "/api/part105/students",
+      "/api/part105/dashboard",
+      "/api/part105/segments",
+      "/api/part105/scorecard",
+      "/api/part105/academic-gap-analysis",
+      "/api/part105/engagement-analysis",
+      "/api/part105/support-plan",
+      "/api/part105/parent-summary-draft",
+      "/api/part105/teacher-workload-preview",
+      "/api/part105/role-scoped-summary",
+      "/api/part105/privacy-policy",
+      "/api/part105/vani/greeting",
+      "/api/part105/vani/command"
+    ],
+    advancedStudentSupportAnalyticsEnabled: true
+  });
+});
+
+app.get("/api/part105/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "Advanced Student Support Analytics",
+    appType: "advanced_student_support_analytics_foundation",
+    version: "2.0-student-support-analytics",
+    policy: {
+      previewFirst: true,
+      noPublicLabels: true,
+      noAutoParentMessages: true,
+      noAutomatedDecisions: true,
+      teacherReviewRequired: true,
+      privateScreenFirst: true,
+      sensitiveStudentDataNotSpokenLoudly: true
+    }
+  });
+});
+
+app.get("/api/part105/features", (req, res) => {
+  res.json({ success: true, features: part105SupportFeatures });
+});
+
+app.get("/api/part105/roles", (req, res) => {
+  res.json({ success: true, roles: part105RoleRules });
+});
+
+app.get("/api/part105/access-check", (req, res) => {
+  res.json({ success: true, access: part105AccessCheck(req.query || {}) });
+});
+
+app.get("/api/part105/students", (req, res) => {
+  const access = part105AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, previewOnly: true, students: part105VisibleStudents(access) });
+});
+
+app.get("/api/part105/dashboard", (req, res) => {
+  const access = part105AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, dashboard: part105BuildDashboard(access) });
+});
+
+app.get("/api/part105/segments", (req, res) => {
+  const access = part105AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, segments: part105SegmentStudents(access) });
+});
+
+app.get("/api/part105/scorecard", (req, res) => {
+  const access = part105AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const student = part105FindStudent(req.query.studentId, access);
+  res.json({ success: true, access, student, scorecard: part105StudentSupportScore(student) });
+});
+
+app.get("/api/part105/academic-gap-analysis", (req, res) => {
+  const access = part105AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const student = part105FindStudent(req.query.studentId, access);
+  res.json({ success: true, access, academicGapAnalysis: part105AcademicGapAnalysis(student) });
+});
+
+app.get("/api/part105/engagement-analysis", (req, res) => {
+  const access = part105AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const student = part105FindStudent(req.query.studentId, access);
+  res.json({ success: true, access, engagementAnalysis: part105EngagementAnalysis(student) });
+});
+
+app.get("/api/part105/support-plan", (req, res) => {
+  const access = part105AccessCheck(req.query || {});
+  if (!access.allowed || !access.canCreateSupportPlan) return res.status(403).json({ success: false, access, message: "This role cannot create support plan preview." });
+  const student = part105FindStudent(req.query.studentId, access);
+  res.json({ success: true, access, supportPlan: part105SupportPlan(access, student) });
+});
+
+app.get("/api/part105/parent-summary-draft", (req, res) => {
+  const access = part105AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const student = part105FindStudent(req.query.studentId, access);
+  res.json({ success: true, access, parentSummaryDraft: part105ParentSummaryDraft(student) });
+});
+
+app.get("/api/part105/teacher-workload-preview", (req, res) => {
+  const access = part105AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, teacherWorkloadPreview: part105TeacherWorkloadPreview(access) });
+});
+
+app.get("/api/part105/role-scoped-summary", (req, res) => {
+  const access = part105AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const student = part105FindStudent(req.query.studentId, access);
+  res.json({ success: true, access, roleScopedSummary: part105RoleScopedSummary(access, student) });
+});
+
+app.get("/api/part105/privacy-policy", (req, res) => {
+  res.json({ success: true, privacyPolicy: part105PrivacyPolicy() });
+});
+
+app.get("/api/part105/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI Student Support Analytics",
+    greeting: "Namaste, main VANI Student Support Analytics Assistant hoon. Aap support overview, segments, academic gaps, engagement, support plan ya parent summary draft pooch sakte ho.",
+    exampleCommands: [
+      "VANI, student support overview dikhao",
+      "VANI, support segments dikhao",
+      "VANI, Riya ka academic gap analysis banao",
+      "VANI, Riya ke liye support plan draft banao",
+      "VANI, parent summary draft banao",
+      "VANI, student support privacy policy batao"
+    ],
+    safety: "Sensitive student details loud nahi bolungi. Parent message/send, task assign aur export confirmation ke bina nahi hoga."
+  });
+});
+
+app.post("/api/part105/vani/command", (req, res) => {
+  const body = req.body || {};
+  const result = part105BuildSupportAnalytics({
+    command: body.command || body.q || "",
+    role: body.role || "teacher",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId,
+    batchId: body.batchId || "BAT-10-MATH-A",
+    teacherId: body.teacherId || "TCH-DEMO-001",
+    studentId: body.studentId,
+    parentId: body.parentId,
+    body
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 105 — Advanced Student Support Analytics", ...result });
+});
+
+app.get("/api/part105/vani/command", (req, res) => {
+  const result = part105BuildSupportAnalytics({
+    command: req.query.command || req.query.q || "",
+    role: req.query.role || "teacher",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    batchId: req.query.batchId || "BAT-10-MATH-A",
+    teacherId: req.query.teacherId || "TCH-DEMO-001",
+    studentId: req.query.studentId,
+    parentId: req.query.parentId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 105 — Advanced Student Support Analytics", ...result });
+});
+
+app.get("/api/part105/audit-log", (req, res) => {
+  res.json({
+    success: true,
+    auditLog: [
+      { event: "student_support_analytics_preview", role: "teacher", createdAt: new Date().toISOString() },
+      { event: "no_public_student_label_policy", rule: "Support bands are private and for help-prioritisation only.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part105/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "advanced_student_support_analytics_created", message: "Part 105 Advanced Student Support Analytics active.", createdAt: new Date().toISOString() },
+      { type: "support_plan_preview_ready", message: "Teacher can create support plan drafts with confirmation required.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part105/checklist", (req, res) => {
+  res.json({ success: true, checklist: part105Checklist });
+});
+
+app.get("/api/part105/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part105-advanced-student-support-analytics-readiness",
+    ownerVerificationRequiredForSensitiveExports: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      features: part105SupportFeatures,
+      roles: part105RoleRules,
+      checklist: part105Checklist,
+      privacyPolicy: part105PrivacyPolicy()
+    }
+  });
+});
+
+app.get("/api/part105/demo", (req, res) => {
+  const command = "VANI, Riya ka academic gap analysis banao aur support plan draft karo";
+  const result = part105BuildSupportAnalytics({
+    command,
+    role: "teacher",
+    instituteId: "NX-DEMO-INST-001",
+    batchId: "BAT-10-MATH-A",
+    teacherId: "TCH-DEMO-001",
+    body: {}
+  });
+  res.json({
+    success: true,
+    demo: {
+      command,
+      result,
+      nextPart: "Part 106 — Business Forecasting"
+    }
+  });
+});
+// ================= END PART 105 =================
+
 
 
 

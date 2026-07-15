@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — Advanced Student Support Analytics</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/advanced-student-support-analytics.css" />
+</head>
+<body>
+  <main class="student-support">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 105 • NAXORA OS 2.0</p>
+        <h1>Advanced Student Support Analytics</h1>
+        <p class="lead">
+          Academic, attendance and engagement support analytics with private support scores,
+          intervention drafts, parent summaries and VANI support commands.
+        </p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">VANI Student Support</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Tap Start, then ask support overview or plan.</p>
+        <div class="voice-actions">
+          <button id="startVaniBtn">Start VANI</button>
+          <button id="listenVaniBtn">Listen</button>
+          <button id="muteVaniBtn">Mute</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Access</p>
+      <div class="controls">
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="branchId" value="BR-DEMO-001" />
+        <input id="batchId" value="BAT-10-MATH-A" />
+        <input id="teacherId" value="TCH-DEMO-001" />
+        <input id="studentId" value="STU-DEMO-002" />
+        <select id="roleSelect">
+          <option value="teacher" selected>Teacher Assigned Students</option>
+          <option value="institute_owner">Owner Overview</option>
+          <option value="branch_manager">Branch Manager</option>
+          <option value="receptionist_counsellor">Counsellor Follow-up Queue</option>
+          <option value="accountant">Accountant Fee Summary</option>
+          <option value="student">Student Own Summary</option>
+          <option value="parent">Parent Linked Child Summary</option>
+        </select>
+        <button id="demoBtn">Load Demo</button>
+      </div>
+      <pre id="accessBox" class="code">Waiting...</pre>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">VANI Command</p>
+        <h2>Speak or type</h2>
+        <p>Example: “VANI, Riya ka academic gap analysis banao aur support plan draft karo”.</p>
+        <div class="controls">
+          <input id="vaniCommand" value="VANI, Riya ka academic gap analysis banao aur support plan draft karo" />
+          <button id="askVaniBtn">Ask VANI</button>
+        </div>
+        <pre id="vaniOutput" class="code">Waiting...</pre>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Support Dashboard</p>
+        <div id="dashboardBox" class="metrics"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Visible Students</p>
+        <div id="studentsBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Selected Scorecard</p>
+        <div id="scoreBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Academic Gap</p>
+        <div id="gapBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Engagement</p>
+        <div id="engagementBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Support Plan Draft</p>
+        <div id="planBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Parent Summary Draft</p>
+        <div id="parentBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Role Scoped Summary</p>
+        <div id="scopeBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Privacy Policy</p>
+        <div id="privacyBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Testing links</p>
+      <div class="links">
+        <a href="/api/part105/status" target="_blank">Status</a>
+        <a href="/api/part105/demo" target="_blank">Demo</a>
+        <a href="/api/part105/dashboard?role=teacher&instituteId=NX-DEMO-INST-001&teacherId=TCH-DEMO-001&batchId=BAT-10-MATH-A" target="_blank">Teacher Dashboard</a>
+        <a href="/api/part105/scorecard?role=teacher&instituteId=NX-DEMO-INST-001&teacherId=TCH-DEMO-001&batchId=BAT-10-MATH-A&studentId=STU-DEMO-002" target="_blank">Scorecard</a>
+        <a href="/api/part105/privacy-policy" target="_blank">Privacy Policy</a>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/vani-voice-starter.js"></script>
+  <script src="/advanced-student-support-analytics.js"></script>
+</body>
+</html>
