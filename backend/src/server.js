@@ -10399,6 +10399,12 @@ const modulePageRoutes = {
   "/interactive-board": "digital-board-integration.html",
   "/vani-digital-board": "digital-board-integration.html",
   "/classroom-digital-board": "digital-board-integration.html",
+  "/camera-studio-integration": "camera-studio-integration.html",
+  "/camera-studio": "camera-studio-integration.html",
+  "/studio-integration": "camera-studio-integration.html",
+  "/vani-camera-studio": "camera-studio-integration.html",
+  "/live-class-camera": "camera-studio-integration.html",
+  "/teacher-studio": "camera-studio-integration.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -23300,6 +23306,793 @@ app.get("/api/part100/demo", (req, res) => {
   });
 });
 // ================= END PART 100 =================
+
+// ================= PART 101 — CAMERA AND STUDIO INTEGRATION =================
+// NAXORA OS 2.0 Camera and Studio Integration.
+// This part creates a safe foundation for teacher camera, mic and studio setup:
+// device registry preview, browser camera preview, studio scene layout preview,
+// audio/video readiness, stream quality check, lighting/background checklist,
+// recording/streaming preset preview and VANI camera studio commands.
+// It does not connect to real paid camera/cloud studio vendors without authorised
+// API setup. Browser permissions and teacher confirmation are required.
+
+const part101CameraStudioFeatures = [
+  {
+    key: "camera_device_registry",
+    name: "Camera Device Registry",
+    summary: "Register classroom camera, mic and studio device preview.",
+    problemSolved: "Institute can track camera/studio assets per room."
+  },
+  {
+    key: "browser_camera_preview",
+    name: "Browser Camera Preview",
+    summary: "Teacher can test camera/mic locally from the browser.",
+    problemSolved: "Camera issues are detected before live class."
+  },
+  {
+    key: "studio_scene_layout",
+    name: "Studio Scene Layout",
+    summary: "Prepares teacher video, board, slides and chat/poll layout preview.",
+    problemSolved: "Live class screen becomes more professional."
+  },
+  {
+    key: "audio_video_readiness",
+    name: "Audio/Video Readiness",
+    summary: "Checks mic, camera, lighting and background checklist.",
+    problemSolved: "Class quality improves before going live."
+  },
+  {
+    key: "stream_quality_check",
+    name: "Stream Quality Check",
+    summary: "Preview of upload speed, resolution, bitrate and device guidance.",
+    problemSolved: "Teacher can choose safe streaming quality."
+  },
+  {
+    key: "recording_streaming_preset",
+    name: "Recording/Streaming Preset",
+    summary: "Creates class recording/live stream preset preview.",
+    problemSolved: "Teacher can reuse safe setup across classes."
+  },
+  {
+    key: "privacy_safe_camera_rules",
+    name: "Privacy-Safe Camera Rules",
+    summary: "Blocks auto camera start and prevents sensitive data on public stream.",
+    problemSolved: "Classroom privacy remains protected."
+  },
+  {
+    key: "vani_camera_studio",
+    name: "VANI Camera and Studio Commands",
+    summary: "VANI can check camera readiness, prepare scene and explain stream quality.",
+    problemSolved: "Teacher can prepare studio setup by voice."
+  }
+];
+
+const part101RoleRules = [
+  { role: "institute_owner", allowed: true, scope: "Can configure and monitor authorised camera/studio assets; sensitive exports require verification.", canConfigure: true, canPreviewCamera: false, canPrepareStudio: false, canMonitor: true, canExport: true },
+  { role: "branch_manager", allowed: true, scope: "Can monitor and prepare assigned branch studio readiness.", canConfigure: false, canPreviewCamera: false, canPrepareStudio: true, canMonitor: true, canExport: false },
+  { role: "teacher", allowed: true, scope: "Can test camera/mic and prepare studio scene for assigned classes.", canConfigure: false, canPreviewCamera: true, canPrepareStudio: true, canMonitor: false, canExport: false },
+  { role: "student", allowed: true, scope: "Can view own class studio readiness status only.", canConfigure: false, canPreviewCamera: false, canPrepareStudio: false, canMonitor: false, canExport: false, selfOnly: true },
+  { role: "parent", allowed: true, scope: "Can view linked child's live class studio status only when institute allows.", canConfigure: false, canPreviewCamera: false, canPrepareStudio: false, canMonitor: false, canExport: false, viewOnly: true },
+  { role: "receptionist_counsellor", allowed: true, scope: "Can view demo-class studio availability summary only.", canConfigure: false, canPreviewCamera: false, canPrepareStudio: false, canMonitor: false, canExport: false, summaryOnly: true },
+  { role: "accountant", allowed: true, scope: "Can view camera/studio asset inventory-safe summary only.", canConfigure: false, canPreviewCamera: false, canPrepareStudio: false, canMonitor: false, canExport: false, assetSummaryOnly: true },
+  { role: "naxora_super_admin", allowed: false, scope: "Platform support only; no unrestricted classroom camera access.", canConfigure: false, canPreviewCamera: false, canPrepareStudio: false, canMonitor: false, canExport: false }
+];
+
+const part101DemoStudioDevices = [
+  {
+    deviceId: "CAM-STUDIO-001",
+    branchId: "BR-DEMO-001",
+    classroomId: "ROOM-101",
+    deviceName: "Teacher Main Camera",
+    deviceType: "camera",
+    vendor: "Browser/Webcam",
+    model: "1080p USB Camera",
+    connectionMode: "browser_get_user_media_preview",
+    status: "ready_preview",
+    resolutionPreview: "1920x1080",
+    needsPermission: true
+  },
+  {
+    deviceId: "MIC-STUDIO-001",
+    branchId: "BR-DEMO-001",
+    classroomId: "ROOM-101",
+    deviceName: "Teacher Collar Mic",
+    deviceType: "microphone",
+    vendor: "Generic USB Mic",
+    model: "Noise-reduction mic",
+    connectionMode: "browser_audio_input_preview",
+    status: "ready_preview",
+    resolutionPreview: "audio_only",
+    needsPermission: true
+  },
+  {
+    deviceId: "LIGHT-STUDIO-001",
+    branchId: "BR-DEMO-001",
+    classroomId: "ROOM-101",
+    deviceName: "Studio Light",
+    deviceType: "light",
+    vendor: "Generic LED Panel",
+    model: "Soft LED",
+    connectionMode: "manual_check_preview",
+    status: "manual_check_needed_preview",
+    resolutionPreview: "not_applicable",
+    needsPermission: false
+  }
+];
+
+const part101DemoStudioScene = {
+  sceneId: "SCENE-DEMO-CLASS10-MATHS",
+  title: "Class 10 Maths Studio Scene",
+  batchId: "BAT-10-MATH-A",
+  teacherId: "TCH-DEMO-001",
+  classroomId: "ROOM-101",
+  layout: "teacher_video_plus_digital_board",
+  layers: [
+    { layer: "teacher_camera", position: "right_bottom", visibility: "on_preview" },
+    { layer: "digital_board", position: "main_center", visibility: "on_preview" },
+    { layer: "class_notes", position: "left_panel", visibility: "teacher_controlled_preview" },
+    { layer: "chat_polls_hand_raise", position: "right_panel", visibility: "moderated_preview" }
+  ],
+  recommendedQuality: "720p for stable network, 1080p for strong upload"
+};
+
+function normalizePart101Role(role) {
+  const r = String(role || "teacher").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part101AccessCheck({ role, instituteId, branchId, classroomId, batchId, teacherId, studentId, parentId, deviceId }) {
+  const normalizedRole = normalizePart101Role(role);
+  const rule = part101RoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole,
+    allowed: false,
+    scope: "Unknown or unsupported role.",
+    canConfigure: false,
+    canPreviewCamera: false,
+    canPrepareStudio: false,
+    canMonitor: false,
+    canExport: false
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const branchScoped = ["branch_manager", "receptionist_counsellor"].includes(normalizedRole) ? Boolean(String(branchId || "").trim()) : true;
+  const teacherAssigned = normalizedRole !== "teacher" || Boolean(String(teacherId || "").trim() || String(batchId || "").trim() || String(classroomId || "").trim());
+  const studentOwnOnly = normalizedRole !== "student" || Boolean(String(studentId || "").trim() || String(batchId || "").trim());
+  const parentLinkedOnly = normalizedRole !== "parent" || Boolean(String(parentId || "").trim() || String(studentId || "").trim());
+  const allowed = Boolean(rule.allowed && hasInstituteId && branchScoped && teacherAssigned && studentOwnOnly && parentLinkedOnly && normalizedRole !== "naxora_super_admin");
+
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    branchId: branchId || null,
+    classroomId: classroomId || null,
+    batchId: batchId || null,
+    teacherId: teacherId || null,
+    studentId: studentId || null,
+    parentId: parentId || null,
+    deviceId: deviceId || null,
+    allowed,
+    canConfigure: Boolean(rule.canConfigure && allowed),
+    canPreviewCamera: Boolean(rule.canPreviewCamera && allowed),
+    canPrepareStudio: Boolean(rule.canPrepareStudio && allowed),
+    canMonitor: Boolean(rule.canMonitor && allowed),
+    canExport: Boolean(rule.canExport && allowed),
+    selfOnly: Boolean(rule.selfOnly),
+    viewOnly: Boolean(rule.viewOnly),
+    summaryOnly: Boolean(rule.summaryOnly),
+    assetSummaryOnly: Boolean(rule.assetSummaryOnly),
+    scope: rule.scope,
+    reason: !hasInstituteId
+      ? "Institute ID missing."
+      : !rule.allowed
+        ? rule.scope
+        : !branchScoped
+          ? "Branch-scoped role requires branchId."
+          : !teacherAssigned
+            ? "Teacher camera/studio access requires assigned teacherId, batchId or classroomId."
+            : !studentOwnOnly
+              ? "Student can view own class studio status only."
+              : !parentLinkedOnly
+                ? "Parent can view linked child studio status only."
+                : "Camera and Studio Integration access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    confirmationRequiredFor: ["camera_start", "camera_stop", "mic_start", "studio_scene_start", "recording_preset_apply", "stream_start"],
+    ownerVerificationRequiredFor: ["device_delete", "studio_recording_export", "vendor_api_key_change", "privacy_change", "camera_remote_control"]
+  };
+}
+
+function part101ParseCommand(text = "", body = {}) {
+  const input = String(text || body.command || body.q || "").trim();
+  const intent = /register|add.*camera|add.*mic|device/i.test(input) ? "device_register"
+    : /camera|webcam|preview|video/i.test(input) ? "camera_preview"
+      : /mic|audio|sound|noise/i.test(input) ? "audio_check"
+        : /studio|scene|layout/i.test(input) ? "studio_scene"
+          : /quality|network|bitrate|resolution|stream/i.test(input) ? "stream_quality"
+            : /record|preset|save setup/i.test(input) ? "recording_preset"
+              : /privacy|permission|policy/i.test(input) ? "privacy_policy"
+                : /status|readiness|health/i.test(input) ? "readiness"
+                  : "overview";
+  return {
+    intent,
+    classroomId: body.classroomId || "ROOM-101",
+    branchId: body.branchId || "BR-DEMO-001",
+    deviceId: body.deviceId || "CAM-STUDIO-001",
+    rawCommand: input
+  };
+}
+
+function part101FindDevice(deviceId, classroomId, branchId) {
+  if (deviceId) {
+    const match = part101DemoStudioDevices.find((d) => d.deviceId === deviceId);
+    if (match) return match;
+  }
+  if (classroomId) {
+    const match = part101DemoStudioDevices.find((d) => d.classroomId === classroomId);
+    if (match) return match;
+  }
+  if (branchId) {
+    const match = part101DemoStudioDevices.find((d) => d.branchId === branchId);
+    if (match) return match;
+  }
+  return part101DemoStudioDevices[0];
+}
+
+function part101DeviceRegistryPreview({ access, deviceId, branchId, classroomId, deviceName, deviceType, vendor, model }) {
+  return {
+    previewOnly: true,
+    canRegister: Boolean(access.canConfigure),
+    device: {
+      deviceId: deviceId || `STUDIO-DEVICE-PREVIEW-${Date.now()}`,
+      branchId: branchId || access.branchId || "BR-DEMO-001",
+      classroomId: classroomId || access.classroomId || "ROOM-101",
+      deviceName: deviceName || "New Studio Device",
+      deviceType: deviceType || "camera",
+      vendor: vendor || "Generic/Browser",
+      model: model || "Camera/Mic",
+      connectionMode: "browser_or_vendor_pending",
+      status: "registry_preview"
+    },
+    confirmationRequired: true,
+    vendorSetupRequired: true,
+    note: "External camera/studio vendor secrets must be stored in Render env only."
+  };
+}
+
+function part101BrowserCapability(userAgent = "") {
+  return {
+    previewOnly: true,
+    browserAPIs: {
+      mediaDevices: true,
+      getUserMedia: true,
+      enumerateDevices: true,
+      mediaRecorder: true,
+      screenCapture: true
+    },
+    permissionsNeeded: ["camera", "microphone", "optional_screen_capture"],
+    recommendedBrowser: "Latest Chrome/Edge for best camera, mic and recording preview.",
+    userAgent: userAgent || "not_provided",
+    noAutoStart: true
+  };
+}
+
+function part101StudioReadiness(devices = part101DemoStudioDevices) {
+  const ready = devices.filter((d) => String(d.status).includes("ready")).length;
+  const needs = devices.filter((d) => !String(d.status).includes("ready"));
+  return {
+    previewOnly: true,
+    readyDevices: ready,
+    totalDevices: devices.length,
+    readinessScorePreview: Math.round((ready / Math.max(1, devices.length)) * 100),
+    checklist: [
+      { key: "camera_permission", status: "browser_permission_required", message: "Teacher ko camera permission allow karni hogi." },
+      { key: "mic_permission", status: "browser_permission_required", message: "Teacher ko microphone permission allow karni hogi." },
+      { key: "lighting", status: needs.find((d) => d.deviceType === "light") ? "manual_check_needed" : "ready_preview", message: "Face clear dikhne ke liye front soft light check karo." },
+      { key: "background", status: "teacher_check_required", message: "Background clean aur sensitive data free hona chahiye." },
+      { key: "network", status: "quality_check_required", message: "720p ke liye 3 Mbps+ upload recommended, 1080p ke liye 5 Mbps+." }
+    ],
+    needsAttention: needs
+  };
+}
+
+function part101CameraPreviewPolicy(access = {}) {
+  return {
+    previewOnly: true,
+    canPreviewCamera: Boolean(access.canPreviewCamera),
+    browserPermissionRequired: true,
+    noAutoStart: true,
+    localPreviewOnly: true,
+    finalLiveStartRequiresConfirmation: true,
+    rules: [
+      "Camera/mic auto-start nahi hoga.",
+      "Teacher browser permission ke bina camera/mic nahi khulega.",
+      "Student/parent camera control nahi kar sakte.",
+      "Sensitive data public stream me nahi dikhna chahiye.",
+      "Recording/stream start confirmation ke bina nahi hoga."
+    ]
+  };
+}
+
+function part101AudioCheckPreview({ access }) {
+  return {
+    previewOnly: true,
+    canCheck: Boolean(access.canPreviewCamera || access.canPrepareStudio),
+    micPermissionRequired: true,
+    noiseCheckPreview: {
+      backgroundNoise: "unknown_until_browser_test",
+      echoCancellation: "recommended",
+      noiseSuppression: "recommended",
+      autoGainControl: "recommended"
+    },
+    recommendation: "Collar mic/USB mic use karo. Fan/noise source se mic door rakho."
+  };
+}
+
+function part101StreamQualityPreview({ access, uploadMbps = 4.2 }) {
+  const upload = Number(uploadMbps || 0);
+  let recommended = "480p";
+  if (upload >= 5) recommended = "1080p";
+  else if (upload >= 3) recommended = "720p";
+  return {
+    previewOnly: true,
+    canPrepare: Boolean(access.canPrepareStudio || access.canMonitor),
+    uploadMbpsPreview: upload,
+    recommendedQuality: recommended,
+    presets: [
+      { quality: "480p", minUploadMbps: 1.5, recommendedFor: "weak network" },
+      { quality: "720p", minUploadMbps: 3, recommendedFor: "stable class" },
+      { quality: "1080p", minUploadMbps: 5, recommendedFor: "studio-quality class" }
+    ],
+    guidance: "Network unstable ho to 720p/480p choose karo. Class recording separately handle hogi."
+  };
+}
+
+function part101StudioScenePreview({ access, scene = part101DemoStudioScene }) {
+  return {
+    previewOnly: true,
+    canPrepareScene: Boolean(access.canPrepareStudio || access.canMonitor),
+    scene,
+    teacherConfirmationRequired: true,
+    finalStartPending: true,
+    sensitiveDataBlocked: true,
+    connectedModulesPreview: ["Part94 live room", "Part95 whiteboard", "Part96 chat/polls/hand raise", "Part97 recording", "Part98 notes", "Part100 digital board"]
+  };
+}
+
+function part101RecordingPresetPreview({ access, quality = "720p" }) {
+  return {
+    previewOnly: true,
+    canApplyPreset: Boolean(access.canPrepareStudio),
+    presetId: `STUDIO-PRESET-PREVIEW-${Date.now()}`,
+    quality,
+    settings: {
+      camera: quality === "1080p" ? "1920x1080" : quality === "720p" ? "1280x720" : "854x480",
+      frameRate: 30,
+      audio: "noise_suppression_echo_cancellation",
+      layout: "teacher_camera_plus_board",
+      recording: "preview_only_no_cloud_upload",
+      stream: "manual_start_only"
+    },
+    confirmationRequired: true,
+    noAutoRecording: true,
+    noAutoStreaming: true
+  };
+}
+
+function part101PrivacyPolicy() {
+  return {
+    previewOnly: true,
+    cameraAutoStart: false,
+    microphoneAutoStart: false,
+    browserPermissionRequired: true,
+    blockedOnStream: [
+      "fees/payment/private finance data",
+      "student phone/address/private profile",
+      "parent contact details",
+      "private marks without teacher approval",
+      "admin passwords or API keys",
+      "unapproved recording/export"
+    ],
+    allowedContent: [
+      "teacher video",
+      "approved lesson board",
+      "approved notes/formulas",
+      "moderated chat/poll status",
+      "teacher-approved homework reminder"
+    ],
+    ownerVerificationRequiredFor: ["camera_remote_control", "recording_export", "vendor_api_key_change", "privacy_change"],
+    safety: "Camera/studio is public live classroom output, so sensitive content must stay private-screen-first."
+  };
+}
+
+function part101AssetSummary({ access, device }) {
+  return {
+    previewOnly: true,
+    visibleForRole: access.role,
+    assetSummaryOnly: Boolean(access.assetSummaryOnly),
+    deviceId: device.deviceId,
+    deviceName: device.deviceName,
+    deviceType: device.deviceType,
+    branchId: device.branchId,
+    classroomId: device.classroomId,
+    vendor: device.vendor,
+    model: device.model,
+    status: device.status,
+    costSensitiveDataHidden: true,
+    note: access.assetSummaryOnly ? "Accountant sees camera/studio asset inventory-safe summary only." : "Authorised camera/studio summary."
+  };
+}
+
+function part101BuildCameraStudio({ command, role, instituteId, branchId, classroomId, batchId, teacherId, studentId, parentId, body = {}, userAgent = "" }) {
+  const parsed = part101ParseCommand(command, body);
+  const access = part101AccessCheck({
+    role,
+    instituteId,
+    branchId: body.branchId || branchId || parsed.branchId,
+    classroomId: body.classroomId || classroomId || parsed.classroomId,
+    batchId,
+    teacherId,
+    studentId,
+    parentId,
+    deviceId: body.deviceId || parsed.deviceId
+  });
+
+  const device = part101FindDevice(body.deviceId || parsed.deviceId, body.classroomId || classroomId || parsed.classroomId, body.branchId || branchId || parsed.branchId);
+  const deviceRegistryPreview = part101DeviceRegistryPreview({ access, ...body });
+  const browserCapability = part101BrowserCapability(userAgent);
+  const studioReadiness = part101StudioReadiness(part101DemoStudioDevices);
+  const cameraPreviewPolicy = part101CameraPreviewPolicy(access);
+  const audioCheckPreview = part101AudioCheckPreview({ access });
+  const streamQualityPreview = part101StreamQualityPreview({ access, uploadMbps: body.uploadMbps || 4.2 });
+  const studioScenePreview = part101StudioScenePreview({ access, scene: body.scene || part101DemoStudioScene });
+  const recordingPresetPreview = part101RecordingPresetPreview({ access, quality: body.quality || streamQualityPreview.recommendedQuality });
+  const privacyPolicy = part101PrivacyPolicy();
+  const assetSummary = part101AssetSummary({ access, device });
+
+  let replyText = "";
+  let nextAction = "none";
+  if (!access.allowed) {
+    replyText = "Is role/scope ko camera aur studio access nahi hai.";
+    nextAction = "blocked";
+  } else if (parsed.intent === "device_register") {
+    replyText = access.canConfigure
+      ? "Camera/studio device registry preview ready hai. Final register confirmation ke bina nahi hoga."
+      : "Is role ko camera/studio device configure permission nahi hai.";
+    nextAction = "show_device_registry_preview";
+  } else if (parsed.intent === "camera_preview") {
+    replyText = access.canPreviewCamera
+      ? "Camera preview policy ready hai. Browser permission ke bina camera start nahi hoga."
+      : "Is role ko camera preview permission nahi hai.";
+    nextAction = "show_camera_preview";
+  } else if (parsed.intent === "audio_check") {
+    replyText = (access.canPreviewCamera || access.canPrepareStudio)
+      ? "Audio check preview ready hai. Mic permission aur noise check required hai."
+      : "Is role ko audio check permission nahi hai.";
+    nextAction = "show_audio_check";
+  } else if (parsed.intent === "studio_scene") {
+    replyText = (access.canPrepareStudio || access.canMonitor)
+      ? "Studio scene layout preview ready hai. Final live start confirmation ke bina nahi hoga."
+      : "Is role ko studio scene prepare permission nahi hai.";
+    nextAction = "show_studio_scene_preview";
+  } else if (parsed.intent === "stream_quality") {
+    replyText = `Stream quality preview ready hai. Recommended quality: ${streamQualityPreview.recommendedQuality}.`;
+    nextAction = "show_stream_quality";
+  } else if (parsed.intent === "recording_preset") {
+    replyText = access.canPrepareStudio
+      ? "Recording/streaming preset preview ready hai. Recording/stream auto-start nahi hoga."
+      : "Is role ko recording preset apply permission nahi hai.";
+    nextAction = "show_recording_preset_preview";
+  } else if (parsed.intent === "privacy_policy") {
+    replyText = "Camera/studio privacy policy ready hai. Sensitive private data stream me show nahi hoga.";
+    nextAction = "show_privacy_policy";
+  } else if (parsed.intent === "readiness") {
+    replyText = `Studio readiness preview ready hai. Score ${studioReadiness.readinessScorePreview}/100.`;
+    nextAction = "show_studio_readiness";
+  } else {
+    replyText = "Camera and Studio Integration foundation ready hai. Camera preview, audio check, studio scene aur stream quality preview available hain.";
+    nextAction = "show_camera_studio_overview";
+  }
+
+  return {
+    access,
+    parsed,
+    devices: part101DemoStudioDevices,
+    selectedDevice: device,
+    studioScene: part101DemoStudioScene,
+    deviceRegistryPreview,
+    browserCapability,
+    studioReadiness,
+    cameraPreviewPolicy,
+    audioCheckPreview,
+    streamQualityPreview,
+    studioScenePreview,
+    recordingPresetPreview,
+    privacyPolicy,
+    assetSummary,
+    replyText,
+    spokenSafeSummary: replyText,
+    privateScreenFirst: true,
+    nextAction,
+    vendorApiConnected: false,
+    realHardwareConnected: false,
+    browserPermissionRequired: true,
+    confirmationRequiredFor: ["camera_start", "camera_stop", "mic_start", "studio_scene_start", "recording_preset_apply", "stream_start"],
+    ownerVerificationRequiredFor: ["device_delete", "studio_recording_export", "vendor_api_key_change", "privacy_change", "camera_remote_control"],
+    auditLog: {
+      event: "part101_camera_studio_integration",
+      role: access.role,
+      intent: parsed.intent,
+      deviceId: device?.deviceId || parsed.deviceId,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+const part101Checklist = [
+  "Camera and Studio Integration page opens",
+  "Status API returns success true",
+  "Device registry preview works",
+  "Browser camera preview policy works",
+  "Local browser camera test works after permission",
+  "Audio check preview works",
+  "Studio readiness checklist appears",
+  "Stream quality recommendation appears",
+  "Studio scene preview works",
+  "Recording preset preview does not auto-start",
+  "Privacy policy blocks sensitive data on stream",
+  "Student/parent scoped modes work",
+  "Accountant asset summary-only mode works",
+  "VANI camera studio command works",
+  "Previous Part 1–100 routes remain preserved"
+];
+
+app.get("/api/part101/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 101 — Camera and Studio Integration",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 101,
+    nextPart: "Part 102 — Multi-Branch Command Centre",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/camera-studio-integration", "/camera-studio", "/studio-integration", "/vani-camera-studio", "/live-class-camera", "/teacher-studio"],
+    apiRoutes: [
+      "/api/part101/config",
+      "/api/part101/features",
+      "/api/part101/roles",
+      "/api/part101/access-check",
+      "/api/part101/devices",
+      "/api/part101/device/register-preview",
+      "/api/part101/browser-capability",
+      "/api/part101/studio/readiness",
+      "/api/part101/camera/preview-policy",
+      "/api/part101/audio/check-preview",
+      "/api/part101/stream/quality-preview",
+      "/api/part101/studio/scene-preview",
+      "/api/part101/recording/preset-preview",
+      "/api/part101/asset-summary",
+      "/api/part101/privacy-policy",
+      "/api/part101/vani/greeting",
+      "/api/part101/vani/command"
+    ],
+    cameraStudioIntegrationEnabled: true
+  });
+});
+
+app.get("/api/part101/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "Camera and Studio Integration",
+    appType: "camera_studio_integration_foundation",
+    version: "2.0-camera-studio-integration",
+    policy: {
+      previewFirst: true,
+      noAutoCameraStart: true,
+      noAutoMicStart: true,
+      noAutoStreamStart: true,
+      browserPermissionRequired: true,
+      teacherConfirmationRequired: true,
+      noVendorApiKeysIncluded: true,
+      sensitiveDataPrivateScreenFirst: true
+    }
+  });
+});
+
+app.get("/api/part101/features", (req, res) => {
+  res.json({ success: true, features: part101CameraStudioFeatures });
+});
+
+app.get("/api/part101/roles", (req, res) => {
+  res.json({ success: true, roles: part101RoleRules });
+});
+
+app.get("/api/part101/access-check", (req, res) => {
+  res.json({ success: true, access: part101AccessCheck(req.query || {}) });
+});
+
+app.get("/api/part101/devices", (req, res) => {
+  const access = part101AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, previewOnly: true, devices: part101DemoStudioDevices });
+});
+
+app.get("/api/part101/device/register-preview", (req, res) => {
+  const access = part101AccessCheck(req.query || {});
+  if (!access.allowed || !access.canConfigure) return res.status(403).json({ success: false, access, message: "Only institute owner can configure/register studio devices." });
+  res.json({ success: true, access, deviceRegistryPreview: part101DeviceRegistryPreview({ access, ...req.query }) });
+});
+
+app.get("/api/part101/browser-capability", (req, res) => {
+  res.json({ success: true, browserCapability: part101BrowserCapability(req.headers["user-agent"] || "") });
+});
+
+app.get("/api/part101/studio/readiness", (req, res) => {
+  const access = part101AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, studioReadiness: part101StudioReadiness() });
+});
+
+app.get("/api/part101/camera/preview-policy", (req, res) => {
+  const access = part101AccessCheck(req.query || {});
+  if (!access.allowed || !access.canPreviewCamera) return res.status(403).json({ success: false, access, message: "Only assigned teacher can open camera preview policy." });
+  res.json({ success: true, access, cameraPreviewPolicy: part101CameraPreviewPolicy(access) });
+});
+
+app.get("/api/part101/audio/check-preview", (req, res) => {
+  const access = part101AccessCheck(req.query || {});
+  if (!access.allowed || !(access.canPreviewCamera || access.canPrepareStudio)) return res.status(403).json({ success: false, access, message: "Teacher/branch manager can prepare audio check preview." });
+  res.json({ success: true, access, audioCheckPreview: part101AudioCheckPreview({ access }) });
+});
+
+app.get("/api/part101/stream/quality-preview", (req, res) => {
+  const access = part101AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, streamQualityPreview: part101StreamQualityPreview({ access, uploadMbps: req.query.uploadMbps || 4.2 }) });
+});
+
+app.get("/api/part101/studio/scene-preview", (req, res) => {
+  const access = part101AccessCheck(req.query || {});
+  if (!access.allowed || !(access.canPrepareStudio || access.canMonitor)) return res.status(403).json({ success: false, access, message: "Teacher/owner/branch manager can prepare studio scene preview." });
+  res.json({ success: true, access, studioScenePreview: part101StudioScenePreview({ access }) });
+});
+
+app.get("/api/part101/recording/preset-preview", (req, res) => {
+  const access = part101AccessCheck(req.query || {});
+  if (!access.allowed || !access.canPrepareStudio) return res.status(403).json({ success: false, access, message: "Teacher/branch manager can create recording preset preview." });
+  res.json({ success: true, access, recordingPresetPreview: part101RecordingPresetPreview({ access, quality: req.query.quality || "720p" }) });
+});
+
+app.get("/api/part101/asset-summary", (req, res) => {
+  const access = part101AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const device = part101FindDevice(req.query.deviceId, req.query.classroomId, req.query.branchId);
+  res.json({ success: true, access, assetSummary: part101AssetSummary({ access, device }) });
+});
+
+app.get("/api/part101/privacy-policy", (req, res) => {
+  res.json({ success: true, privacyPolicy: part101PrivacyPolicy() });
+});
+
+app.get("/api/part101/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI Camera Studio",
+    greeting: "Namaste, main VANI Camera aur Studio Assistant hoon. Aap camera readiness, mic check, studio scene, stream quality ya recording preset preview pooch sakte ho.",
+    exampleCommands: [
+      "VANI, camera readiness check karo",
+      "VANI, mic audio check preview banao",
+      "VANI, studio scene layout ready karo",
+      "VANI, stream quality recommend karo",
+      "VANI, recording preset preview banao",
+      "VANI, camera privacy policy batao"
+    ],
+    safety: "Camera, mic, stream ya recording auto-start nahi honge. Browser permission aur teacher confirmation required hai."
+  });
+});
+
+app.post("/api/part101/vani/command", (req, res) => {
+  const body = req.body || {};
+  const result = part101BuildCameraStudio({
+    command: body.command || body.q || "",
+    role: body.role || "teacher",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId || "BR-DEMO-001",
+    classroomId: body.classroomId || "ROOM-101",
+    batchId: body.batchId || "BAT-10-MATH-A",
+    teacherId: body.teacherId || "TCH-DEMO-001",
+    studentId: body.studentId,
+    parentId: body.parentId,
+    body,
+    userAgent: req.headers["user-agent"] || ""
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 101 — Camera and Studio Integration", ...result });
+});
+
+app.get("/api/part101/vani/command", (req, res) => {
+  const result = part101BuildCameraStudio({
+    command: req.query.command || req.query.q || "",
+    role: req.query.role || "teacher",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId || "BR-DEMO-001",
+    classroomId: req.query.classroomId || "ROOM-101",
+    batchId: req.query.batchId || "BAT-10-MATH-A",
+    teacherId: req.query.teacherId || "TCH-DEMO-001",
+    studentId: req.query.studentId,
+    parentId: req.query.parentId,
+    body: req.query || {},
+    userAgent: req.headers["user-agent"] || ""
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 101 — Camera and Studio Integration", ...result });
+});
+
+app.get("/api/part101/audit-log", (req, res) => {
+  res.json({
+    success: true,
+    auditLog: [
+      { event: "camera_studio_preview", role: "teacher", createdAt: new Date().toISOString() },
+      { event: "no_auto_camera_start_policy", rule: "Camera/mic require browser permission and teacher confirmation.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part101/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "camera_studio_integration_created", message: "Part 101 Camera and Studio Integration active.", createdAt: new Date().toISOString() },
+      { type: "browser_permission_required", message: "Camera/mic preview requires explicit browser permission.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part101/checklist", (req, res) => {
+  res.json({ success: true, checklist: part101Checklist });
+});
+
+app.get("/api/part101/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part101-camera-studio-integration-readiness",
+    ownerVerificationRequiredForSensitiveExports: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      features: part101CameraStudioFeatures,
+      roles: part101RoleRules,
+      devices: part101DemoStudioDevices,
+      checklist: part101Checklist,
+      privacyPolicy: part101PrivacyPolicy()
+    }
+  });
+});
+
+app.get("/api/part101/demo", (req, res) => {
+  const command = "VANI, camera readiness check karo aur studio scene layout ready karo";
+  const result = part101BuildCameraStudio({
+    command,
+    role: "teacher",
+    instituteId: "NX-DEMO-INST-001",
+    branchId: "BR-DEMO-001",
+    classroomId: "ROOM-101",
+    batchId: "BAT-10-MATH-A",
+    teacherId: "TCH-DEMO-001",
+    body: {},
+    userAgent: req.headers["user-agent"] || ""
+  });
+  res.json({
+    success: true,
+    demo: {
+      command,
+      result,
+      nextPart: "Part 102 — Multi-Branch Command Centre"
+    }
+  });
+});
+// ================= END PART 101 =================
+
 
 
 

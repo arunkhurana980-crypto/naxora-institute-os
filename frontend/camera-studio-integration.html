@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — Camera and Studio Integration</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/camera-studio-integration.css" />
+</head>
+<body>
+  <main class="camera-studio">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 101 • NAXORA OS 2.0</p>
+        <h1>Camera and Studio Integration</h1>
+        <p class="lead">
+          Teacher camera, mic and studio foundation with local camera preview,
+          audio check, stream quality guidance and studio scene layout.
+        </p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">VANI Camera Studio</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Tap Start, then ask camera readiness or studio scene.</p>
+        <div class="voice-actions">
+          <button id="startVaniBtn">Start VANI</button>
+          <button id="listenVaniBtn">Listen</button>
+          <button id="muteVaniBtn">Mute</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Access</p>
+      <div class="controls">
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="branchId" value="BR-DEMO-001" />
+        <input id="classroomId" value="ROOM-101" />
+        <input id="batchId" value="BAT-10-MATH-A" />
+        <input id="teacherId" value="TCH-DEMO-001" />
+        <select id="roleSelect">
+          <option value="teacher" selected>Teacher Studio Control</option>
+          <option value="institute_owner">Owner Configure</option>
+          <option value="branch_manager">Branch Manager Prepare</option>
+          <option value="student">Student Status View</option>
+          <option value="parent">Parent Summary View</option>
+          <option value="receptionist_counsellor">Receptionist Availability</option>
+          <option value="accountant">Accountant Asset Summary</option>
+        </select>
+        <button id="demoBtn">Load Demo</button>
+      </div>
+      <pre id="accessBox" class="code">Waiting...</pre>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">VANI Command</p>
+        <h2>Speak or type</h2>
+        <p>Example: “VANI, camera readiness check karo aur studio scene layout ready karo”.</p>
+        <div class="controls">
+          <input id="vaniCommand" value="VANI, camera readiness check karo aur studio scene layout ready karo" />
+          <button id="askVaniBtn">Ask VANI</button>
+        </div>
+        <pre id="vaniOutput" class="code">Waiting...</pre>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Local Camera Test</p>
+        <p class="small">Browser permission ke baad local preview chalega. Cloud upload/stream start nahi hota.</p>
+        <div class="controls">
+          <button id="startCameraBtn">Start Local Camera</button>
+          <button id="stopCameraBtn">Stop Local Camera</button>
+        </div>
+        <video id="cameraPreview" autoplay muted playsinline></video>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Studio Devices</p>
+        <div id="devicesBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Studio Readiness</p>
+        <div id="readinessBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Audio + Stream Quality</p>
+        <div id="qualityBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Studio Scene</p>
+        <div id="sceneBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Recording Preset</p>
+        <div id="presetBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Privacy + Asset Summary</p>
+        <div id="privacyBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Testing links</p>
+      <div class="links">
+        <a href="/api/part101/status" target="_blank">Status</a>
+        <a href="/api/part101/demo" target="_blank">Demo</a>
+        <a href="/api/part101/browser-capability" target="_blank">Browser Capability</a>
+        <a href="/api/part101/studio/readiness?role=teacher&instituteId=NX-DEMO-INST-001&teacherId=TCH-DEMO-001&batchId=BAT-10-MATH-A" target="_blank">Readiness</a>
+        <a href="/api/part101/privacy-policy" target="_blank">Privacy Policy</a>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/vani-voice-starter.js"></script>
+  <script src="/camera-studio-integration.js"></script>
+</body>
+</html>
