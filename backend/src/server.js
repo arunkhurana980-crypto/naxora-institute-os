@@ -10393,6 +10393,12 @@ const modulePageRoutes = {
   "/vani-biometric-attendance": "biometric-attendance-integration.html",
   "/device-attendance-integration": "biometric-attendance-integration.html",
   "/fingerprint-face-attendance": "biometric-attendance-integration.html",
+  "/digital-board-integration": "digital-board-integration.html",
+  "/digital-board": "digital-board-integration.html",
+  "/smart-board-integration": "digital-board-integration.html",
+  "/interactive-board": "digital-board-integration.html",
+  "/vani-digital-board": "digital-board-integration.html",
+  "/classroom-digital-board": "digital-board-integration.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -22532,6 +22538,769 @@ app.get("/api/part99/demo", (req, res) => {
   });
 });
 // ================= END PART 99 =================
+
+// ================= PART 100 — DIGITAL BOARD INTEGRATION =================
+// NAXORA OS 2.0 Digital Board Integration.
+// This part creates a safe foundation for smart/digital classroom boards:
+// board registry preview, classroom mapping, connection readiness, screen-cast
+// preview, whiteboard sync preview, board content send preview, lesson mode,
+// device health, privacy policy and VANI digital board commands.
+// It does not connect to real vendor hardware or store secrets without authorised
+// vendor setup. Teacher confirmation is required before board display/publish.
+
+const part100DigitalBoardFeatures = [
+  {
+    key: "board_registry",
+    name: "Digital Board Registry",
+    summary: "Register smart board device preview with branch/classroom metadata.",
+    problemSolved: "Institute can track which board is installed in which classroom."
+  },
+  {
+    key: "classroom_board_mapping",
+    name: "Classroom Board Mapping",
+    summary: "Maps board to branch, room, batch and teacher usage context.",
+    problemSolved: "Teacher can choose correct classroom board."
+  },
+  {
+    key: "connection_readiness",
+    name: "Board Connection Readiness",
+    summary: "Checks network/vendor/cast/API requirements before live use.",
+    problemSolved: "Classroom board issues can be detected earlier."
+  },
+  {
+    key: "screen_cast_preview",
+    name: "Screen Cast Preview",
+    summary: "Creates browser screen-to-board cast preview workflow.",
+    problemSolved: "Teacher can start board display from NAXORA safely."
+  },
+  {
+    key: "whiteboard_sync_preview",
+    name: "Whiteboard Sync Preview",
+    summary: "Syncs NAXORA whiteboard content to board preview.",
+    problemSolved: "Part 95 whiteboard can become classroom-board ready."
+  },
+  {
+    key: "lesson_mode",
+    name: "Lesson Mode",
+    summary: "Creates lesson-mode board layout with topic, notes, timer and activity status.",
+    problemSolved: "Teacher can keep class structured on board."
+  },
+  {
+    key: "board_health",
+    name: "Board Health Preview",
+    summary: "Shows board online, network, display, touch and firmware readiness.",
+    problemSolved: "Institute can troubleshoot board before class."
+  },
+  {
+    key: "vani_digital_board",
+    name: "VANI Digital Board Commands",
+    summary: "VANI can check board status, prepare lesson mode and create cast/sync preview.",
+    problemSolved: "Teacher can control board foundation by voice."
+  }
+];
+
+const part100RoleRules = [
+  { role: "institute_owner", allowed: true, scope: "Can configure and monitor authorised digital boards; sensitive exports require verification.", canConfigure: true, canCast: false, canSync: false, canMonitor: true, canExport: true },
+  { role: "branch_manager", allowed: true, scope: "Can monitor and prepare assigned branch boards.", canConfigure: false, canCast: false, canSync: false, canMonitor: true, canExport: false },
+  { role: "teacher", allowed: true, scope: "Can cast/sync/lesson-mode preview for assigned classroom boards.", canConfigure: false, canCast: true, canSync: true, canMonitor: false, canExport: false },
+  { role: "student", allowed: true, scope: "Can view own class board session status only.", canConfigure: false, canCast: false, canSync: false, canMonitor: false, canExport: false, selfOnly: true },
+  { role: "parent", allowed: true, scope: "Can view linked child's board-session summary only when institute allows.", canConfigure: false, canCast: false, canSync: false, canMonitor: false, canExport: false, viewOnly: true },
+  { role: "receptionist_counsellor", allowed: true, scope: "Can view classroom board availability summary only.", canConfigure: false, canCast: false, canSync: false, canMonitor: false, canExport: false, summaryOnly: true },
+  { role: "accountant", allowed: true, scope: "Can view board asset/inventory cost-safe summary only.", canConfigure: false, canCast: false, canSync: false, canMonitor: false, canExport: false, assetSummaryOnly: true },
+  { role: "naxora_super_admin", allowed: false, scope: "Platform support only; no unrestricted classroom board access.", canConfigure: false, canCast: false, canSync: false, canMonitor: false, canExport: false }
+];
+
+const part100DemoBoards = [
+  {
+    boardId: "DBOARD-001",
+    branchId: "BR-DEMO-001",
+    classroomId: "ROOM-101",
+    classroomName: "Classroom 101",
+    boardName: "Main Digital Board",
+    vendor: "Generic Smart Board",
+    model: "Interactive 75-inch",
+    connectionMode: "browser_cast_preview",
+    status: "online_preview",
+    touchInput: true,
+    stylusReady: true,
+    firmwareStatus: "ok_preview",
+    lastSeenPreview: "2026-07-15T08:45:00.000Z"
+  },
+  {
+    boardId: "DBOARD-002",
+    branchId: "BR-DEMO-001",
+    classroomId: "ROOM-202",
+    classroomName: "Science Lab",
+    boardName: "Science Lab Board",
+    vendor: "Generic Android Board",
+    model: "Interactive 65-inch",
+    connectionMode: "vendor_api_pending",
+    status: "setup_needed_preview",
+    touchInput: true,
+    stylusReady: false,
+    firmwareStatus: "update_recommended_preview",
+    lastSeenPreview: null
+  }
+];
+
+const part100DemoLessonContent = {
+  lessonId: "LESSON-DBOARD-DEMO-001",
+  title: "Class 10 Maths — Quadratic Equations",
+  subject: "Maths",
+  className: "Class 10",
+  teacherId: "TCH-DEMO-001",
+  batchId: "BAT-10-MATH-A",
+  slidesPreview: [
+    { slideNo: 1, title: "Standard Form", content: "ax² + bx + c = 0" },
+    { slideNo: 2, title: "Quadratic Formula", content: "x = (-b ± √(b² - 4ac)) / 2a" },
+    { slideNo: 3, title: "Discriminant", content: "D = b² - 4ac and nature of roots" }
+  ],
+  whiteboardSnapshotPreview: {
+    source: "Part95 whiteboard preview",
+    strokes: 14,
+    pages: 2,
+    exportType: "png_or_vector_preview"
+  },
+  notesSummaryPreview: "Quadratic equations standard form, formula and discriminant were covered."
+};
+
+function normalizePart100Role(role) {
+  const r = String(role || "teacher").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part100AccessCheck({ role, instituteId, branchId, classroomId, batchId, teacherId, studentId, parentId, boardId }) {
+  const normalizedRole = normalizePart100Role(role);
+  const rule = part100RoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole,
+    allowed: false,
+    scope: "Unknown or unsupported role.",
+    canConfigure: false,
+    canCast: false,
+    canSync: false,
+    canMonitor: false,
+    canExport: false
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const branchScoped = ["branch_manager", "receptionist_counsellor"].includes(normalizedRole) ? Boolean(String(branchId || "").trim()) : true;
+  const teacherAssigned = normalizedRole !== "teacher" || Boolean(String(teacherId || "").trim() || String(batchId || "").trim() || String(classroomId || "").trim());
+  const studentOwnOnly = normalizedRole !== "student" || Boolean(String(studentId || "").trim() || String(batchId || "").trim());
+  const parentLinkedOnly = normalizedRole !== "parent" || Boolean(String(parentId || "").trim() || String(studentId || "").trim());
+  const allowed = Boolean(rule.allowed && hasInstituteId && branchScoped && teacherAssigned && studentOwnOnly && parentLinkedOnly && normalizedRole !== "naxora_super_admin");
+
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    branchId: branchId || null,
+    classroomId: classroomId || null,
+    batchId: batchId || null,
+    teacherId: teacherId || null,
+    studentId: studentId || null,
+    parentId: parentId || null,
+    boardId: boardId || null,
+    allowed,
+    canConfigure: Boolean(rule.canConfigure && allowed),
+    canCast: Boolean(rule.canCast && allowed),
+    canSync: Boolean(rule.canSync && allowed),
+    canMonitor: Boolean(rule.canMonitor && allowed),
+    canExport: Boolean(rule.canExport && allowed),
+    selfOnly: Boolean(rule.selfOnly),
+    viewOnly: Boolean(rule.viewOnly),
+    summaryOnly: Boolean(rule.summaryOnly),
+    assetSummaryOnly: Boolean(rule.assetSummaryOnly),
+    scope: rule.scope,
+    reason: !hasInstituteId
+      ? "Institute ID missing."
+      : !rule.allowed
+        ? rule.scope
+        : !branchScoped
+          ? "Branch-scoped role requires branchId."
+          : !teacherAssigned
+            ? "Teacher digital board access requires assigned teacherId, batchId or classroomId."
+            : !studentOwnOnly
+              ? "Student can view own class board status only."
+              : !parentLinkedOnly
+                ? "Parent can view linked child board summary only."
+                : "Digital board integration access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    confirmationRequiredFor: ["board_register", "start_cast", "stop_cast", "sync_whiteboard", "send_content_to_board", "lesson_mode_start"],
+    ownerVerificationRequiredFor: ["board_delete", "board_export", "vendor_api_key_change", "privacy_change", "remote_lock_unlock"]
+  };
+}
+
+function part100ParseCommand(text = "", body = {}) {
+  const input = String(text || body.command || body.q || "").trim();
+  const intent = /register|add.*board|map.*board/i.test(input) ? "board_register"
+    : /cast|screen|mirror|display/i.test(input) ? "cast_preview"
+      : /whiteboard|sync|drawing/i.test(input) ? "whiteboard_sync"
+        : /lesson|slide|teach|mode/i.test(input) ? "lesson_mode"
+          : /health|online|status|firmware|touch|stylus/i.test(input) ? "board_health"
+            : /send|content|notes|summary/i.test(input) ? "content_send"
+              : /privacy|permission|policy/i.test(input) ? "privacy_policy"
+                : "overview";
+  return {
+    intent,
+    boardId: body.boardId || (/002|science|lab/i.test(input) ? "DBOARD-002" : "DBOARD-001"),
+    branchId: body.branchId || "BR-DEMO-001",
+    classroomId: body.classroomId || (/202|science|lab/i.test(input) ? "ROOM-202" : "ROOM-101"),
+    rawCommand: input
+  };
+}
+
+function part100FindBoard(boardId, classroomId, branchId) {
+  if (boardId) {
+    const match = part100DemoBoards.find((b) => b.boardId === boardId);
+    if (match) return match;
+  }
+  if (classroomId) {
+    const match = part100DemoBoards.find((b) => b.classroomId === classroomId);
+    if (match) return match;
+  }
+  if (branchId) {
+    const match = part100DemoBoards.find((b) => b.branchId === branchId);
+    if (match) return match;
+  }
+  return part100DemoBoards[0];
+}
+
+function part100BoardRegistryPreview({ access, boardId, branchId, classroomId, boardName, vendor, model, connectionMode }) {
+  return {
+    previewOnly: true,
+    canRegister: Boolean(access.canConfigure),
+    board: {
+      boardId: boardId || `DBOARD-PREVIEW-${Date.now()}`,
+      branchId: branchId || access.branchId || "BR-DEMO-001",
+      classroomId: classroomId || access.classroomId || "ROOM-101",
+      boardName: boardName || "New Digital Board",
+      vendor: vendor || "Generic Smart Board",
+      model: model || "Interactive Board",
+      connectionMode: connectionMode || "browser_cast_or_vendor_api_pending",
+      status: "registry_preview"
+    },
+    confirmationRequired: true,
+    vendorSetupRequired: true,
+    note: "Vendor API keys must be configured in Render env, never pasted in chat."
+  };
+}
+
+function part100ConnectorReadiness(board = part100DemoBoards[0]) {
+  return {
+    previewOnly: true,
+    boardId: board.boardId,
+    vendor: board.vendor,
+    connectionMode: board.connectionMode,
+    readiness: {
+      browserCast: board.connectionMode === "browser_cast_preview" ? "ready_preview" : "available_if_browser_supports",
+      vendorApi: board.connectionMode === "vendor_api_pending" ? "setup_required" : "optional",
+      localNetwork: board.status === "online_preview" ? "online_preview" : "needs_check",
+      touchInput: board.touchInput ? "ready_preview" : "not_available",
+      stylus: board.stylusReady ? "ready_preview" : "needs_pairing_or_setup",
+      firmware: board.firmwareStatus
+    },
+    requiredSetup: [
+      "Board and teacher device on allowed network",
+      "Display/cast permission from browser or OS",
+      "Board-room mapping",
+      "Optional vendor API base/key in Render env",
+      "Teacher confirmation before showing content"
+    ],
+    futureEnvKeys: ["DIGITAL_BOARD_VENDOR_API_BASE", "DIGITAL_BOARD_VENDOR_API_KEY"],
+    secretsInChatAllowed: false
+  };
+}
+
+function part100BoardHealth(board = part100DemoBoards[0]) {
+  const online = board.status === "online_preview";
+  const issues = [];
+  if (!online) issues.push("board setup/online check needed");
+  if (!board.stylusReady) issues.push("stylus pairing/setup needed");
+  if (String(board.firmwareStatus).includes("update")) issues.push("firmware update recommended");
+  return {
+    previewOnly: true,
+    boardId: board.boardId,
+    onlinePreview: online,
+    displayReady: online,
+    touchReady: Boolean(board.touchInput),
+    stylusReady: Boolean(board.stylusReady),
+    firmwareStatus: board.firmwareStatus,
+    issues,
+    healthScorePreview: Math.max(0, 100 - issues.length * 20),
+    recommendation: issues.length ? "Class se pehle board setup/firmware/stylus check karo." : "Board lesson/cast preview ke liye ready hai."
+  };
+}
+
+function part100CastPreview({ access, board, sourceType }) {
+  return {
+    previewOnly: true,
+    canCast: Boolean(access.canCast),
+    boardId: board.boardId,
+    classroomId: board.classroomId,
+    castSessionId: `CAST-PREVIEW-${Date.now()}`,
+    sourceType: sourceType || "teacher_browser_screen",
+    status: access.canCast ? "cast_preview_ready" : "cast_not_allowed_for_role",
+    browserPermissionRequired: true,
+    teacherConfirmationRequired: true,
+    finalDisplayRequiresConfirmation: true,
+    note: "Real casting depends on browser/OS/board support or vendor integration."
+  };
+}
+
+function part100WhiteboardSyncPreview({ access, board, lessonContent = part100DemoLessonContent }) {
+  return {
+    previewOnly: true,
+    canSync: Boolean(access.canSync),
+    boardId: board.boardId,
+    syncId: `WB-SYNC-PREVIEW-${Date.now()}`,
+    source: lessonContent.whiteboardSnapshotPreview.source,
+    pages: lessonContent.whiteboardSnapshotPreview.pages,
+    strokes: lessonContent.whiteboardSnapshotPreview.strokes,
+    exportType: lessonContent.whiteboardSnapshotPreview.exportType,
+    status: access.canSync ? "whiteboard_sync_preview_ready" : "sync_not_allowed_for_role",
+    confirmationRequired: true,
+    finalSyncPending: true
+  };
+}
+
+function part100LessonModePreview({ access, board, lessonContent = part100DemoLessonContent }) {
+  return {
+    previewOnly: true,
+    canStartLessonMode: Boolean(access.canCast || access.canMonitor),
+    boardId: board.boardId,
+    lessonId: lessonContent.lessonId,
+    title: lessonContent.title,
+    layoutPreview: {
+      leftPanel: "topic + formula",
+      centerPanel: "digital whiteboard/cast area",
+      rightPanel: "timer + poll/hand raise status",
+      footer: "teacher controls + privacy indicator"
+    },
+    slidesPreview: lessonContent.slidesPreview,
+    timerPreview: "45 minutes",
+    classTools: ["notes summary", "whiteboard sync", "poll status", "hand raise status"],
+    confirmationRequired: true,
+    status: "lesson_mode_preview_ready"
+  };
+}
+
+function part100ContentSendPreview({ access, board, lessonContent = part100DemoLessonContent }) {
+  return {
+    previewOnly: true,
+    canSendContent: Boolean(access.canCast || access.canSync),
+    boardId: board.boardId,
+    contentPacketId: `BOARD-CONTENT-PREVIEW-${Date.now()}`,
+    contentTypes: ["notes_summary", "slide_preview", "formula_card", "homework_reminder"],
+    contentPreview: {
+      title: lessonContent.title,
+      summary: lessonContent.notesSummaryPreview,
+      firstSlide: lessonContent.slidesPreview[0]
+    },
+    finalSendRequiresTeacherConfirmation: true,
+    privacyWarning: "Do not show sensitive student/fee/private data on public classroom board."
+  };
+}
+
+function part100PrivacyPolicy() {
+  return {
+    previewOnly: true,
+    publicDisplaySafety: true,
+    sensitiveDataBlockedOnBoard: [
+      "fees/payment data",
+      "private student phone/address",
+      "parent personal details",
+      "private grades without teacher approval",
+      "recording export/private meeting data"
+    ],
+    allowedClassroomContent: [
+      "lesson topic",
+      "formula/diagram",
+      "teacher-approved notes",
+      "poll question",
+      "whiteboard page",
+      "homework reminder"
+    ],
+    teacherConfirmationRequired: true,
+    ownerVerificationRequiredFor: ["vendor_api_key_change", "board_delete", "remote_lock_unlock", "privacy_change"],
+    safety: "Digital board is public classroom display, so sensitive data must stay private-screen-first."
+  };
+}
+
+function part100AssetSummary({ access, board }) {
+  return {
+    previewOnly: true,
+    visibleForRole: access.role,
+    assetSummaryOnly: Boolean(access.assetSummaryOnly),
+    boardId: board.boardId,
+    boardName: board.boardName,
+    branchId: board.branchId,
+    classroomId: board.classroomId,
+    vendor: board.vendor,
+    model: board.model,
+    status: board.status,
+    costSensitiveDataHidden: true,
+    note: access.assetSummaryOnly ? "Accountant sees asset/inventory safe summary only." : "Authorised board summary."
+  };
+}
+
+function part100BuildDigitalBoard({ command, role, instituteId, branchId, classroomId, batchId, teacherId, studentId, parentId, body = {} }) {
+  const parsed = part100ParseCommand(command, body);
+  const access = part100AccessCheck({
+    role,
+    instituteId,
+    branchId: body.branchId || branchId || parsed.branchId,
+    classroomId: body.classroomId || classroomId || parsed.classroomId,
+    batchId,
+    teacherId,
+    studentId,
+    parentId,
+    boardId: body.boardId || parsed.boardId
+  });
+
+  const board = part100FindBoard(body.boardId || parsed.boardId, body.classroomId || classroomId || parsed.classroomId, body.branchId || branchId || parsed.branchId);
+  const registryPreview = part100BoardRegistryPreview({ access, ...body });
+  const connectorReadiness = part100ConnectorReadiness(board);
+  const boardHealth = part100BoardHealth(board);
+  const castPreview = part100CastPreview({ access, board, sourceType: body.sourceType });
+  const whiteboardSyncPreview = part100WhiteboardSyncPreview({ access, board, lessonContent: body.lessonContent || part100DemoLessonContent });
+  const lessonModePreview = part100LessonModePreview({ access, board, lessonContent: body.lessonContent || part100DemoLessonContent });
+  const contentSendPreview = part100ContentSendPreview({ access, board, lessonContent: body.lessonContent || part100DemoLessonContent });
+  const privacyPolicy = part100PrivacyPolicy();
+  const assetSummary = part100AssetSummary({ access, board });
+
+  let replyText = "";
+  let nextAction = "none";
+  if (!access.allowed) {
+    replyText = "Is role/scope ko digital board access nahi hai.";
+    nextAction = "blocked";
+  } else if (parsed.intent === "board_register") {
+    replyText = access.canConfigure
+      ? "Digital board registry preview ready hai. Final register confirmation ke bina nahi hoga."
+      : "Is role ko digital board configure/register permission nahi hai.";
+    nextAction = "show_board_registry_preview";
+  } else if (parsed.intent === "cast_preview") {
+    replyText = access.canCast
+      ? "Screen cast preview ready hai. Browser permission aur teacher confirmation required hai."
+      : "Is role ko board cast permission nahi hai.";
+    nextAction = "show_cast_preview";
+  } else if (parsed.intent === "whiteboard_sync") {
+    replyText = access.canSync
+      ? "Whiteboard sync preview ready hai. Final board sync confirmation ke bina nahi hoga."
+      : "Is role ko whiteboard sync permission nahi hai.";
+    nextAction = "show_whiteboard_sync_preview";
+  } else if (parsed.intent === "lesson_mode") {
+    replyText = (access.canCast || access.canMonitor)
+      ? "Lesson mode preview ready hai. Board par show karne se pehle confirmation required hai."
+      : "Is role ko lesson mode start/prepare permission nahi hai.";
+    nextAction = "show_lesson_mode_preview";
+  } else if (parsed.intent === "board_health") {
+    replyText = `Board health preview ready hai. Score ${boardHealth.healthScorePreview}/100.`;
+    nextAction = "show_board_health";
+  } else if (parsed.intent === "content_send") {
+    replyText = access.canCast || access.canSync
+      ? "Content send-to-board preview ready hai. Sensitive data board par nahi dikhaya jayega."
+      : "Is role ko board par content send karne ki permission nahi hai.";
+    nextAction = "show_content_send_preview";
+  } else if (parsed.intent === "privacy_policy") {
+    replyText = "Digital board privacy policy ready hai. Sensitive student/fee/private data board par show nahi hoga.";
+    nextAction = "show_privacy_policy";
+  } else {
+    replyText = "Digital board integration foundation ready hai. Board health, cast, whiteboard sync aur lesson mode preview available hain.";
+    nextAction = "show_digital_board_overview";
+  }
+
+  return {
+    access,
+    parsed,
+    boards: part100DemoBoards,
+    selectedBoard: board,
+    lessonContent: part100DemoLessonContent,
+    registryPreview,
+    connectorReadiness,
+    boardHealth,
+    castPreview,
+    whiteboardSyncPreview,
+    lessonModePreview,
+    contentSendPreview,
+    privacyPolicy,
+    assetSummary,
+    replyText,
+    spokenSafeSummary: replyText,
+    privateScreenFirst: true,
+    nextAction,
+    vendorApiConnected: false,
+    realHardwareConnected: false,
+    confirmationRequiredFor: ["board_register", "start_cast", "stop_cast", "sync_whiteboard", "send_content_to_board", "lesson_mode_start"],
+    ownerVerificationRequiredFor: ["board_delete", "board_export", "vendor_api_key_change", "privacy_change", "remote_lock_unlock"],
+    auditLog: {
+      event: "part100_digital_board_integration",
+      role: access.role,
+      intent: parsed.intent,
+      boardId: board?.boardId || parsed.boardId,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+const part100Checklist = [
+  "Digital Board Integration page opens",
+  "Status API returns success true",
+  "Board registry preview works",
+  "Connector readiness appears",
+  "Board health preview works",
+  "Screen cast preview works",
+  "Whiteboard sync preview works",
+  "Lesson mode preview works",
+  "Content send preview blocks sensitive data",
+  "Student/parent scoped modes work",
+  "Accountant asset summary-only mode works",
+  "VANI digital board command works",
+  "Previous Part 1–99 routes remain preserved"
+];
+
+app.get("/api/part100/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 100 — Digital Board Integration",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 100,
+    nextPart: "Part 101 — Camera and Studio Integration",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/digital-board-integration", "/digital-board", "/smart-board-integration", "/interactive-board", "/vani-digital-board", "/classroom-digital-board"],
+    apiRoutes: [
+      "/api/part100/config",
+      "/api/part100/features",
+      "/api/part100/roles",
+      "/api/part100/access-check",
+      "/api/part100/boards",
+      "/api/part100/board/register-preview",
+      "/api/part100/board/connector-readiness",
+      "/api/part100/board/health",
+      "/api/part100/cast/preview",
+      "/api/part100/whiteboard/sync-preview",
+      "/api/part100/lesson-mode/preview",
+      "/api/part100/content/send-preview",
+      "/api/part100/asset-summary",
+      "/api/part100/privacy-policy",
+      "/api/part100/vani/greeting",
+      "/api/part100/vani/command"
+    ],
+    digitalBoardIntegrationEnabled: true
+  });
+});
+
+app.get("/api/part100/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "Digital Board Integration",
+    appType: "digital_board_integration_foundation",
+    version: "2.0-digital-board-integration",
+    policy: {
+      previewFirst: true,
+      noVendorApiKeysIncluded: true,
+      noAutoCastToBoard: true,
+      teacherConfirmationRequired: true,
+      sensitiveDataPrivateScreenFirst: true,
+      ownerVerificationForVendorChanges: true
+    }
+  });
+});
+
+app.get("/api/part100/features", (req, res) => {
+  res.json({ success: true, features: part100DigitalBoardFeatures });
+});
+
+app.get("/api/part100/roles", (req, res) => {
+  res.json({ success: true, roles: part100RoleRules });
+});
+
+app.get("/api/part100/access-check", (req, res) => {
+  res.json({ success: true, access: part100AccessCheck(req.query || {}) });
+});
+
+app.get("/api/part100/boards", (req, res) => {
+  const access = part100AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, previewOnly: true, boards: part100DemoBoards });
+});
+
+app.get("/api/part100/board/register-preview", (req, res) => {
+  const access = part100AccessCheck(req.query || {});
+  if (!access.allowed || !access.canConfigure) return res.status(403).json({ success: false, access, message: "Only institute owner can configure/register digital board." });
+  res.json({ success: true, access, registryPreview: part100BoardRegistryPreview({ access, ...req.query }) });
+});
+
+app.get("/api/part100/board/connector-readiness", (req, res) => {
+  const access = part100AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const board = part100FindBoard(req.query.boardId, req.query.classroomId, req.query.branchId);
+  res.json({ success: true, access, selectedBoard: board, connectorReadiness: part100ConnectorReadiness(board) });
+});
+
+app.get("/api/part100/board/health", (req, res) => {
+  const access = part100AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const board = part100FindBoard(req.query.boardId, req.query.classroomId, req.query.branchId);
+  res.json({ success: true, access, selectedBoard: board, boardHealth: part100BoardHealth(board) });
+});
+
+app.get("/api/part100/cast/preview", (req, res) => {
+  const access = part100AccessCheck(req.query || {});
+  if (!access.allowed || !access.canCast) return res.status(403).json({ success: false, access, message: "Only assigned teacher can create screen cast preview." });
+  const board = part100FindBoard(req.query.boardId, req.query.classroomId, req.query.branchId);
+  res.json({ success: true, access, castPreview: part100CastPreview({ access, board, sourceType: req.query.sourceType }) });
+});
+
+app.get("/api/part100/whiteboard/sync-preview", (req, res) => {
+  const access = part100AccessCheck(req.query || {});
+  if (!access.allowed || !access.canSync) return res.status(403).json({ success: false, access, message: "Only assigned teacher can create whiteboard sync preview." });
+  const board = part100FindBoard(req.query.boardId, req.query.classroomId, req.query.branchId);
+  res.json({ success: true, access, whiteboardSyncPreview: part100WhiteboardSyncPreview({ access, board }) });
+});
+
+app.get("/api/part100/lesson-mode/preview", (req, res) => {
+  const access = part100AccessCheck(req.query || {});
+  if (!access.allowed || !(access.canCast || access.canMonitor)) return res.status(403).json({ success: false, access, message: "Teacher/owner/branch manager can prepare lesson mode preview." });
+  const board = part100FindBoard(req.query.boardId, req.query.classroomId, req.query.branchId);
+  res.json({ success: true, access, lessonModePreview: part100LessonModePreview({ access, board }) });
+});
+
+app.get("/api/part100/content/send-preview", (req, res) => {
+  const access = part100AccessCheck(req.query || {});
+  if (!access.allowed || !(access.canCast || access.canSync)) return res.status(403).json({ success: false, access, message: "Only teacher can send classroom content to board preview." });
+  const board = part100FindBoard(req.query.boardId, req.query.classroomId, req.query.branchId);
+  res.json({ success: true, access, contentSendPreview: part100ContentSendPreview({ access, board }) });
+});
+
+app.get("/api/part100/asset-summary", (req, res) => {
+  const access = part100AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const board = part100FindBoard(req.query.boardId, req.query.classroomId, req.query.branchId);
+  res.json({ success: true, access, assetSummary: part100AssetSummary({ access, board }) });
+});
+
+app.get("/api/part100/privacy-policy", (req, res) => {
+  res.json({ success: true, privacyPolicy: part100PrivacyPolicy() });
+});
+
+app.get("/api/part100/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI Digital Board",
+    greeting: "Namaste, main VANI Digital Board Assistant hoon. Aap board status, health check, screen cast preview, whiteboard sync ya lesson mode preview pooch sakte ho.",
+    exampleCommands: [
+      "VANI, digital board status dikhao",
+      "VANI, board health check karo",
+      "VANI, screen cast preview banao",
+      "VANI, whiteboard board par sync preview karo",
+      "VANI, lesson mode preview ready karo",
+      "VANI, digital board privacy policy batao"
+    ],
+    safety: "Board par content display, cast start, whiteboard sync ya vendor change confirmation ke bina nahi hoga."
+  });
+});
+
+app.post("/api/part100/vani/command", (req, res) => {
+  const body = req.body || {};
+  const result = part100BuildDigitalBoard({
+    command: body.command || body.q || "",
+    role: body.role || "teacher",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId || "BR-DEMO-001",
+    classroomId: body.classroomId || "ROOM-101",
+    batchId: body.batchId || "BAT-10-MATH-A",
+    teacherId: body.teacherId || "TCH-DEMO-001",
+    studentId: body.studentId,
+    parentId: body.parentId,
+    body
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 100 — Digital Board Integration", ...result });
+});
+
+app.get("/api/part100/vani/command", (req, res) => {
+  const result = part100BuildDigitalBoard({
+    command: req.query.command || req.query.q || "",
+    role: req.query.role || "teacher",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId || "BR-DEMO-001",
+    classroomId: req.query.classroomId || "ROOM-101",
+    batchId: req.query.batchId || "BAT-10-MATH-A",
+    teacherId: req.query.teacherId || "TCH-DEMO-001",
+    studentId: req.query.studentId,
+    parentId: req.query.parentId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 100 — Digital Board Integration", ...result });
+});
+
+app.get("/api/part100/audit-log", (req, res) => {
+  res.json({
+    success: true,
+    auditLog: [
+      { event: "digital_board_lesson_mode_preview", role: "teacher", createdAt: new Date().toISOString() },
+      { event: "public_display_privacy_policy", rule: "Sensitive student/fee/private data is blocked from classroom board display.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part100/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "digital_board_integration_created", message: "Part 100 Digital Board Integration active.", createdAt: new Date().toISOString() },
+      { type: "vendor_api_pending", message: "Real smart-board vendor API requires owner-approved credentials in Render env.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part100/checklist", (req, res) => {
+  res.json({ success: true, checklist: part100Checklist });
+});
+
+app.get("/api/part100/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part100-digital-board-integration-readiness",
+    ownerVerificationRequiredForSensitiveExports: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      features: part100DigitalBoardFeatures,
+      roles: part100RoleRules,
+      boards: part100DemoBoards,
+      checklist: part100Checklist,
+      privacyPolicy: part100PrivacyPolicy()
+    }
+  });
+});
+
+app.get("/api/part100/demo", (req, res) => {
+  const command = "VANI, digital board health check karo aur lesson mode preview ready karo";
+  const result = part100BuildDigitalBoard({
+    command,
+    role: "teacher",
+    instituteId: "NX-DEMO-INST-001",
+    branchId: "BR-DEMO-001",
+    classroomId: "ROOM-101",
+    batchId: "BAT-10-MATH-A",
+    teacherId: "TCH-DEMO-001",
+    body: {}
+  });
+  res.json({
+    success: true,
+    demo: {
+      command,
+      result,
+      nextPart: "Part 101 — Camera and Studio Integration"
+    }
+  });
+});
+// ================= END PART 100 =================
+
 
 
 

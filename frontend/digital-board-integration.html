@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — Digital Board Integration</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/digital-board-integration.css" />
+</head>
+<body>
+  <main class="digital-board">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 100 • NAXORA OS 2.0</p>
+        <h1>Digital Board Integration</h1>
+        <p class="lead">
+          Smart classroom board foundation with board registry, health check,
+          screen-cast preview, whiteboard sync and lesson mode preview.
+        </p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">VANI Digital Board</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Tap Start, then ask board health or lesson mode.</p>
+        <div class="voice-actions">
+          <button id="startVaniBtn">Start VANI</button>
+          <button id="listenVaniBtn">Listen</button>
+          <button id="muteVaniBtn">Mute</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Access</p>
+      <div class="controls">
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="branchId" value="BR-DEMO-001" />
+        <input id="classroomId" value="ROOM-101" />
+        <input id="batchId" value="BAT-10-MATH-A" />
+        <input id="teacherId" value="TCH-DEMO-001" />
+        <select id="roleSelect">
+          <option value="teacher" selected>Teacher Board Control</option>
+          <option value="institute_owner">Owner Configure</option>
+          <option value="branch_manager">Branch Manager Monitor</option>
+          <option value="student">Student Status View</option>
+          <option value="parent">Parent Summary View</option>
+          <option value="receptionist_counsellor">Receptionist Availability</option>
+          <option value="accountant">Accountant Asset Summary</option>
+        </select>
+        <button id="demoBtn">Load Demo</button>
+      </div>
+      <pre id="accessBox" class="code">Waiting...</pre>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">VANI Command</p>
+        <h2>Speak or type</h2>
+        <p>Example: “VANI, digital board health check karo aur lesson mode preview ready karo”.</p>
+        <div class="controls">
+          <input id="vaniCommand" value="VANI, digital board health check karo aur lesson mode preview ready karo" />
+          <button id="askVaniBtn">Ask VANI</button>
+        </div>
+        <pre id="vaniOutput" class="code">Waiting...</pre>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Boards</p>
+        <div id="boardsBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Board Health</p>
+        <div id="healthBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Connector Readiness</p>
+        <div id="connectorBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Screen Cast Preview</p>
+        <div id="castBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Whiteboard Sync Preview</p>
+        <div id="whiteboardBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Lesson Mode</p>
+        <div id="lessonBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Privacy + Asset Summary</p>
+        <div id="privacyBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Testing links</p>
+      <div class="links">
+        <a href="/api/part100/status" target="_blank">Status</a>
+        <a href="/api/part100/demo" target="_blank">Demo</a>
+        <a href="/api/part100/boards?role=teacher&instituteId=NX-DEMO-INST-001&teacherId=TCH-DEMO-001&batchId=BAT-10-MATH-A" target="_blank">Boards</a>
+        <a href="/api/part100/board/health?role=teacher&instituteId=NX-DEMO-INST-001&teacherId=TCH-DEMO-001&batchId=BAT-10-MATH-A&boardId=DBOARD-001" target="_blank">Board Health</a>
+        <a href="/api/part100/privacy-policy" target="_blank">Privacy Policy</a>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/vani-voice-starter.js"></script>
+  <script src="/digital-board-integration.js"></script>
+</body>
+</html>
