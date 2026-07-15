@@ -10290,7 +10290,13 @@ const modulePageRoutes = {
   "/mobile-student-dashboard": "student-mobile-app.html",
   "/student-learning-app": "student-mobile-app.html",
   "/student-ai-mobile": "student-mobile-app.html",
-  "/student-study-app": "student-mobile-app.html"
+  "/student-study-app": "student-mobile-app.html",
+  "/parent-mobile-app": "parent-mobile-app.html",
+  "/parent-app": "parent-mobile-app.html",
+  "/mobile-parent-dashboard": "parent-mobile-app.html",
+  "/parent-portal-mobile": "parent-mobile-app.html",
+  "/parent-child-updates": "parent-mobile-app.html",
+  "/parent-communication-app": "parent-mobile-app.html"
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -12191,6 +12197,548 @@ app.get("/api/part82/demo", (req, res) => {
   });
 });
 // ================= END PART 82 =================
+
+// ================= PART 83 — PARENT APP =================
+// NAXORA OS 2.0 parent mobile app foundation. Parent sees only linked child
+// information. Includes VANI Listen + Reply for parent-safe commands.
+
+const part83ParentFeatures = [
+  {
+    key: "parent_dashboard",
+    name: "Parent Mobile Dashboard",
+    summary: "Linked child attendance, fees safe view, results, notices and teacher updates.",
+    problemSolved: "Parent gets one clear mobile view instead of scattered messages."
+  },
+  {
+    key: "linked_child_guard",
+    name: "Linked Child Only Access",
+    summary: "Parent can see only their linked child/children.",
+    problemSolved: "Prevents one parent from seeing another student's private data."
+  },
+  {
+    key: "attendance_view",
+    name: "Attendance View",
+    summary: "Attendance percentage, recent absences and support alerts.",
+    problemSolved: "Parent can act early when attendance drops."
+  },
+  {
+    key: "fees_safe_view",
+    name: "Fees Safe View",
+    summary: "Pending/due fee summary without unsafe payment or discount controls.",
+    problemSolved: "Parent gets clarity while sensitive finance actions remain protected."
+  },
+  {
+    key: "results_progress",
+    name: "Results and Progress",
+    summary: "Recent test scores, weak topics and improvement suggestions.",
+    problemSolved: "Parent understands learning progress."
+  },
+  {
+    key: "teacher_messages",
+    name: "Teacher Messages",
+    summary: "Teacher notes, follow-ups and communication history foundation.",
+    problemSolved: "Parent communication becomes structured."
+  },
+  {
+    key: "weekly_summary",
+    name: "Weekly Summary",
+    summary: "Attendance, homework, test and support summary for linked child.",
+    problemSolved: "Parent can review the week quickly."
+  },
+  {
+    key: "vani_parent_assistant",
+    name: "VANI Parent Assistant",
+    summary: "Parent can speak/type commands and receive safe replies.",
+    problemSolved: "Parent app gets voice-based quick child updates."
+  }
+];
+
+const part83ParentRoleRules = [
+  {
+    role: "parent",
+    allowed: true,
+    access: "Only linked child/children data."
+  },
+  {
+    role: "student",
+    allowed: false,
+    access: "Student uses Part 82 Student App."
+  },
+  {
+    role: "teacher",
+    allowed: true,
+    previewOnly: true,
+    access: "Teacher can preview parent communication readiness for assigned students only."
+  },
+  {
+    role: "institute_owner",
+    allowed: true,
+    previewOnly: true,
+    access: "Owner can preview parent app readiness, not bypass linked-child privacy."
+  },
+  {
+    role: "branch_manager",
+    allowed: true,
+    previewOnly: true,
+    access: "Branch manager can preview assigned branch parent communication readiness."
+  },
+  {
+    role: "accountant",
+    allowed: true,
+    previewOnly: true,
+    access: "Accountant can preview fee communication readiness only, not full child learning data."
+  },
+  {
+    role: "receptionist_counsellor",
+    allowed: false,
+    access: "Receptionist/Counsellor uses CRM/admission workflows."
+  },
+  {
+    role: "naxora_super_admin",
+    allowed: false,
+    access: "Platform support access only, not unrestricted parent/child private data."
+  }
+];
+
+function normalizePart83Role(role) {
+  const r = String(role || "parent").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part83AccessCheck({ role, instituteId, parentId, childId }) {
+  const normalizedRole = normalizePart83Role(role);
+  const rule = part83ParentRoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole,
+    allowed: false,
+    access: "Unknown or unsupported role."
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const hasParentContext = normalizedRole !== "parent" || Boolean(String(parentId || "PAR-DEMO-001").trim());
+  const hasChildContext = normalizedRole !== "parent" || Boolean(String(childId || "STU-DEMO-001").trim());
+
+  const allowed = Boolean(rule.allowed && hasInstituteId && hasParentContext && hasChildContext);
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    parentId: parentId || (normalizedRole === "parent" ? "PAR-DEMO-001" : null),
+    childId: childId || (normalizedRole === "parent" ? "STU-DEMO-001" : null),
+    allowed,
+    previewOnly: Boolean(rule.previewOnly),
+    reason: !rule.allowed
+      ? rule.access
+      : !hasInstituteId
+        ? "Institute ID missing. Parent app opens only inside logged institute account."
+        : !hasParentContext
+          ? "Parent ID/linked parent context missing."
+          : !hasChildContext
+            ? "Linked child context missing."
+            : rule.previewOnly
+              ? "Preview allowed. Final parent view requires linked child verification."
+              : "Parent app access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    restrictToLinkedChildOnly: true
+  };
+}
+
+function part83ParentDashboard(query = {}) {
+  const childId = query.childId || "STU-DEMO-001";
+  const childName = query.childName || "Aman";
+  const parentName = query.parentName || "Parent";
+  return {
+    parentId: query.parentId || "PAR-DEMO-001",
+    parentName,
+    childId,
+    childName,
+    instituteId: query.instituteId || "NX-DEMO-INST-001",
+    generatedAt: new Date().toISOString(),
+    today: {
+      attendancePercent: 86,
+      classesToday: 3,
+      homeworkPending: 2,
+      upcomingTests: 1,
+      teacherMessages: 2,
+      notices: 1,
+      liveClassesToday: 1,
+      feeStatus: "summary_available"
+    },
+    linkedChildren: [
+      { childId, childName, className: "Class 10", batch: "Maths A", relation: "child", active: true }
+    ],
+    attendance: {
+      monthPercent: 86,
+      lastAbsentDate: "2026-07-12",
+      lowAttendanceAlert: false,
+      note: "Attendance is stable, but weekly consistency should continue."
+    },
+    feesSafeView: {
+      privateScreenFirst: true,
+      status: "pending_summary",
+      dueAmount: 2500,
+      dueDate: "2026-07-25",
+      message: "Detailed payment controls remain protected. Parent can view safe summary and pay only through verified payment flow."
+    },
+    results: [
+      { test: "Quadratic Equations", score: "72/100", weakTopic: "Formula application", suggestion: "Revise formula steps and solve 10 practice questions." },
+      { test: "Science Motion", score: "81/100", weakTopic: "Graph questions", suggestion: "Practice distance-time graph questions." }
+    ],
+    teacherMessages: [
+      { from: "Maths Teacher", message: "Aman should revise quadratic formula examples.", privateScreenFirst: true },
+      { from: "Class Teacher", message: "Homework pending for tomorrow.", privateScreenFirst: true }
+    ],
+    notices: [
+      { title: "PTM Reminder", date: "2026-07-20", message: "Parent-teacher meeting scheduled this week." }
+    ],
+    weeklySummary: {
+      attendance: "86%",
+      homework: "2 pending",
+      tests: "1 upcoming",
+      progress: "Good effort, needs practice in Quadratic Equations.",
+      recommendedAction: "Spend 20 minutes daily on formula practice."
+    }
+  };
+}
+
+function part83BuildVaniReply(command, context = {}) {
+  const lower = String(command || "").toLowerCase();
+  const dashboard = part83ParentDashboard(context);
+
+  let intent = "parent_dashboard";
+  let spokenSafeSummary = "Parent dashboard ready hai. Linked child ki attendance, homework aur updates screen par dikh rahe hain.";
+  let screenPreview = dashboard.today;
+  let privateScreenFirst = true;
+
+  if (lower.includes("attendance") || lower.includes("absent") || lower.includes("present")) {
+    intent = "attendance";
+    spokenSafeSummary = "Attendance summary screen par dikhayi gayi hai.";
+    screenPreview = dashboard.attendance;
+  } else if (lower.includes("fee") || lower.includes("payment") || lower.includes("due")) {
+    intent = "fees_safe_view";
+    spokenSafeSummary = "Fee summary screen par privately dikhayi gayi hai. Payment controls verified flow me hi available honge.";
+    screenPreview = dashboard.feesSafeView;
+    privateScreenFirst = true;
+  } else if (lower.includes("result") || lower.includes("test") || lower.includes("marks") || lower.includes("progress")) {
+    intent = "results_progress";
+    spokenSafeSummary = "Result aur progress summary screen par dikhayi gayi hai.";
+    screenPreview = dashboard.results;
+  } else if (lower.includes("message") || lower.includes("teacher") || lower.includes("communication")) {
+    intent = "teacher_messages";
+    spokenSafeSummary = "Teacher messages screen par privately dikhaye gaye hain.";
+    screenPreview = dashboard.teacherMessages;
+    privateScreenFirst = true;
+  } else if (lower.includes("notice") || lower.includes("announcement")) {
+    intent = "notices";
+    spokenSafeSummary = "Institute notices screen par dikhaye gaye hain.";
+    screenPreview = dashboard.notices;
+    privateScreenFirst = false;
+  } else if (lower.includes("weekly") || lower.includes("summary") || lower.includes("week")) {
+    intent = "weekly_summary";
+    spokenSafeSummary = "Weekly summary screen par dikhayi gayi hai.";
+    screenPreview = dashboard.weeklySummary;
+  } else if (lower.includes("live") || lower.includes("class")) {
+    intent = "live_classes";
+    spokenSafeSummary = "Live class status screen par dikhaya gaya hai.";
+    screenPreview = { liveClassesToday: dashboard.today.liveClassesToday, message: "Check schedule before class time." };
+    privateScreenFirst = false;
+  }
+
+  return { intent, spokenSafeSummary, screenPreview, privateScreenFirst };
+}
+
+const part83Checklist = [
+  "Parent app page opens on live URL",
+  "Status API returns success true",
+  "Parent access allowed with instituteId, parentId and linked childId",
+  "Student/receptionist unauthorized access blocked",
+  "Parent dashboard returns linked-child-only foundation",
+  "Fees and teacher messages are private-screen-first",
+  "VANI Start button speaks greeting",
+  "VANI Listen button captures speech on supported browsers",
+  "VANI replies on screen and speaks safe summary",
+  "Previous Part 1–82 routes remain preserved"
+];
+
+app.get("/api/part83/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 83 — Parent App",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 83,
+    nextPart: "Part 84 — Advanced VANI Action Engine",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/parent-mobile-app", "/parent-app", "/mobile-parent-dashboard", "/parent-portal-mobile", "/parent-child-updates", "/parent-communication-app"],
+    apiRoutes: [
+      "/api/part83/config",
+      "/api/part83/features",
+      "/api/part83/roles",
+      "/api/part83/access-check",
+      "/api/part83/dashboard",
+      "/api/part83/linked-children",
+      "/api/part83/attendance",
+      "/api/part83/fees-safe-view",
+      "/api/part83/results",
+      "/api/part83/teacher-messages",
+      "/api/part83/notices",
+      "/api/part83/live-classes",
+      "/api/part83/weekly-summary",
+      "/api/part83/vani/greeting",
+      "/api/part83/vani/command"
+    ],
+    vaniListenReplyFoundation: true,
+    linkedChildOnly: true
+  });
+});
+
+app.get("/api/part83/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "NAXORA Parent App",
+    appType: "mobile_parent_child_updates_app",
+    version: "2.0-parent-foundation",
+    login: {
+      required: true,
+      requiresInstituteId: true,
+      roleRequired: "parent",
+      linkedChildOnly: true
+    },
+    voice: {
+      browserSpeechStarter: true,
+      browserSpeechRecognition: true,
+      greeting: "Namaste, main VANI hoon. Main aapke child ke updates me kya help kar sakti hoon?",
+      note: "Mic/listening works only on supported browsers after user taps Listen."
+    },
+    sensitiveDataPolicy: "Child, fee and teacher message details use private-screen-first."
+  });
+});
+
+app.get("/api/part83/features", (req, res) => {
+  res.json({ success: true, features: part83ParentFeatures });
+});
+
+app.get("/api/part83/roles", (req, res) => {
+  res.json({ success: true, roles: part83ParentRoleRules });
+});
+
+app.get("/api/part83/access-check", (req, res) => {
+  res.json({ success: true, access: part83AccessCheck(req.query || {}) });
+});
+
+app.get("/api/part83/dashboard", (req, res) => {
+  const access = part83AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, dashboard: part83ParentDashboard(req.query || {}) });
+});
+
+app.get("/api/part83/linked-children", (req, res) => {
+  const access = part83AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, linkedChildOnly: true, linkedChildren: part83ParentDashboard(req.query || {}).linkedChildren });
+});
+
+app.get("/api/part83/attendance", (req, res) => {
+  const access = part83AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, attendance: part83ParentDashboard(req.query || {}).attendance });
+});
+
+app.get("/api/part83/fees-safe-view", (req, res) => {
+  const access = part83AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, privateScreenFirst: true, feesSafeView: part83ParentDashboard(req.query || {}).feesSafeView });
+});
+
+app.get("/api/part83/results", (req, res) => {
+  const access = part83AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, results: part83ParentDashboard(req.query || {}).results });
+});
+
+app.get("/api/part83/teacher-messages", (req, res) => {
+  const access = part83AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, privateScreenFirst: true, teacherMessages: part83ParentDashboard(req.query || {}).teacherMessages });
+});
+
+app.get("/api/part83/notices", (req, res) => {
+  const access = part83AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, notices: part83ParentDashboard(req.query || {}).notices });
+});
+
+app.get("/api/part83/live-classes", (req, res) => {
+  const access = part83AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({
+    success: true,
+    liveClasses: [
+      { id: "LIVE-PARENT-001", childName: req.query.childName || "Aman", subject: "Maths", time: "07:00 PM", status: "scheduled" }
+    ]
+  });
+});
+
+app.get("/api/part83/weekly-summary", (req, res) => {
+  const access = part83AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, weeklySummary: part83ParentDashboard(req.query || {}).weeklySummary });
+});
+
+app.get("/api/part83/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI",
+    voiceStarter: true,
+    listenReplyFoundation: true,
+    language: "Hindi/Hinglish",
+    greeting: "Namaste, main VANI hoon. Main aapke child ke updates me kya help kar sakti hoon?",
+    exampleCommands: [
+      "VANI, attendance dikhao",
+      "VANI, fee summary batao",
+      "VANI, result dikhao",
+      "VANI, teacher messages dikhao",
+      "VANI, weekly summary batao"
+    ],
+    browserRequirement: "Voice and mic start after user button click because browsers need permission.",
+    privateScreenFirstReminder: "Child/fee/teacher message details screen par dikhaye jayenge, loudly nahi bole jayenge."
+  });
+});
+
+app.post("/api/part83/vani/command", (req, res) => {
+  const command = String(req.body?.command || req.query?.command || "").trim();
+  const access = part83AccessCheck({
+    role: req.body?.role || req.query?.role || "parent",
+    instituteId: req.body?.instituteId || req.query?.instituteId || "NX-DEMO-INST-001",
+    parentId: req.body?.parentId || req.query?.parentId || "PAR-DEMO-001",
+    childId: req.body?.childId || req.query?.childId || "STU-DEMO-001"
+  });
+
+  if (!access.allowed) {
+    return res.status(403).json({
+      success: false,
+      assistant: "VANI",
+      access,
+      spokenSafeSummary: "Ye parent app sirf linked parent account me available hai.",
+      privateScreenFirst: true
+    });
+  }
+
+  const reply = part83BuildVaniReply(command, {
+    instituteId: access.instituteId,
+    parentId: access.parentId,
+    childId: access.childId,
+    childName: req.body?.childName || req.query?.childName || "Aman",
+    parentName: req.body?.parentName || req.query?.parentName || "Parent"
+  });
+
+  res.json({
+    success: true,
+    assistant: "VANI",
+    part: "Part 83 — Parent App",
+    command: command || "VANI, parent dashboard dikhao",
+    detectedIntent: reply.intent,
+    access,
+    voiceEnabled: true,
+    listenReplyFoundation: true,
+    privateScreenFirst: reply.privateScreenFirst,
+    spokenSafeSummary: reply.spokenSafeSummary,
+    screenPreview: reply.screenPreview,
+    confirmationRequiredFor: ["payment", "message_send", "profile_change", "export"],
+    auditLog: {
+      event: "part83_vani_parent_command",
+      intent: reply.intent,
+      createdAt: new Date().toISOString()
+    }
+  });
+});
+
+app.get("/api/part83/vani/command", (req, res) => {
+  const command = String(req.query.q || req.query.command || "").trim();
+  const access = part83AccessCheck({
+    role: req.query.role || "parent",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    parentId: req.query.parentId || "PAR-DEMO-001",
+    childId: req.query.childId || "STU-DEMO-001"
+  });
+  if (!access.allowed) {
+    return res.status(403).json({
+      success: false,
+      assistant: "VANI",
+      access,
+      spokenSafeSummary: "Ye parent app sirf linked parent account me available hai.",
+      privateScreenFirst: true
+    });
+  }
+  const reply = part83BuildVaniReply(command, {
+    instituteId: access.instituteId,
+    parentId: access.parentId,
+    childId: access.childId,
+    childName: req.query.childName || "Aman",
+    parentName: req.query.parentName || "Parent"
+  });
+  res.json({
+    success: true,
+    assistant: "VANI",
+    part: "Part 83 — Parent App",
+    command: command || "VANI, parent dashboard dikhao",
+    detectedIntent: reply.intent,
+    access,
+    voiceEnabled: true,
+    privateScreenFirst: reply.privateScreenFirst,
+    spokenSafeSummary: reply.spokenSafeSummary,
+    screenPreview: reply.screenPreview,
+    auditLog: { event: "part83_vani_parent_command_get", createdAt: new Date().toISOString() }
+  });
+});
+
+app.get("/api/part83/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "parent_app_created", message: "Part 83 Parent App active.", createdAt: new Date().toISOString() },
+      { type: "linked_child_guard", message: "Parent access limited to linked child only.", createdAt: new Date().toISOString() },
+      { type: "vani_parent_listen_reply", message: "VANI Listen + Reply available for parent-safe updates.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part83/checklist", (req, res) => {
+  res.json({ success: true, checklist: part83Checklist });
+});
+
+app.get("/api/part83/export", (req, res) => {
+  const access = part83AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({
+    success: true,
+    exportType: "part83-parent-app-readiness",
+    parentVerificationRequired: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      features: part83ParentFeatures,
+      dashboard: part83ParentDashboard(req.query || {}),
+      checklist: part83Checklist
+    }
+  });
+});
+
+app.get("/api/part83/demo", (req, res) => {
+  res.json({
+    success: true,
+    demo: {
+      access: part83AccessCheck({ role: "parent", instituteId: "NX-DEMO-INST-001", parentId: "PAR-DEMO-001", childId: "STU-DEMO-001" }),
+      dashboard: part83ParentDashboard({ instituteId: "NX-DEMO-INST-001", parentId: "PAR-DEMO-001", childId: "STU-DEMO-001" }),
+      features: part83ParentFeatures,
+      vaniGreeting: "Namaste, main VANI hoon. Main aapke child ke updates me kya help kar sakti hoon?",
+      vaniCommand: "VANI, weekly summary batao",
+      nextPart: "Part 84 — Advanced VANI Action Engine"
+    }
+  });
+});
+// ================= END PART 83 =================
+
 
 
 

@@ -1,36 +1,36 @@
 # NAXORA Master Progress Record
 
 ## Latest completed part
-Part 82 — Student App
+Part 83 — Parent App
 
 ## Date completed
 2026-07-15
 
 ## Feature name
-NAXORA OS 2.0 Student App + VANI Listen/Reply Foundation
+NAXORA OS 2.0 Parent App + VANI Parent Listen/Reply
 
 ## Files changed
 - backend/src/server.js
-- frontend/student-mobile-app.html
-- frontend/student-mobile-app.css
-- frontend/student-mobile-app.js
+- frontend/parent-mobile-app.html
+- frontend/parent-mobile-app.css
+- frontend/parent-mobile-app.js
 - frontend/vani-voice-starter.js
-- README_PART82_STUDENT_APP.md
-- START_HERE_PART82_ARUN.md
-- docs/PART82_STUDENT_APP_CHECKLIST.md
+- README_PART83_PARENT_APP.md
+- START_HERE_PART83_ARUN.md
+- docs/PART83_PARENT_APP_CHECKLIST.md
 - docs/NAXORA_MASTER_PROGRESS_RECORD.md
 
 ## Database/API changes
 No required database migration.
-Added `/api/part82/*` student app APIs.
+Added `/api/part83/*` parent app APIs.
 
 ## VANI commands added
-- VANI, aaj ka timetable dikhao
-- VANI, homework batao
-- VANI, test kab hai
-- VANI, revision plan banao
-- VANI, notes dikhao
 - VANI, attendance dikhao
+- VANI, fee summary batao
+- VANI, result dikhao
+- VANI, teacher messages dikhao
+- VANI, weekly summary batao
+- VANI, notices dikhao
 
 ## Tests passed
 - backend/src/server.js syntax check
@@ -41,13 +41,13 @@ Added `/api/part82/*` student app APIs.
 - no secrets/API keys
 
 ## Errors remaining
-- Full multi-step AI conversation pending Part 84–88.
+- Full multi-step AI action engine pending Part 84.
 - Browser mic support depends on browser permission/support.
 - Native app packaging pending.
 - Real production schema hard-connect pending.
 
 ## Next part
-Part 83 — Parent App
+Part 84 — Advanced VANI Action Engine
 
 ## Locked subscription rule
 NAXORA OS 1.0, 2.0 and future 3.0 have separate subscriptions.

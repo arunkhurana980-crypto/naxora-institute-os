@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — Parent App</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/parent-mobile-app.css" />
+</head>
+<body>
+  <main class="parent-app">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 83 • NAXORA OS 2.0</p>
+        <h1>Parent App</h1>
+        <p class="lead">
+          Mobile parent dashboard for linked child attendance, fee summary,
+          results, teacher messages, notices, weekly summary and VANI Parent Assistant.
+        </p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">VANI Parent Assistant</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Tap Start VANI, then Listen and Speak.</p>
+        <div class="voice-actions">
+          <button id="startVaniBtn">Start VANI</button>
+          <button id="listenVaniBtn">Listen</button>
+          <button id="muteVaniBtn">Mute</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="access-panel">
+      <div>
+        <p class="kicker">Parent access check</p>
+        <h2>Linked Child Only</h2>
+      </div>
+      <div class="controls">
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="parentId" value="PAR-DEMO-001" />
+        <input id="childId" value="STU-DEMO-001" />
+        <input id="childName" value="Aman" />
+        <select id="roleSelect">
+          <option value="parent">Parent</option>
+          <option value="teacher">Teacher Preview</option>
+          <option value="institute_owner">Owner Preview</option>
+          <option value="student">Student Block Test</option>
+          <option value="receptionist_counsellor">Receptionist Block Test</option>
+        </select>
+        <button id="loadBtn">Load Parent App</button>
+      </div>
+      <pre id="accessBox" class="code">Waiting...</pre>
+    </section>
+
+    <section class="metrics" id="metrics"></section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Child Progress</p>
+        <div id="progressList" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Teacher Messages</p>
+        <div id="messagesList" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Weekly Summary</p>
+        <div id="weeklySummary" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">VANI Reply Box</p>
+        <h2>Speak or type command</h2>
+        <p>Example: “VANI, weekly summary batao” or “VANI, fee summary batao”.</p>
+        <div class="controls">
+          <input id="vaniCommand" value="VANI, weekly summary batao" />
+          <button id="askVaniBtn">Ask VANI</button>
+        </div>
+        <pre id="vaniOutput" class="code">Waiting...</pre>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Parent App Features</p>
+      <div id="features" class="feature-grid"></div>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Testing links</p>
+      <div class="links">
+        <a href="/api/part83/status" target="_blank">Status</a>
+        <a href="/api/part83/demo" target="_blank">Demo</a>
+        <a href="/api/part83/dashboard?role=parent&instituteId=NX-DEMO-INST-001&parentId=PAR-DEMO-001&childId=STU-DEMO-001" target="_blank">Parent Dashboard</a>
+        <a href="/api/part83/dashboard?role=student&instituteId=NX-DEMO-INST-001" target="_blank">Student Block Test</a>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/vani-voice-starter.js"></script>
+  <script src="/parent-mobile-app.js"></script>
+</body>
+</html>
