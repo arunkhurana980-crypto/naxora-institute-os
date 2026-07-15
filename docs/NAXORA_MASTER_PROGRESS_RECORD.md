@@ -1,34 +1,33 @@
 # NAXORA Master Progress Record
 
 ## Latest completed part
-Part 89 — AI Admission Counsellor Foundation
+Part 90 — AI Course Recommendation
 
 ## Date completed
 2026-07-15
 
 ## Feature name
-NAXORA OS 2.0 AI Admission Counsellor Foundation
+NAXORA OS 2.0 AI Course Recommendation
 
 ## Files changed
 - backend/src/server.js
-- frontend/ai-admission-counsellor-foundation.html
-- frontend/ai-admission-counsellor-foundation.css
-- frontend/ai-admission-counsellor-foundation.js
-- README_PART89_AI_ADMISSION_COUNSELLOR_FOUNDATION.md
-- START_HERE_PART89_ARUN.md
-- docs/PART89_AI_ADMISSION_COUNSELLOR_FOUNDATION_CHECKLIST.md
+- frontend/ai-course-recommendation.html
+- frontend/ai-course-recommendation.css
+- frontend/ai-course-recommendation.js
+- README_PART90_AI_COURSE_RECOMMENDATION.md
+- START_HERE_PART90_ARUN.md
+- docs/PART90_AI_COURSE_RECOMMENDATION_CHECKLIST.md
 - docs/NAXORA_MASTER_PROGRESS_RECORD.md
 
 ## Database/API changes
 No required database migration.
-Added `/api/part89/*` AI Admission Counsellor APIs.
+Added `/api/part90/*` AI Course Recommendation APIs.
 
 ## VANI commands added
-- VANI, Aman Class 10 Maths admission counselling banao parent phone 9876543210 source WhatsApp
-- VANI, lead score batao
-- VANI, demo class preview banao
-- VANI, follow-up script banao
-- VANI, fee objection ka reply batao
+- VANI, Aman Class 10 Maths board exam ke liye course recommend karo budget 3500
+- VANI, Riya Class 11 Physics JEE ke liye best course batao
+- VANI, English communication ke liye course recommend karo
+- VANI, weak maths revision ke liye batch suggest karo
 
 ## Tests passed
 - backend/src/server.js syntax check
@@ -41,11 +40,11 @@ Added `/api/part89/*` AI Admission Counsellor APIs.
 ## Errors remaining
 - Rule-based foundation only; external LLM integration pending.
 - Production DB write pending.
-- Real CRM pipeline connection pending.
+- Real batch availability integration pending.
 - Browser mic support depends on permission/support.
 
 ## Next part
-Part 90 — AI Course Recommendation
+Part 91 — Fee and Batch Information Assistant
 
 ## Locked subscription rule
 NAXORA OS 1.0, 2.0 and future 3.0 have separate subscriptions.

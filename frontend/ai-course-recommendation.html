@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — AI Course Recommendation</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/ai-course-recommendation.css" />
+</head>
+<body>
+  <main class="course-recommendation">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 90 • NAXORA OS 2.0</p>
+        <h1>AI Course Recommendation</h1>
+        <p class="lead">
+          Recommend courses, batch type, fee-fit preview and demo plan using student class,
+          subject, goal, budget, timing and learning style. Preview-first, no false promises.
+        </p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">VANI Course Assistant</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Tap Start, then ask course recommendation.</p>
+        <div class="voice-actions">
+          <button id="startVaniBtn">Start VANI</button>
+          <button id="listenVaniBtn">Listen</button>
+          <button id="muteVaniBtn">Mute</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Access</p>
+      <div class="controls">
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="branchId" value="BR-DEMO-001" />
+        <select id="roleSelect">
+          <option value="receptionist_counsellor" selected>Receptionist / Counsellor</option>
+          <option value="institute_owner">Institute Owner</option>
+          <option value="branch_manager">Branch Manager</option>
+          <option value="teacher">Teacher Preview</option>
+          <option value="accountant">Accountant Preview</option>
+          <option value="student">Student Safe View</option>
+          <option value="parent">Parent Safe View</option>
+        </select>
+        <button id="demoBtn">Load Demo</button>
+      </div>
+      <pre id="accessBox" class="code">Waiting...</pre>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Course Command</p>
+        <h2>Speak or type</h2>
+        <p>Example: “VANI, Aman Class 10 Maths board exam ke liye course recommend karo budget 3500”.</p>
+        <div class="controls">
+          <input id="vaniCommand" value="VANI, Aman Class 10 Maths board exam ke liye course recommend karo budget 3500" />
+          <button id="askVaniBtn">Recommend Course</button>
+        </div>
+        <pre id="vaniOutput" class="code">Waiting...</pre>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Recommended Course</p>
+        <div id="topCourseBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Top 3 Options</p>
+        <div id="optionsBox" class="list"></div>
+      </article>
+      <article class="panel">
+        <p class="kicker">Batch + Fee Fit</p>
+        <div id="fitBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Demo Plan</p>
+        <div id="demoPlanBox" class="list"></div>
+      </article>
+      <article class="panel">
+        <p class="kicker">Missing Details</p>
+        <div id="missingBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Course Catalog</p>
+      <div id="catalogBox" class="feature-grid"></div>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Testing links</p>
+      <div class="links">
+        <a href="/api/part90/status" target="_blank">Status</a>
+        <a href="/api/part90/demo" target="_blank">Demo</a>
+        <a href="/api/part90/course-catalog" target="_blank">Course Catalog</a>
+        <a href="/api/part90/recommendation/generate?role=receptionist_counsellor&instituteId=NX-DEMO-INST-001&q=VANI,%20Aman%20Class%2010%20Maths%20board%20exam%20course%20recommend%20budget%203500" target="_blank">Generate</a>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/vani-voice-starter.js"></script>
+  <script src="/ai-course-recommendation.js"></script>
+</body>
+</html>

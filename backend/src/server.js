@@ -10333,6 +10333,12 @@ const modulePageRoutes = {
   "/admission-counselling-ai": "ai-admission-counsellor-foundation.html",
   "/smart-admission-counsellor": "ai-admission-counsellor-foundation.html",
   "/ai-counsellor": "ai-admission-counsellor-foundation.html",
+  "/ai-course-recommendation": "ai-course-recommendation.html",
+  "/course-recommendation-ai": "ai-course-recommendation.html",
+  "/smart-course-recommendation": "ai-course-recommendation.html",
+  "/course-fit-ai": "ai-course-recommendation.html",
+  "/ai-course-finder": "ai-course-recommendation.html",
+  "/course-recommender": "ai-course-recommendation.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -16303,6 +16309,643 @@ app.get("/api/part89/demo", (req, res) => {
   });
 });
 // ================= END PART 89 =================
+
+// ================= PART 90 — AI COURSE RECOMMENDATION =================
+// NAXORA OS 2.0 AI Course Recommendation.
+// This part recommends courses/batches/packages using class, subject,
+// goal, level, budget, timing and learning style. It is preview-first and
+// never makes admission, result, fee or discount commitments.
+
+const part90CourseCatalog = [
+  {
+    courseId: "CRS-FOUNDATION-8-9",
+    name: "Foundation Skill Builder",
+    classes: ["Class 8", "Class 9"],
+    subjects: ["maths", "science", "english"],
+    goals: ["concept clarity", "school support", "foundation"],
+    level: "beginner_to_intermediate",
+    monthlyFeePreview: 2500,
+    batchTypes: ["regular", "weekend"],
+    learningStyleFit: ["guided", "practice"]
+  },
+  {
+    courseId: "CRS-BOARD-10",
+    name: "Class 10 Board Booster",
+    classes: ["Class 10"],
+    subjects: ["maths", "science", "english", "sst"],
+    goals: ["board exam", "marks improvement", "revision"],
+    level: "board_focused",
+    monthlyFeePreview: 3500,
+    batchTypes: ["regular", "fast-track", "doubt-support"],
+    learningStyleFit: ["practice", "revision", "tests"]
+  },
+  {
+    courseId: "CRS-SENIOR-11-12",
+    name: "Senior Board + Concept Support",
+    classes: ["Class 11", "Class 12"],
+    subjects: ["physics", "chemistry", "maths", "biology", "commerce", "accounts"],
+    goals: ["board exam", "concept clarity", "school support"],
+    level: "senior_secondary",
+    monthlyFeePreview: 4500,
+    batchTypes: ["regular", "topic-wise", "test-series"],
+    learningStyleFit: ["concept", "practice", "tests"]
+  },
+  {
+    courseId: "CRS-COMPETITIVE",
+    name: "Competitive Exam Foundation",
+    classes: ["Class 11", "Class 12", "Dropper"],
+    subjects: ["physics", "chemistry", "maths", "biology"],
+    goals: ["jee", "neet", "competitive exam"],
+    level: "advanced",
+    monthlyFeePreview: 6500,
+    batchTypes: ["intensive", "test-series", "doubt-support"],
+    learningStyleFit: ["tests", "practice", "deep concepts"]
+  },
+  {
+    courseId: "CRS-ENGLISH-SKILL",
+    name: "English Communication and School Support",
+    classes: ["Class 6", "Class 7", "Class 8", "Class 9", "Class 10"],
+    subjects: ["english"],
+    goals: ["communication", "grammar", "school support"],
+    level: "skill_building",
+    monthlyFeePreview: 2200,
+    batchTypes: ["weekend", "regular"],
+    learningStyleFit: ["speaking", "writing", "guided"]
+  },
+  {
+    courseId: "CRS-DOUBT-REVISION",
+    name: "Doubt Solving + Revision Plan",
+    classes: ["Class 8", "Class 9", "Class 10", "Class 11", "Class 12"],
+    subjects: ["maths", "science", "physics", "chemistry", "biology", "english", "sst", "commerce", "accounts"],
+    goals: ["revision", "weak topics", "doubt solving"],
+    level: "support",
+    monthlyFeePreview: 1800,
+    batchTypes: ["doubt-support", "topic-wise"],
+    learningStyleFit: ["revision", "doubts", "practice"]
+  }
+];
+
+const part90Features = [
+  {
+    key: "student_profile_parser",
+    name: "Student Profile Parser",
+    summary: "Extracts class, subject, goal, budget, timing and weak topic from command.",
+    problemSolved: "Counsellor does not need to manually structure every enquiry."
+  },
+  {
+    key: "course_match_score",
+    name: "Course Match Score",
+    summary: "Ranks course options with fit score and reasons.",
+    problemSolved: "Course recommendation becomes consistent and explainable."
+  },
+  {
+    key: "batch_fit",
+    name: "Batch Fit",
+    summary: "Suggests regular, fast-track, weekend, test-series or doubt-support batch type.",
+    problemSolved: "Student gets a course format matching need and schedule."
+  },
+  {
+    key: "fee_fit_preview",
+    name: "Fee Fit Preview",
+    summary: "Compares budget with preview-only fee estimate.",
+    problemSolved: "Counsellor can discuss affordability without making commitments."
+  },
+  {
+    key: "demo_plan",
+    name: "Demo Plan",
+    summary: "Suggests demo class topic and next counselling step.",
+    problemSolved: "Demo class becomes more relevant to student need."
+  },
+  {
+    key: "explainable_recommendation",
+    name: "Explainable Recommendation",
+    summary: "Shows why a course was recommended.",
+    problemSolved: "Parent/student can trust the suggestion."
+  },
+  {
+    key: "vani_course_recommendation",
+    name: "VANI Course Recommendation",
+    summary: "Hindi/Hinglish voice command support for course recommendation.",
+    problemSolved: "Staff can ask naturally: 'VANI, Aman ke liye course recommend karo'."
+  }
+];
+
+const part90RoleRules = [
+  { role: "institute_owner", allowed: true, scope: "Full authorised course recommendation and catalogue preview.", canApproveSensitive: true },
+  { role: "branch_manager", allowed: true, scope: "Assigned branch courses and batches only.", canApproveSensitive: false },
+  { role: "receptionist_counsellor", allowed: true, scope: "Lead counselling, course recommendation and demo preview.", canApproveSensitive: false },
+  { role: "teacher", allowed: true, previewOnly: true, scope: "Academic fit preview for assigned subject/batch.", canApproveSensitive: false },
+  { role: "accountant", allowed: true, previewOnly: true, scope: "Fee-fit preview only.", canApproveSensitive: false },
+  { role: "student", allowed: true, safeOnly: true, scope: "Own learning recommendation only, no admission/fee action.", canApproveSensitive: false },
+  { role: "parent", allowed: true, safeOnly: true, scope: "Linked child learning recommendation only, no admission/fee action.", canApproveSensitive: false },
+  { role: "naxora_super_admin", allowed: false, scope: "Platform support only; no unrestricted private course recommendation access.", canApproveSensitive: false }
+];
+
+function normalizePart90Role(role) {
+  const r = String(role || "receptionist_counsellor").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor", "admission_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part90AccessCheck({ role, instituteId, branchId }) {
+  const normalizedRole = normalizePart90Role(role);
+  const rule = part90RoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole,
+    allowed: false,
+    scope: "Unknown or unsupported role.",
+    canApproveSensitive: false
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const allowed = Boolean(rule.allowed && hasInstituteId && normalizedRole !== "naxora_super_admin");
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    branchId: branchId || null,
+    allowed,
+    previewOnly: Boolean(rule.previewOnly),
+    safeOnly: Boolean(rule.safeOnly),
+    canApproveSensitive: Boolean(rule.canApproveSensitive),
+    scope: rule.scope,
+    reason: !hasInstituteId
+      ? "Institute ID missing."
+      : !rule.allowed
+        ? rule.scope
+        : rule.previewOnly
+          ? "Preview allowed only. Final counselling/admission actions require counsellor or owner role."
+          : rule.safeOnly
+            ? "Safe recommendation only. No admission or fee action allowed from this role."
+            : "Course recommendation access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    confirmationRequiredFor: ["demo_book", "lead_update", "admission_create", "followup_send"],
+    ownerVerificationRequiredFor: ["discount", "fee_commitment", "refund", "delete", "export", "subscription_change"]
+  };
+}
+
+function part90ParseProfile(text = "", body = {}) {
+  const input = String(text || body.command || body.q || "").trim();
+  const classMatch = input.match(/class\s*([0-9]{1,2})/i);
+  const phoneMatch = input.match(/(?:phone|mobile|number|contact)\s*[:\-]?\s*([6-9][0-9]{9})/i);
+  const budgetMatch = input.match(/(?:budget|fee|fees|amount)\s*[:\-]?\s*([0-9]{3,7})/i);
+  const subjectMatch = input.match(/\b(maths|math|science|english|physics|chemistry|biology|commerce|accounts|sst|social science)\b/i);
+  const nameMatch = input.match(/(?:student|name|lead|for)\s+([A-Z][a-zA-Z]{2,20})/) || input.match(/\b([A-Z][a-zA-Z]{2,20})\b/);
+  const timing = /weekend|sunday|sat/i.test(input) ? "weekend" : /evening|shaam|after school/i.test(input) ? "evening" : /morning|subah/i.test(input) ? "morning" : null;
+  const goal = /jee/i.test(input) ? "jee" :
+    /neet/i.test(input) ? "neet" :
+    /board|marks|percentage/i.test(input) ? "board exam" :
+    /weak|doubt|revision/i.test(input) ? "weak topics" :
+    /communication|spoken/i.test(input) ? "communication" :
+    /foundation/i.test(input) ? "foundation" :
+    body.goal || null;
+  const learningStyle = /test|mock/i.test(input) ? "tests" :
+    /practice|question/i.test(input) ? "practice" :
+    /concept/i.test(input) ? "concept" :
+    /revision/i.test(input) ? "revision" :
+    body.learningStyle || null;
+  return {
+    studentName: body.studentName || nameMatch?.[1] || null,
+    className: body.className || (classMatch ? `Class ${classMatch[1]}` : null),
+    subject: body.subject || (subjectMatch ? subjectMatch[1].toLowerCase().replace("math", "maths").replace("social science", "sst") : null),
+    goal,
+    learningStyle,
+    preferredTiming: body.preferredTiming || timing,
+    budget: body.budget || budgetMatch?.[1] || null,
+    parentPhone: body.parentPhone || phoneMatch?.[1] || null,
+    rawCommand: input
+  };
+}
+
+function part90MissingDetails(profile = {}) {
+  const missing = [];
+  if (!profile.studentName) missing.push({ key: "studentName", question: "Student ka naam kya hai?" });
+  if (!profile.className) missing.push({ key: "className", question: "Student kis class me hai?" });
+  if (!profile.subject && !profile.goal) missing.push({ key: "subjectOrGoal", question: "Kaunsa subject ya goal ke liye course recommend karna hai?" });
+  return missing;
+}
+
+function part90CourseScore(course, profile = {}) {
+  let score = 20;
+  const reasons = [];
+  const cls = String(profile.className || "").toLowerCase();
+  const subject = String(profile.subject || "").toLowerCase();
+  const goal = String(profile.goal || "").toLowerCase();
+  const learningStyle = String(profile.learningStyle || "").toLowerCase();
+  const timing = String(profile.preferredTiming || "").toLowerCase();
+  const budget = Number(profile.budget || 0);
+
+  if (profile.className && course.classes.some((c) => c.toLowerCase() === cls)) {
+    score += 30;
+    reasons.push("class match");
+  } else if (profile.className && course.classes.some((c) => cls && c.toLowerCase().includes(cls.replace("class ", "")))) {
+    score += 15;
+    reasons.push("near class match");
+  }
+
+  if (subject && course.subjects.includes(subject)) {
+    score += 25;
+    reasons.push("subject match");
+  }
+
+  if (goal && course.goals.some((g) => goal.includes(g) || g.includes(goal))) {
+    score += 20;
+    reasons.push("goal match");
+  }
+
+  if (learningStyle && course.learningStyleFit.some((s) => learningStyle.includes(s) || s.includes(learningStyle))) {
+    score += 10;
+    reasons.push("learning style fit");
+  }
+
+  if (timing && course.batchTypes.includes(timing)) {
+    score += 5;
+    reasons.push("timing/batch preference fit");
+  }
+
+  if (budget > 0) {
+    if (budget >= course.monthlyFeePreview) {
+      score += 5;
+      reasons.push("budget fits preview fee");
+    } else if (budget >= Math.round(course.monthlyFeePreview * 0.75)) {
+      score += 2;
+      reasons.push("budget near preview fee");
+    }
+  }
+
+  score = Math.min(100, score);
+  return {
+    courseId: course.courseId,
+    name: course.name,
+    score,
+    fit: score >= 80 ? "excellent" : score >= 60 ? "good" : score >= 40 ? "possible" : "low",
+    reasons,
+    course,
+    previewOnly: true
+  };
+}
+
+function part90GenerateRecommendations(profile = {}) {
+  const ranked = part90CourseCatalog
+    .map((course) => part90CourseScore(course, profile))
+    .sort((a, b) => b.score - a.score);
+  const top = ranked.slice(0, 3);
+  const recommended = top[0];
+
+  const batchFit = part90BatchFit(profile, recommended?.course);
+  const feeFit = part90FeeFit(profile, recommended?.course);
+  const demoPlan = part90DemoPlan(profile, recommended?.course);
+  const explanation = part90Explanation(profile, recommended);
+
+  return {
+    profile,
+    missingDetails: part90MissingDetails(profile),
+    topRecommendations: top,
+    recommendedCourse: recommended,
+    batchFit,
+    feeFitPreview: feeFit,
+    demoPlanPreview: demoPlan,
+    explanation,
+    safety: {
+      previewOnly: true,
+      noAdmissionCommitment: true,
+      noResultGuarantee: true,
+      noFeeDiscountCommitment: true,
+      confirmationRequiredForDemoOrAdmission: true
+    }
+  };
+}
+
+function part90BatchFit(profile = {}, course = {}) {
+  const timing = String(profile.preferredTiming || "").toLowerCase();
+  const goal = String(profile.goal || "").toLowerCase();
+  let batchType = "regular";
+  if (timing === "weekend" && course.batchTypes?.includes("weekend")) batchType = "weekend";
+  else if (goal.includes("board") && course.batchTypes?.includes("fast-track")) batchType = "fast-track";
+  else if (goal.includes("weak") && course.batchTypes?.includes("doubt-support")) batchType = "doubt-support";
+  else if ((goal.includes("jee") || goal.includes("neet")) && course.batchTypes?.includes("intensive")) batchType = "intensive";
+  else if (course.batchTypes?.[0]) batchType = course.batchTypes[0];
+
+  return {
+    batchType,
+    reason: `Student need ke hisaab se ${batchType} batch suitable preview hai.`,
+    confirmationRequired: true,
+    previewOnly: true
+  };
+}
+
+function part90FeeFit(profile = {}, course = {}) {
+  const budget = Number(profile.budget || 0);
+  const previewFee = Number(course?.monthlyFeePreview || 0);
+  let fit = "unknown";
+  let message = "Budget detail nahi mila. Fee discussion preview-only rahega.";
+  if (budget && previewFee) {
+    fit = budget >= previewFee ? "fits" : budget >= Math.round(previewFee * 0.75) ? "near_fit" : "below_preview";
+    message = fit === "fits"
+      ? "Budget preview fee ke aas-paas fit ho raha hai."
+      : fit === "near_fit"
+        ? "Budget near fit hai. Final fee/discount owner approval ke bina commit nahi hoga."
+        : "Budget preview fee se kam hai. Alternate plan ya owner-approved option discuss ho sakta hai.";
+  }
+  return {
+    previewFee,
+    budget: budget || null,
+    fit,
+    message,
+    previewOnly: true,
+    discountRequiresOwnerVerification: true
+  };
+}
+
+function part90DemoPlan(profile = {}, course = {}) {
+  const subject = profile.subject || course?.subjects?.[0] || "course counselling";
+  const topic = profile.goal === "weak topics" ? "weak topic diagnosis" : profile.goal === "board exam" ? "board pattern demo" : `${subject} demo`;
+  return {
+    previewOnly: true,
+    demoTopic: topic,
+    suggestedSlot: profile.preferredTiming === "weekend" ? "Saturday 5:00 PM" : "Tomorrow 5:00 PM",
+    mode: "offline_or_online",
+    confirmationRequired: true,
+    note: "Final demo booking confirmation ke bina nahi hoga."
+  };
+}
+
+function part90Explanation(profile = {}, recommendation = {}) {
+  const course = recommendation?.course || {};
+  const reasons = recommendation?.reasons || [];
+  return {
+    shortReason: reasons.length
+      ? `Recommendation ${reasons.join(", ")} ki wajah se hai.`
+      : "Available details ke basis par closest course suggest kiya gaya hai.",
+    parentFriendly: `${profile.studentName || "Student"} ke liye ${course.name || recommendation.name || "selected course"} suitable preview hai because it matches class/subject/goal details. Final decision demo class ke baad lena best rahega.`,
+    noGuarantee: "Ye recommendation learning fit ke liye hai; marks/result guarantee nahi hai."
+  };
+}
+
+function part90BuildVaniReply({ command, role, instituteId, branchId, body = {} }) {
+  const access = part90AccessCheck({ role, instituteId, branchId });
+  const profile = part90ParseProfile(command, body);
+  const recommendation = part90GenerateRecommendations(profile);
+  const missing = recommendation.missingDetails;
+
+  let replyText = "";
+  let nextAction = "none";
+  if (!access.allowed) {
+    replyText = "Is role ko AI Course Recommendation access nahi hai.";
+    nextAction = "blocked";
+  } else if (missing.length) {
+    replyText = missing[0].question;
+    nextAction = "ask_missing_detail";
+  } else {
+    const top = recommendation.recommendedCourse;
+    replyText = `${profile.studentName} ke liye ${top?.name || "recommended course"} suitable preview hai. Fit score ${top?.score || 0}/100 hai. Final admission ya fee commitment confirmation ke bina nahi hoga.`;
+    nextAction = access.safeOnly ? "show_safe_recommendation" : "show_course_recommendation_preview";
+  }
+
+  return {
+    access,
+    profile,
+    recommendation,
+    replyText,
+    spokenSafeSummary: replyText,
+    privateScreenFirst: true,
+    nextAction,
+    confirmationRequiredFor: ["demo_book", "lead_update", "admission_create", "followup_send"],
+    ownerVerificationRequiredFor: ["discount", "fee_commitment", "refund", "delete", "export", "subscription_change"],
+    auditLog: {
+      event: "part90_ai_course_recommendation",
+      role: access.role,
+      topCourse: recommendation.recommendedCourse?.courseId || null,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+const part90Checklist = [
+  "AI Course Recommendation page opens",
+  "Status API returns success true",
+  "Student profile parser extracts class/subject/goal",
+  "Missing details are asked instead of guessed",
+  "Course recommendation returns top 3 options",
+  "Batch fit preview returns suitable batch type",
+  "Fee fit is preview-only",
+  "Demo plan is preview-only with confirmation required",
+  "VANI course recommendation works",
+  "Unauthorized roles are blocked or safe-only",
+  "Previous Part 1–89 routes remain preserved"
+];
+
+app.get("/api/part90/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 90 — AI Course Recommendation",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 90,
+    nextPart: "Part 91 — Fee and Batch Information Assistant",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/ai-course-recommendation", "/course-recommendation-ai", "/smart-course-recommendation", "/course-fit-ai", "/ai-course-finder", "/course-recommender"],
+    apiRoutes: [
+      "/api/part90/config",
+      "/api/part90/features",
+      "/api/part90/roles",
+      "/api/part90/access-check",
+      "/api/part90/course-catalog",
+      "/api/part90/profile/parse",
+      "/api/part90/recommendation/generate",
+      "/api/part90/batch-fit",
+      "/api/part90/fee-fit-preview",
+      "/api/part90/demo-plan",
+      "/api/part90/explanation",
+      "/api/part90/vani/greeting",
+      "/api/part90/vani/command"
+    ],
+    aiCourseRecommendationEnabled: true
+  });
+});
+
+app.get("/api/part90/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "AI Course Recommendation",
+    appType: "course_fit_recommendation_foundation",
+    version: "2.0-ai-course-recommendation",
+    policy: {
+      previewFirst: true,
+      noMarksGuarantee: true,
+      noFeeCommitmentWithoutApproval: true,
+      noAutoAdmission: true,
+      noExternalLLMKeysIncluded: true
+    }
+  });
+});
+
+app.get("/api/part90/features", (req, res) => {
+  res.json({ success: true, features: part90Features });
+});
+
+app.get("/api/part90/roles", (req, res) => {
+  res.json({ success: true, roles: part90RoleRules });
+});
+
+app.get("/api/part90/access-check", (req, res) => {
+  res.json({ success: true, access: part90AccessCheck(req.query || {}) });
+});
+
+app.get("/api/part90/course-catalog", (req, res) => {
+  res.json({ success: true, previewOnly: true, courses: part90CourseCatalog });
+});
+
+app.get("/api/part90/profile/parse", (req, res) => {
+  const profile = part90ParseProfile(req.query.q || req.query.command || "", req.query || {});
+  res.json({ success: true, profile, missingDetails: part90MissingDetails(profile) });
+});
+
+app.post("/api/part90/profile/parse", (req, res) => {
+  const profile = part90ParseProfile(req.body?.q || req.body?.command || "", req.body || {});
+  res.json({ success: true, profile, missingDetails: part90MissingDetails(profile) });
+});
+
+app.get("/api/part90/recommendation/generate", (req, res) => {
+  const access = part90AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const profile = part90ParseProfile(req.query.q || req.query.command || "", req.query || {});
+  res.json({ success: true, access, ...part90GenerateRecommendations(profile) });
+});
+
+app.post("/api/part90/recommendation/generate", (req, res) => {
+  const access = part90AccessCheck(req.body || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const profile = part90ParseProfile(req.body?.q || req.body?.command || "", req.body || {});
+  res.json({ success: true, access, ...part90GenerateRecommendations(profile) });
+});
+
+app.get("/api/part90/batch-fit", (req, res) => {
+  const profile = part90ParseProfile(req.query.q || req.query.command || "", req.query || {});
+  const rec = part90GenerateRecommendations(profile);
+  res.json({ success: true, profile, recommendedCourse: rec.recommendedCourse, batchFit: rec.batchFit });
+});
+
+app.get("/api/part90/fee-fit-preview", (req, res) => {
+  const access = part90AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const profile = part90ParseProfile(req.query.q || req.query.command || "", req.query || {});
+  const rec = part90GenerateRecommendations(profile);
+  res.json({ success: true, access, privateScreenFirst: true, profile, recommendedCourse: rec.recommendedCourse, feeFitPreview: rec.feeFitPreview });
+});
+
+app.get("/api/part90/demo-plan", (req, res) => {
+  const access = part90AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const profile = part90ParseProfile(req.query.q || req.query.command || "", req.query || {});
+  const rec = part90GenerateRecommendations(profile);
+  res.json({ success: true, access, profile, recommendedCourse: rec.recommendedCourse, demoPlanPreview: rec.demoPlanPreview });
+});
+
+app.get("/api/part90/explanation", (req, res) => {
+  const profile = part90ParseProfile(req.query.q || req.query.command || "", req.query || {});
+  const rec = part90GenerateRecommendations(profile);
+  res.json({ success: true, profile, explanation: rec.explanation, recommendedCourse: rec.recommendedCourse });
+});
+
+app.get("/api/part90/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI Course Recommendation",
+    greeting: "Namaste, main VANI Course Recommendation Assistant hoon. Student ki class, subject aur goal batayein, main suitable course preview recommend karungi.",
+    exampleCommands: [
+      "VANI, Aman Class 10 Maths board exam ke liye course recommend karo budget 3500",
+      "VANI, Riya Class 11 Physics JEE ke liye best course batao",
+      "VANI, English communication ke liye course recommend karo",
+      "VANI, weak maths revision ke liye batch suggest karo"
+    ],
+    safety: "Final admission, fee commitment, discount ya demo booking confirmation ke bina nahi hoga."
+  });
+});
+
+app.post("/api/part90/vani/command", (req, res) => {
+  const body = req.body || {};
+  const result = part90BuildVaniReply({
+    command: body.command || body.q || "",
+    role: body.role || "receptionist_counsellor",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId,
+    body
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 90 — AI Course Recommendation", ...result });
+});
+
+app.get("/api/part90/vani/command", (req, res) => {
+  const result = part90BuildVaniReply({
+    command: req.query.command || req.query.q || "",
+    role: req.query.role || "receptionist_counsellor",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 90 — AI Course Recommendation", ...result });
+});
+
+app.get("/api/part90/audit-log", (req, res) => {
+  res.json({
+    success: true,
+    auditLog: [
+      { event: "ai_course_recommendation_preview", role: "receptionist_counsellor", createdAt: new Date().toISOString() },
+      { event: "no_result_guarantee_policy", rule: "Course recommendation never guarantees marks/results.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part90/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "ai_course_recommendation_created", message: "Part 90 AI Course Recommendation active.", createdAt: new Date().toISOString() },
+      { type: "preview_only_policy", message: "Course/fee/demo suggestions are preview-only.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part90/checklist", (req, res) => {
+  res.json({ success: true, checklist: part90Checklist });
+});
+
+app.get("/api/part90/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part90-ai-course-recommendation-readiness",
+    ownerVerificationRequiredForSensitiveExports: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      features: part90Features,
+      roles: part90RoleRules,
+      catalog: part90CourseCatalog,
+      checklist: part90Checklist
+    }
+  });
+});
+
+app.get("/api/part90/demo", (req, res) => {
+  const command = "VANI, Aman Class 10 Maths board exam ke liye course recommend karo budget 3500";
+  const result = part90BuildVaniReply({
+    command,
+    role: "receptionist_counsellor",
+    instituteId: "NX-DEMO-INST-001",
+    body: {}
+  });
+  res.json({
+    success: true,
+    demo: {
+      command,
+      result,
+      nextPart: "Part 91 — Fee and Batch Information Assistant"
+    }
+  });
+});
+// ================= END PART 90 =================
+
 
 
 
