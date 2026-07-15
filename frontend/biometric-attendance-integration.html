@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — Biometric Attendance Integration</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/biometric-attendance-integration.css" />
+</head>
+<body>
+  <main class="biometric-attendance">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 99 • NAXORA OS 2.0</p>
+        <h1>Biometric Attendance Integration</h1>
+        <p class="lead">
+          Safe biometric attendance foundation with device registry preview, sync preview,
+          anomaly checks, attendance merge preview and privacy-first policy.
+        </p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">VANI Biometric Attendance</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Tap Start, then ask device sync preview.</p>
+        <div class="voice-actions">
+          <button id="startVaniBtn">Start VANI</button>
+          <button id="listenVaniBtn">Listen</button>
+          <button id="muteVaniBtn">Mute</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Access</p>
+      <div class="controls">
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="branchId" value="BR-DEMO-001" />
+        <input id="batchId" value="BAT-10-MATH-A" />
+        <input id="teacherId" value="TCH-DEMO-001" />
+        <input id="studentId" value="STU-DEMO-001" />
+        <select id="roleSelect">
+          <option value="branch_manager" selected>Branch Manager Sync</option>
+          <option value="institute_owner">Institute Owner Configure</option>
+          <option value="teacher">Teacher Batch Preview</option>
+          <option value="accountant">Accountant Staff Summary</option>
+          <option value="receptionist_counsellor">Receptionist Summary</option>
+          <option value="student">Student Own Attendance</option>
+          <option value="parent">Parent Linked Child</option>
+        </select>
+        <button id="demoBtn">Load Demo</button>
+      </div>
+      <pre id="accessBox" class="code">Waiting...</pre>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">VANI Command</p>
+        <h2>Speak or type</h2>
+        <p>Example: “VANI, device sync preview banao aur duplicate anomaly check karo”.</p>
+        <div class="controls">
+          <input id="vaniCommand" value="VANI, device sync preview banao aur duplicate anomaly check karo" />
+          <button id="askVaniBtn">Ask VANI</button>
+        </div>
+        <pre id="vaniOutput" class="code">Waiting...</pre>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Devices</p>
+        <div id="devicesBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Sync Preview</p>
+        <div id="syncBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Anomaly Check</p>
+        <div id="anomalyBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Attendance Merge Preview</p>
+        <div id="mergeBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Attendance Summary</p>
+        <div id="summaryBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Connector Readiness</p>
+        <div id="connectorBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Privacy Policy</p>
+        <div id="privacyBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Testing links</p>
+      <div class="links">
+        <a href="/api/part99/status" target="_blank">Status</a>
+        <a href="/api/part99/demo" target="_blank">Demo</a>
+        <a href="/api/part99/devices?role=branch_manager&instituteId=NX-DEMO-INST-001&branchId=BR-DEMO-001" target="_blank">Devices</a>
+        <a href="/api/part99/device/sync-preview?role=branch_manager&instituteId=NX-DEMO-INST-001&branchId=BR-DEMO-001&deviceId=BIO-DEV-001" target="_blank">Sync Preview</a>
+        <a href="/api/part99/privacy-policy" target="_blank">Privacy Policy</a>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/vani-voice-starter.js"></script>
+  <script src="/biometric-attendance-integration.js"></script>
+</body>
+</html>

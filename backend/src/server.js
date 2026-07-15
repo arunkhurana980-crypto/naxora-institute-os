@@ -10387,6 +10387,12 @@ const modulePageRoutes = {
   "/vani-class-notes": "ai-class-notes-summary.html",
   "/live-class-summary": "ai-class-notes-summary.html",
   "/teacher-class-notes-ai": "ai-class-notes-summary.html",
+  "/biometric-attendance-integration": "biometric-attendance-integration.html",
+  "/biometric-attendance": "biometric-attendance-integration.html",
+  "/biometric-integration": "biometric-attendance-integration.html",
+  "/vani-biometric-attendance": "biometric-attendance-integration.html",
+  "/device-attendance-integration": "biometric-attendance-integration.html",
+  "/fingerprint-face-attendance": "biometric-attendance-integration.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -21790,6 +21796,743 @@ app.get("/api/part98/demo", (req, res) => {
   });
 });
 // ================= END PART 98 =================
+
+// ================= PART 99 — BIOMETRIC ATTENDANCE INTEGRATION =================
+// NAXORA OS 2.0 Biometric Attendance Integration.
+// This part creates safe integration foundation for biometric attendance devices:
+// device registry preview, branch/device mapping, import preview, sync preview,
+// duplicate/anomaly checks, attendance merge preview, consent/privacy policy and
+// VANI biometric attendance commands. It never stores raw biometric templates,
+// never bypasses device security, and does not connect to real vendor hardware
+// without authorised vendor API setup.
+
+const part99BiometricFeatures = [
+  {
+    key: "device_registry",
+    name: "Biometric Device Registry",
+    summary: "Register branch biometric device preview with vendor/model/location metadata.",
+    problemSolved: "Institute can track which attendance device belongs to which branch."
+  },
+  {
+    key: "branch_device_mapping",
+    name: "Branch + Batch Device Mapping",
+    summary: "Map devices to branch, batch and staff/student attendance contexts.",
+    problemSolved: "Attendance logs go to the right branch and batch."
+  },
+  {
+    key: "sync_preview",
+    name: "Device Sync Preview",
+    summary: "Preview biometric logs import before saving attendance.",
+    problemSolved: "Institute can verify logs before marking attendance."
+  },
+  {
+    key: "attendance_merge",
+    name: "Attendance Merge Preview",
+    summary: "Merge biometric logs with existing class attendance draft.",
+    problemSolved: "Manual and biometric attendance do not conflict."
+  },
+  {
+    key: "duplicate_anomaly_detection",
+    name: "Duplicate + Anomaly Detection",
+    summary: "Detects duplicate punches, late entries, unknown users and branch mismatch.",
+    problemSolved: "Attendance quality improves before final save."
+  },
+  {
+    key: "privacy_policy",
+    name: "Biometric Privacy Policy",
+    summary: "Stores only safe device/user mapping preview, not raw fingerprint/face templates.",
+    problemSolved: "Sensitive biometric data is protected."
+  },
+  {
+    key: "vani_biometric_attendance",
+    name: "VANI Biometric Attendance",
+    summary: "VANI can check devices, sync preview and explain anomalies.",
+    problemSolved: "Owner/staff can manage biometric attendance by voice."
+  }
+];
+
+const part99RoleRules = [
+  { role: "institute_owner", allowed: true, scope: "Can configure authorised biometric device integration and approve final attendance merge.", canConfigure: true, canSync: true, canFinalize: true, canExport: true, canMonitor: true },
+  { role: "branch_manager", allowed: true, scope: "Can monitor and sync assigned branch devices, final export requires owner approval.", canConfigure: false, canSync: true, canFinalize: true, canExport: false, canMonitor: true },
+  { role: "teacher", allowed: true, scope: "Can view assigned batch biometric attendance preview only.", canConfigure: false, canSync: false, canFinalize: false, canExport: false, canMonitor: false, previewOnly: true },
+  { role: "accountant", allowed: true, scope: "Can view staff attendance payroll-safe summary only.", canConfigure: false, canSync: false, canFinalize: false, canExport: false, canMonitor: false, staffSummaryOnly: true },
+  { role: "receptionist_counsellor", allowed: true, scope: "Can view today branch attendance presence summary only.", canConfigure: false, canSync: false, canFinalize: false, canExport: false, canMonitor: false, summaryOnly: true },
+  { role: "student", allowed: true, scope: "Can view own attendance status only.", canConfigure: false, canSync: false, canFinalize: false, canExport: false, canMonitor: false, selfOnly: true },
+  { role: "parent", allowed: true, scope: "Can view linked child's attendance status only.", canConfigure: false, canSync: false, canFinalize: false, canExport: false, canMonitor: false, viewOnly: true },
+  { role: "naxora_super_admin", allowed: false, scope: "Platform support only; no unrestricted biometric/private attendance access.", canConfigure: false, canSync: false, canFinalize: false, canExport: false, canMonitor: false }
+];
+
+const part99DemoDevices = [
+  {
+    deviceId: "BIO-DEV-001",
+    branchId: "BR-DEMO-001",
+    location: "Main Gate",
+    vendor: "Generic ZKTeco-compatible",
+    model: "Face/Fingerprint Terminal",
+    connectionMode: "vendor_api_pending",
+    status: "mapped_preview",
+    lastSyncPreview: "2026-07-15T08:30:00.000Z",
+    storesRawTemplatesInNaxora: false
+  },
+  {
+    deviceId: "BIO-DEV-002",
+    branchId: "BR-DEMO-001",
+    location: "Classroom Block",
+    vendor: "Generic Attendance Device",
+    model: "Fingerprint Terminal",
+    connectionMode: "csv_import_preview",
+    status: "sync_needed_preview",
+    lastSyncPreview: null,
+    storesRawTemplatesInNaxora: false
+  }
+];
+
+const part99DemoDeviceLogs = [
+  { logId: "BLOG-001", deviceId: "BIO-DEV-001", externalUserId: "STU-DEMO-001", name: "Aman", role: "student", branchId: "BR-DEMO-001", timestamp: "2026-07-15T08:55:00.000Z", punchType: "in", matchConfidencePreview: 98 },
+  { logId: "BLOG-002", deviceId: "BIO-DEV-001", externalUserId: "STU-DEMO-002", name: "Riya", role: "student", branchId: "BR-DEMO-001", timestamp: "2026-07-15T09:18:00.000Z", punchType: "in", matchConfidencePreview: 94 },
+  { logId: "BLOG-003", deviceId: "BIO-DEV-001", externalUserId: "STU-DEMO-002", name: "Riya", role: "student", branchId: "BR-DEMO-001", timestamp: "2026-07-15T09:20:00.000Z", punchType: "in", matchConfidencePreview: 94 },
+  { logId: "BLOG-004", deviceId: "BIO-DEV-002", externalUserId: "UNKNOWN-009", name: "Unknown User", role: "unknown", branchId: "BR-DEMO-001", timestamp: "2026-07-15T09:05:00.000Z", punchType: "in", matchConfidencePreview: 0 },
+  { logId: "BLOG-005", deviceId: "BIO-DEV-001", externalUserId: "TCH-DEMO-001", name: "Teacher", role: "teacher", branchId: "BR-DEMO-001", timestamp: "2026-07-15T08:35:00.000Z", punchType: "in", matchConfidencePreview: 99 }
+];
+
+function normalizePart99Role(role) {
+  const r = String(role || "branch_manager").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part99AccessCheck({ role, instituteId, branchId, batchId, teacherId, studentId, parentId, deviceId }) {
+  const normalizedRole = normalizePart99Role(role);
+  const rule = part99RoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole,
+    allowed: false,
+    scope: "Unknown or unsupported role.",
+    canConfigure: false,
+    canSync: false,
+    canFinalize: false,
+    canExport: false,
+    canMonitor: false
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const branchScoped = ["branch_manager", "receptionist_counsellor"].includes(normalizedRole) ? Boolean(String(branchId || "").trim()) : true;
+  const teacherScoped = normalizedRole !== "teacher" || Boolean(String(teacherId || "").trim() || String(batchId || "").trim());
+  const studentOwnOnly = normalizedRole !== "student" || Boolean(String(studentId || "").trim());
+  const parentLinkedOnly = normalizedRole !== "parent" || Boolean(String(parentId || "").trim() || String(studentId || "").trim());
+  const allowed = Boolean(rule.allowed && hasInstituteId && branchScoped && teacherScoped && studentOwnOnly && parentLinkedOnly && normalizedRole !== "naxora_super_admin");
+
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    branchId: branchId || null,
+    batchId: batchId || null,
+    teacherId: teacherId || null,
+    studentId: studentId || null,
+    parentId: parentId || null,
+    deviceId: deviceId || null,
+    allowed,
+    canConfigure: Boolean(rule.canConfigure && allowed),
+    canSync: Boolean(rule.canSync && allowed),
+    canFinalize: Boolean(rule.canFinalize && allowed),
+    canExport: Boolean(rule.canExport && allowed),
+    canMonitor: Boolean(rule.canMonitor && allowed),
+    previewOnly: Boolean(rule.previewOnly),
+    staffSummaryOnly: Boolean(rule.staffSummaryOnly),
+    summaryOnly: Boolean(rule.summaryOnly),
+    selfOnly: Boolean(rule.selfOnly),
+    viewOnly: Boolean(rule.viewOnly),
+    scope: rule.scope,
+    reason: !hasInstituteId
+      ? "Institute ID missing."
+      : !rule.allowed
+        ? rule.scope
+        : !branchScoped
+          ? "Branch-scoped role requires branchId."
+          : !teacherScoped
+            ? "Teacher requires assigned teacherId or batchId."
+            : !studentOwnOnly
+              ? "Student can view own attendance only; studentId required."
+              : !parentLinkedOnly
+                ? "Parent can view linked child attendance only; parentId/studentId required."
+                : "Biometric attendance access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    confirmationRequiredFor: ["device_register", "device_sync", "attendance_merge", "finalize_attendance", "map_biometric_user"],
+    ownerVerificationRequiredFor: ["raw_log_export", "attendance_export", "device_delete", "biometric_privacy_change", "vendor_api_key_change"]
+  };
+}
+
+function part99ParseCommand(text = "", body = {}) {
+  const input = String(text || body.command || body.q || "").trim();
+  const intent = /register|add.*device|map.*device/i.test(input) ? "device_register"
+    : /sync|import|pull/i.test(input) ? "sync_preview"
+      : /anomaly|duplicate|unknown|mismatch/i.test(input) ? "anomaly_check"
+        : /merge|final|mark/i.test(input) ? "attendance_merge"
+          : /privacy|consent|template|fingerprint|face/i.test(input) ? "privacy_policy"
+            : /status|device|biometric/i.test(input) ? "device_status"
+              : /summary|report/i.test(input) ? "summary"
+                : "help";
+  return {
+    intent,
+    deviceId: body.deviceId || (/002/.test(input) ? "BIO-DEV-002" : "BIO-DEV-001"),
+    branchId: body.branchId || "BR-DEMO-001",
+    rawCommand: input
+  };
+}
+
+function part99FindDevice(deviceId, branchId) {
+  if (deviceId) {
+    const match = part99DemoDevices.find((d) => d.deviceId === deviceId);
+    if (match) return match;
+  }
+  if (branchId) {
+    const match = part99DemoDevices.find((d) => d.branchId === branchId);
+    if (match) return match;
+  }
+  return part99DemoDevices[0];
+}
+
+function part99DeviceRegistryPreview({ access, deviceId, branchId, vendor, model, location }) {
+  return {
+    previewOnly: true,
+    canRegister: Boolean(access.canConfigure),
+    device: {
+      deviceId: deviceId || `BIO-DEV-PREVIEW-${Date.now()}`,
+      branchId: branchId || access.branchId || "BR-DEMO-001",
+      vendor: vendor || "Generic vendor",
+      model: model || "Face/Fingerprint Terminal",
+      location: location || "Main Gate",
+      connectionMode: "vendor_api_or_csv_pending",
+      status: "registry_preview",
+      storesRawTemplatesInNaxora: false
+    },
+    confirmationRequired: true,
+    vendorApiSetupRequired: true,
+    note: "Raw biometric fingerprint/face templates are not stored inside NAXORA."
+  };
+}
+
+function part99VendorConnectorReadiness(device = part99DemoDevices[0]) {
+  return {
+    previewOnly: true,
+    deviceId: device.deviceId,
+    vendor: device.vendor,
+    connectionMode: device.connectionMode,
+    requiredSetup: [
+      "Vendor device IP/API access or export file access",
+      "Owner-approved vendor API key in Render environment",
+      "Branch/device mapping",
+      "Safe user mapping without raw biometric templates",
+      "Sync schedule approval"
+    ],
+    supportedModesPreview: ["csv_import_preview", "vendor_api_pending", "manual_upload_preview"],
+    envKeysSuggested: ["BIOMETRIC_VENDOR_API_BASE", "BIOMETRIC_VENDOR_API_KEY"],
+    secretsInChatAllowed: false
+  };
+}
+
+function part99AnalyzeLogs(logs = part99DemoDeviceLogs) {
+  const seen = new Map();
+  const anomalies = [];
+  const cleanLogs = [];
+  for (const log of logs) {
+    const minuteBucket = String(log.timestamp || "").slice(0, 16);
+    const key = `${log.externalUserId}-${log.punchType}-${minuteBucket}`;
+    if (seen.has(key)) {
+      anomalies.push({
+        type: "duplicate_punch",
+        level: "medium",
+        logId: log.logId,
+        externalUserId: log.externalUserId,
+        message: "Same user repeated punch within close time window."
+      });
+      continue;
+    }
+    seen.set(key, true);
+    if (String(log.externalUserId || "").startsWith("UNKNOWN") || log.role === "unknown") {
+      anomalies.push({
+        type: "unknown_user",
+        level: "high",
+        logId: log.logId,
+        externalUserId: log.externalUserId,
+        message: "Device user is not mapped to NAXORA student/staff record."
+      });
+      continue;
+    }
+    if (Number(log.matchConfidencePreview || 0) < 90) {
+      anomalies.push({
+        type: "low_confidence",
+        level: "medium",
+        logId: log.logId,
+        externalUserId: log.externalUserId,
+        message: "Device match confidence preview is low; manual review recommended."
+      });
+    }
+    cleanLogs.push(log);
+  }
+  return {
+    previewOnly: true,
+    totalLogs: logs.length,
+    cleanLogs,
+    anomalies,
+    cleanCount: cleanLogs.length,
+    anomalyCount: anomalies.length,
+    manualReviewRequired: anomalies.length > 0
+  };
+}
+
+function part99SyncPreview({ access, device, logs = part99DemoDeviceLogs }) {
+  const analysis = part99AnalyzeLogs(logs.filter((log) => !device?.deviceId || log.deviceId === device.deviceId));
+  return {
+    previewOnly: true,
+    canSync: Boolean(access.canSync),
+    device,
+    syncBatchId: `SYNC-PREVIEW-${Date.now()}`,
+    fetchedLogCountPreview: analysis.totalLogs,
+    cleanLogCountPreview: analysis.cleanCount,
+    anomalyCountPreview: analysis.anomalyCount,
+    status: access.canSync ? "sync_preview_ready" : "sync_not_allowed_for_role",
+    analysis,
+    finalSaveRequiresConfirmation: true,
+    vendorApiConnected: false
+  };
+}
+
+function part99AttendanceMergePreview({ access, syncPreview }) {
+  const cleanLogs = syncPreview?.analysis?.cleanLogs || [];
+  const entries = cleanLogs.map((log) => {
+    const late = new Date(log.timestamp).getHours() > 9 || (new Date(log.timestamp).getHours() === 9 && new Date(log.timestamp).getMinutes() > 10);
+    return {
+      studentOrStaffId: log.externalUserId,
+      name: log.name,
+      role: log.role,
+      source: "biometric_device_preview",
+      punchTime: log.timestamp,
+      attendanceStatus: late ? "late_present_preview" : "present_preview",
+      reviewRequired: late,
+      reasons: late ? ["late punch after class/reporting start time"] : ["valid biometric punch preview"]
+    };
+  });
+  return {
+    previewOnly: true,
+    canMerge: Boolean(access.canFinalize),
+    entries,
+    summary: {
+      totalEntries: entries.length,
+      present: entries.filter((e) => e.attendanceStatus === "present_preview").length,
+      latePresent: entries.filter((e) => e.attendanceStatus === "late_present_preview").length,
+      reviewRequired: entries.filter((e) => e.reviewRequired).length,
+      anomaliesBlocked: syncPreview?.analysis?.anomalyCount || 0
+    },
+    finalMergeRequiresConfirmation: true,
+    note: "Biometric logs are merged as attendance draft; final save requires authorised confirmation."
+  };
+}
+
+function part99PrivacyPolicy() {
+  return {
+    previewOnly: true,
+    storesRawFingerprintTemplate: false,
+    storesRawFaceTemplate: false,
+    safeDataStoredPreview: [
+      "NAXORA user ID",
+      "External device user ID mapping",
+      "Device ID",
+      "Punch timestamp",
+      "Branch ID",
+      "Attendance status draft",
+      "Audit log"
+    ],
+    restrictedData: [
+      "Raw fingerprint template",
+      "Raw face template",
+      "Device admin password",
+      "Vendor API secret in chat"
+    ],
+    consentRequired: true,
+    ownerVerificationRequiredFor: ["raw_log_export", "device_delete", "privacy_change", "vendor_api_key_change"],
+    privateScreenFirst: true,
+    safety: "Biometric templates device/vendor side par rahenge. NAXORA me raw biometric template store nahi hoga."
+  };
+}
+
+function part99UserMappingPreview({ access, externalUserId, naxoraUserId, role }) {
+  return {
+    previewOnly: true,
+    canMap: Boolean(access.canConfigure),
+    mapping: {
+      mappingId: `BIO-MAP-PREVIEW-${Date.now()}`,
+      externalUserId: externalUserId || "STU-DEMO-001",
+      naxoraUserId: naxoraUserId || "STU-DEMO-001",
+      role: role || "student",
+      active: true,
+      rawBiometricTemplateStored: false
+    },
+    confirmationRequired: true,
+    note: "Only safe ID mapping is created; raw biometric template is not imported."
+  };
+}
+
+function part99AttendanceSummary({ access, mergePreview }) {
+  return {
+    previewOnly: true,
+    role: access.role,
+    scope: access.selfOnly ? "own_attendance_only" : access.viewOnly ? "linked_child_only" : access.staffSummaryOnly ? "staff_payroll_safe_summary" : "authorised_branch_or_institute",
+    summary: mergePreview.summary,
+    visibleEntries: (mergePreview.entries || []).filter((entry) => {
+      if (access.selfOnly) return entry.studentOrStaffId === access.studentId;
+      if (access.viewOnly) return entry.studentOrStaffId === access.studentId;
+      if (access.staffSummaryOnly) return entry.role === "teacher" || entry.role === "staff";
+      return true;
+    }),
+    privateScreenFirst: true
+  };
+}
+
+function part99BuildBiometricAttendance({ command, role, instituteId, branchId, batchId, teacherId, studentId, parentId, body = {} }) {
+  const parsed = part99ParseCommand(command, body);
+  const access = part99AccessCheck({
+    role,
+    instituteId,
+    branchId: body.branchId || branchId || parsed.branchId,
+    batchId,
+    teacherId,
+    studentId,
+    parentId,
+    deviceId: body.deviceId || parsed.deviceId
+  });
+
+  const device = part99FindDevice(body.deviceId || parsed.deviceId, body.branchId || branchId || parsed.branchId);
+  const deviceRegistryPreview = part99DeviceRegistryPreview({
+    access,
+    deviceId: body.deviceId,
+    branchId: body.branchId || branchId,
+    vendor: body.vendor,
+    model: body.model,
+    location: body.location
+  });
+  const connectorReadiness = part99VendorConnectorReadiness(device);
+  const syncPreview = part99SyncPreview({ access, device, logs: body.logs || part99DemoDeviceLogs });
+  const attendanceMergePreview = part99AttendanceMergePreview({ access, syncPreview });
+  const privacyPolicy = part99PrivacyPolicy();
+  const userMappingPreview = part99UserMappingPreview({
+    access,
+    externalUserId: body.externalUserId,
+    naxoraUserId: body.naxoraUserId,
+    role: body.mappingRole
+  });
+  const attendanceSummary = part99AttendanceSummary({ access, mergePreview: attendanceMergePreview });
+
+  let replyText = "";
+  let nextAction = "none";
+  if (!access.allowed) {
+    replyText = "Is role/scope ko biometric attendance access nahi hai.";
+    nextAction = "blocked";
+  } else if (parsed.intent === "device_register") {
+    replyText = access.canConfigure
+      ? "Biometric device registry preview ready hai. Final register confirmation ke bina nahi hoga."
+      : "Is role ko device configure/register permission nahi hai.";
+    nextAction = "show_device_registry_preview";
+  } else if (parsed.intent === "sync_preview") {
+    replyText = access.canSync
+      ? `Device sync preview ready hai. ${syncPreview.fetchedLogCountPreview} logs mile, ${syncPreview.anomalyCountPreview} anomalies review me hain.`
+      : "Is role ko device sync permission nahi hai.";
+    nextAction = "show_sync_preview";
+  } else if (parsed.intent === "anomaly_check") {
+    replyText = `Anomaly check ready hai. ${syncPreview.anomalyCountPreview} issue manual review me jayenge.`;
+    nextAction = "show_anomaly_check";
+  } else if (parsed.intent === "attendance_merge") {
+    replyText = access.canFinalize
+      ? "Attendance merge preview ready hai. Final save confirmation ke bina nahi hoga."
+      : "Is role ko attendance finalize/merge permission nahi hai.";
+    nextAction = "show_attendance_merge_preview";
+  } else if (parsed.intent === "privacy_policy") {
+    replyText = "Biometric privacy policy ready hai. Raw fingerprint/face templates NAXORA me store nahi honge.";
+    nextAction = "show_privacy_policy";
+  } else if (parsed.intent === "summary") {
+    replyText = "Biometric attendance summary preview ready hai.";
+    nextAction = "show_attendance_summary";
+  } else {
+    replyText = "Biometric attendance integration foundation ready hai. Device sync, anomaly check aur merge preview available hain.";
+    nextAction = "show_biometric_overview";
+  }
+
+  return {
+    access,
+    parsed,
+    devices: part99DemoDevices,
+    selectedDevice: device,
+    connectorReadiness,
+    deviceRegistryPreview,
+    syncPreview,
+    attendanceMergePreview,
+    attendanceSummary,
+    anomalyReport: syncPreview.analysis,
+    userMappingPreview,
+    privacyPolicy,
+    replyText,
+    spokenSafeSummary: replyText,
+    privateScreenFirst: true,
+    nextAction,
+    vendorApiConnected: false,
+    rawBiometricStored: false,
+    confirmationRequiredFor: ["device_register", "device_sync", "attendance_merge", "finalize_attendance", "map_biometric_user"],
+    ownerVerificationRequiredFor: ["raw_log_export", "attendance_export", "device_delete", "biometric_privacy_change", "vendor_api_key_change"],
+    auditLog: {
+      event: "part99_biometric_attendance_integration",
+      role: access.role,
+      intent: parsed.intent,
+      deviceId: device?.deviceId || parsed.deviceId,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+const part99Checklist = [
+  "Biometric Attendance Integration page opens",
+  "Status API returns success true",
+  "Device registry preview works",
+  "Vendor connector readiness appears",
+  "Sync preview works",
+  "Duplicate/anomaly detection works",
+  "Attendance merge preview works",
+  "Privacy policy confirms no raw biometric templates stored",
+  "Student/parent scoped modes work",
+  "Accountant staff summary-only mode works",
+  "VANI biometric attendance command works",
+  "Previous Part 1–98 routes remain preserved"
+];
+
+app.get("/api/part99/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 99 — Biometric Attendance Integration",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 99,
+    nextPart: "Part 100 — Digital Board Integration",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/biometric-attendance-integration", "/biometric-attendance", "/biometric-integration", "/vani-biometric-attendance", "/device-attendance-integration", "/fingerprint-face-attendance"],
+    apiRoutes: [
+      "/api/part99/config",
+      "/api/part99/features",
+      "/api/part99/roles",
+      "/api/part99/access-check",
+      "/api/part99/devices",
+      "/api/part99/device/register-preview",
+      "/api/part99/device/connector-readiness",
+      "/api/part99/device/sync-preview",
+      "/api/part99/logs/anomaly-check",
+      "/api/part99/attendance/merge-preview",
+      "/api/part99/attendance/summary",
+      "/api/part99/user-mapping-preview",
+      "/api/part99/privacy-policy",
+      "/api/part99/vani/greeting",
+      "/api/part99/vani/command"
+    ],
+    biometricAttendanceIntegrationEnabled: true
+  });
+});
+
+app.get("/api/part99/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "Biometric Attendance Integration",
+    appType: "biometric_attendance_integration_foundation",
+    version: "2.0-biometric-attendance-integration",
+    policy: {
+      previewFirst: true,
+      noRawBiometricTemplateStorage: true,
+      noVendorApiKeysIncluded: true,
+      noAutoFinalAttendance: true,
+      ownerVerificationForSensitiveExports: true,
+      consentRequired: true,
+      privateScreenFirst: true
+    }
+  });
+});
+
+app.get("/api/part99/features", (req, res) => {
+  res.json({ success: true, features: part99BiometricFeatures });
+});
+
+app.get("/api/part99/roles", (req, res) => {
+  res.json({ success: true, roles: part99RoleRules });
+});
+
+app.get("/api/part99/access-check", (req, res) => {
+  res.json({ success: true, access: part99AccessCheck(req.query || {}) });
+});
+
+app.get("/api/part99/devices", (req, res) => {
+  const access = part99AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, previewOnly: true, devices: part99DemoDevices });
+});
+
+app.get("/api/part99/device/register-preview", (req, res) => {
+  const access = part99AccessCheck(req.query || {});
+  if (!access.allowed || !access.canConfigure) return res.status(403).json({ success: false, access, message: "Only institute owner can configure/register biometric device." });
+  res.json({ success: true, access, deviceRegistryPreview: part99DeviceRegistryPreview({ access, ...req.query }) });
+});
+
+app.get("/api/part99/device/connector-readiness", (req, res) => {
+  const access = part99AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const device = part99FindDevice(req.query.deviceId, req.query.branchId);
+  res.json({ success: true, access, selectedDevice: device, connectorReadiness: part99VendorConnectorReadiness(device) });
+});
+
+app.get("/api/part99/device/sync-preview", (req, res) => {
+  const access = part99AccessCheck(req.query || {});
+  if (!access.allowed || !access.canSync) return res.status(403).json({ success: false, access, message: "Owner/branch manager can run biometric sync preview." });
+  const device = part99FindDevice(req.query.deviceId, req.query.branchId);
+  res.json({ success: true, access, syncPreview: part99SyncPreview({ access, device }) });
+});
+
+app.get("/api/part99/logs/anomaly-check", (req, res) => {
+  const access = part99AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, anomalyReport: part99AnalyzeLogs() });
+});
+
+app.get("/api/part99/attendance/merge-preview", (req, res) => {
+  const access = part99AccessCheck(req.query || {});
+  if (!access.allowed || !access.canFinalize) return res.status(403).json({ success: false, access, message: "Owner/branch manager can create attendance merge preview." });
+  const device = part99FindDevice(req.query.deviceId, req.query.branchId);
+  const syncPreview = part99SyncPreview({ access, device });
+  res.json({ success: true, access, attendanceMergePreview: part99AttendanceMergePreview({ access, syncPreview }) });
+});
+
+app.get("/api/part99/attendance/summary", (req, res) => {
+  const access = part99AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const device = part99FindDevice(req.query.deviceId, req.query.branchId);
+  const syncPreview = part99SyncPreview({ access, device });
+  const mergePreview = part99AttendanceMergePreview({ access, syncPreview });
+  res.json({ success: true, access, attendanceSummary: part99AttendanceSummary({ access, mergePreview }) });
+});
+
+app.get("/api/part99/user-mapping-preview", (req, res) => {
+  const access = part99AccessCheck(req.query || {});
+  if (!access.allowed || !access.canConfigure) return res.status(403).json({ success: false, access, message: "Only owner can create biometric user mapping preview." });
+  res.json({ success: true, access, userMappingPreview: part99UserMappingPreview({ access, ...req.query }) });
+});
+
+app.get("/api/part99/privacy-policy", (req, res) => {
+  res.json({ success: true, privacyPolicy: part99PrivacyPolicy() });
+});
+
+app.get("/api/part99/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI Biometric Attendance",
+    greeting: "Namaste, main VANI Biometric Attendance Assistant hoon. Aap device status, sync preview, anomaly check ya attendance merge preview pooch sakte ho.",
+    exampleCommands: [
+      "VANI, biometric device status dikhao",
+      "VANI, device sync preview banao",
+      "VANI, duplicate anomaly check karo",
+      "VANI, attendance merge preview banao",
+      "VANI, biometric privacy policy batao"
+    ],
+    safety: "Raw fingerprint/face templates NAXORA me store nahi honge. Final sync/merge/export confirmation ke bina nahi hoga."
+  });
+});
+
+app.post("/api/part99/vani/command", (req, res) => {
+  const body = req.body || {};
+  const result = part99BuildBiometricAttendance({
+    command: body.command || body.q || "",
+    role: body.role || "branch_manager",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId || "BR-DEMO-001",
+    batchId: body.batchId,
+    teacherId: body.teacherId,
+    studentId: body.studentId,
+    parentId: body.parentId,
+    body
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 99 — Biometric Attendance Integration", ...result });
+});
+
+app.get("/api/part99/vani/command", (req, res) => {
+  const result = part99BuildBiometricAttendance({
+    command: req.query.command || req.query.q || "",
+    role: req.query.role || "branch_manager",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId || "BR-DEMO-001",
+    batchId: req.query.batchId,
+    teacherId: req.query.teacherId,
+    studentId: req.query.studentId,
+    parentId: req.query.parentId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 99 — Biometric Attendance Integration", ...result });
+});
+
+app.get("/api/part99/audit-log", (req, res) => {
+  res.json({
+    success: true,
+    auditLog: [
+      { event: "biometric_sync_preview", role: "branch_manager", createdAt: new Date().toISOString() },
+      { event: "no_raw_biometric_template_storage_policy", rule: "NAXORA stores safe mapping/logs only, not raw biometric templates.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part99/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "biometric_attendance_integration_created", message: "Part 99 Biometric Attendance Integration active.", createdAt: new Date().toISOString() },
+      { type: "vendor_api_pending", message: "Real device/vendor API requires owner-approved credentials in Render env.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part99/checklist", (req, res) => {
+  res.json({ success: true, checklist: part99Checklist });
+});
+
+app.get("/api/part99/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part99-biometric-attendance-integration-readiness",
+    ownerVerificationRequiredForSensitiveExports: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      features: part99BiometricFeatures,
+      roles: part99RoleRules,
+      devices: part99DemoDevices,
+      checklist: part99Checklist,
+      privacyPolicy: part99PrivacyPolicy()
+    }
+  });
+});
+
+app.get("/api/part99/demo", (req, res) => {
+  const command = "VANI, device sync preview banao aur duplicate anomaly check karo";
+  const result = part99BuildBiometricAttendance({
+    command,
+    role: "branch_manager",
+    instituteId: "NX-DEMO-INST-001",
+    branchId: "BR-DEMO-001",
+    body: {}
+  });
+  res.json({
+    success: true,
+    demo: {
+      command,
+      result,
+      nextPart: "Part 100 — Digital Board Integration"
+    }
+  });
+});
+// ================= END PART 99 =================
+
 
 
 
