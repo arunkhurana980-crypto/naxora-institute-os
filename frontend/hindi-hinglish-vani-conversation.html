@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — Hindi/Hinglish VANI Conversation</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/hindi-hinglish-vani-conversation.css" />
+</head>
+<body>
+  <main class="vani-conversation">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 88 • NAXORA OS 2.0</p>
+        <h1>Hindi/Hinglish VANI Conversation</h1>
+        <p class="lead">
+          Speak naturally in Hindi, English or Hinglish. VANI detects language,
+          understands module intent, asks missing details, replies on screen and speaks safe summary.
+        </p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">Conversation Mode</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Tap Start, then Listen.</p>
+        <div class="voice-actions">
+          <button id="startVaniBtn">Start VANI</button>
+          <button id="listenVaniBtn">Listen</button>
+          <button id="muteVaniBtn">Mute</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Conversation Context</p>
+      <div class="controls">
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="sessionId" value="VANI-DEMO-SESSION" />
+        <select id="roleSelect">
+          <option value="institute_owner">Institute Owner</option>
+          <option value="branch_manager">Branch Manager</option>
+          <option value="accountant">Accountant</option>
+          <option value="teacher">Teacher</option>
+          <option value="receptionist_counsellor">Receptionist / Counsellor</option>
+          <option value="student" selected>Student</option>
+          <option value="parent">Parent</option>
+        </select>
+        <button id="demoBtn">Try Demo</button>
+      </div>
+      <pre id="accessBox" class="code">Waiting...</pre>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Talk to VANI</p>
+        <h2>Speak or type</h2>
+        <p>Examples: “VANI, homework kya hai”, “VANI, fee summary dikhao”, “VANI, attendance report batao”.</p>
+        <div class="controls">
+          <input id="vaniCommand" value="VANI, homework kya hai" />
+          <button id="askVaniBtn">Ask VANI</button>
+        </div>
+        <pre id="vaniOutput" class="code">Waiting...</pre>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Screen Preview</p>
+        <div id="screenPreview" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Detected Details</p>
+        <div id="detectedBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Missing Detail / Follow-up</p>
+        <div id="followupBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Supported Modules</p>
+      <div id="modulesBox" class="feature-grid"></div>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Testing links</p>
+      <div class="links">
+        <a href="/api/part88/status" target="_blank">Status</a>
+        <a href="/api/part88/demo" target="_blank">Demo</a>
+        <a href="/api/part88/language/detect?q=VANI,%20homework%20kya%20hai" target="_blank">Language Detect</a>
+        <a href="/api/part88/conversation/reply?role=student&instituteId=NX-DEMO-INST-001&q=VANI,%20homework%20kya%20hai" target="_blank">Student Reply</a>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/vani-voice-starter.js"></script>
+  <script src="/hindi-hinglish-vani-conversation.js"></script>
+</body>
+</html>

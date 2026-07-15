@@ -1,6 +1,6 @@
-// NAXORA VANI browser voice starter + listen/reply foundation.
-// Voice output uses Web Speech Synthesis.
-// Mic input uses browser SpeechRecognition/webkitSpeechRecognition when supported.
+// NAXORA VANI browser voice + listen foundation.
+// Speech output: Web Speech Synthesis.
+// Mic input: SpeechRecognition/webkitSpeechRecognition when supported.
 // Browsers require user click and mic permission.
 
 window.NaxoraVaniVoice = (() => {
@@ -19,7 +19,6 @@ window.NaxoraVaniVoice = (() => {
     const message = String(text || "").trim();
     if (!message || muted) return { spoken: false, reason: muted ? "muted" : "empty_message" };
     if (!supported()) return { spoken: false, reason: "browser_speech_not_supported" };
-
     try {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(message);
@@ -36,24 +35,18 @@ window.NaxoraVaniVoice = (() => {
 
   function listen(options = {}) {
     return new Promise((resolve, reject) => {
-      if (!listenSupported()) {
-        reject(new Error("speech_recognition_not_supported"));
-        return;
-      }
-
+      if (!listenSupported()) return reject(new Error("speech_recognition_not_supported"));
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       recognition = new SpeechRecognition();
       recognition.lang = options.lang || "hi-IN";
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
       recognition.continuous = false;
-
       recognition.onresult = (event) => {
         const transcript = event.results?.[0]?.[0]?.transcript || "";
         resolve({ transcript, confidence: event.results?.[0]?.[0]?.confidence || null });
       };
       recognition.onerror = (event) => reject(new Error(event.error || "speech_recognition_error"));
-      recognition.onend = () => {};
       recognition.start();
     });
   }
@@ -69,9 +62,7 @@ window.NaxoraVaniVoice = (() => {
     return muted;
   }
 
-  function isMuted() {
-    return muted;
-  }
+  function isMuted() { return muted; }
 
   return { supported, listenSupported, speak, listen, stop, setMuted, isMuted };
 })();

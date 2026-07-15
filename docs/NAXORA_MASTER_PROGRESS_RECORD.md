@@ -1,37 +1,35 @@
 # NAXORA Master Progress Record
 
 ## Latest completed part
-Part 87 — VANI Voice Reports
+Part 88 — Hindi/Hinglish VANI Conversation
 
 ## Date completed
 2026-07-15
 
 ## Feature name
-NAXORA OS 2.0 VANI Voice Reports
+NAXORA OS 2.0 Hindi/Hinglish VANI Conversation
 
 ## Files changed
 - backend/src/server.js
-- frontend/vani-voice-reports.html
-- frontend/vani-voice-reports.css
-- frontend/vani-voice-reports.js
+- frontend/hindi-hinglish-vani-conversation.html
+- frontend/hindi-hinglish-vani-conversation.css
+- frontend/hindi-hinglish-vani-conversation.js
 - frontend/vani-voice-starter.js
-- README_PART87_VANI_VOICE_REPORTS.md
-- START_HERE_PART87_ARUN.md
-- docs/PART87_VANI_VOICE_REPORTS_CHECKLIST.md
+- README_PART88_HINDI_HINGLISH_VANI_CONVERSATION.md
+- START_HERE_PART88_ARUN.md
+- docs/PART88_HINDI_HINGLISH_VANI_CONVERSATION_CHECKLIST.md
 - docs/NAXORA_MASTER_PROGRESS_RECORD.md
 
 ## Database/API changes
 No required database migration.
-Added `/api/part87/*` voice report APIs.
+Added `/api/part88/*` conversation APIs.
 
 ## VANI commands added
-- VANI, owner daily report sunao
-- VANI, fee collection report sunao
 - VANI, attendance report batao
-- VANI, admission report sunao
-- VANI, teacher class report sunao
-- VANI, student learning report batao
-- VANI, child weekly report sunao
+- VANI, fee summary dikhao
+- VANI, admission draft banao
+- VANI, homework kya hai
+- VANI, owner daily report sunao
 
 ## Tests passed
 - backend/src/server.js syntax check
@@ -42,13 +40,13 @@ Added `/api/part87/*` voice report APIs.
 - no secrets/API keys
 
 ## Errors remaining
-- Scheduled reports pending.
-- Production DB persistence pending.
-- Full Hindi/Hinglish conversation pending Part 88.
-- Native app background voice pending.
+- Rule-based foundation only; real LLM integration pending.
+- Browser mic support depends on permission/support.
+- Production session persistence pending.
+- Native mobile background conversation pending.
 
 ## Next part
-Part 88 — Hindi/Hinglish VANI Conversation
+Part 89 — AI Admission Counsellor Foundation
 
 ## Locked subscription rule
 NAXORA OS 1.0, 2.0 and future 3.0 have separate subscriptions.

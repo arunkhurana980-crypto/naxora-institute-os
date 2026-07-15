@@ -10321,6 +10321,12 @@ const modulePageRoutes = {
   "/voice-reporting": "vani-voice-reports.html",
   "/vani-report-reader": "vani-voice-reports.html",
   "/ai-voice-reports": "vani-voice-reports.html",
+  "/hindi-hinglish-vani-conversation": "hindi-hinglish-vani-conversation.html",
+  "/vani-conversation": "hindi-hinglish-vani-conversation.html",
+  "/hinglish-vani": "hindi-hinglish-vani-conversation.html",
+  "/hindi-vani": "hindi-hinglish-vani-conversation.html",
+  "/vani-chat": "hindi-hinglish-vani-conversation.html",
+  "/vani-conversation-mode": "hindi-hinglish-vani-conversation.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -15118,6 +15124,567 @@ app.get("/api/part87/demo", (req, res) => {
   });
 });
 // ================= END PART 87 =================
+
+// ================= PART 88 — HINDI/HINGLISH VANI CONVERSATION =================
+// NAXORA OS 2.0 VANI Hindi/Hinglish conversation foundation.
+// This part adds language detection, conversational replies, follow-up questions,
+// safe module routing, conversation session context and browser voice/mic UI.
+// Real production LLM/API integration is intentionally not included to avoid secrets.
+
+const part88ConversationLanguages = [
+  {
+    key: "hindi",
+    label: "Hindi",
+    examples: ["attendance dikhao", "fee batao", "admission lead banao"],
+    responseStyle: "Polite Hindi with simple institute terms."
+  },
+  {
+    key: "hinglish",
+    label: "Hinglish",
+    examples: ["aaj ka report dikhao", "pending fee batao", "homework kya hai"],
+    responseStyle: "Natural Hindi + English mix for Indian institute users."
+  },
+  {
+    key: "english",
+    label: "English",
+    examples: ["show attendance", "make admission draft", "read fee report"],
+    responseStyle: "Simple English with clear next action."
+  }
+];
+
+const part88ConversationModules = [
+  {
+    key: "admissions",
+    name: "Admissions",
+    intents: ["admission_draft", "lead_qualification", "demo_class", "followup"],
+    allowedRoles: ["institute_owner", "branch_manager", "receptionist_counsellor"],
+    asksMissingDetails: ["studentName", "course", "parentPhone", "source"]
+  },
+  {
+    key: "fees",
+    name: "Fees",
+    intents: ["fee_status", "fee_reminder", "payment_followup", "receipt_preview"],
+    allowedRoles: ["institute_owner", "branch_manager", "accountant", "parent", "student"],
+    privateScreenFirst: true,
+    asksMissingDetails: ["studentName or studentId"]
+  },
+  {
+    key: "attendance",
+    name: "Attendance",
+    intents: ["attendance_report", "attendance_draft", "low_attendance"],
+    allowedRoles: ["institute_owner", "branch_manager", "teacher", "parent", "student"],
+    privateScreenFirst: true,
+    asksMissingDetails: ["batchId or studentId"]
+  },
+  {
+    key: "learning",
+    name: "Learning",
+    intents: ["homework", "tests", "notes", "revision_plan", "weak_topic"],
+    allowedRoles: ["student", "teacher", "parent", "institute_owner"],
+    privateScreenFirst: true,
+    asksMissingDetails: ["studentId or batchId"]
+  },
+  {
+    key: "reports",
+    name: "Reports",
+    intents: ["owner_daily_brief", "fee_collection_report", "attendance_report", "student_learning_report", "parent_child_report"],
+    allowedRoles: ["institute_owner", "branch_manager", "accountant", "teacher", "parent", "student"],
+    privateScreenFirst: true,
+    asksMissingDetails: ["reportType"]
+  },
+  {
+    key: "general",
+    name: "General Help",
+    intents: ["help", "capabilities", "safe_next_step"],
+    allowedRoles: ["institute_owner", "branch_manager", "accountant", "teacher", "receptionist_counsellor", "student", "parent"],
+    privateScreenFirst: false,
+    asksMissingDetails: []
+  }
+];
+
+const part88RoleScopes = [
+  { role: "institute_owner", scope: "Full authorised institute and branch context.", canExecuteSensitive: true },
+  { role: "branch_manager", scope: "Assigned branch only.", canExecuteSensitive: false },
+  { role: "accountant", scope: "Fees/payments/finance only.", canExecuteSensitive: false },
+  { role: "teacher", scope: "Assigned batches/students/classes only.", canExecuteSensitive: false },
+  { role: "receptionist_counsellor", scope: "Admissions/enquiries/follow-ups only.", canExecuteSensitive: false },
+  { role: "student", scope: "Own learning and safe fee/attendance summary only.", canExecuteSensitive: false },
+  { role: "parent", scope: "Linked child only.", canExecuteSensitive: false },
+  { role: "naxora_super_admin", scope: "Platform support only; no unrestricted private institute conversation.", canExecuteSensitive: false }
+];
+
+function normalizePart88Role(role) {
+  const r = String(role || "student").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part88DetectLanguage(text = "") {
+  const input = String(text || "").toLowerCase();
+  const hindiWords = ["dikhao", "batao", "banao", "kya", "kaise", "aaj", "kal", "fee", "fees", "admission", "attendance", "report", "sunao", "padh"];
+  const englishWords = ["show", "make", "create", "read", "tell", "today", "report", "attendance", "admission", "homework", "fees"];
+  const devanagari = /[\u0900-\u097F]/.test(input);
+  if (devanagari) return "hindi";
+  const hindiScore = hindiWords.filter((w) => input.includes(w)).length;
+  const englishScore = englishWords.filter((w) => input.includes(w)).length;
+  if (hindiScore > 0 && englishScore > 0) return "hinglish";
+  if (hindiScore > englishScore) return "hinglish";
+  if (englishScore > 0) return "english";
+  return "hinglish";
+}
+
+function part88DetectIntent(text = "") {
+  const input = String(text || "").toLowerCase();
+  if (input.includes("admission") || input.includes("enquiry") || input.includes("lead") || input.includes("demo class")) {
+    return { module: "admissions", intent: input.includes("demo") ? "demo_class" : input.includes("follow") ? "followup" : "admission_draft" };
+  }
+  if (input.includes("fee") || input.includes("payment") || input.includes("receipt") || input.includes("due") || input.includes("pending")) {
+    return { module: "fees", intent: input.includes("receipt") ? "receipt_preview" : input.includes("reminder") ? "fee_reminder" : "fee_status" };
+  }
+  if (input.includes("attendance") || input.includes("absent") || input.includes("present") || input.includes("low attendance")) {
+    return { module: "attendance", intent: input.includes("draft") || input.includes("mark") ? "attendance_draft" : input.includes("low") ? "low_attendance" : "attendance_report" };
+  }
+  if (input.includes("homework") || input.includes("assignment") || input.includes("test") || input.includes("notes") || input.includes("revision") || input.includes("study") || input.includes("weak")) {
+    return { module: "learning", intent: input.includes("revision") || input.includes("weak") ? "revision_plan" : input.includes("test") ? "tests" : input.includes("notes") ? "notes" : "homework" };
+  }
+  if (input.includes("report") || input.includes("brief") || input.includes("summary") || input.includes("sunao")) {
+    return { module: "reports", intent: input.includes("fee") ? "fee_collection_report" : input.includes("attendance") ? "attendance_report" : "owner_daily_brief" };
+  }
+  return { module: "general", intent: "help" };
+}
+
+function part88ExtractSimpleEntities(text = "") {
+  const input = String(text || "");
+  const classMatch = input.match(/class\s*([0-9]{1,2})/i);
+  const phoneMatch = input.match(/(?:phone|mobile|number)\s*[:\-]?\s*([6-9][0-9]{9})/i);
+  const amountMatch = input.match(/(?:amount|rs|₹)\s*[:\-]?\s*([0-9]{2,7})/i);
+  const courseMatch = input.match(/(?:course|subject)\s*[:\-]?\s*([a-zA-Z ]{3,30})/i);
+  const nameMatch = input.match(/(?:student|name|for)\s+([A-Z][a-zA-Z]{2,20})/) || input.match(/\b([A-Z][a-zA-Z]{2,20})\b/);
+  return {
+    studentName: nameMatch?.[1] || null,
+    className: classMatch ? `Class ${classMatch[1]}` : null,
+    parentPhone: phoneMatch?.[1] || null,
+    amount: amountMatch?.[1] || null,
+    course: courseMatch?.[1]?.trim() || null
+  };
+}
+
+function part88AccessCheck({ role, instituteId, moduleKey }) {
+  const normalizedRole = normalizePart88Role(role);
+  const roleRule = part88RoleScopes.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole,
+    scope: "Unknown role.",
+    canExecuteSensitive: false
+  };
+  const moduleRule = part88ConversationModules.find((m) => m.key === moduleKey) || part88ConversationModules.find((m) => m.key === "general");
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const roleAllowed = moduleRule.allowedRoles.includes(normalizedRole);
+  const allowed = hasInstituteId && roleAllowed && normalizedRole !== "naxora_super_admin";
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    moduleKey,
+    allowed,
+    roleAllowed,
+    scope: roleRule.scope,
+    canExecuteSensitive: roleRule.canExecuteSensitive,
+    privateScreenFirst: Boolean(moduleRule.privateScreenFirst),
+    reason: !hasInstituteId
+      ? "Institute ID missing."
+      : normalizedRole === "naxora_super_admin"
+        ? "Super Admin has platform support only, not unrestricted private institute conversation."
+        : !roleAllowed
+          ? "This role cannot access this module through VANI."
+          : "Conversation access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true
+  };
+}
+
+function part88MissingDetails({ moduleKey, intent, entities, role }) {
+  const missing = [];
+  if (moduleKey === "admissions") {
+    if (!entities.studentName) missing.push({ key: "studentName", question: "Student ka naam kya hai?" });
+    if (!entities.className && !entities.course) missing.push({ key: "course", question: "Kaunsi class ya course ke liye admission chahiye?" });
+    if (!entities.parentPhone) missing.push({ key: "parentPhone", question: "Parent ka mobile number kya hai?" });
+  }
+  if (moduleKey === "fees" && !entities.studentName) {
+    missing.push({ key: "studentName", question: "Kis student ki fee details chahiye?" });
+  }
+  if (moduleKey === "attendance" && !entities.className && !entities.studentName) {
+    missing.push({ key: "batchOrStudent", question: "Attendance kis batch ya student ki dekhni hai?" });
+  }
+  if (moduleKey === "learning" && role !== "student" && !entities.studentName) {
+    missing.push({ key: "studentName", question: "Kis student ke learning details chahiye?" });
+  }
+  if (moduleKey === "reports" && intent === "owner_daily_brief" && !["institute_owner", "branch_manager"].includes(role)) {
+    missing.push({ key: "reportScope", question: "Aapke role ke hisaab se kaunsa report chahiye: fee, attendance, class, student ya child report?" });
+  }
+  return missing;
+}
+
+function part88BuildReply({ command, role, instituteId, sessionId }) {
+  const language = part88DetectLanguage(command);
+  const detected = part88DetectIntent(command);
+  const entities = part88ExtractSimpleEntities(command);
+  const access = part88AccessCheck({ role, instituteId, moduleKey: detected.module });
+  const missing = access.allowed ? part88MissingDetails({ moduleKey: detected.module, intent: detected.intent, entities, role: access.role }) : [];
+  const needsFollowUp = missing.length > 0;
+
+  let replyText = "";
+  let screenPreview = {};
+  let nextAction = "none";
+  let confirmationRequired = false;
+
+  if (!access.allowed) {
+    replyText = language === "english"
+      ? "You do not have permission for this VANI module."
+      : "Is VANI module ke liye aapke role ko permission nahi hai.";
+    screenPreview = { access };
+  } else if (needsFollowUp) {
+    replyText = missing[0].question;
+    screenPreview = { missingDetails: missing, detectedIntent: detected, extractedEntities: entities };
+    nextAction = "ask_missing_detail";
+  } else {
+    if (detected.module === "admissions") {
+      replyText = "Admission draft preview ready hai. Final create karne se pehle confirmation zaroori hai.";
+      screenPreview = {
+        draftType: "admission_preview",
+        studentName: entities.studentName || "Demo Student",
+        className: entities.className || entities.course || "Class 10",
+        parentPhone: entities.parentPhone || "Not provided",
+        source: "VANI Conversation",
+        status: "preview_only"
+      };
+      confirmationRequired = true;
+      nextAction = "preview_admission_draft";
+    } else if (detected.module === "fees") {
+      replyText = "Fee summary screen par privately dikhayi gayi hai. Sensitive amount loudspeaker par nahi bola jayega.";
+      screenPreview = {
+        studentName: entities.studentName || "Demo Student",
+        safeFeeStatus: "pending_summary_available",
+        amount: entities.amount ? `₹${entities.amount}` : "Private screen only",
+        action: detected.intent,
+        privateScreenFirst: true
+      };
+      nextAction = "show_private_fee_summary";
+    } else if (detected.module === "attendance") {
+      replyText = "Attendance summary ready hai. Low attendance details screen par privately dikhaye gaye hain.";
+      screenPreview = {
+        target: entities.className || entities.studentName || "Assigned context",
+        attendanceAverage: "87%",
+        lowAttendanceAlerts: 7,
+        action: detected.intent
+      };
+      nextAction = "show_attendance_summary";
+    } else if (detected.module === "learning") {
+      replyText = "Learning support ready hai. Homework, tests aur revision steps screen par dikh rahe hain.";
+      screenPreview = {
+        studentName: entities.studentName || "Own student context",
+        homeworkPending: 2,
+        upcomingTests: 1,
+        revisionPlan: ["20 minute weak topic revision", "10 practice questions", "5 flashcards"]
+      };
+      nextAction = "show_learning_support";
+    } else if (detected.module === "reports") {
+      replyText = "Voice report ready hai. Main safe summary bol sakti hoon, sensitive details screen par rahenge.";
+      screenPreview = {
+        report: detected.intent,
+        safeSpokenSummary: "Report ready hai. Sensitive details screen par privately dikhaye gaye hain.",
+        publicMetrics: ["new enquiries", "attendance average", "pending actions"],
+        privateScreenFirst: true
+      };
+      nextAction = "read_safe_report_summary";
+    } else {
+      replyText = "Main VANI hoon. Aap admissions, fees, attendance, learning ya reports ke baare me pooch sakte ho.";
+      screenPreview = {
+        suggestions: [
+          "VANI, attendance report batao",
+          "VANI, fee summary dikhao",
+          "VANI, admission draft banao",
+          "VANI, homework batao",
+          "VANI, owner daily report sunao"
+        ]
+      };
+      nextAction = "show_help";
+    }
+  }
+
+  const spokenSafeSummary = replyText;
+  return {
+    sessionId: sessionId || `VANI-CONV-${Date.now()}`,
+    language,
+    detectedModule: detected.module,
+    detectedIntent: detected.intent,
+    extractedEntities: entities,
+    access,
+    needsFollowUp,
+    missingDetails: missing,
+    replyText,
+    spokenSafeSummary,
+    screenPreview,
+    nextAction,
+    privateScreenFirst: access.privateScreenFirst || detected.module === "fees",
+    confirmationRequired,
+    confirmationRequiredFor: ["create", "update", "send", "delete", "refund", "discount", "export", "subscription_change"],
+    ownerVerificationRequiredFor: ["refund", "discount", "delete", "export", "subscription_change", "3.0_access_change"],
+    auditLog: {
+      event: "part88_vani_conversation_turn",
+      module: detected.module,
+      intent: detected.intent,
+      language,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+const part88Checklist = [
+  "Hindi/Hinglish VANI Conversation page opens",
+  "Status API returns success true",
+  "Language detection works for Hindi/Hinglish/English commands",
+  "Intent detection routes to admissions/fees/attendance/learning/reports",
+  "Missing details follow-up questions are returned",
+  "Unauthorized role is blocked",
+  "Sensitive fee/student/child details stay private-screen-first",
+  "Conversation reply is shown on screen and spoken safely",
+  "Previous Part 1–87 routes remain preserved"
+];
+
+app.get("/api/part88/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 88 — Hindi/Hinglish VANI Conversation",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 88,
+    nextPart: "Part 89 — AI Admission Counsellor Foundation",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/hindi-hinglish-vani-conversation", "/vani-conversation", "/hinglish-vani", "/hindi-vani", "/vani-chat", "/vani-conversation-mode"],
+    apiRoutes: [
+      "/api/part88/config",
+      "/api/part88/languages",
+      "/api/part88/modules",
+      "/api/part88/roles",
+      "/api/part88/language/detect",
+      "/api/part88/intent/detect",
+      "/api/part88/conversation/reply",
+      "/api/part88/conversation/session",
+      "/api/part88/vani/greeting",
+      "/api/part88/vani/command"
+    ],
+    hindiHinglishConversationEnabled: true
+  });
+});
+
+app.get("/api/part88/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "Hindi/Hinglish VANI Conversation",
+    appType: "safe_conversation_foundation",
+    version: "2.0-vani-conversation",
+    voice: {
+      speechSynthesis: true,
+      speechRecognition: true,
+      userClickRequired: true,
+      supportedLanguages: ["hi-IN", "en-IN"]
+    },
+    safety: {
+      privateScreenFirst: true,
+      noGuessingMissingDetails: true,
+      permissionCheckEveryTurn: true,
+      confirmationBeforeActions: true,
+      ownerVerificationForSensitiveActions: true
+    }
+  });
+});
+
+app.get("/api/part88/languages", (req, res) => {
+  res.json({ success: true, languages: part88ConversationLanguages });
+});
+
+app.get("/api/part88/modules", (req, res) => {
+  res.json({ success: true, modules: part88ConversationModules });
+});
+
+app.get("/api/part88/roles", (req, res) => {
+  res.json({ success: true, roles: part88RoleScopes });
+});
+
+app.get("/api/part88/language/detect", (req, res) => {
+  const text = req.query.q || req.query.command || "";
+  res.json({ success: true, text, language: part88DetectLanguage(text) });
+});
+
+app.get("/api/part88/intent/detect", (req, res) => {
+  const text = req.query.q || req.query.command || "";
+  res.json({ success: true, text, ...part88DetectIntent(text), entities: part88ExtractSimpleEntities(text) });
+});
+
+app.post("/api/part88/conversation/reply", (req, res) => {
+  const body = req.body || {};
+  const command = String(body.command || body.q || body.message || "").trim();
+  const result = part88BuildReply({
+    command,
+    role: body.role || "student",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    sessionId: body.sessionId
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 88 — Hindi/Hinglish VANI Conversation", command, ...result });
+});
+
+app.get("/api/part88/conversation/reply", (req, res) => {
+  const command = String(req.query.command || req.query.q || req.query.message || "").trim();
+  const result = part88BuildReply({
+    command,
+    role: req.query.role || "student",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    sessionId: req.query.sessionId
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 88 — Hindi/Hinglish VANI Conversation", command, ...result });
+});
+
+app.post("/api/part88/conversation/session", (req, res) => {
+  const body = req.body || {};
+  const sessionId = body.sessionId || `VANI-CONV-${Date.now()}`;
+  const turns = Array.isArray(body.turns) ? body.turns.slice(-8) : [];
+  const lastMessage = body.message || body.command || turns[turns.length - 1]?.message || "VANI, help karo";
+  const result = part88BuildReply({
+    command: lastMessage,
+    role: body.role || "student",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    sessionId
+  });
+  res.json({
+    success: result.access.allowed,
+    assistant: "VANI",
+    session: {
+      sessionId,
+      turnCount: turns.length + 1,
+      lastLanguage: result.language,
+      contextPolicy: "Session context is temporary foundation mode. Production persistence will be added later."
+    },
+    reply: result
+  });
+});
+
+app.get("/api/part88/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI",
+    greeting: "Namaste, main VANI hoon. Aap Hindi, English ya Hinglish me bol sakte ho. Main aapki kya help kar sakti hoon?",
+    exampleCommands: [
+      "VANI, attendance report batao",
+      "VANI, fee summary dikhao",
+      "VANI, admission draft banao",
+      "VANI, homework kya hai",
+      "VANI, owner daily report sunao"
+    ],
+    privateScreenFirstReminder: "Sensitive data loudspeaker par nahi, screen par privately dikhaya jayega."
+  });
+});
+
+app.post("/api/part88/vani/command", (req, res) => {
+  const body = req.body || {};
+  const command = String(body.command || body.q || "").trim();
+  const result = part88BuildReply({
+    command,
+    role: body.role || "student",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    sessionId: body.sessionId
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 88 — Hindi/Hinglish VANI Conversation", command, ...result });
+});
+
+app.get("/api/part88/vani/command", (req, res) => {
+  const command = String(req.query.command || req.query.q || "").trim();
+  const result = part88BuildReply({
+    command,
+    role: req.query.role || "student",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    sessionId: req.query.sessionId
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 88 — Hindi/Hinglish VANI Conversation", command, ...result });
+});
+
+app.get("/api/part88/audit-log", (req, res) => {
+  res.json({
+    success: true,
+    auditLog: [
+      {
+        event: "vani_conversation_turn",
+        language: "hinglish",
+        module: "general",
+        privateScreenFirst: true,
+        createdAt: new Date().toISOString()
+      },
+      {
+        event: "permission_check_every_turn",
+        rule: "role + instituteId + module access",
+        createdAt: new Date().toISOString()
+      }
+    ]
+  });
+});
+
+app.get("/api/part88/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "hindi_hinglish_conversation_created", message: "Part 88 VANI conversation active.", createdAt: new Date().toISOString() },
+      { type: "missing_detail_questions", message: "VANI asks follow-up questions instead of guessing.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part88/checklist", (req, res) => {
+  res.json({ success: true, checklist: part88Checklist });
+});
+
+app.get("/api/part88/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part88-hindi-hinglish-vani-conversation-readiness",
+    ownerVerificationRequiredForSensitiveExports: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      languages: part88ConversationLanguages,
+      modules: part88ConversationModules,
+      roles: part88RoleScopes,
+      checklist: part88Checklist
+    }
+  });
+});
+
+app.get("/api/part88/demo", (req, res) => {
+  const sample = part88BuildReply({
+    command: "VANI, Aman class 10 admission draft banao parent phone 9876543210",
+    role: "receptionist_counsellor",
+    instituteId: "NX-DEMO-INST-001",
+    sessionId: "VANI-DEMO-SESSION"
+  });
+  res.json({
+    success: true,
+    demo: {
+      sampleConversation: sample,
+      sampleCommands: [
+        "VANI, attendance report batao",
+        "VANI, fee summary dikhao",
+        "VANI, admission draft banao",
+        "VANI, homework kya hai",
+        "VANI, owner daily report sunao"
+      ],
+      nextPart: "Part 89 — AI Admission Counsellor Foundation"
+    }
+  });
+});
+// ================= END PART 88 =================
+
 
 
 
