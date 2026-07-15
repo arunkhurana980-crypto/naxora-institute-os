@@ -10417,6 +10417,12 @@ const modulePageRoutes = {
   "/vani-franchise-management": "franchise-management.html",
   "/owner-franchise-dashboard": "franchise-management.html",
   "/franchise-onboarding": "franchise-management.html",
+  "/branch-comparison-benchmarking": "branch-comparison-benchmarking.html",
+  "/branch-comparison": "branch-comparison-benchmarking.html",
+  "/branch-benchmarking": "branch-comparison-benchmarking.html",
+  "/vani-branch-benchmarking": "branch-comparison-benchmarking.html",
+  "/owner-branch-benchmark": "branch-comparison-benchmarking.html",
+  "/branch-performance-benchmark": "branch-comparison-benchmarking.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -25685,6 +25691,858 @@ app.get("/api/part103/demo", (req, res) => {
   });
 });
 // ================= END PART 103 =================
+
+// ================= PART 104 — BRANCH COMPARISON AND BENCHMARKING =================
+// NAXORA OS 2.0 Branch Comparison and Benchmarking.
+// This part builds on Part102 Multi-Branch Command Centre and Part103 Franchise Management.
+// It adds branch benchmarking scorecards, ranking, peer benchmark groups,
+// improvement gap analysis, target preview, best-practice recommendations,
+// benchmark action-plan draft and VANI benchmarking commands.
+// It does not change targets, send notices, or export sensitive branch data
+// without owner verification.
+
+const part104BenchmarkFeatures = [
+  {
+    key: "benchmark_scorecard",
+    name: "Branch Benchmark Scorecard",
+    summary: "Scores branches across admissions, fee collection, attendance, academics, operations and device readiness.",
+    problemSolved: "Owner can judge branch performance fairly using multiple dimensions."
+  },
+  {
+    key: "peer_group_benchmarking",
+    name: "Peer Group Benchmarking",
+    summary: "Compares branches against similar-size peer group benchmarks.",
+    problemSolved: "Small and large branches are compared more fairly."
+  },
+  {
+    key: "branch_ranking",
+    name: "Branch Ranking",
+    summary: "Ranks branches by composite performance score with grade and risks.",
+    problemSolved: "Best and weak branches become clear."
+  },
+  {
+    key: "gap_analysis",
+    name: "Improvement Gap Analysis",
+    summary: "Finds gaps from top branch/target in admissions, collection, attendance and devices.",
+    problemSolved: "Owner knows exactly where each branch must improve."
+  },
+  {
+    key: "target_preview",
+    name: "Benchmark Target Preview",
+    summary: "Creates safe target preview for next month without changing branch targets.",
+    problemSolved: "Owner can plan growth targets safely."
+  },
+  {
+    key: "best_practice_recommendations",
+    name: "Best Practice Recommendations",
+    summary: "Suggests what weaker branches can copy from top branches.",
+    problemSolved: "Strong branches become learning models."
+  },
+  {
+    key: "benchmark_action_plan",
+    name: "Benchmark Action Plan Draft",
+    summary: "Creates branch improvement plan draft with owner confirmation required.",
+    problemSolved: "Comparison turns into practical action."
+  },
+  {
+    key: "vani_branch_benchmarking",
+    name: "VANI Branch Benchmarking Commands",
+    summary: "VANI can rank branches, explain gaps, suggest targets and draft action plans.",
+    problemSolved: "Owner can ask branch benchmarking questions by voice."
+  }
+];
+
+const part104RoleRules = [
+  { role: "institute_owner", allowed: true, scope: "Can benchmark all authorised branches and create target/action previews.", canBenchmarkAll: true, canSetTargetsPreview: true, canCreateActionPlan: true, canExport: true },
+  { role: "branch_manager", allowed: true, scope: "Can view assigned branch benchmark against anonymised peer average.", canBenchmarkAll: false, canSetTargetsPreview: false, canCreateActionPlan: true, canExport: false, assignedOnly: true },
+  { role: "teacher", allowed: true, scope: "Can view assigned branch academic benchmark summary only.", canBenchmarkAll: false, canSetTargetsPreview: false, canCreateActionPlan: false, canExport: false, academicSummaryOnly: true },
+  { role: "accountant", allowed: true, scope: "Can view assigned branch finance benchmark summary only.", canBenchmarkAll: false, canSetTargetsPreview: false, canCreateActionPlan: false, canExport: false, financeSummaryOnly: true },
+  { role: "receptionist_counsellor", allowed: true, scope: "Can view assigned branch enquiry/admission benchmark summary only.", canBenchmarkAll: false, canSetTargetsPreview: false, canCreateActionPlan: true, canExport: false, enquirySummaryOnly: true },
+  { role: "student", allowed: true, scope: "Can view own branch public/student-safe quality status only.", canBenchmarkAll: false, canSetTargetsPreview: false, canCreateActionPlan: false, canExport: false, selfOnly: true },
+  { role: "parent", allowed: true, scope: "Can view linked child's branch parent-safe quality status only.", canBenchmarkAll: false, canSetTargetsPreview: false, canCreateActionPlan: false, canExport: false, viewOnly: true },
+  { role: "naxora_super_admin", allowed: false, scope: "Platform support only; no unrestricted institute branch benchmark access.", canBenchmarkAll: false, canSetTargetsPreview: false, canCreateActionPlan: false, canExport: false }
+];
+
+const part104DemoBranches = [
+  {
+    branchId: "BR-DEMO-001",
+    branchName: "NAXORA Main Branch",
+    city: "Delhi",
+    sizeBand: "large",
+    students: 420,
+    admissionsThisMonth: 48,
+    enquiriesOpen: 82,
+    conversionPercent: 31,
+    feeCollectionPercent: 91,
+    attendancePercent: 88,
+    testAvgPercent: 76,
+    parentSatisfactionPercent: 89,
+    liveClassCompletionPercent: 94,
+    deviceReadinessPercent: 86,
+    followupDelayCount: 14,
+    teacherUtilizationPercent: 82
+  },
+  {
+    branchId: "BR-DEMO-002",
+    branchName: "NAXORA South Branch",
+    city: "Gurugram",
+    sizeBand: "medium",
+    students: 265,
+    admissionsThisMonth: 23,
+    enquiriesOpen: 61,
+    conversionPercent: 19,
+    feeCollectionPercent: 74,
+    attendancePercent: 79,
+    testAvgPercent: 68,
+    parentSatisfactionPercent: 72,
+    liveClassCompletionPercent: 81,
+    deviceReadinessPercent: 68,
+    followupDelayCount: 31,
+    teacherUtilizationPercent: 69
+  },
+  {
+    branchId: "BR-DEMO-003",
+    branchName: "NAXORA West Branch",
+    city: "Noida",
+    sizeBand: "medium",
+    students: 315,
+    admissionsThisMonth: 36,
+    enquiriesOpen: 54,
+    conversionPercent: 28,
+    feeCollectionPercent: 84,
+    attendancePercent: 91,
+    testAvgPercent: 81,
+    parentSatisfactionPercent: 92,
+    liveClassCompletionPercent: 90,
+    deviceReadinessPercent: 92,
+    followupDelayCount: 11,
+    teacherUtilizationPercent: 84
+  },
+  {
+    branchId: "BR-DEMO-004",
+    branchName: "NAXORA East Branch",
+    city: "Lucknow",
+    sizeBand: "small",
+    students: 145,
+    admissionsThisMonth: 17,
+    enquiriesOpen: 45,
+    conversionPercent: 24,
+    feeCollectionPercent: 80,
+    attendancePercent: 83,
+    testAvgPercent: 72,
+    parentSatisfactionPercent: 78,
+    liveClassCompletionPercent: 84,
+    deviceReadinessPercent: 75,
+    followupDelayCount: 22,
+    teacherUtilizationPercent: 74
+  }
+];
+
+const part104PeerBenchmarks = {
+  large: { conversionPercent: 28, feeCollectionPercent: 88, attendancePercent: 86, testAvgPercent: 74, parentSatisfactionPercent: 84, liveClassCompletionPercent: 90, deviceReadinessPercent: 85, teacherUtilizationPercent: 80 },
+  medium: { conversionPercent: 25, feeCollectionPercent: 82, attendancePercent: 84, testAvgPercent: 73, parentSatisfactionPercent: 82, liveClassCompletionPercent: 86, deviceReadinessPercent: 82, teacherUtilizationPercent: 78 },
+  small: { conversionPercent: 22, feeCollectionPercent: 78, attendancePercent: 82, testAvgPercent: 70, parentSatisfactionPercent: 79, liveClassCompletionPercent: 82, deviceReadinessPercent: 76, teacherUtilizationPercent: 72 }
+};
+
+function normalizePart104Role(role) {
+  const r = String(role || "institute_owner").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part104AccessCheck({ role, instituteId, branchId, assignedBranchId, studentId, parentId }) {
+  const normalizedRole = normalizePart104Role(role);
+  const rule = part104RoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole,
+    allowed: false,
+    scope: "Unknown or unsupported role.",
+    canBenchmarkAll: false,
+    canSetTargetsPreview: false,
+    canCreateActionPlan: false,
+    canExport: false
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const branchRequiredRoles = ["branch_manager", "teacher", "accountant", "receptionist_counsellor"];
+  const hasBranchScope = branchRequiredRoles.includes(normalizedRole) ? Boolean(String(branchId || assignedBranchId || "").trim()) : true;
+  const studentScoped = normalizedRole !== "student" || Boolean(String(studentId || "").trim());
+  const parentScoped = normalizedRole !== "parent" || Boolean(String(parentId || "").trim() || String(studentId || "").trim());
+  const allowed = Boolean(rule.allowed && hasInstituteId && hasBranchScope && studentScoped && parentScoped && normalizedRole !== "naxora_super_admin");
+
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    branchId: branchId || assignedBranchId || null,
+    assignedBranchId: assignedBranchId || branchId || null,
+    studentId: studentId || null,
+    parentId: parentId || null,
+    allowed,
+    canBenchmarkAll: Boolean(rule.canBenchmarkAll && allowed),
+    canSetTargetsPreview: Boolean(rule.canSetTargetsPreview && allowed),
+    canCreateActionPlan: Boolean(rule.canCreateActionPlan && allowed),
+    canExport: Boolean(rule.canExport && allowed),
+    assignedOnly: Boolean(rule.assignedOnly),
+    academicSummaryOnly: Boolean(rule.academicSummaryOnly),
+    financeSummaryOnly: Boolean(rule.financeSummaryOnly),
+    enquirySummaryOnly: Boolean(rule.enquirySummaryOnly),
+    selfOnly: Boolean(rule.selfOnly),
+    viewOnly: Boolean(rule.viewOnly),
+    scope: rule.scope,
+    reason: !hasInstituteId
+      ? "Institute ID missing."
+      : !rule.allowed
+        ? rule.scope
+        : !hasBranchScope
+          ? "This role requires assigned branch scope."
+          : !studentScoped
+            ? "Student can view own branch quality status only."
+            : !parentScoped
+              ? "Parent can view linked child branch quality status only."
+              : "Branch Comparison and Benchmarking access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    confirmationRequiredFor: ["target_preview_apply", "benchmark_action_plan_send", "branch_notice_send", "manager_review_schedule"],
+    ownerVerificationRequiredFor: ["benchmark_export", "target_change", "bulk_branch_message", "branch_kpi_rule_change"]
+  };
+}
+
+function part104ParseCommand(text = "", body = {}) {
+  const input = String(text || body.command || body.q || "").trim();
+  const intent = /rank|ranking|compare|comparison|best|weak/i.test(input) ? "ranking"
+    : /benchmark|peer|average/i.test(input) ? "benchmark"
+      : /gap|improve|weakness|difference/i.test(input) ? "gap_analysis"
+        : /target|goal|next month/i.test(input) ? "target_preview"
+          : /best practice|copy|recommend/i.test(input) ? "best_practice"
+            : /action|plan|task/i.test(input) ? "action_plan"
+              : /fee|collection/i.test(input) ? "fee_benchmark"
+                : /attendance|academic|test/i.test(input) ? "academic_benchmark"
+                  : /device|operation|followup/i.test(input) ? "operation_benchmark"
+                    : "overview";
+  return {
+    intent,
+    branchId: body.branchId || (/south|002/i.test(input) ? "BR-DEMO-002" : /west|003/i.test(input) ? "BR-DEMO-003" : /east|004/i.test(input) ? "BR-DEMO-004" : "BR-DEMO-001"),
+    rawCommand: input
+  };
+}
+
+function part104VisibleBranches(access, branches = part104DemoBranches) {
+  if (access.canBenchmarkAll) return branches;
+  const branchId = access.branchId || access.assignedBranchId || "BR-DEMO-001";
+  return branches.filter((b) => b.branchId === branchId);
+}
+
+function part104FindBranch(branchId, access) {
+  const visible = part104VisibleBranches(access);
+  return visible.find((b) => b.branchId === branchId) || visible[0] || part104DemoBranches[0];
+}
+
+function part104ScoreBranch(branch) {
+  const growthScore = Math.min(100, Math.round(branch.conversionPercent * 3));
+  const financeScore = branch.feeCollectionPercent;
+  const academicScore = Math.round((branch.attendancePercent + branch.testAvgPercent + branch.liveClassCompletionPercent) / 3);
+  const satisfactionScore = branch.parentSatisfactionPercent;
+  const operationScore = Math.round((branch.deviceReadinessPercent + branch.teacherUtilizationPercent + Math.max(0, 100 - branch.followupDelayCount * 2)) / 3);
+  const compositeScore = Math.round(growthScore * 0.2 + financeScore * 0.2 + academicScore * 0.25 + satisfactionScore * 0.15 + operationScore * 0.2);
+  const risks = [];
+  if (branch.conversionPercent < 22) risks.push("low_conversion");
+  if (branch.feeCollectionPercent < 80) risks.push("fee_collection_low");
+  if (branch.attendancePercent < 82) risks.push("attendance_low");
+  if (branch.testAvgPercent < 70) risks.push("academic_score_low");
+  if (branch.deviceReadinessPercent < 75) risks.push("device_readiness_low");
+  if (branch.followupDelayCount > 20) risks.push("followups_delayed");
+  return {
+    branchId: branch.branchId,
+    branchName: branch.branchName,
+    scores: { growthScore, financeScore, academicScore, satisfactionScore, operationScore, compositeScore },
+    grade: compositeScore >= 88 ? "A+" : compositeScore >= 80 ? "A" : compositeScore >= 70 ? "B" : compositeScore >= 60 ? "C" : "D",
+    risks,
+    riskLevel: risks.length >= 4 ? "high" : risks.length >= 2 ? "medium" : risks.length === 1 ? "low" : "stable"
+  };
+}
+
+function part104BenchmarkAgainstPeer(branch) {
+  const peer = part104PeerBenchmarks[branch.sizeBand] || part104PeerBenchmarks.medium;
+  const metrics = Object.keys(peer).map((key) => ({
+    metric: key,
+    branchValue: branch[key],
+    peerBenchmark: peer[key],
+    gap: Math.round((branch[key] || 0) - peer[key]),
+    status: (branch[key] || 0) >= peer[key] ? "above_peer" : "below_peer"
+  }));
+  return {
+    previewOnly: true,
+    branchId: branch.branchId,
+    branchName: branch.branchName,
+    sizeBand: branch.sizeBand,
+    metrics,
+    belowPeerCount: metrics.filter((m) => m.status === "below_peer").length,
+    abovePeerCount: metrics.filter((m) => m.status === "above_peer").length
+  };
+}
+
+function part104Ranking(access) {
+  const visible = part104VisibleBranches(access);
+  const ranked = visible.map((branch) => ({
+    ...branch,
+    scorecard: part104ScoreBranch(branch),
+    peerBenchmark: part104BenchmarkAgainstPeer(branch)
+  })).sort((a, b) => b.scorecard.scores.compositeScore - a.scorecard.scores.compositeScore);
+  return {
+    previewOnly: true,
+    canBenchmarkAll: Boolean(access.canBenchmarkAll),
+    rankedBranches: ranked,
+    topBranch: ranked[0] || null,
+    bottomBranch: ranked[ranked.length - 1] || null,
+    comparisonAvailable: ranked.length > 1,
+    privateScreenFirst: true
+  };
+}
+
+function part104GapAnalysis(access, branchId) {
+  const ranking = part104Ranking(access);
+  const branch = part104FindBranch(branchId, access);
+  const top = ranking.topBranch || branch;
+  const peer = part104PeerBenchmarks[branch.sizeBand] || part104PeerBenchmarks.medium;
+  const gaps = [
+    { area: "admissions_conversion", current: branch.conversionPercent, benchmark: Math.max(peer.conversionPercent, top.conversionPercent || peer.conversionPercent), unit: "%" },
+    { area: "fee_collection", current: branch.feeCollectionPercent, benchmark: Math.max(peer.feeCollectionPercent, top.feeCollectionPercent || peer.feeCollectionPercent), unit: "%" },
+    { area: "attendance", current: branch.attendancePercent, benchmark: Math.max(peer.attendancePercent, top.attendancePercent || peer.attendancePercent), unit: "%" },
+    { area: "academic_test_avg", current: branch.testAvgPercent, benchmark: Math.max(peer.testAvgPercent, top.testAvgPercent || peer.testAvgPercent), unit: "%" },
+    { area: "device_readiness", current: branch.deviceReadinessPercent, benchmark: Math.max(peer.deviceReadinessPercent, top.deviceReadinessPercent || peer.deviceReadinessPercent), unit: "%" },
+    { area: "followup_delay", current: branch.followupDelayCount, benchmark: Math.min(15, top.followupDelayCount || 15), unit: "count", lowerIsBetter: true }
+  ].map((gap) => {
+    const rawGap = gap.lowerIsBetter ? gap.current - gap.benchmark : gap.benchmark - gap.current;
+    return {
+      ...gap,
+      improvementNeeded: Math.max(0, Math.round(rawGap)),
+      status: rawGap > 0 ? "needs_improvement" : "on_or_above_benchmark"
+    };
+  });
+  return {
+    previewOnly: true,
+    branchId: branch.branchId,
+    branchName: branch.branchName,
+    comparedWith: access.canBenchmarkAll && top.branchId !== branch.branchId ? top.branchName : "peer benchmark",
+    gaps,
+    priorityGaps: gaps.filter((g) => g.status === "needs_improvement").sort((a, b) => b.improvementNeeded - a.improvementNeeded).slice(0, 4)
+  };
+}
+
+function part104TargetPreview(access, branchId) {
+  const branch = part104FindBranch(branchId, access);
+  const gap = part104GapAnalysis(access, branch.branchId);
+  const targets = {
+    admissionsThisMonth: branch.admissionsThisMonth + Math.max(3, Math.round((branch.enquiriesOpen * 0.04))),
+    conversionPercent: Math.min(40, branch.conversionPercent + 4),
+    feeCollectionPercent: Math.min(95, branch.feeCollectionPercent + 5),
+    attendancePercent: Math.min(94, branch.attendancePercent + 4),
+    testAvgPercent: Math.min(86, branch.testAvgPercent + 5),
+    deviceReadinessPercent: Math.min(95, branch.deviceReadinessPercent + 8),
+    followupDelayCount: Math.max(8, branch.followupDelayCount - 8)
+  };
+  return {
+    previewOnly: true,
+    canSetTargetsPreview: Boolean(access.canSetTargetsPreview),
+    branchId: branch.branchId,
+    branchName: branch.branchName,
+    current: {
+      admissionsThisMonth: branch.admissionsThisMonth,
+      conversionPercent: branch.conversionPercent,
+      feeCollectionPercent: branch.feeCollectionPercent,
+      attendancePercent: branch.attendancePercent,
+      testAvgPercent: branch.testAvgPercent,
+      deviceReadinessPercent: branch.deviceReadinessPercent,
+      followupDelayCount: branch.followupDelayCount
+    },
+    suggestedTargets: targets,
+    basedOn: gap.priorityGaps.map((g) => g.area),
+    finalTargetChangeRequiresOwnerConfirmation: true,
+    autoApply: false
+  };
+}
+
+function part104BestPractices(access, branchId) {
+  const ranking = part104Ranking(access);
+  const branch = part104FindBranch(branchId, access);
+  const top = ranking.topBranch || part104DemoBranches[0];
+  const practices = [];
+  if (branch.conversionPercent < top.conversionPercent) practices.push(`Admissions follow-up cadence ${top.branchName} se copy karo: same-day callback + warm lead reminder.`);
+  if (branch.feeCollectionPercent < top.feeCollectionPercent) practices.push(`Fee collection process improve karo: due-date reminders + accountant weekly review.`);
+  if (branch.attendancePercent < top.attendancePercent) practices.push(`Attendance improvement: low attendance batch list + parent update draft.`);
+  if (branch.deviceReadinessPercent < top.deviceReadinessPercent) practices.push(`Device readiness: camera/board/biometric checklist weekly run karo.`);
+  if (branch.followupDelayCount > top.followupDelayCount) practices.push(`Counsellor backlog reduce: hot/warm/cold priority queue banao.`);
+  if (!practices.length) practices.push("Branch currently benchmark ke close hai. Existing process continue karo aur monthly review rakho.");
+  return {
+    previewOnly: true,
+    branchId: branch.branchId,
+    branchName: branch.branchName,
+    modelBranch: top.branchName,
+    practices,
+    autoAssign: false,
+    confirmationRequired: true
+  };
+}
+
+function part104ActionPlan(access, branchId) {
+  const branch = part104FindBranch(branchId, access);
+  const gaps = part104GapAnalysis(access, branch.branchId);
+  const practices = part104BestPractices(access, branch.branchId);
+  const plan = gaps.priorityGaps.map((g, index) => ({
+    step: index + 1,
+    area: g.area,
+    action: g.area === "followup_delay"
+      ? "Pending follow-ups ko priority queue me daalo aur counsellor task draft banao."
+      : g.area === "fee_collection"
+        ? "Fee pending summary review karke polite reminder draft banao."
+        : g.area === "device_readiness"
+          ? "Classroom device readiness checklist schedule karo."
+          : g.area === "attendance"
+            ? "Low attendance batches identify karke teacher/parent follow-up draft banao."
+            : "Branch KPI improvement task draft banao.",
+    ownerConfirmationRequired: true
+  }));
+  return {
+    previewOnly: true,
+    canCreateActionPlan: Boolean(access.canCreateActionPlan),
+    branchId: branch.branchId,
+    branchName: branch.branchName,
+    plan: plan.length ? plan : [{ step: 1, area: "maintenance", action: "Monthly benchmark review continue karo.", ownerConfirmationRequired: false }],
+    bestPractices: practices.practices,
+    autoSend: false,
+    confirmationRequired: true
+  };
+}
+
+function part104RoleScopedSummary(access, branchId) {
+  const branch = part104FindBranch(branchId, access);
+  const score = part104ScoreBranch(branch);
+  if (access.academicSummaryOnly) {
+    return {
+      previewOnly: true,
+      scope: "academic_benchmark_summary_only",
+      visibleData: {
+        branchName: branch.branchName,
+        attendancePercent: branch.attendancePercent,
+        testAvgPercent: branch.testAvgPercent,
+        liveClassCompletionPercent: branch.liveClassCompletionPercent,
+        academicScore: score.scores.academicScore
+      },
+      hiddenData: ["fees detail", "student private records", "cross-branch finance", "owner exports"]
+    };
+  }
+  if (access.financeSummaryOnly) {
+    return {
+      previewOnly: true,
+      scope: "finance_benchmark_summary_only",
+      visibleData: {
+        branchName: branch.branchName,
+        feeCollectionPercent: branch.feeCollectionPercent,
+        financeScore: score.scores.financeScore
+      },
+      hiddenData: ["student private records", "academic notes", "parent contacts", "owner-only benchmark export"]
+    };
+  }
+  if (access.enquirySummaryOnly) {
+    return {
+      previewOnly: true,
+      scope: "enquiry_benchmark_summary_only",
+      visibleData: {
+        branchName: branch.branchName,
+        enquiriesOpen: branch.enquiriesOpen,
+        conversionPercent: branch.conversionPercent,
+        followupDelayCount: branch.followupDelayCount,
+        growthScore: score.scores.growthScore
+      },
+      hiddenData: ["fee details", "academic private records", "owner financial export"]
+    };
+  }
+  if (access.selfOnly || access.viewOnly) {
+    return {
+      previewOnly: true,
+      scope: access.selfOnly ? "student_branch_quality_status" : "parent_child_branch_quality_status",
+      visibleData: {
+        branchName: branch.branchName,
+        city: branch.city,
+        grade: score.grade,
+        publicQualityStatus: score.riskLevel === "stable" ? "good" : "improving"
+      },
+      hiddenData: ["fees", "staff performance", "other student data", "owner benchmark details"]
+    };
+  }
+  return {
+    previewOnly: true,
+    scope: access.canBenchmarkAll ? "owner_all_branch_benchmark" : "assigned_branch_benchmark",
+    visibleData: { branch, score },
+    hiddenData: access.canBenchmarkAll ? [] : ["other branch raw details"]
+  };
+}
+
+function part104PrivacyPolicy() {
+  return {
+    previewOnly: true,
+    privateScreenFirst: true,
+    sensitiveDataNotSpokenLoudly: [
+      "fee defaulter details",
+      "student names/phone/address",
+      "staff performance names",
+      "branch raw financial exports",
+      "private parent data",
+      "branch manager private notes"
+    ],
+    allowedVoiceSummary: [
+      "branch grade",
+      "count-level gaps",
+      "safe benchmark ranking",
+      "general action recommendations",
+      "non-sensitive KPI percentages"
+    ],
+    confirmationRequiredFor: ["target_preview_apply", "benchmark_action_plan_send", "branch_notice_send"],
+    ownerVerificationRequiredFor: ["benchmark_export", "target_change", "bulk_branch_message", "kpi_rule_change"],
+    safety: "VANI can speak safe benchmark summaries, but sensitive branch/student/fee details stay private on screen."
+  };
+}
+
+function part104BuildBenchmarking({ command, role, instituteId, branchId, assignedBranchId, studentId, parentId, body = {} }) {
+  const parsed = part104ParseCommand(command, body);
+  const access = part104AccessCheck({
+    role,
+    instituteId,
+    branchId: body.branchId || branchId || parsed.branchId,
+    assignedBranchId: body.assignedBranchId || assignedBranchId,
+    studentId,
+    parentId
+  });
+
+  const selectedBranch = part104FindBranch(body.branchId || branchId || parsed.branchId, access);
+  const visibleBranches = part104VisibleBranches(access);
+  const ranking = part104Ranking(access);
+  const selectedScorecard = part104ScoreBranch(selectedBranch);
+  const peerBenchmark = part104BenchmarkAgainstPeer(selectedBranch);
+  const gapAnalysis = part104GapAnalysis(access, selectedBranch.branchId);
+  const targetPreview = part104TargetPreview(access, selectedBranch.branchId);
+  const bestPractices = part104BestPractices(access, selectedBranch.branchId);
+  const actionPlan = part104ActionPlan(access, selectedBranch.branchId);
+  const roleScopedSummary = part104RoleScopedSummary(access, selectedBranch.branchId);
+  const privacyPolicy = part104PrivacyPolicy();
+
+  let replyText = "";
+  let nextAction = "none";
+  if (!access.allowed) {
+    replyText = "Is role/scope ko branch benchmarking access nahi hai.";
+    nextAction = "blocked";
+  } else if (parsed.intent === "ranking") {
+    replyText = access.canBenchmarkAll
+      ? "Branch ranking preview ready hai. Best aur weak branches private screen par dikh rahe hain."
+      : "Assigned branch benchmark summary ready hai. Cross-branch ranking allowed nahi hai.";
+    nextAction = "show_ranking";
+  } else if (parsed.intent === "benchmark") {
+    replyText = `${selectedBranch.branchName} ka peer benchmark ready hai. ${peerBenchmark.belowPeerCount} metrics peer se below hain.`;
+    nextAction = "show_peer_benchmark";
+  } else if (parsed.intent === "gap_analysis") {
+    replyText = `${selectedBranch.branchName} ka gap analysis ready hai. ${gapAnalysis.priorityGaps.length} priority gaps mile.`;
+    nextAction = "show_gap_analysis";
+  } else if (parsed.intent === "target_preview") {
+    replyText = access.canSetTargetsPreview
+      ? "Target preview ready hai. Actual target change owner confirmation ke bina nahi hoga."
+      : "Is role ko target preview/change permission nahi hai.";
+    nextAction = "show_target_preview";
+  } else if (parsed.intent === "best_practice") {
+    replyText = "Best-practice recommendations ready hain. Auto-assign off hai.";
+    nextAction = "show_best_practices";
+  } else if (parsed.intent === "action_plan") {
+    replyText = access.canCreateActionPlan
+      ? "Benchmark action plan draft ready hai. Send/schedule confirmation ke bina nahi hoga."
+      : "Is role ko action plan create permission nahi hai.";
+    nextAction = "show_action_plan";
+  } else if (parsed.intent === "fee_benchmark") {
+    replyText = `Finance benchmark ready hai. ${selectedBranch.branchName} fee collection ${selectedBranch.feeCollectionPercent}% hai.`;
+    nextAction = "show_fee_benchmark";
+  } else if (parsed.intent === "academic_benchmark") {
+    replyText = `Academic benchmark ready hai. ${selectedBranch.branchName} academic score ${selectedScorecard.scores.academicScore}/100 hai.`;
+    nextAction = "show_academic_benchmark";
+  } else if (parsed.intent === "operation_benchmark") {
+    replyText = `Operations benchmark ready hai. ${selectedBranch.branchName} operation score ${selectedScorecard.scores.operationScore}/100 hai.`;
+    nextAction = "show_operation_benchmark";
+  } else {
+    replyText = "Branch Comparison and Benchmarking overview ready hai. Ranking, peer benchmark, gaps, targets aur action plan preview available hain.";
+    nextAction = "show_benchmark_overview";
+  }
+
+  return {
+    access,
+    parsed,
+    branches: visibleBranches,
+    selectedBranch,
+    selectedScorecard,
+    ranking,
+    peerBenchmark,
+    gapAnalysis,
+    targetPreview,
+    bestPractices,
+    actionPlan,
+    roleScopedSummary,
+    privacyPolicy,
+    replyText,
+    spokenSafeSummary: replyText,
+    privateScreenFirst: true,
+    nextAction,
+    confirmationRequiredFor: ["target_preview_apply", "benchmark_action_plan_send", "branch_notice_send", "manager_review_schedule"],
+    ownerVerificationRequiredFor: ["benchmark_export", "target_change", "bulk_branch_message", "branch_kpi_rule_change"],
+    auditLog: {
+      event: "part104_branch_comparison_benchmarking",
+      role: access.role,
+      intent: parsed.intent,
+      branchId: selectedBranch?.branchId || parsed.branchId,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+const part104Checklist = [
+  "Branch Comparison and Benchmarking page opens",
+  "Status API returns success true",
+  "Benchmark scorecard works",
+  "Branch ranking works for owner",
+  "Peer group benchmark works",
+  "Gap analysis works",
+  "Target preview does not auto-apply",
+  "Best practice recommendations appear",
+  "Action plan draft appears",
+  "Role scoped summary hides sensitive data",
+  "VANI benchmarking command works",
+  "Previous Part 1–103 routes remain preserved"
+];
+
+app.get("/api/part104/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 104 — Branch Comparison and Benchmarking",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 104,
+    nextPart: "Part 105 — Advanced Student Support Analytics",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/branch-comparison-benchmarking", "/branch-comparison", "/branch-benchmarking", "/vani-branch-benchmarking", "/owner-branch-benchmark", "/branch-performance-benchmark"],
+    apiRoutes: [
+      "/api/part104/config",
+      "/api/part104/features",
+      "/api/part104/roles",
+      "/api/part104/access-check",
+      "/api/part104/branches",
+      "/api/part104/scorecard",
+      "/api/part104/ranking",
+      "/api/part104/peer-benchmark",
+      "/api/part104/gap-analysis",
+      "/api/part104/target-preview",
+      "/api/part104/best-practices",
+      "/api/part104/action-plan",
+      "/api/part104/role-scoped-summary",
+      "/api/part104/privacy-policy",
+      "/api/part104/vani/greeting",
+      "/api/part104/vani/command"
+    ],
+    branchComparisonBenchmarkingEnabled: true
+  });
+});
+
+app.get("/api/part104/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "Branch Comparison and Benchmarking",
+    appType: "branch_comparison_benchmarking_foundation",
+    version: "2.0-branch-comparison-benchmarking",
+    policy: {
+      previewFirst: true,
+      ownerAllBranchRankingOnly: true,
+      branchManagerAssignedBranchOnly: true,
+      targetChangesRequireOwnerConfirmation: true,
+      privateScreenFirst: true,
+      sensitiveDataNotSpokenLoudly: true
+    }
+  });
+});
+
+app.get("/api/part104/features", (req, res) => {
+  res.json({ success: true, features: part104BenchmarkFeatures });
+});
+
+app.get("/api/part104/roles", (req, res) => {
+  res.json({ success: true, roles: part104RoleRules });
+});
+
+app.get("/api/part104/access-check", (req, res) => {
+  res.json({ success: true, access: part104AccessCheck(req.query || {}) });
+});
+
+app.get("/api/part104/branches", (req, res) => {
+  const access = part104AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, previewOnly: true, branches: part104VisibleBranches(access) });
+});
+
+app.get("/api/part104/scorecard", (req, res) => {
+  const access = part104AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const branch = part104FindBranch(req.query.branchId, access);
+  res.json({ success: true, access, branch, scorecard: part104ScoreBranch(branch) });
+});
+
+app.get("/api/part104/ranking", (req, res) => {
+  const access = part104AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, ranking: part104Ranking(access) });
+});
+
+app.get("/api/part104/peer-benchmark", (req, res) => {
+  const access = part104AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const branch = part104FindBranch(req.query.branchId, access);
+  res.json({ success: true, access, peerBenchmark: part104BenchmarkAgainstPeer(branch) });
+});
+
+app.get("/api/part104/gap-analysis", (req, res) => {
+  const access = part104AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, gapAnalysis: part104GapAnalysis(access, req.query.branchId || access.branchId) });
+});
+
+app.get("/api/part104/target-preview", (req, res) => {
+  const access = part104AccessCheck(req.query || {});
+  if (!access.allowed || !access.canSetTargetsPreview) return res.status(403).json({ success: false, access, message: "Only owner can create benchmark target preview." });
+  res.json({ success: true, access, targetPreview: part104TargetPreview(access, req.query.branchId || access.branchId) });
+});
+
+app.get("/api/part104/best-practices", (req, res) => {
+  const access = part104AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, bestPractices: part104BestPractices(access, req.query.branchId || access.branchId) });
+});
+
+app.get("/api/part104/action-plan", (req, res) => {
+  const access = part104AccessCheck(req.query || {});
+  if (!access.allowed || !access.canCreateActionPlan) return res.status(403).json({ success: false, access, message: "This role cannot create benchmark action plan preview." });
+  res.json({ success: true, access, actionPlan: part104ActionPlan(access, req.query.branchId || access.branchId) });
+});
+
+app.get("/api/part104/role-scoped-summary", (req, res) => {
+  const access = part104AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, roleScopedSummary: part104RoleScopedSummary(access, req.query.branchId || access.branchId) });
+});
+
+app.get("/api/part104/privacy-policy", (req, res) => {
+  res.json({ success: true, privacyPolicy: part104PrivacyPolicy() });
+});
+
+app.get("/api/part104/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI Branch Benchmarking",
+    greeting: "Namaste, main VANI Branch Benchmarking Assistant hoon. Aap branch ranking, peer benchmark, gap analysis, targets ya action plan pooch sakte ho.",
+    exampleCommands: [
+      "VANI, branches rank karo",
+      "VANI, South branch benchmark dikhao",
+      "VANI, branch gap analysis banao",
+      "VANI, next month target preview banao",
+      "VANI, best practices suggest karo",
+      "VANI, benchmark action plan banao"
+    ],
+    safety: "Target change, export ya branch notice confirmation/owner verification ke bina nahi hoga. Sensitive details loudly nahi bolungi."
+  });
+});
+
+app.post("/api/part104/vani/command", (req, res) => {
+  const body = req.body || {};
+  const result = part104BuildBenchmarking({
+    command: body.command || body.q || "",
+    role: body.role || "institute_owner",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId,
+    assignedBranchId: body.assignedBranchId,
+    studentId: body.studentId,
+    parentId: body.parentId,
+    body
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 104 — Branch Comparison and Benchmarking", ...result });
+});
+
+app.get("/api/part104/vani/command", (req, res) => {
+  const result = part104BuildBenchmarking({
+    command: req.query.command || req.query.q || "",
+    role: req.query.role || "institute_owner",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    assignedBranchId: req.query.assignedBranchId,
+    studentId: req.query.studentId,
+    parentId: req.query.parentId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 104 — Branch Comparison and Benchmarking", ...result });
+});
+
+app.get("/api/part104/audit-log", (req, res) => {
+  res.json({
+    success: true,
+    auditLog: [
+      { event: "branch_benchmark_preview", role: "institute_owner", createdAt: new Date().toISOString() },
+      { event: "target_change_protection", rule: "Benchmark targets and exports require owner verification.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part104/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "branch_comparison_benchmarking_created", message: "Part 104 Branch Comparison and Benchmarking active.", createdAt: new Date().toISOString() },
+      { type: "benchmark_preview_ready", message: "Owner can view ranking, peer benchmark, gaps and target preview.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part104/checklist", (req, res) => {
+  res.json({ success: true, checklist: part104Checklist });
+});
+
+app.get("/api/part104/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part104-branch-comparison-benchmarking-readiness",
+    ownerVerificationRequiredForSensitiveExports: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      features: part104BenchmarkFeatures,
+      roles: part104RoleRules,
+      branches: part104DemoBranches,
+      peerBenchmarks: part104PeerBenchmarks,
+      checklist: part104Checklist,
+      privacyPolicy: part104PrivacyPolicy()
+    }
+  });
+});
+
+app.get("/api/part104/demo", (req, res) => {
+  const command = "VANI, branches rank karo aur South branch gap analysis banao";
+  const result = part104BuildBenchmarking({
+    command,
+    role: "institute_owner",
+    instituteId: "NX-DEMO-INST-001",
+    body: {}
+  });
+  res.json({
+    success: true,
+    demo: {
+      command,
+      result,
+      nextPart: "Part 105 — Advanced Student Support Analytics"
+    }
+  });
+});
+// ================= END PART 104 =================
+
 
 
 

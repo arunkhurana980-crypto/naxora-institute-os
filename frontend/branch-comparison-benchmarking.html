@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — Branch Comparison and Benchmarking</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/branch-comparison-benchmarking.css" />
+</head>
+<body>
+  <main class="branch-benchmark">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 104 • NAXORA OS 2.0</p>
+        <h1>Branch Comparison and Benchmarking</h1>
+        <p class="lead">
+          Compare branches using scorecards, peer benchmarks, rankings,
+          gap analysis, target previews and best-practice action plans.
+        </p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">VANI Branch Benchmarking</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Tap Start, then ask branch ranking or gap analysis.</p>
+        <div class="voice-actions">
+          <button id="startVaniBtn">Start VANI</button>
+          <button id="listenVaniBtn">Listen</button>
+          <button id="muteVaniBtn">Mute</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Access</p>
+      <div class="controls">
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="branchId" value="BR-DEMO-002" />
+        <input id="assignedBranchId" value="BR-DEMO-002" />
+        <input id="studentId" value="STU-DEMO-001" />
+        <select id="roleSelect">
+          <option value="institute_owner" selected>Owner All Branch Ranking</option>
+          <option value="branch_manager">Branch Manager Assigned Benchmark</option>
+          <option value="teacher">Teacher Academic Benchmark</option>
+          <option value="accountant">Accountant Finance Benchmark</option>
+          <option value="receptionist_counsellor">Counsellor Enquiry Benchmark</option>
+          <option value="student">Student Branch Quality</option>
+          <option value="parent">Parent Branch Quality</option>
+        </select>
+        <button id="demoBtn">Load Demo</button>
+      </div>
+      <pre id="accessBox" class="code">Waiting...</pre>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">VANI Command</p>
+        <h2>Speak or type</h2>
+        <p>Example: “VANI, branches rank karo aur South branch gap analysis banao”.</p>
+        <div class="controls">
+          <input id="vaniCommand" value="VANI, branches rank karo aur South branch gap analysis banao" />
+          <button id="askVaniBtn">Ask VANI</button>
+        </div>
+        <pre id="vaniOutput" class="code">Waiting...</pre>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Selected Scorecard</p>
+        <div id="scoreBox" class="metrics"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Branch Ranking</p>
+        <div id="rankingBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Peer Benchmark</p>
+        <div id="peerBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Gap Analysis</p>
+        <div id="gapBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Target Preview</p>
+        <div id="targetBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Best Practices</p>
+        <div id="practiceBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Action Plan</p>
+        <div id="actionBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Role Scoped Summary</p>
+        <div id="scopeBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Privacy Policy</p>
+        <div id="privacyBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Testing links</p>
+      <div class="links">
+        <a href="/api/part104/status" target="_blank">Status</a>
+        <a href="/api/part104/demo" target="_blank">Demo</a>
+        <a href="/api/part104/ranking?role=institute_owner&instituteId=NX-DEMO-INST-001" target="_blank">Ranking</a>
+        <a href="/api/part104/gap-analysis?role=institute_owner&instituteId=NX-DEMO-INST-001&branchId=BR-DEMO-002" target="_blank">Gap Analysis</a>
+        <a href="/api/part104/target-preview?role=institute_owner&instituteId=NX-DEMO-INST-001&branchId=BR-DEMO-002" target="_blank">Target Preview</a>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/vani-voice-starter.js"></script>
+  <script src="/branch-comparison-benchmarking.js"></script>
+</body>
+</html>
