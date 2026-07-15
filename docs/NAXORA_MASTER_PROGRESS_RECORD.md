@@ -1,35 +1,33 @@
 # NAXORA Master Progress Record
 
 ## Latest completed part
-Part 84 — Advanced VANI Action Engine
+Part 85 — VANI Admission Assistant
 
 ## Date completed
 2026-07-15
 
 ## Feature name
-NAXORA OS 2.0 Advanced VANI Action Engine
+NAXORA OS 2.0 VANI Admission Assistant
 
 ## Files changed
 - backend/src/server.js
-- frontend/advanced-vani-action-engine.html
-- frontend/advanced-vani-action-engine.css
-- frontend/advanced-vani-action-engine.js
-- README_PART84_ADVANCED_VANI_ACTION_ENGINE.md
-- START_HERE_PART84_ARUN.md
-- docs/PART84_ADVANCED_VANI_ACTION_ENGINE_CHECKLIST.md
+- frontend/vani-admission-assistant.html
+- frontend/vani-admission-assistant.css
+- frontend/vani-admission-assistant.js
+- README_PART85_VANI_ADMISSION_ASSISTANT.md
+- START_HERE_PART85_ARUN.md
+- docs/PART85_VANI_ADMISSION_ASSISTANT_CHECKLIST.md
 - docs/NAXORA_MASTER_PROGRESS_RECORD.md
 
 ## Database/API changes
 No required database migration.
-Added `/api/part84/*` advanced VANI action APIs.
+Added `/api/part85/*` VANI admission APIs.
 
 ## VANI commands added
-- VANI, new student admission draft banao
-- VANI, attendance draft banao
-- VANI, fee reminder draft banao
-- VANI, homework assignment banao
-- VANI, branch summary dikhao
-- VANI, fee discount do
+- VANI, Class 10 Maths ke liye admission draft banao
+- VANI, Aman ke liye demo class book karo
+- VANI, lead qualify karo
+- VANI, parent ko follow-up message draft karo
 
 ## Tests passed
 - backend/src/server.js syntax check
@@ -40,12 +38,12 @@ Added `/api/part84/*` advanced VANI action APIs.
 - no secrets/API keys
 
 ## Errors remaining
-- Real production DB writes pending final schema hard-connect.
-- Module-specific action assistants start Part 85 onward.
+- Production DB write hard-connect pending.
+- Real admission creation confirmation workflow pending.
 - Browser mic support depends on browser permission/support.
 
 ## Next part
-Part 85 — VANI Admission Assistant
+Part 86 — VANI Fee and Attendance Actions
 
 ## Locked subscription rule
 NAXORA OS 1.0, 2.0 and future 3.0 have separate subscriptions.

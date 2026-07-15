@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — VANI Admission Assistant</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/vani-admission-assistant.css" />
+</head>
+<body>
+  <main class="vani-admission">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 85 • VANI Admission Assistant</p>
+        <h1>Voice Admission Workflow</h1>
+        <p class="lead">
+          VANI can capture enquiries, ask missing details, qualify leads, prepare demo-class previews,
+          draft follow-ups and create admission draft previews with confirmation guards.
+        </p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">VANI Listen + Reply</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Start VANI, then speak an admission command.</p>
+        <div class="voice-actions">
+          <button id="startVaniBtn">Start VANI</button>
+          <button id="listenVaniBtn">Listen</button>
+          <button id="muteVaniBtn">Mute</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="access-panel">
+      <div>
+        <p class="kicker">Permission check</p>
+        <h2>Owner / Branch Manager / Counsellor only</h2>
+      </div>
+      <div class="controls">
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="branchId" value="BR-DEMO-001" />
+        <select id="roleSelect">
+          <option value="receptionist_counsellor">Receptionist / Counsellor</option>
+          <option value="institute_owner">Institute Owner</option>
+          <option value="branch_manager">Branch Manager</option>
+          <option value="teacher">Teacher Block Test</option>
+          <option value="student">Student Block Test</option>
+          <option value="parent">Parent Block Test</option>
+        </select>
+        <button id="checkAccessBtn">Check Access</button>
+      </div>
+      <pre id="accessBox" class="code">Waiting...</pre>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Admission command</p>
+        <h2>Type or speak</h2>
+        <div class="controls">
+          <input id="vaniCommand" value="VANI, Aman Class 10 Maths admission draft banao parent phone 9876543210 source WhatsApp" />
+          <button id="askVaniBtn">Ask VANI</button>
+        </div>
+        <pre id="vaniOutput" class="code">Waiting...</pre>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Preview</p>
+        <div id="previewCards" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Features</p>
+        <div id="features" class="list"></div>
+      </article>
+      <article class="panel">
+        <p class="kicker">Safety guards</p>
+        <div class="list">
+          <div class="item"><strong>Missing details</strong><p>VANI asks; it does not guess.</p></div>
+          <div class="item"><strong>Preview first</strong><p>Admission/demo/follow-up actions need preview and confirmation.</p></div>
+          <div class="item"><strong>Owner verification</strong><p>Discount, fee change, export, delete and subscription actions require owner verification.</p></div>
+          <div class="item"><strong>Audit log</strong><p>Every VANI admission command is audit-ready.</p></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Testing links</p>
+      <div class="links">
+        <a href="/api/part85/status" target="_blank">Status</a>
+        <a href="/api/part85/demo" target="_blank">Demo</a>
+        <a href="/api/part85/lead/parse?q=VANI,%20Aman%20Class%2010%20Maths%20admission%20draft%20banao%20parent%20phone%209876543210%20source%20WhatsApp" target="_blank">Parse Lead</a>
+        <a href="/api/part85/admission/preview?role=receptionist_counsellor&instituteId=NX-DEMO-INST-001&q=VANI,%20Class%2010%20admission%20draft%20banao" target="_blank">Missing Details Test</a>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/vani-voice-starter.js"></script>
+  <script src="/vani-admission-assistant.js"></script>
+</body>
+</html>
