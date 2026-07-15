@@ -1,35 +1,34 @@
 # NAXORA Master Progress Record
 
 ## Latest completed part
-Part 88 — Hindi/Hinglish VANI Conversation
+Part 89 — AI Admission Counsellor Foundation
 
 ## Date completed
 2026-07-15
 
 ## Feature name
-NAXORA OS 2.0 Hindi/Hinglish VANI Conversation
+NAXORA OS 2.0 AI Admission Counsellor Foundation
 
 ## Files changed
 - backend/src/server.js
-- frontend/hindi-hinglish-vani-conversation.html
-- frontend/hindi-hinglish-vani-conversation.css
-- frontend/hindi-hinglish-vani-conversation.js
-- frontend/vani-voice-starter.js
-- README_PART88_HINDI_HINGLISH_VANI_CONVERSATION.md
-- START_HERE_PART88_ARUN.md
-- docs/PART88_HINDI_HINGLISH_VANI_CONVERSATION_CHECKLIST.md
+- frontend/ai-admission-counsellor-foundation.html
+- frontend/ai-admission-counsellor-foundation.css
+- frontend/ai-admission-counsellor-foundation.js
+- README_PART89_AI_ADMISSION_COUNSELLOR_FOUNDATION.md
+- START_HERE_PART89_ARUN.md
+- docs/PART89_AI_ADMISSION_COUNSELLOR_FOUNDATION_CHECKLIST.md
 - docs/NAXORA_MASTER_PROGRESS_RECORD.md
 
 ## Database/API changes
 No required database migration.
-Added `/api/part88/*` conversation APIs.
+Added `/api/part89/*` AI Admission Counsellor APIs.
 
 ## VANI commands added
-- VANI, attendance report batao
-- VANI, fee summary dikhao
-- VANI, admission draft banao
-- VANI, homework kya hai
-- VANI, owner daily report sunao
+- VANI, Aman Class 10 Maths admission counselling banao parent phone 9876543210 source WhatsApp
+- VANI, lead score batao
+- VANI, demo class preview banao
+- VANI, follow-up script banao
+- VANI, fee objection ka reply batao
 
 ## Tests passed
 - backend/src/server.js syntax check
@@ -40,13 +39,13 @@ Added `/api/part88/*` conversation APIs.
 - no secrets/API keys
 
 ## Errors remaining
-- Rule-based foundation only; real LLM integration pending.
+- Rule-based foundation only; external LLM integration pending.
+- Production DB write pending.
+- Real CRM pipeline connection pending.
 - Browser mic support depends on permission/support.
-- Production session persistence pending.
-- Native mobile background conversation pending.
 
 ## Next part
-Part 89 — AI Admission Counsellor Foundation
+Part 90 — AI Course Recommendation
 
 ## Locked subscription rule
 NAXORA OS 1.0, 2.0 and future 3.0 have separate subscriptions.

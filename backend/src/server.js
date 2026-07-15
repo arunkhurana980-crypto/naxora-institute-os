@@ -10327,6 +10327,12 @@ const modulePageRoutes = {
   "/hindi-vani": "hindi-hinglish-vani-conversation.html",
   "/vani-chat": "hindi-hinglish-vani-conversation.html",
   "/vani-conversation-mode": "hindi-hinglish-vani-conversation.html",
+  "/ai-admission-counsellor-foundation": "ai-admission-counsellor-foundation.html",
+  "/ai-admission-counsellor": "ai-admission-counsellor-foundation.html",
+  "/admission-counsellor-ai": "ai-admission-counsellor-foundation.html",
+  "/admission-counselling-ai": "ai-admission-counsellor-foundation.html",
+  "/smart-admission-counsellor": "ai-admission-counsellor-foundation.html",
+  "/ai-counsellor": "ai-admission-counsellor-foundation.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -15684,6 +15690,620 @@ app.get("/api/part88/demo", (req, res) => {
   });
 });
 // ================= END PART 88 =================
+
+// ================= PART 89 — AI ADMISSION COUNSELLOR FOUNDATION =================
+// NAXORA OS 2.0 AI Admission Counsellor Foundation.
+// This part gives institutes a safe, rule-based admission counselling workflow:
+// intake -> missing details -> lead score -> course recommendation -> fee plan preview
+// -> demo class preview -> follow-up script -> VANI counselling reply.
+// No external LLM/API keys are included.
+
+const part89CounsellorFeatures = [
+  {
+    key: "lead_intake",
+    name: "AI Lead Intake",
+    summary: "Collects student, class/course, parent phone, goal, budget and source.",
+    problemSolved: "Counsellor gets a clean admission enquiry structure."
+  },
+  {
+    key: "missing_detail_questions",
+    name: "Missing Detail Questions",
+    summary: "Asks for missing details instead of guessing.",
+    problemSolved: "Wrong admission drafts and confused follow-ups reduce."
+  },
+  {
+    key: "lead_score",
+    name: "Lead Score",
+    summary: "Marks lead as hot, warm or cold using course interest, phone, demo, urgency and source.",
+    problemSolved: "Reception/counsellor team knows which leads to call first."
+  },
+  {
+    key: "course_recommendation",
+    name: "Course Recommendation",
+    summary: "Suggests course/package foundation based on class, subject and goal.",
+    problemSolved: "New leads get faster, consistent counselling."
+  },
+  {
+    key: "fee_plan_preview",
+    name: "Fee Plan Preview",
+    summary: "Shows safe fee-plan options as preview only.",
+    problemSolved: "Fees can be discussed without accidental discount/commitment."
+  },
+  {
+    key: "demo_class_preview",
+    name: "Demo Class Preview",
+    summary: "Creates demo class booking preview requiring confirmation.",
+    problemSolved: "Demo scheduling becomes faster but still safe."
+  },
+  {
+    key: "followup_script",
+    name: "Follow-up Script Draft",
+    summary: "Creates WhatsApp/call follow-up draft in Hindi/Hinglish.",
+    problemSolved: "Counsellors can respond quickly without writing from scratch."
+  },
+  {
+    key: "objection_handling",
+    name: "Objection Handling",
+    summary: "Gives safe responses for common objections like fees, timing and distance.",
+    problemSolved: "Counsellors get consistent guidance."
+  },
+  {
+    key: "vani_admission_counselling",
+    name: "VANI Admission Counselling",
+    summary: "Hindi/Hinglish conversation for admission counselling with permission checks.",
+    problemSolved: "Staff can speak naturally and get structured counselling help."
+  }
+];
+
+const part89RoleRules = [
+  {
+    role: "institute_owner",
+    allowed: true,
+    scope: "Full authorised institute and branch counselling workflow.",
+    canApproveSensitive: true
+  },
+  {
+    role: "branch_manager",
+    allowed: true,
+    scope: "Assigned branch admissions and counselling only.",
+    canApproveSensitive: false
+  },
+  {
+    role: "receptionist_counsellor",
+    allowed: true,
+    scope: "Enquiry intake, counselling, demo preview and follow-up drafts.",
+    canApproveSensitive: false
+  },
+  {
+    role: "teacher",
+    allowed: true,
+    previewOnly: true,
+    scope: "Academic course fit preview only. Cannot create admission or fee commitment.",
+    canApproveSensitive: false
+  },
+  {
+    role: "accountant",
+    allowed: true,
+    previewOnly: true,
+    scope: "Fee-plan preview only. Cannot create admission lead from this module.",
+    canApproveSensitive: false
+  },
+  {
+    role: "student",
+    allowed: false,
+    scope: "Student app/learning support only.",
+    canApproveSensitive: false
+  },
+  {
+    role: "parent",
+    allowed: false,
+    scope: "Parent app/linked child support only.",
+    canApproveSensitive: false
+  },
+  {
+    role: "naxora_super_admin",
+    allowed: false,
+    scope: "Platform support only; no unrestricted institute admission counselling access.",
+    canApproveSensitive: false
+  }
+];
+
+function normalizePart89Role(role) {
+  const r = String(role || "receptionist_counsellor").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor", "admission_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part89AccessCheck({ role, instituteId, branchId }) {
+  const normalizedRole = normalizePart89Role(role);
+  const rule = part89RoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole,
+    allowed: false,
+    scope: "Unknown or unsupported role.",
+    canApproveSensitive: false
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const allowed = Boolean(rule.allowed && hasInstituteId && normalizedRole !== "naxora_super_admin");
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    branchId: branchId || null,
+    allowed,
+    previewOnly: Boolean(rule.previewOnly),
+    canApproveSensitive: Boolean(rule.canApproveSensitive),
+    scope: rule.scope,
+    reason: !hasInstituteId
+      ? "Institute ID missing."
+      : !rule.allowed
+        ? rule.scope
+        : rule.previewOnly
+          ? "Preview allowed only. Final admission actions require counsellor/owner role."
+          : "Admission counsellor access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    requiresConfirmationFor: ["lead_create", "demo_book", "followup_send", "admission_create"],
+    ownerVerificationRequiredFor: ["discount", "refund", "fee_commitment", "delete", "export", "subscription_change"]
+  };
+}
+
+function part89ExtractLead(text = "", body = {}) {
+  const input = String(text || body.command || body.q || "").trim();
+  const classMatch = input.match(/class\s*([0-9]{1,2})/i);
+  const phoneMatch = input.match(/(?:phone|mobile|number|contact)\s*[:\-]?\s*([6-9][0-9]{9})/i);
+  const sourceMatch = input.match(/(?:source|from)\s*[:\-]?\s*([a-zA-Z ]{3,30})/i);
+  const subjectMatch = input.match(/\b(maths|math|science|english|physics|chemistry|biology|commerce|accounts|sst|social science)\b/i);
+  const budgetMatch = input.match(/(?:budget|fee|fees|amount)\s*[:\-]?\s*([0-9]{3,7})/i);
+  const nameMatch = input.match(/(?:student|name|lead|for)\s+([A-Z][a-zA-Z]{2,20})/) || input.match(/\b([A-Z][a-zA-Z]{2,20})\b/);
+  const urgency = /today|urgent|jaldi|abhi|immediate|this week|demo/i.test(input) ? "high" : /next month|later|baad/i.test(input) ? "low" : "medium";
+  return {
+    studentName: body.studentName || nameMatch?.[1] || null,
+    className: body.className || (classMatch ? `Class ${classMatch[1]}` : null),
+    subject: body.subject || (subjectMatch ? subjectMatch[1].toLowerCase().replace("math", "maths") : null),
+    parentPhone: body.parentPhone || phoneMatch?.[1] || null,
+    source: body.source || sourceMatch?.[1]?.trim() || (/whatsapp/i.test(input) ? "WhatsApp" : /google/i.test(input) ? "Google" : /walk/i.test(input) ? "Walk-in" : null),
+    goal: body.goal || (/board/i.test(input) ? "Board exam preparation" : /foundation/i.test(input) ? "Foundation course" : /competitive|jee|neet/i.test(input) ? "Competitive exam preparation" : null),
+    budget: body.budget || budgetMatch?.[1] || null,
+    urgency,
+    rawCommand: input
+  };
+}
+
+function part89MissingDetails(lead = {}) {
+  const missing = [];
+  if (!lead.studentName) missing.push({ key: "studentName", question: "Student ka naam kya hai?" });
+  if (!lead.className) missing.push({ key: "className", question: "Student kis class me hai?" });
+  if (!lead.subject && !lead.goal) missing.push({ key: "subjectOrGoal", question: "Kaunsa subject ya goal ke liye counselling chahiye?" });
+  if (!lead.parentPhone) missing.push({ key: "parentPhone", question: "Parent ka mobile number kya hai?" });
+  if (!lead.source) missing.push({ key: "source", question: "Lead source kya hai: WhatsApp, call, walk-in, Google ya referral?" });
+  return missing;
+}
+
+function part89LeadScore(lead = {}) {
+  let score = 30;
+  const reasons = [];
+  if (lead.parentPhone) { score += 20; reasons.push("parent phone available"); }
+  if (lead.className) { score += 10; reasons.push("class known"); }
+  if (lead.subject || lead.goal) { score += 15; reasons.push("course interest clear"); }
+  if (lead.urgency === "high") { score += 15; reasons.push("high urgency"); }
+  if (["WhatsApp", "Walk-in", "Referral"].includes(lead.source)) { score += 10; reasons.push("high-intent source"); }
+  if (lead.budget) { score += 5; reasons.push("budget mentioned"); }
+  score = Math.min(100, score);
+  const category = score >= 75 ? "hot" : score >= 50 ? "warm" : "cold";
+  const priority = category === "hot" ? "Call within 15 minutes" : category === "warm" ? "Follow up today" : "Add to nurture list";
+  return { score, category, priority, reasons };
+}
+
+function part89CourseRecommendation(lead = {}) {
+  const cls = String(lead.className || "").toLowerCase();
+  const subject = String(lead.subject || "").toLowerCase();
+  const goal = String(lead.goal || "").toLowerCase();
+  let recommendedCourse = "Foundation Learning Plan";
+  let batchType = "Regular batch";
+  let reason = "General learning support based on available details.";
+
+  if (cls.includes("10") && (subject.includes("math") || goal.includes("board"))) {
+    recommendedCourse = "Class 10 Board Booster — Maths/Science";
+    batchType = "Board-focused batch";
+    reason = "Class 10 needs board exam preparation and practice."
+  } else if (cls.includes("11") || cls.includes("12") || goal.includes("competitive") || goal.includes("jee") || goal.includes("neet")) {
+    recommendedCourse = "Senior Competitive + Board Support";
+    batchType = "Hybrid board + competitive batch";
+    reason = "Senior students need concept clarity and test practice."
+  } else if (cls.includes("8") || cls.includes("9")) {
+    recommendedCourse = "Foundation Skill Builder";
+    batchType = "Foundation batch";
+    reason = "Middle/early high school students benefit from foundation concepts."
+  } else if (subject.includes("english")) {
+    recommendedCourse = "English Communication and School Support";
+    batchType = "Skill + school support batch";
+    reason = "English queries need practice, reading and writing support."
+  }
+
+  return {
+    recommendedCourse,
+    batchType,
+    reason,
+    suggestedDuration: "3 months starter plan",
+    suggestedNextStep: "Book demo class before final admission."
+  };
+}
+
+function part89FeePlanPreview(lead = {}) {
+  const cls = String(lead.className || "").toLowerCase();
+  const base = cls.includes("11") || cls.includes("12") ? 4500 : cls.includes("10") ? 3500 : 2500;
+  return {
+    previewOnly: true,
+    currency: "INR",
+    monthlyEstimate: base,
+    starterOffer: "Demo class first. Discount needs owner verification.",
+    paymentOptions: ["monthly", "quarterly", "full course"],
+    safety: "No fee commitment, discount or payment action without owner/accountant confirmation."
+  };
+}
+
+function part89DemoClassPreview(lead = {}) {
+  const subject = lead.subject || "Counselling Demo";
+  return {
+    previewOnly: true,
+    demoId: `DEMO-PREVIEW-${Date.now()}`,
+    studentName: lead.studentName || "Pending student name",
+    subject,
+    suggestedSlot: "Tomorrow 5:00 PM",
+    mode: "offline_or_online",
+    confirmationRequired: true,
+    message: "Demo booking preview ready. Final booking requires confirmation."
+  };
+}
+
+function part89FollowupScript(lead = {}, score = {}) {
+  const name = lead.studentName || "student";
+  const course = part89CourseRecommendation(lead).recommendedCourse;
+  const urgencyLine = score.category === "hot"
+    ? "Aapke interest ke hisaab se demo class jaldi schedule karna best rahega."
+    : "Aap comfortable time bata dijiye, hum course details aur demo class guide kar denge.";
+  return {
+    language: "Hindi/Hinglish",
+    channel: "WhatsApp/call script",
+    autoSend: false,
+    confirmationRequired: true,
+    script: `Namaste, NAXORA Institute se baat kar rahe hain. ${name} ke liye ${course} suitable lag raha hai. ${urgencyLine} Kya kal 5 PM demo class theek rahegi?`
+  };
+}
+
+function part89ObjectionHandling(text = "") {
+  const input = String(text || "").toLowerCase();
+  if (input.includes("fee") || input.includes("expensive") || input.includes("mehenga")) {
+    return {
+      objection: "Fees concern",
+      safeResponse: "Fees decision se pehle demo class aur learning plan dekh lijiye. Discount ya fee change owner approval ke bina commit nahi hoga."
+    };
+  }
+  if (input.includes("time") || input.includes("timing")) {
+    return {
+      objection: "Timing issue",
+      safeResponse: "Hum available batch timings screen par check karke suitable demo slot suggest kar sakte hain."
+    };
+  }
+  if (input.includes("distance") || input.includes("far") || input.includes("door")) {
+    return {
+      objection: "Distance issue",
+      safeResponse: "Offline ke saath online/live class option bhi explain kiya ja sakta hai, institute policy ke hisaab se."
+    };
+  }
+  return {
+    objection: "General concern",
+    safeResponse: "Parent/student ka exact concern note karke course, demo aur support plan clearly explain karein."
+  };
+}
+
+function part89BuildCounsellorReply({ command, role, instituteId, branchId, body = {} }) {
+  const access = part89AccessCheck({ role, instituteId, branchId });
+  const lead = part89ExtractLead(command, body);
+  const missing = access.allowed ? part89MissingDetails(lead) : [];
+  const score = part89LeadScore(lead);
+  const recommendation = part89CourseRecommendation(lead);
+  const feePlan = part89FeePlanPreview(lead);
+  const demoClass = part89DemoClassPreview(lead);
+  const followup = part89FollowupScript(lead, score);
+  const objection = part89ObjectionHandling(command);
+
+  let replyText = "";
+  let nextAction = "none";
+  if (!access.allowed) {
+    replyText = "Is role ko AI Admission Counsellor access nahi hai.";
+    nextAction = "blocked";
+  } else if (access.previewOnly) {
+    replyText = "Aap preview dekh sakte ho. Final admission, demo booking ya fee commitment counsellor/owner confirmation se hi hoga.";
+    nextAction = "preview_only";
+  } else if (missing.length) {
+    replyText = missing[0].question;
+    nextAction = "ask_missing_detail";
+  } else {
+    replyText = `${lead.studentName} ke liye admission counselling preview ready hai. Lead ${score.category} hai. Recommended course: ${recommendation.recommendedCourse}. Final save/send se pehle confirmation zaroori hai.`;
+    nextAction = "show_counselling_preview";
+  }
+
+  return {
+    access,
+    lead,
+    missingDetails: missing,
+    leadScore: score,
+    courseRecommendation: recommendation,
+    feePlanPreview: feePlan,
+    demoClassPreview: demoClass,
+    followupScript: followup,
+    objectionHandling: objection,
+    replyText,
+    spokenSafeSummary: replyText,
+    privateScreenFirst: true,
+    nextAction,
+    confirmationRequiredFor: ["lead_create", "demo_book", "followup_send", "admission_create"],
+    ownerVerificationRequiredFor: ["discount", "refund", "fee_commitment", "delete", "export", "subscription_change", "3.0_access_change"],
+    auditLog: {
+      event: "part89_ai_admission_counsellor",
+      leadCategory: score.category,
+      role: access.role,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+const part89Checklist = [
+  "AI Admission Counsellor page opens",
+  "Status API returns success true",
+  "Lead intake extracts basic details",
+  "Missing details are asked instead of guessed",
+  "Lead score returns hot/warm/cold",
+  "Course recommendation returns preview",
+  "Fee plan is preview-only",
+  "Demo class is preview-only with confirmation required",
+  "Follow-up script is draft only",
+  "Unauthorized roles are blocked",
+  "Previous Part 1–88 routes remain preserved"
+];
+
+app.get("/api/part89/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 89 — AI Admission Counsellor Foundation",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 89,
+    nextPart: "Part 90 — AI Course Recommendation",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/ai-admission-counsellor-foundation", "/ai-admission-counsellor", "/admission-counsellor-ai", "/admission-counselling-ai", "/smart-admission-counsellor", "/ai-counsellor"],
+    apiRoutes: [
+      "/api/part89/config",
+      "/api/part89/features",
+      "/api/part89/roles",
+      "/api/part89/access-check",
+      "/api/part89/counsellor/intake",
+      "/api/part89/counsellor/lead-score",
+      "/api/part89/counsellor/course-recommendation",
+      "/api/part89/counsellor/fee-plan",
+      "/api/part89/counsellor/demo-class",
+      "/api/part89/counsellor/followup-script",
+      "/api/part89/counsellor/objection-handling",
+      "/api/part89/counsellor/conversation-reply",
+      "/api/part89/vani/greeting",
+      "/api/part89/vani/command"
+    ],
+    aiAdmissionCounsellorEnabled: true
+  });
+});
+
+app.get("/api/part89/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "AI Admission Counsellor Foundation",
+    appType: "admission_counselling_ai_foundation",
+    version: "2.0-ai-admission-counsellor",
+    policy: {
+      previewFirst: true,
+      noGuessingMissingDetails: true,
+      noAutoSend: true,
+      noFeeCommitmentWithoutOwnerApproval: true,
+      noExternalLLMKeysIncluded: true
+    }
+  });
+});
+
+app.get("/api/part89/features", (req, res) => {
+  res.json({ success: true, features: part89CounsellorFeatures });
+});
+
+app.get("/api/part89/roles", (req, res) => {
+  res.json({ success: true, roles: part89RoleRules });
+});
+
+app.get("/api/part89/access-check", (req, res) => {
+  res.json({ success: true, access: part89AccessCheck(req.query || {}) });
+});
+
+app.get("/api/part89/counsellor/intake", (req, res) => {
+  const lead = part89ExtractLead(req.query.q || req.query.command || "", req.query || {});
+  res.json({
+    success: true,
+    lead,
+    missingDetails: part89MissingDetails(lead),
+    note: "Intake is preview-only. Final lead create requires confirmation."
+  });
+});
+
+app.post("/api/part89/counsellor/intake", (req, res) => {
+  const lead = part89ExtractLead(req.body?.q || req.body?.command || "", req.body || {});
+  res.json({
+    success: true,
+    lead,
+    missingDetails: part89MissingDetails(lead),
+    note: "Intake is preview-only. Final lead create requires confirmation."
+  });
+});
+
+app.get("/api/part89/counsellor/lead-score", (req, res) => {
+  const lead = part89ExtractLead(req.query.q || req.query.command || "", req.query || {});
+  res.json({ success: true, lead, leadScore: part89LeadScore(lead) });
+});
+
+app.get("/api/part89/counsellor/course-recommendation", (req, res) => {
+  const lead = part89ExtractLead(req.query.q || req.query.command || "", req.query || {});
+  res.json({ success: true, lead, courseRecommendation: part89CourseRecommendation(lead) });
+});
+
+app.get("/api/part89/counsellor/fee-plan", (req, res) => {
+  const access = part89AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const lead = part89ExtractLead(req.query.q || req.query.command || "", req.query || {});
+  res.json({ success: true, access, lead, privateScreenFirst: true, feePlanPreview: part89FeePlanPreview(lead) });
+});
+
+app.get("/api/part89/counsellor/demo-class", (req, res) => {
+  const access = part89AccessCheck(req.query || {});
+  if (!access.allowed || access.previewOnly) return res.status(403).json({ success: false, access, message: access.previewOnly ? "Preview-only role cannot book demo." : access.reason });
+  const lead = part89ExtractLead(req.query.q || req.query.command || "", req.query || {});
+  res.json({ success: true, access, lead, demoClassPreview: part89DemoClassPreview(lead) });
+});
+
+app.get("/api/part89/counsellor/followup-script", (req, res) => {
+  const access = part89AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const lead = part89ExtractLead(req.query.q || req.query.command || "", req.query || {});
+  const score = part89LeadScore(lead);
+  res.json({ success: true, access, lead, leadScore: score, followupScript: part89FollowupScript(lead, score) });
+});
+
+app.get("/api/part89/counsellor/objection-handling", (req, res) => {
+  res.json({
+    success: true,
+    objectionHandling: part89ObjectionHandling(req.query.q || req.query.command || "")
+  });
+});
+
+app.post("/api/part89/counsellor/conversation-reply", (req, res) => {
+  const body = req.body || {};
+  const result = part89BuildCounsellorReply({
+    command: body.command || body.q || body.message || "",
+    role: body.role || "receptionist_counsellor",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId,
+    body
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "AI Admission Counsellor", ...result });
+  res.json({ success: true, assistant: "AI Admission Counsellor", part: "Part 89 — AI Admission Counsellor Foundation", ...result });
+});
+
+app.get("/api/part89/counsellor/conversation-reply", (req, res) => {
+  const result = part89BuildCounsellorReply({
+    command: req.query.command || req.query.q || req.query.message || "",
+    role: req.query.role || "receptionist_counsellor",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "AI Admission Counsellor", ...result });
+  res.json({ success: true, assistant: "AI Admission Counsellor", part: "Part 89 — AI Admission Counsellor Foundation", ...result });
+});
+
+app.get("/api/part89/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI Admission Counsellor",
+    greeting: "Namaste, main VANI Admission Counsellor hoon. Aap admission lead ya counselling ke baare me Hindi/Hinglish me bol sakte ho.",
+    exampleCommands: [
+      "VANI, Aman Class 10 Maths admission counselling banao parent phone 9876543210 source WhatsApp",
+      "VANI, lead score batao",
+      "VANI, demo class preview banao",
+      "VANI, follow-up script banao",
+      "VANI, fee objection ka reply batao"
+    ],
+    safety: "Final admission create, demo booking, fee commitment ya message send confirmation ke bina nahi hoga."
+  });
+});
+
+app.post("/api/part89/vani/command", (req, res) => {
+  const body = req.body || {};
+  const result = part89BuildCounsellorReply({
+    command: body.command || body.q || "",
+    role: body.role || "receptionist_counsellor",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId,
+    body
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 89 — AI Admission Counsellor Foundation", ...result });
+});
+
+app.get("/api/part89/vani/command", (req, res) => {
+  const result = part89BuildCounsellorReply({
+    command: req.query.command || req.query.q || "",
+    role: req.query.role || "receptionist_counsellor",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 89 — AI Admission Counsellor Foundation", ...result });
+});
+
+app.get("/api/part89/audit-log", (req, res) => {
+  res.json({
+    success: true,
+    auditLog: [
+      { event: "ai_admission_counsellor_preview", role: "receptionist_counsellor", createdAt: new Date().toISOString() },
+      { event: "no_auto_send_policy", rule: "followup drafts require confirmation", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part89/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "ai_admission_counsellor_created", message: "Part 89 AI Admission Counsellor active.", createdAt: new Date().toISOString() },
+      { type: "lead_score_policy", message: "Lead scoring is rule-based foundation mode.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part89/checklist", (req, res) => {
+  res.json({ success: true, checklist: part89Checklist });
+});
+
+app.get("/api/part89/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part89-ai-admission-counsellor-readiness",
+    ownerVerificationRequiredForSensitiveExports: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      features: part89CounsellorFeatures,
+      roles: part89RoleRules,
+      checklist: part89Checklist
+    }
+  });
+});
+
+app.get("/api/part89/demo", (req, res) => {
+  const command = "VANI, Aman Class 10 Maths admission counselling banao parent phone 9876543210 source WhatsApp";
+  const result = part89BuildCounsellorReply({
+    command,
+    role: "receptionist_counsellor",
+    instituteId: "NX-DEMO-INST-001",
+    body: {}
+  });
+  res.json({
+    success: true,
+    demo: {
+      command,
+      result,
+      nextPart: "Part 90 — AI Course Recommendation"
+    }
+  });
+});
+// ================= END PART 89 =================
+
 
 
 
