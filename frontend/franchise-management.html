@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — Franchise Management</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/franchise-management.css" />
+</head>
+<body>
+  <main class="franchise-management">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 103 • NAXORA OS 2.0</p>
+        <h1>Franchise Management</h1>
+        <p class="lead">
+          Owner-first franchise network system with onboarding, compliance,
+          royalty preview, brand asset controls, performance and support drafts.
+        </p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">VANI Franchise Management</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Tap Start, then ask franchise performance or compliance.</p>
+        <div class="voice-actions">
+          <button id="startVaniBtn">Start VANI</button>
+          <button id="listenVaniBtn">Listen</button>
+          <button id="muteVaniBtn">Mute</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Access</p>
+      <div class="controls">
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="franchiseId" value="FR-DEMO-002" />
+        <input id="assignedFranchiseId" value="FR-DEMO-002" />
+        <input id="branchId" value="BR-DEMO-001" />
+        <input id="studentId" value="STU-DEMO-001" />
+        <select id="roleSelect">
+          <option value="institute_owner" selected>Owner All Franchises</option>
+          <option value="franchise_owner">Franchise Owner Own Centre</option>
+          <option value="branch_manager">Branch Manager Assigned</option>
+          <option value="accountant">Accountant Royalty Summary</option>
+          <option value="teacher">Teacher Academic Compliance</option>
+          <option value="receptionist_counsellor">Counsellor Onboarding Summary</option>
+          <option value="student">Student Centre Status</option>
+          <option value="parent">Parent Centre Status</option>
+        </select>
+        <button id="demoBtn">Load Demo</button>
+      </div>
+      <pre id="accessBox" class="code">Waiting...</pre>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">VANI Command</p>
+        <h2>Speak or type</h2>
+        <p>Example: “VANI, franchise performance compare karo aur South franchise compliance check karo”.</p>
+        <div class="controls">
+          <input id="vaniCommand" value="VANI, franchise performance compare karo aur South franchise compliance check karo" />
+          <button id="askVaniBtn">Ask VANI</button>
+        </div>
+        <pre id="vaniOutput" class="code">Waiting...</pre>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Dashboard</p>
+        <div id="kpiBox" class="metrics"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Franchises</p>
+        <div id="franchisesBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Performance</p>
+        <div id="performanceBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Onboarding Pipeline</p>
+        <div id="onboardingBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Compliance</p>
+        <div id="complianceBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Royalty + Brand Assets</p>
+        <div id="royaltyBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Support + Renewal</p>
+        <div id="supportBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Role Scoped Summary</p>
+        <div id="scopeBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Privacy Policy</p>
+        <div id="privacyBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Testing links</p>
+      <div class="links">
+        <a href="/api/part103/status" target="_blank">Status</a>
+        <a href="/api/part103/demo" target="_blank">Demo</a>
+        <a href="/api/part103/dashboard?role=institute_owner&instituteId=NX-DEMO-INST-001" target="_blank">Owner Dashboard</a>
+        <a href="/api/part103/compliance?role=institute_owner&instituteId=NX-DEMO-INST-001&franchiseId=FR-DEMO-002" target="_blank">Compliance</a>
+        <a href="/api/part103/royalty-preview?role=institute_owner&instituteId=NX-DEMO-INST-001&franchiseId=FR-DEMO-002" target="_blank">Royalty Preview</a>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/vani-voice-starter.js"></script>
+  <script src="/franchise-management.js"></script>
+</body>
+</html>

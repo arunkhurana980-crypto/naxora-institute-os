@@ -10411,6 +10411,12 @@ const modulePageRoutes = {
   "/branch-command-center": "multi-branch-command-centre.html",
   "/vani-branch-command": "multi-branch-command-centre.html",
   "/owner-branch-centre": "multi-branch-command-centre.html",
+  "/franchise-management": "franchise-management.html",
+  "/franchise-centre": "franchise-management.html",
+  "/franchise-center": "franchise-management.html",
+  "/vani-franchise-management": "franchise-management.html",
+  "/owner-franchise-dashboard": "franchise-management.html",
+  "/franchise-onboarding": "franchise-management.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -24821,6 +24827,865 @@ app.get("/api/part102/demo", (req, res) => {
   });
 });
 // ================= END PART 102 =================
+
+// ================= PART 103 — FRANCHISE MANAGEMENT =================
+// NAXORA OS 2.0 Franchise Management.
+// This part creates owner-first franchise management foundation:
+// franchise registry preview, onboarding pipeline, compliance checklist,
+// royalty/payment preview, brand asset controls, franchise performance,
+// support tickets, renewal risk and VANI franchise commands.
+// It never changes legal/financial terms automatically and does not export
+// franchise agreements or financial details without owner verification.
+
+const part103FranchiseFeatures = [
+  {
+    key: "franchise_registry",
+    name: "Franchise Registry",
+    summary: "Tracks franchise centres, owners, territory and onboarding status.",
+    problemSolved: "Institute owner gets one place for franchise network overview."
+  },
+  {
+    key: "onboarding_pipeline",
+    name: "Franchise Onboarding Pipeline",
+    summary: "Shows lead, verification, agreement, training, setup and launch stages.",
+    problemSolved: "New franchise setup becomes structured."
+  },
+  {
+    key: "compliance_checklist",
+    name: "Compliance Checklist",
+    summary: "Tracks brand, academic, fee, staff, legal and operational compliance.",
+    problemSolved: "Franchise quality stays controlled."
+  },
+  {
+    key: "royalty_preview",
+    name: "Royalty and Payment Preview",
+    summary: "Creates safe royalty collection and pending payment summary.",
+    problemSolved: "Owner can monitor franchise revenue without unsafe auto-charges."
+  },
+  {
+    key: "brand_asset_controls",
+    name: "Brand Asset Controls",
+    summary: "Controls logo, brochure, pricing, course pack and marketing asset access.",
+    problemSolved: "Franchise uses approved NAXORA brand material."
+  },
+  {
+    key: "franchise_performance",
+    name: "Franchise Performance Score",
+    summary: "Scores franchise by admissions, collection, compliance, support and satisfaction.",
+    problemSolved: "Weak franchise centres are visible early."
+  },
+  {
+    key: "support_ticketing",
+    name: "Franchise Support Ticket Preview",
+    summary: "Creates support ticket and escalation draft for franchise issues.",
+    problemSolved: "Support requests become trackable."
+  },
+  {
+    key: "vani_franchise_management",
+    name: "VANI Franchise Management",
+    summary: "VANI can review franchise status, onboarding, compliance, royalty and support drafts.",
+    problemSolved: "Owner can manage franchise network through voice."
+  }
+];
+
+const part103RoleRules = [
+  { role: "institute_owner", allowed: true, scope: "Can manage all authorised franchises and approve sensitive actions.", canViewAllFranchises: true, canOnboard: true, canReviewCompliance: true, canViewRoyalty: true, canCreateSupportPlan: true, canExport: true, canChangeTerms: true },
+  { role: "franchise_owner", allowed: true, scope: "Can view own franchise status, onboarding, compliance tasks and support tickets.", canViewAllFranchises: false, canOnboard: false, canReviewCompliance: true, canViewRoyalty: true, canCreateSupportPlan: true, canExport: false, canChangeTerms: false, ownFranchiseOnly: true },
+  { role: "branch_manager", allowed: true, scope: "Can view assigned franchise/branch operational summary only.", canViewAllFranchises: false, canOnboard: false, canReviewCompliance: true, canViewRoyalty: false, canCreateSupportPlan: true, canExport: false, canChangeTerms: false, assignedOnly: true },
+  { role: "accountant", allowed: true, scope: "Can view royalty/payment safe summary by permission.", canViewAllFranchises: false, canOnboard: false, canReviewCompliance: false, canViewRoyalty: true, canCreateSupportPlan: false, canExport: false, canChangeTerms: false, financeSummaryOnly: true },
+  { role: "teacher", allowed: true, scope: "Can view academic compliance/training summary only.", canViewAllFranchises: false, canOnboard: false, canReviewCompliance: true, canViewRoyalty: false, canCreateSupportPlan: false, canExport: false, canChangeTerms: false, academicSummaryOnly: true },
+  { role: "receptionist_counsellor", allowed: true, scope: "Can view franchise enquiry/onboarding status summary only.", canViewAllFranchises: false, canOnboard: false, canReviewCompliance: false, canViewRoyalty: false, canCreateSupportPlan: true, canExport: false, canChangeTerms: false, enquirySummaryOnly: true },
+  { role: "student", allowed: true, scope: "Can view own centre public/student-safe status only.", canViewAllFranchises: false, canOnboard: false, canReviewCompliance: false, canViewRoyalty: false, canCreateSupportPlan: false, canExport: false, canChangeTerms: false, selfOnly: true },
+  { role: "parent", allowed: true, scope: "Can view linked child's centre public/parent-safe status only.", canViewAllFranchises: false, canOnboard: false, canReviewCompliance: false, canViewRoyalty: false, canCreateSupportPlan: false, canExport: false, canChangeTerms: false, viewOnly: true },
+  { role: "naxora_super_admin", allowed: false, scope: "Platform support only; no unrestricted franchise/private financial access.", canViewAllFranchises: false, canOnboard: false, canReviewCompliance: false, canViewRoyalty: false, canCreateSupportPlan: false, canExport: false, canChangeTerms: false }
+];
+
+const part103DemoFranchises = [
+  {
+    franchiseId: "FR-DEMO-001",
+    franchiseName: "NAXORA Franchise North",
+    ownerName: "Demo Franchise Owner A",
+    city: "Jaipur",
+    territory: "Jaipur West",
+    status: "active_preview",
+    onboardingStage: "launched",
+    students: 185,
+    admissionsThisMonth: 22,
+    enquiriesOpen: 46,
+    royaltyPercent: 12,
+    royaltyDuePreview: 48200,
+    royaltyStatus: "current_preview",
+    compliancePercent: 91,
+    brandAssetStatus: "approved_assets_active",
+    trainingCompletionPercent: 88,
+    supportTicketsOpen: 2,
+    satisfactionScore: 87,
+    renewalRisk: "low_preview"
+  },
+  {
+    franchiseId: "FR-DEMO-002",
+    franchiseName: "NAXORA Franchise South",
+    ownerName: "Demo Franchise Owner B",
+    city: "Lucknow",
+    territory: "Lucknow South",
+    status: "needs_attention_preview",
+    onboardingStage: "setup_in_progress",
+    students: 92,
+    admissionsThisMonth: 9,
+    enquiriesOpen: 38,
+    royaltyPercent: 12,
+    royaltyDuePreview: 31500,
+    royaltyStatus: "pending_preview",
+    compliancePercent: 68,
+    brandAssetStatus: "asset_review_needed",
+    trainingCompletionPercent: 54,
+    supportTicketsOpen: 7,
+    satisfactionScore: 66,
+    renewalRisk: "medium_preview"
+  },
+  {
+    franchiseId: "FR-DEMO-003",
+    franchiseName: "NAXORA Franchise East",
+    ownerName: "Demo Franchise Owner C",
+    city: "Patna",
+    territory: "Patna Central",
+    status: "onboarding_preview",
+    onboardingStage: "agreement_review",
+    students: 0,
+    admissionsThisMonth: 0,
+    enquiriesOpen: 18,
+    royaltyPercent: 12,
+    royaltyDuePreview: 0,
+    royaltyStatus: "not_started_preview",
+    compliancePercent: 42,
+    brandAssetStatus: "locked_until_agreement",
+    trainingCompletionPercent: 18,
+    supportTicketsOpen: 3,
+    satisfactionScore: 0,
+    renewalRisk: "not_applicable_preview"
+  }
+];
+
+const part103OnboardingStages = [
+  { key: "lead_received", name: "Lead Received", required: ["owner details", "city", "territory interest"] },
+  { key: "background_verification", name: "Background Verification", required: ["identity verification", "business profile", "address proof"] },
+  { key: "territory_review", name: "Territory Review", required: ["territory availability", "competition check", "expected demand"] },
+  { key: "agreement_review", name: "Agreement Review", required: ["agreement draft", "legal review", "commercial approval"] },
+  { key: "training", name: "Training", required: ["owner training", "staff training", "academic process training"] },
+  { key: "setup_in_progress", name: "Setup In Progress", required: ["classroom setup", "branding setup", "NAXORA OS login"] },
+  { key: "launched", name: "Launched", required: ["launch checklist", "support plan", "first month targets"] }
+];
+
+function normalizePart103Role(role) {
+  const r = String(role || "institute_owner").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["franchiseowner", "franchise_owner"].includes(r)) return "franchise_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part103AccessCheck({ role, instituteId, franchiseId, assignedFranchiseId, branchId, studentId, parentId }) {
+  const normalizedRole = normalizePart103Role(role);
+  const rule = part103RoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole,
+    allowed: false,
+    scope: "Unknown or unsupported role.",
+    canViewAllFranchises: false,
+    canOnboard: false,
+    canReviewCompliance: false,
+    canViewRoyalty: false,
+    canCreateSupportPlan: false,
+    canExport: false,
+    canChangeTerms: false
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const franchiseScopedRoles = ["franchise_owner", "branch_manager", "accountant", "teacher", "receptionist_counsellor"];
+  const hasFranchiseScope = franchiseScopedRoles.includes(normalizedRole) ? Boolean(String(franchiseId || assignedFranchiseId || branchId || "").trim()) : true;
+  const studentScoped = normalizedRole !== "student" || Boolean(String(studentId || "").trim());
+  const parentScoped = normalizedRole !== "parent" || Boolean(String(parentId || "").trim() || String(studentId || "").trim());
+  const allowed = Boolean(rule.allowed && hasInstituteId && hasFranchiseScope && studentScoped && parentScoped && normalizedRole !== "naxora_super_admin");
+
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    franchiseId: franchiseId || assignedFranchiseId || null,
+    assignedFranchiseId: assignedFranchiseId || franchiseId || null,
+    branchId: branchId || null,
+    studentId: studentId || null,
+    parentId: parentId || null,
+    allowed,
+    canViewAllFranchises: Boolean(rule.canViewAllFranchises && allowed),
+    canOnboard: Boolean(rule.canOnboard && allowed),
+    canReviewCompliance: Boolean(rule.canReviewCompliance && allowed),
+    canViewRoyalty: Boolean(rule.canViewRoyalty && allowed),
+    canCreateSupportPlan: Boolean(rule.canCreateSupportPlan && allowed),
+    canExport: Boolean(rule.canExport && allowed),
+    canChangeTerms: Boolean(rule.canChangeTerms && allowed),
+    ownFranchiseOnly: Boolean(rule.ownFranchiseOnly),
+    assignedOnly: Boolean(rule.assignedOnly),
+    financeSummaryOnly: Boolean(rule.financeSummaryOnly),
+    academicSummaryOnly: Boolean(rule.academicSummaryOnly),
+    enquirySummaryOnly: Boolean(rule.enquirySummaryOnly),
+    selfOnly: Boolean(rule.selfOnly),
+    viewOnly: Boolean(rule.viewOnly),
+    scope: rule.scope,
+    reason: !hasInstituteId
+      ? "Institute ID missing."
+      : !rule.allowed
+        ? rule.scope
+        : !hasFranchiseScope
+          ? "This role requires franchise/branch scope."
+          : !studentScoped
+            ? "Student can view own centre status only; studentId required."
+            : !parentScoped
+              ? "Parent can view linked child centre status only."
+              : "Franchise management access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    confirmationRequiredFor: ["franchise_onboard", "support_ticket_create", "compliance_action_send", "brand_asset_unlock", "renewal_review_schedule"],
+    ownerVerificationRequiredFor: ["agreement_export", "royalty_export", "royalty_terms_change", "franchise_suspend", "territory_change", "bulk_franchise_message"]
+  };
+}
+
+function part103ParseCommand(text = "", body = {}) {
+  const input = String(text || body.command || body.q || "").trim();
+  const intent = /onboard|pipeline|stage|new franchise/i.test(input) ? "onboarding"
+    : /compliance|checklist|quality|brand/i.test(input) ? "compliance"
+      : /royalty|payment|due|collection/i.test(input) ? "royalty"
+        : /support|ticket|issue|escalate/i.test(input) ? "support"
+          : /performance|score|rank|compare|weak|best/i.test(input) ? "performance"
+            : /renewal|risk|agreement/i.test(input) ? "renewal"
+              : /asset|logo|brochure|marketing/i.test(input) ? "brand_assets"
+                : /status|overview|franchise/i.test(input) ? "overview"
+                  : "help";
+  return {
+    intent,
+    franchiseId: body.franchiseId || (/south|002|lucknow/i.test(input) ? "FR-DEMO-002" : /east|003|patna/i.test(input) ? "FR-DEMO-003" : "FR-DEMO-001"),
+    rawCommand: input
+  };
+}
+
+function part103FilterFranchisesForAccess(access, franchises = part103DemoFranchises) {
+  if (access.canViewAllFranchises) return franchises;
+  const scopedId = access.franchiseId || access.assignedFranchiseId || "FR-DEMO-001";
+  return franchises.filter((f) => f.franchiseId === scopedId || f.franchiseId === "FR-DEMO-001" && !access.franchiseId);
+}
+
+function part103FindFranchise(franchiseId, access) {
+  const visible = part103FilterFranchisesForAccess(access);
+  return visible.find((f) => f.franchiseId === franchiseId) || visible[0] || part103DemoFranchises[0];
+}
+
+function part103FranchiseScore(franchise) {
+  const growthScore = Math.min(100, Math.round((franchise.admissionsThisMonth / 25) * 100));
+  const complianceScore = franchise.compliancePercent;
+  const trainingScore = franchise.trainingCompletionPercent;
+  const royaltyScore = franchise.royaltyStatus === "current_preview" ? 95 : franchise.royaltyStatus === "pending_preview" ? 55 : 70;
+  const supportPenalty = Math.min(25, franchise.supportTicketsOpen * 3);
+  const score = Math.max(0, Math.round((growthScore + complianceScore + trainingScore + royaltyScore + Math.max(0, franchise.satisfactionScore || 70)) / 5 - supportPenalty));
+  const issues = [];
+  if (franchise.compliancePercent < 75) issues.push("compliance_low");
+  if (franchise.trainingCompletionPercent < 70) issues.push("training_pending");
+  if (franchise.royaltyStatus === "pending_preview") issues.push("royalty_pending");
+  if (franchise.supportTicketsOpen > 5) issues.push("support_tickets_high");
+  if (String(franchise.brandAssetStatus).includes("review") || String(franchise.brandAssetStatus).includes("locked")) issues.push("brand_asset_attention");
+  return {
+    franchiseId: franchise.franchiseId,
+    franchiseName: franchise.franchiseName,
+    score,
+    grade: score >= 85 ? "A" : score >= 70 ? "B" : score >= 55 ? "C" : "D",
+    issues,
+    recommendation: issues.length ? "Franchise review aur support action plan required." : "Franchise performance stable."
+  };
+}
+
+function part103BuildDashboard(access) {
+  const visible = part103FilterFranchisesForAccess(access);
+  const totals = visible.reduce((acc, f) => {
+    acc.students += f.students;
+    acc.admissionsThisMonth += f.admissionsThisMonth;
+    acc.enquiriesOpen += f.enquiriesOpen;
+    acc.royaltyDuePreview += f.royaltyDuePreview;
+    acc.supportTicketsOpen += f.supportTicketsOpen;
+    acc.complianceSum += f.compliancePercent;
+    acc.trainingSum += f.trainingCompletionPercent;
+    acc.currentRoyalty += f.royaltyStatus === "current_preview" ? 1 : 0;
+    acc.pendingRoyalty += f.royaltyStatus === "pending_preview" ? 1 : 0;
+    return acc;
+  }, { students: 0, admissionsThisMonth: 0, enquiriesOpen: 0, royaltyDuePreview: 0, supportTicketsOpen: 0, complianceSum: 0, trainingSum: 0, currentRoyalty: 0, pendingRoyalty: 0 });
+  return {
+    previewOnly: true,
+    franchiseCount: visible.length,
+    totals: {
+      students: totals.students,
+      admissionsThisMonth: totals.admissionsThisMonth,
+      enquiriesOpen: totals.enquiriesOpen,
+      royaltyDuePreview: totals.royaltyDuePreview,
+      supportTicketsOpen: totals.supportTicketsOpen,
+      avgCompliancePercent: visible.length ? Math.round(totals.complianceSum / visible.length) : 0,
+      avgTrainingCompletionPercent: visible.length ? Math.round(totals.trainingSum / visible.length) : 0,
+      royaltyCurrentCount: totals.currentRoyalty,
+      royaltyPendingCount: totals.pendingRoyalty
+    },
+    visibleFranchises: visible,
+    privateScreenFirst: true
+  };
+}
+
+function part103OnboardingPreview(access, franchise) {
+  const currentIndex = Math.max(0, part103OnboardingStages.findIndex((s) => s.key === franchise.onboardingStage));
+  return {
+    previewOnly: true,
+    canOnboard: Boolean(access.canOnboard),
+    franchiseId: franchise.franchiseId,
+    franchiseName: franchise.franchiseName,
+    currentStage: franchise.onboardingStage,
+    stages: part103OnboardingStages.map((stage, index) => ({
+      ...stage,
+      status: index < currentIndex ? "completed_preview" : index === currentIndex ? "current_preview" : "pending_preview"
+    })),
+    missingItemsPreview: currentIndex >= 0 ? part103OnboardingStages[currentIndex].required.slice(0, 2) : [],
+    finalOnboardingRequiresOwnerConfirmation: true
+  };
+}
+
+function part103CompliancePreview(access, franchise) {
+  const checks = [
+    { key: "brand_usage", label: "Approved logo/brochure/pricing", status: franchise.brandAssetStatus === "approved_assets_active" ? "pass_preview" : "review_needed" },
+    { key: "academic_process", label: "Academic delivery process", status: franchise.trainingCompletionPercent >= 70 ? "pass_preview" : "training_pending" },
+    { key: "fee_policy", label: "Fee/discount policy compliance", status: franchise.compliancePercent >= 75 ? "pass_preview" : "review_needed" },
+    { key: "staff_training", label: "Staff training completion", status: franchise.trainingCompletionPercent >= 80 ? "pass_preview" : "training_pending" },
+    { key: "support_quality", label: "Support ticket response", status: franchise.supportTicketsOpen <= 5 ? "pass_preview" : "attention_needed" },
+    { key: "student_satisfaction", label: "Student/parent satisfaction", status: franchise.satisfactionScore >= 75 ? "pass_preview" : "attention_needed" }
+  ];
+  return {
+    previewOnly: true,
+    canReviewCompliance: Boolean(access.canReviewCompliance),
+    franchiseId: franchise.franchiseId,
+    compliancePercent: franchise.compliancePercent,
+    checks,
+    failedCount: checks.filter((c) => c.status !== "pass_preview").length,
+    actionRequired: checks.some((c) => c.status !== "pass_preview"),
+    finalNoticeAutoSend: false
+  };
+}
+
+function part103RoyaltyPreview(access, franchise) {
+  return {
+    previewOnly: true,
+    canViewRoyalty: Boolean(access.canViewRoyalty),
+    franchiseId: franchise.franchiseId,
+    franchiseName: franchise.franchiseName,
+    royaltyPercent: franchise.royaltyPercent,
+    royaltyDuePreview: access.canViewRoyalty ? franchise.royaltyDuePreview : "hidden",
+    royaltyStatus: access.canViewRoyalty ? franchise.royaltyStatus : "hidden",
+    autoCharge: false,
+    receiptAutoSend: false,
+    exportRequiresOwnerVerification: true,
+    note: "Royalty terms/change/export owner verification ke bina nahi hoga."
+  };
+}
+
+function part103BrandAssetPreview(access, franchise) {
+  return {
+    previewOnly: true,
+    franchiseId: franchise.franchiseId,
+    brandAssetStatus: franchise.brandAssetStatus,
+    accessibleAssets: franchise.brandAssetStatus === "approved_assets_active"
+      ? ["logo pack", "brochure", "approved course poster", "social media template", "admission form template"]
+      : ["basic guideline preview only"],
+    lockedAssets: franchise.brandAssetStatus === "approved_assets_active" ? [] : ["final marketing pack", "pricing poster", "campaign templates"],
+    unlockRequiresOwnerApproval: true,
+    sensitiveBrandControls: ["pricing template", "discount rule", "legal agreement template"]
+  };
+}
+
+function part103PerformancePreview(access) {
+  const visible = part103FilterFranchisesForAccess(access);
+  const ranked = visible.map((f) => ({ ...f, performance: part103FranchiseScore(f) })).sort((a, b) => b.performance.score - a.performance.score);
+  return {
+    previewOnly: true,
+    rankedFranchises: ranked,
+    bestFranchise: ranked[0] || null,
+    needsAttention: ranked.filter((f) => f.performance.issues.length > 0),
+    comparisonAvailable: ranked.length > 1,
+    privateScreenFirst: true
+  };
+}
+
+function part103SupportTicketPreview(access, franchise, body = {}) {
+  return {
+    previewOnly: true,
+    canCreateSupportPlan: Boolean(access.canCreateSupportPlan),
+    franchiseId: franchise.franchiseId,
+    ticketId: `FR-TICKET-PREVIEW-${Date.now()}`,
+    category: body.category || (franchise.supportTicketsOpen > 5 ? "operations_support" : "general_support"),
+    priority: franchise.supportTicketsOpen > 5 || franchise.compliancePercent < 75 ? "high_preview" : "normal_preview",
+    issueSummary: body.issueSummary || "Franchise support/action review required based on KPI preview.",
+    suggestedActions: [
+      "Franchise owner call schedule draft",
+      "Compliance checklist review",
+      "Training completion reminder draft",
+      "Support escalation note for internal team"
+    ],
+    autoCreate: false,
+    confirmationRequired: true
+  };
+}
+
+function part103RenewalRiskPreview(franchise) {
+  const riskFactors = [];
+  if (franchise.compliancePercent < 75) riskFactors.push("compliance low");
+  if (franchise.royaltyStatus === "pending_preview") riskFactors.push("royalty pending");
+  if (franchise.supportTicketsOpen > 5) riskFactors.push("support tickets high");
+  if (franchise.satisfactionScore && franchise.satisfactionScore < 70) riskFactors.push("satisfaction low");
+  return {
+    previewOnly: true,
+    franchiseId: franchise.franchiseId,
+    renewalRisk: franchise.renewalRisk,
+    riskFactors,
+    reviewRecommended: riskFactors.length > 0,
+    agreementExportRequiresOwnerVerification: true,
+    termsChangeRequiresOwnerVerification: true
+  };
+}
+
+function part103RoleScopedSummary(access, franchise) {
+  if (access.financeSummaryOnly) {
+    return {
+      previewOnly: true,
+      scope: "finance_summary_only",
+      visibleData: {
+        franchiseName: franchise.franchiseName,
+        royaltyStatus: franchise.royaltyStatus,
+        royaltyDuePreview: franchise.royaltyDuePreview
+      },
+      hiddenData: ["agreement terms", "owner personal details", "student private records", "support notes"]
+    };
+  }
+  if (access.academicSummaryOnly) {
+    return {
+      previewOnly: true,
+      scope: "academic_summary_only",
+      visibleData: {
+        franchiseName: franchise.franchiseName,
+        compliancePercent: franchise.compliancePercent,
+        trainingCompletionPercent: franchise.trainingCompletionPercent,
+        students: franchise.students
+      },
+      hiddenData: ["royalty amount", "agreement terms", "owner finance data"]
+    };
+  }
+  if (access.enquirySummaryOnly) {
+    return {
+      previewOnly: true,
+      scope: "enquiry_summary_only",
+      visibleData: {
+        franchiseName: franchise.franchiseName,
+        onboardingStage: franchise.onboardingStage,
+        admissionsThisMonth: franchise.admissionsThisMonth,
+        enquiriesOpen: franchise.enquiriesOpen
+      },
+      hiddenData: ["royalty amount", "agreement terms", "compliance legal notes"]
+    };
+  }
+  if (access.selfOnly || access.viewOnly) {
+    return {
+      previewOnly: true,
+      scope: access.selfOnly ? "student_centre_status" : "parent_linked_child_centre_status",
+      visibleData: {
+        franchiseName: franchise.franchiseName,
+        city: franchise.city,
+        status: franchise.status
+      },
+      hiddenData: ["royalty", "owner details", "staff data", "other student data"]
+    };
+  }
+  return {
+    previewOnly: true,
+    scope: access.canViewAllFranchises ? "owner_all_authorised_franchises" : "own_or_assigned_franchise",
+    visibleData: franchise,
+    hiddenData: access.canViewAllFranchises ? [] : ["other franchises"]
+  };
+}
+
+function part103PrivacyPolicy() {
+  return {
+    previewOnly: true,
+    privateScreenFirst: true,
+    sensitiveDataNotSpokenLoudly: [
+      "franchise agreement details",
+      "royalty amount details",
+      "owner personal documents",
+      "legal/compliance notes",
+      "student private records",
+      "staff salary/payroll detail"
+    ],
+    allowedVoiceSummary: [
+      "franchise count",
+      "stage/status summary",
+      "count-level royalty pending summary",
+      "compliance score summary",
+      "support ticket counts"
+    ],
+    confirmationRequiredFor: ["support_ticket_create", "brand_asset_unlock", "compliance_notice_send", "renewal_review_schedule"],
+    ownerVerificationRequiredFor: ["agreement_export", "royalty_export", "terms_change", "franchise_suspend", "territory_change"],
+    safety: "VANI franchise summaries should speak count-level info and show sensitive legal/financial details privately on screen."
+  };
+}
+
+function part103BuildFranchiseManagement({ command, role, instituteId, franchiseId, assignedFranchiseId, branchId, studentId, parentId, body = {} }) {
+  const parsed = part103ParseCommand(command, body);
+  const access = part103AccessCheck({
+    role,
+    instituteId,
+    franchiseId: body.franchiseId || franchiseId || parsed.franchiseId,
+    assignedFranchiseId: body.assignedFranchiseId || assignedFranchiseId,
+    branchId,
+    studentId,
+    parentId
+  });
+
+  const franchise = part103FindFranchise(body.franchiseId || franchiseId || parsed.franchiseId, access);
+  const dashboard = part103BuildDashboard(access);
+  const onboardingPreview = part103OnboardingPreview(access, franchise);
+  const compliancePreview = part103CompliancePreview(access, franchise);
+  const royaltyPreview = part103RoyaltyPreview(access, franchise);
+  const brandAssetPreview = part103BrandAssetPreview(access, franchise);
+  const performancePreview = part103PerformancePreview(access);
+  const supportTicketPreview = part103SupportTicketPreview(access, franchise, body);
+  const renewalRiskPreview = part103RenewalRiskPreview(franchise);
+  const roleScopedSummary = part103RoleScopedSummary(access, franchise);
+  const privacyPolicy = part103PrivacyPolicy();
+
+  let replyText = "";
+  let nextAction = "none";
+  if (!access.allowed) {
+    replyText = "Is role/scope ko franchise management access nahi hai.";
+    nextAction = "blocked";
+  } else if (parsed.intent === "onboarding") {
+    replyText = access.canOnboard || access.ownFranchiseOnly
+      ? `Franchise onboarding preview ready hai. Current stage: ${onboardingPreview.currentStage}.`
+      : "Is role ko franchise onboarding view/create permission nahi hai.";
+    nextAction = "show_onboarding_preview";
+  } else if (parsed.intent === "compliance") {
+    replyText = `Compliance preview ready hai. Score ${compliancePreview.compliancePercent}% hai aur ${compliancePreview.failedCount} checks review me hain.`;
+    nextAction = "show_compliance_preview";
+  } else if (parsed.intent === "royalty") {
+    replyText = access.canViewRoyalty
+      ? "Royalty/payment preview ready hai. Auto-charge ya export nahi hoga."
+      : "Is role ko royalty details permission nahi hai.";
+    nextAction = "show_royalty_preview";
+  } else if (parsed.intent === "support") {
+    replyText = access.canCreateSupportPlan
+      ? "Franchise support ticket preview ready hai. Final create confirmation ke bina nahi hoga."
+      : "Is role ko support ticket create permission nahi hai.";
+    nextAction = "show_support_ticket_preview";
+  } else if (parsed.intent === "performance") {
+    replyText = "Franchise performance preview ready hai. Best aur needs-attention centres private screen par dikh rahe hain.";
+    nextAction = "show_performance_preview";
+  } else if (parsed.intent === "renewal") {
+    replyText = `Renewal risk preview ready hai. Risk: ${renewalRiskPreview.renewalRisk}. Agreement export/terms change owner verification ke bina nahi hoga.`;
+    nextAction = "show_renewal_risk_preview";
+  } else if (parsed.intent === "brand_assets") {
+    replyText = "Brand asset access preview ready hai. Locked assets owner approval ke bina unlock nahi honge.";
+    nextAction = "show_brand_asset_preview";
+  } else {
+    replyText = "Franchise Management overview ready hai. Onboarding, compliance, royalty, performance aur support preview available hain.";
+    nextAction = "show_franchise_overview";
+  }
+
+  return {
+    access,
+    parsed,
+    franchises: part103FilterFranchisesForAccess(access),
+    allFranchisePreviewCount: part103DemoFranchises.length,
+    selectedFranchise: franchise,
+    dashboard,
+    onboardingPreview,
+    compliancePreview,
+    royaltyPreview,
+    brandAssetPreview,
+    performancePreview,
+    supportTicketPreview,
+    renewalRiskPreview,
+    roleScopedSummary,
+    privacyPolicy,
+    replyText,
+    spokenSafeSummary: replyText,
+    privateScreenFirst: true,
+    nextAction,
+    confirmationRequiredFor: ["franchise_onboard", "support_ticket_create", "compliance_action_send", "brand_asset_unlock", "renewal_review_schedule"],
+    ownerVerificationRequiredFor: ["agreement_export", "royalty_export", "royalty_terms_change", "franchise_suspend", "territory_change", "bulk_franchise_message"],
+    auditLog: {
+      event: "part103_franchise_management",
+      role: access.role,
+      intent: parsed.intent,
+      franchiseId: franchise?.franchiseId || parsed.franchiseId,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+const part103Checklist = [
+  "Franchise Management page opens",
+  "Status API returns success true",
+  "Franchise registry preview works",
+  "Onboarding pipeline appears",
+  "Compliance checklist appears",
+  "Royalty/payment preview works for allowed roles",
+  "Brand asset controls appear",
+  "Performance score appears",
+  "Support ticket preview works",
+  "Renewal risk preview works",
+  "Role-scoped summaries hide sensitive data",
+  "VANI franchise command works",
+  "Previous Part 1–102 routes remain preserved"
+];
+
+app.get("/api/part103/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 103 — Franchise Management",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 103,
+    nextPart: "Part 104 — Branch Comparison and Benchmarking",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/franchise-management", "/franchise-centre", "/franchise-center", "/vani-franchise-management", "/owner-franchise-dashboard", "/franchise-onboarding"],
+    apiRoutes: [
+      "/api/part103/config",
+      "/api/part103/features",
+      "/api/part103/roles",
+      "/api/part103/access-check",
+      "/api/part103/franchises",
+      "/api/part103/dashboard",
+      "/api/part103/onboarding",
+      "/api/part103/compliance",
+      "/api/part103/royalty-preview",
+      "/api/part103/brand-assets",
+      "/api/part103/performance",
+      "/api/part103/support-ticket-preview",
+      "/api/part103/renewal-risk",
+      "/api/part103/role-scoped-summary",
+      "/api/part103/privacy-policy",
+      "/api/part103/vani/greeting",
+      "/api/part103/vani/command"
+    ],
+    franchiseManagementEnabled: true
+  });
+});
+
+app.get("/api/part103/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "Franchise Management",
+    appType: "franchise_management_foundation",
+    version: "2.0-franchise-management",
+    policy: {
+      previewFirst: true,
+      noAutoLegalOrRoyaltyChanges: true,
+      privateScreenFirst: true,
+      sensitiveLegalFinancialDataNotSpokenLoudly: true,
+      ownerVerificationForAgreementsRoyaltyTermsAndSuspension: true,
+      roleScopedFranchiseAccess: true
+    }
+  });
+});
+
+app.get("/api/part103/features", (req, res) => {
+  res.json({ success: true, features: part103FranchiseFeatures });
+});
+
+app.get("/api/part103/roles", (req, res) => {
+  res.json({ success: true, roles: part103RoleRules });
+});
+
+app.get("/api/part103/access-check", (req, res) => {
+  res.json({ success: true, access: part103AccessCheck(req.query || {}) });
+});
+
+app.get("/api/part103/franchises", (req, res) => {
+  const access = part103AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, previewOnly: true, franchises: part103FilterFranchisesForAccess(access) });
+});
+
+app.get("/api/part103/dashboard", (req, res) => {
+  const access = part103AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, dashboard: part103BuildDashboard(access) });
+});
+
+app.get("/api/part103/onboarding", (req, res) => {
+  const access = part103AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const franchise = part103FindFranchise(req.query.franchiseId, access);
+  res.json({ success: true, access, onboardingPreview: part103OnboardingPreview(access, franchise) });
+});
+
+app.get("/api/part103/compliance", (req, res) => {
+  const access = part103AccessCheck(req.query || {});
+  if (!access.allowed || !access.canReviewCompliance && !access.ownFranchiseOnly && !access.assignedOnly) return res.status(403).json({ success: false, access, message: "Compliance preview not allowed for this role." });
+  const franchise = part103FindFranchise(req.query.franchiseId, access);
+  res.json({ success: true, access, compliancePreview: part103CompliancePreview(access, franchise) });
+});
+
+app.get("/api/part103/royalty-preview", (req, res) => {
+  const access = part103AccessCheck(req.query || {});
+  if (!access.allowed || !access.canViewRoyalty) return res.status(403).json({ success: false, access, message: "Royalty preview not allowed for this role." });
+  const franchise = part103FindFranchise(req.query.franchiseId, access);
+  res.json({ success: true, access, royaltyPreview: part103RoyaltyPreview(access, franchise) });
+});
+
+app.get("/api/part103/brand-assets", (req, res) => {
+  const access = part103AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const franchise = part103FindFranchise(req.query.franchiseId, access);
+  res.json({ success: true, access, brandAssetPreview: part103BrandAssetPreview(access, franchise) });
+});
+
+app.get("/api/part103/performance", (req, res) => {
+  const access = part103AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, performancePreview: part103PerformancePreview(access) });
+});
+
+app.get("/api/part103/support-ticket-preview", (req, res) => {
+  const access = part103AccessCheck(req.query || {});
+  if (!access.allowed || !access.canCreateSupportPlan) return res.status(403).json({ success: false, access, message: "Support ticket preview not allowed for this role." });
+  const franchise = part103FindFranchise(req.query.franchiseId, access);
+  res.json({ success: true, access, supportTicketPreview: part103SupportTicketPreview(access, franchise, req.query || {}) });
+});
+
+app.get("/api/part103/renewal-risk", (req, res) => {
+  const access = part103AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const franchise = part103FindFranchise(req.query.franchiseId, access);
+  res.json({ success: true, access, renewalRiskPreview: part103RenewalRiskPreview(franchise) });
+});
+
+app.get("/api/part103/role-scoped-summary", (req, res) => {
+  const access = part103AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const franchise = part103FindFranchise(req.query.franchiseId, access);
+  res.json({ success: true, access, roleScopedSummary: part103RoleScopedSummary(access, franchise) });
+});
+
+app.get("/api/part103/privacy-policy", (req, res) => {
+  res.json({ success: true, privacyPolicy: part103PrivacyPolicy() });
+});
+
+app.get("/api/part103/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI Franchise Management",
+    greeting: "Namaste, main VANI Franchise Management Assistant hoon. Aap franchise overview, onboarding, compliance, royalty, performance, support ticket ya renewal risk pooch sakte ho.",
+    exampleCommands: [
+      "VANI, franchise overview dikhao",
+      "VANI, South franchise compliance check karo",
+      "VANI, royalty pending summary dikhao",
+      "VANI, franchise performance compare karo",
+      "VANI, support ticket preview banao",
+      "VANI, franchise renewal risk batao"
+    ],
+    safety: "Legal, agreement, royalty aur territory changes owner verification ke bina nahi honge. Sensitive details loudly nahi bolungi."
+  });
+});
+
+app.post("/api/part103/vani/command", (req, res) => {
+  const body = req.body || {};
+  const result = part103BuildFranchiseManagement({
+    command: body.command || body.q || "",
+    role: body.role || "institute_owner",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    franchiseId: body.franchiseId,
+    assignedFranchiseId: body.assignedFranchiseId,
+    branchId: body.branchId,
+    studentId: body.studentId,
+    parentId: body.parentId,
+    body
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 103 — Franchise Management", ...result });
+});
+
+app.get("/api/part103/vani/command", (req, res) => {
+  const result = part103BuildFranchiseManagement({
+    command: req.query.command || req.query.q || "",
+    role: req.query.role || "institute_owner",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    franchiseId: req.query.franchiseId,
+    assignedFranchiseId: req.query.assignedFranchiseId,
+    branchId: req.query.branchId,
+    studentId: req.query.studentId,
+    parentId: req.query.parentId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 103 — Franchise Management", ...result });
+});
+
+app.get("/api/part103/audit-log", (req, res) => {
+  res.json({
+    success: true,
+    auditLog: [
+      { event: "franchise_dashboard_preview", role: "institute_owner", createdAt: new Date().toISOString() },
+      { event: "owner_verification_policy", rule: "Agreement/royalty/territory/suspension changes require owner verification.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part103/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "franchise_management_created", message: "Part 103 Franchise Management active.", createdAt: new Date().toISOString() },
+      { type: "franchise_preview_ready", message: "Owner can view onboarding, compliance, royalty and support previews.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part103/checklist", (req, res) => {
+  res.json({ success: true, checklist: part103Checklist });
+});
+
+app.get("/api/part103/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part103-franchise-management-readiness",
+    ownerVerificationRequiredForSensitiveExports: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      features: part103FranchiseFeatures,
+      roles: part103RoleRules,
+      franchises: part103DemoFranchises,
+      checklist: part103Checklist,
+      privacyPolicy: part103PrivacyPolicy()
+    }
+  });
+});
+
+app.get("/api/part103/demo", (req, res) => {
+  const command = "VANI, franchise performance compare karo aur South franchise compliance check karo";
+  const result = part103BuildFranchiseManagement({
+    command,
+    role: "institute_owner",
+    instituteId: "NX-DEMO-INST-001",
+    body: {}
+  });
+  res.json({
+    success: true,
+    demo: {
+      command,
+      result,
+      nextPart: "Part 104 — Branch Comparison and Benchmarking"
+    }
+  });
+});
+// ================= END PART 103 =================
+
 
 
 
