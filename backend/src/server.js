@@ -10405,6 +10405,12 @@ const modulePageRoutes = {
   "/vani-camera-studio": "camera-studio-integration.html",
   "/live-class-camera": "camera-studio-integration.html",
   "/teacher-studio": "camera-studio-integration.html",
+  "/multi-branch-command-centre": "multi-branch-command-centre.html",
+  "/multi-branch-command-center": "multi-branch-command-centre.html",
+  "/branch-command-centre": "multi-branch-command-centre.html",
+  "/branch-command-center": "multi-branch-command-centre.html",
+  "/vani-branch-command": "multi-branch-command-centre.html",
+  "/owner-branch-centre": "multi-branch-command-centre.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -24092,6 +24098,730 @@ app.get("/api/part101/demo", (req, res) => {
   });
 });
 // ================= END PART 101 =================
+
+// ================= PART 102 — MULTI-BRANCH COMMAND CENTRE =================
+// NAXORA OS 2.0 Multi-Branch Command Centre.
+// This part creates owner-first multi-branch oversight foundation:
+// branch registry preview, branch KPI dashboard, branch comparison, alerts,
+// cross-branch health score, VANI owner/branch commands and permission-safe
+// access control. It does not expose private student/finance data loudly and
+// does not export or change branch settings without owner verification.
+
+const part102CommandCentreFeatures = [
+  {
+    key: "branch_registry",
+    name: "Branch Registry Preview",
+    summary: "Shows all authorised institute branches with status and manager mapping.",
+    problemSolved: "Owner can see branch network in one place."
+  },
+  {
+    key: "multi_branch_kpis",
+    name: "Multi-Branch KPI Dashboard",
+    summary: "Admissions, fees, attendance, live class and device readiness preview.",
+    problemSolved: "Owner can track branch performance quickly."
+  },
+  {
+    key: "branch_comparison",
+    name: "Branch Comparison",
+    summary: "Compares branches by growth, collection, attendance and quality score.",
+    problemSolved: "Best and weak branches become visible."
+  },
+  {
+    key: "branch_alerts",
+    name: "Branch Alerts",
+    summary: "Highlights fee risk, attendance drop, enquiry delay and device issues.",
+    problemSolved: "Owner can act before issues grow."
+  },
+  {
+    key: "role_scoped_branch_access",
+    name: "Role-Scoped Branch Access",
+    summary: "Owner sees all authorised branches; branch manager sees assigned branch only.",
+    problemSolved: "Multi-branch data stays permission-safe."
+  },
+  {
+    key: "branch_action_preview",
+    name: "Branch Action Preview",
+    summary: "Creates safe action drafts for follow-up, staff check and branch review.",
+    problemSolved: "Owner gets next steps without risky auto-actions."
+  },
+  {
+    key: "vani_branch_command",
+    name: "VANI Multi-Branch Commands",
+    summary: "VANI can compare branches, show alerts and prepare action plan drafts.",
+    problemSolved: "Owner can manage branch network through voice."
+  }
+];
+
+const part102RoleRules = [
+  { role: "institute_owner", allowed: true, scope: "Can view and compare all authorised institute branches.", canViewAllBranches: true, canCompare: true, canCreateActionPlan: true, canExport: true, canChangeSettings: true },
+  { role: "branch_manager", allowed: true, scope: "Can view assigned branch only and prepare branch-level action plan.", canViewAllBranches: false, canCompare: false, canCreateActionPlan: true, canExport: false, canChangeSettings: false },
+  { role: "teacher", allowed: true, scope: "Can view assigned branch academic/classroom summary only.", canViewAllBranches: false, canCompare: false, canCreateActionPlan: false, canExport: false, canChangeSettings: false, academicSummaryOnly: true },
+  { role: "accountant", allowed: true, scope: "Can view assigned branch finance-safe summary by permission.", canViewAllBranches: false, canCompare: false, canCreateActionPlan: false, canExport: false, canChangeSettings: false, financeSummaryOnly: true },
+  { role: "receptionist_counsellor", allowed: true, scope: "Can view assigned branch enquiry/admission summary only.", canViewAllBranches: false, canCompare: false, canCreateActionPlan: true, canExport: false, canChangeSettings: false, enquirySummaryOnly: true },
+  { role: "student", allowed: true, scope: "Can view own branch public/student-safe status only.", canViewAllBranches: false, canCompare: false, canCreateActionPlan: false, canExport: false, canChangeSettings: false, selfOnly: true },
+  { role: "parent", allowed: true, scope: "Can view linked child's branch public/parent-safe status only.", canViewAllBranches: false, canCompare: false, canCreateActionPlan: false, canExport: false, canChangeSettings: false, viewOnly: true },
+  { role: "naxora_super_admin", allowed: false, scope: "Platform support only; no unrestricted institute branch-private access.", canViewAllBranches: false, canCompare: false, canCreateActionPlan: false, canExport: false, canChangeSettings: false }
+];
+
+const part102DemoBranches = [
+  {
+    branchId: "BR-DEMO-001",
+    branchName: "NAXORA Main Branch",
+    city: "Delhi",
+    managerId: "BM-DEMO-001",
+    status: "active_preview",
+    students: 420,
+    teachers: 28,
+    admissionsThisMonth: 48,
+    enquiriesOpen: 82,
+    feeCollectionPercent: 91,
+    attendancePercent: 88,
+    liveClassesThisWeek: 64,
+    pendingFollowups: 14,
+    deviceReadinessPercent: 86,
+    vaniActionsPreview: 118
+  },
+  {
+    branchId: "BR-DEMO-002",
+    branchName: "NAXORA South Branch",
+    city: "Gurugram",
+    managerId: "BM-DEMO-002",
+    status: "needs_attention_preview",
+    students: 265,
+    teachers: 18,
+    admissionsThisMonth: 23,
+    enquiriesOpen: 61,
+    feeCollectionPercent: 74,
+    attendancePercent: 79,
+    liveClassesThisWeek: 38,
+    pendingFollowups: 31,
+    deviceReadinessPercent: 68,
+    vaniActionsPreview: 72
+  },
+  {
+    branchId: "BR-DEMO-003",
+    branchName: "NAXORA West Branch",
+    city: "Noida",
+    managerId: "BM-DEMO-003",
+    status: "active_preview",
+    students: 315,
+    teachers: 22,
+    admissionsThisMonth: 36,
+    enquiriesOpen: 54,
+    feeCollectionPercent: 84,
+    attendancePercent: 91,
+    liveClassesThisWeek: 52,
+    pendingFollowups: 11,
+    deviceReadinessPercent: 92,
+    vaniActionsPreview: 95
+  }
+];
+
+function normalizePart102Role(role) {
+  const r = String(role || "institute_owner").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part102AccessCheck({ role, instituteId, branchId, assignedBranchId, teacherId, studentId, parentId }) {
+  const normalizedRole = normalizePart102Role(role);
+  const rule = part102RoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole,
+    allowed: false,
+    scope: "Unknown or unsupported role.",
+    canViewAllBranches: false,
+    canCompare: false,
+    canCreateActionPlan: false,
+    canExport: false,
+    canChangeSettings: false
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const branchRequiredRoles = ["branch_manager", "teacher", "accountant", "receptionist_counsellor"];
+  const hasBranchScope = branchRequiredRoles.includes(normalizedRole) ? Boolean(String(branchId || assignedBranchId || "").trim()) : true;
+  const studentScoped = normalizedRole !== "student" || Boolean(String(studentId || "").trim());
+  const parentScoped = normalizedRole !== "parent" || Boolean(String(parentId || "").trim() || String(studentId || "").trim());
+  const allowed = Boolean(rule.allowed && hasInstituteId && hasBranchScope && studentScoped && parentScoped && normalizedRole !== "naxora_super_admin");
+
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    branchId: branchId || assignedBranchId || null,
+    assignedBranchId: assignedBranchId || branchId || null,
+    teacherId: teacherId || null,
+    studentId: studentId || null,
+    parentId: parentId || null,
+    allowed,
+    canViewAllBranches: Boolean(rule.canViewAllBranches && allowed),
+    canCompare: Boolean(rule.canCompare && allowed),
+    canCreateActionPlan: Boolean(rule.canCreateActionPlan && allowed),
+    canExport: Boolean(rule.canExport && allowed),
+    canChangeSettings: Boolean(rule.canChangeSettings && allowed),
+    academicSummaryOnly: Boolean(rule.academicSummaryOnly),
+    financeSummaryOnly: Boolean(rule.financeSummaryOnly),
+    enquirySummaryOnly: Boolean(rule.enquirySummaryOnly),
+    selfOnly: Boolean(rule.selfOnly),
+    viewOnly: Boolean(rule.viewOnly),
+    scope: rule.scope,
+    reason: !hasInstituteId
+      ? "Institute ID missing."
+      : !rule.allowed
+        ? rule.scope
+        : !hasBranchScope
+          ? "This role requires assigned branch scope."
+          : !studentScoped
+            ? "Student can view own branch status only; studentId required."
+            : !parentScoped
+              ? "Parent can view linked child branch status only."
+              : "Multi-branch command centre access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    confirmationRequiredFor: ["branch_action_plan_send", "manager_review_schedule", "target_update", "branch_notice_send"],
+    ownerVerificationRequiredFor: ["cross_branch_export", "branch_settings_change", "branch_delete", "manager_reassignment", "bulk_message_send"]
+  };
+}
+
+function part102ParseCommand(text = "", body = {}) {
+  const input = String(text || body.command || body.q || "").trim();
+  const intent = /compare|comparison|best|weak|rank/i.test(input) ? "compare"
+    : /alert|risk|issue|problem|attention/i.test(input) ? "alerts"
+      : /fee|collection|pending/i.test(input) ? "fee_summary"
+        : /attendance|present|absent/i.test(input) ? "attendance_summary"
+          : /admission|enquiry|lead|follow/i.test(input) ? "admission_summary"
+            : /device|camera|board|biometric|studio/i.test(input) ? "device_summary"
+              : /action|plan|next step|improve/i.test(input) ? "action_plan"
+                : /status|overview|dashboard|branch/i.test(input) ? "overview"
+                  : "help";
+  return {
+    intent,
+    branchId: body.branchId || (/south|002/i.test(input) ? "BR-DEMO-002" : /west|003/i.test(input) ? "BR-DEMO-003" : "BR-DEMO-001"),
+    rawCommand: input
+  };
+}
+
+function part102BranchHealth(branch) {
+  const growthScore = Math.min(100, Math.round((branch.admissionsThisMonth / 50) * 100));
+  const collectionScore = branch.feeCollectionPercent;
+  const attendanceScore = branch.attendancePercent;
+  const deviceScore = branch.deviceReadinessPercent;
+  const followupPenalty = Math.min(25, Math.round(branch.pendingFollowups / 2));
+  const healthScore = Math.max(0, Math.round((growthScore + collectionScore + attendanceScore + deviceScore) / 4 - followupPenalty));
+  const issues = [];
+  if (branch.feeCollectionPercent < 80) issues.push("fee_collection_low");
+  if (branch.attendancePercent < 82) issues.push("attendance_needs_attention");
+  if (branch.pendingFollowups > 20) issues.push("followups_delayed");
+  if (branch.deviceReadinessPercent < 75) issues.push("classroom_device_readiness_low");
+  return {
+    branchId: branch.branchId,
+    branchName: branch.branchName,
+    healthScore,
+    grade: healthScore >= 85 ? "A" : healthScore >= 70 ? "B" : healthScore >= 55 ? "C" : "D",
+    issues,
+    recommendation: issues.length ? "Branch manager review aur action plan required." : "Branch performance stable."
+  };
+}
+
+function part102FilterBranchesForAccess(access, branches = part102DemoBranches) {
+  if (access.canViewAllBranches) return branches;
+  const scopedBranchId = access.branchId || "BR-DEMO-001";
+  return branches.filter((b) => b.branchId === scopedBranchId);
+}
+
+function part102BuildKpiDashboard(access) {
+  const visibleBranches = part102FilterBranchesForAccess(access);
+  const totals = visibleBranches.reduce((acc, b) => {
+    acc.students += b.students;
+    acc.teachers += b.teachers;
+    acc.admissionsThisMonth += b.admissionsThisMonth;
+    acc.enquiriesOpen += b.enquiriesOpen;
+    acc.liveClassesThisWeek += b.liveClassesThisWeek;
+    acc.pendingFollowups += b.pendingFollowups;
+    acc.vaniActionsPreview += b.vaniActionsPreview;
+    acc.feeCollectionWeighted += b.feeCollectionPercent * b.students;
+    acc.attendanceWeighted += b.attendancePercent * b.students;
+    acc.deviceWeighted += b.deviceReadinessPercent * b.students;
+    acc.studentWeight += b.students;
+    return acc;
+  }, { students: 0, teachers: 0, admissionsThisMonth: 0, enquiriesOpen: 0, liveClassesThisWeek: 0, pendingFollowups: 0, vaniActionsPreview: 0, feeCollectionWeighted: 0, attendanceWeighted: 0, deviceWeighted: 0, studentWeight: 0 });
+  return {
+    previewOnly: true,
+    branchCount: visibleBranches.length,
+    totals: {
+      students: totals.students,
+      teachers: totals.teachers,
+      admissionsThisMonth: totals.admissionsThisMonth,
+      enquiriesOpen: totals.enquiriesOpen,
+      liveClassesThisWeek: totals.liveClassesThisWeek,
+      pendingFollowups: totals.pendingFollowups,
+      vaniActionsPreview: totals.vaniActionsPreview,
+      avgFeeCollectionPercent: totals.studentWeight ? Math.round(totals.feeCollectionWeighted / totals.studentWeight) : 0,
+      avgAttendancePercent: totals.studentWeight ? Math.round(totals.attendanceWeighted / totals.studentWeight) : 0,
+      avgDeviceReadinessPercent: totals.studentWeight ? Math.round(totals.deviceWeighted / totals.studentWeight) : 0
+    },
+    visibleBranches,
+    privateScreenFirst: true
+  };
+}
+
+function part102BuildComparison(access) {
+  const visibleBranches = part102FilterBranchesForAccess(access);
+  const ranked = visibleBranches.map((branch) => ({
+    ...branch,
+    health: part102BranchHealth(branch)
+  })).sort((a, b) => b.health.healthScore - a.health.healthScore);
+  return {
+    previewOnly: true,
+    canCompare: Boolean(access.canCompare),
+    rankedBranches: ranked,
+    bestBranch: ranked[0] || null,
+    needsAttention: ranked.filter((b) => b.health.issues.length > 0),
+    comparisonAvailable: ranked.length > 1,
+    note: access.canCompare ? "Owner comparison preview ready." : "Role can view scoped branch summary only."
+  };
+}
+
+function part102BuildAlerts(access) {
+  const visibleBranches = part102FilterBranchesForAccess(access);
+  const alerts = [];
+  for (const b of visibleBranches) {
+    if (b.feeCollectionPercent < 80) alerts.push({ type: "fee_collection_low", level: "high", branchId: b.branchId, branchName: b.branchName, message: `Fee collection ${b.feeCollectionPercent}% hai. Accountant/manager review required.` });
+    if (b.attendancePercent < 82) alerts.push({ type: "attendance_drop", level: "medium", branchId: b.branchId, branchName: b.branchName, message: `Attendance ${b.attendancePercent}% hai. Batch-wise check required.` });
+    if (b.pendingFollowups > 20) alerts.push({ type: "followup_delay", level: "high", branchId: b.branchId, branchName: b.branchName, message: `${b.pendingFollowups} pending follow-ups. Counsellor action plan needed.` });
+    if (b.deviceReadinessPercent < 75) alerts.push({ type: "device_readiness_low", level: "medium", branchId: b.branchId, branchName: b.branchName, message: `Device readiness ${b.deviceReadinessPercent}%. Classroom hardware check needed.` });
+  }
+  return {
+    previewOnly: true,
+    alerts,
+    alertCount: alerts.length,
+    highPriorityCount: alerts.filter((a) => a.level === "high").length,
+    privateScreenFirst: true
+  };
+}
+
+function part102BranchActionPlan(access, branchId) {
+  const branch = part102DemoBranches.find((b) => b.branchId === branchId) || part102FilterBranchesForAccess(access)[0] || part102DemoBranches[0];
+  const health = part102BranchHealth(branch);
+  const actions = [];
+  if (branch.feeCollectionPercent < 80) actions.push("Fee pending list review karke polite reminder draft banayein.");
+  if (branch.attendancePercent < 82) actions.push("Low attendance batches identify karke teacher/parent follow-up schedule karein.");
+  if (branch.pendingFollowups > 20) actions.push("Pending enquiries ko hot/warm/cold priority me divide karke counsellor task draft banayein.");
+  if (branch.deviceReadinessPercent < 75) actions.push("Biometric/camera/digital board readiness check schedule karein.");
+  if (!actions.length) actions.push("Branch stable hai. Weekly growth review continue karein.");
+  return {
+    previewOnly: true,
+    canCreateActionPlan: Boolean(access.canCreateActionPlan),
+    branchId: branch.branchId,
+    branchName: branch.branchName,
+    health,
+    actionPlan: actions,
+    autoSend: false,
+    confirmationRequired: true,
+    ownerVerificationRequiredForSensitiveActions: true
+  };
+}
+
+function part102RoleScopedSummary(access) {
+  const dashboard = part102BuildKpiDashboard(access);
+  if (access.academicSummaryOnly) {
+    return {
+      previewOnly: true,
+      scope: "academic_summary_only",
+      visibleData: dashboard.visibleBranches.map((b) => ({
+        branchId: b.branchId,
+        branchName: b.branchName,
+        attendancePercent: b.attendancePercent,
+        liveClassesThisWeek: b.liveClassesThisWeek,
+        deviceReadinessPercent: b.deviceReadinessPercent
+      })),
+      hiddenData: ["fees detail", "private student records", "owner financial exports"]
+    };
+  }
+  if (access.financeSummaryOnly) {
+    return {
+      previewOnly: true,
+      scope: "finance_summary_only",
+      visibleData: dashboard.visibleBranches.map((b) => ({
+        branchId: b.branchId,
+        branchName: b.branchName,
+        feeCollectionPercent: b.feeCollectionPercent
+      })),
+      hiddenData: ["student private profiles", "academic notes", "parent phone details"]
+    };
+  }
+  if (access.enquirySummaryOnly) {
+    return {
+      previewOnly: true,
+      scope: "enquiry_summary_only",
+      visibleData: dashboard.visibleBranches.map((b) => ({
+        branchId: b.branchId,
+        branchName: b.branchName,
+        admissionsThisMonth: b.admissionsThisMonth,
+        enquiriesOpen: b.enquiriesOpen,
+        pendingFollowups: b.pendingFollowups
+      })),
+      hiddenData: ["fees detail", "private student notes", "owner exports"]
+    };
+  }
+  if (access.selfOnly || access.viewOnly) {
+    return {
+      previewOnly: true,
+      scope: access.selfOnly ? "student_own_branch_status" : "parent_linked_child_branch_status",
+      visibleData: dashboard.visibleBranches.map((b) => ({
+        branchName: b.branchName,
+        city: b.city,
+        status: b.status,
+        liveClassesThisWeek: b.liveClassesThisWeek
+      })),
+      hiddenData: ["branch financials", "staff data", "other student data"]
+    };
+  }
+  return {
+    previewOnly: true,
+    scope: access.canViewAllBranches ? "owner_all_authorised_branches" : "assigned_branch",
+    visibleData: dashboard.visibleBranches,
+    hiddenData: access.canViewAllBranches ? [] : ["other branches"]
+  };
+}
+
+function part102PrivacyPolicy() {
+  return {
+    previewOnly: true,
+    privateScreenFirst: true,
+    sensitiveDataNotSpokenLoudly: [
+      "fee defaulter names",
+      "student phone/address",
+      "parent contact details",
+      "staff salary/payroll detail",
+      "branch financial exports",
+      "private academic notes"
+    ],
+    allowedVoiceSummary: [
+      "branch health score",
+      "count-level alerts",
+      "general recommendations",
+      "non-sensitive KPI summaries"
+    ],
+    confirmationRequiredFor: ["branch_notice_send", "manager_review_schedule", "target_update"],
+    ownerVerificationRequiredFor: ["cross_branch_export", "branch_settings_change", "bulk_message_send", "manager_reassignment"],
+    safety: "VANI branch summaries should speak count-level info and show sensitive details privately on screen."
+  };
+}
+
+function part102BuildCommandCentre({ command, role, instituteId, branchId, assignedBranchId, teacherId, studentId, parentId, body = {} }) {
+  const parsed = part102ParseCommand(command, body);
+  const access = part102AccessCheck({
+    role,
+    instituteId,
+    branchId: body.branchId || branchId || parsed.branchId,
+    assignedBranchId: body.assignedBranchId || assignedBranchId,
+    teacherId,
+    studentId,
+    parentId
+  });
+
+  const dashboard = part102BuildKpiDashboard(access);
+  const comparison = part102BuildComparison(access);
+  const alerts = part102BuildAlerts(access);
+  const actionPlan = part102BranchActionPlan(access, body.branchId || branchId || parsed.branchId);
+  const roleScopedSummary = part102RoleScopedSummary(access);
+  const privacyPolicy = part102PrivacyPolicy();
+
+  let replyText = "";
+  let nextAction = "none";
+  if (!access.allowed) {
+    replyText = "Is role/scope ko multi-branch command centre access nahi hai.";
+    nextAction = "blocked";
+  } else if (parsed.intent === "compare") {
+    replyText = access.canCompare
+      ? "Branch comparison preview ready hai. Best aur needs-attention branches screen par dikh rahe hain."
+      : "Is role ko cross-branch comparison permission nahi hai. Assigned branch summary dikh raha hai.";
+    nextAction = "show_branch_comparison";
+  } else if (parsed.intent === "alerts") {
+    replyText = `Branch alerts preview ready hai. ${alerts.alertCount} alerts me ${alerts.highPriorityCount} high priority hain. Sensitive details screen par private hain.`;
+    nextAction = "show_branch_alerts";
+  } else if (parsed.intent === "fee_summary") {
+    replyText = `Fee collection summary ready hai. Average collection ${dashboard.totals.avgFeeCollectionPercent}% hai. Detailed list privately screen par hi rahegi.`;
+    nextAction = "show_fee_summary";
+  } else if (parsed.intent === "attendance_summary") {
+    replyText = `Attendance summary ready hai. Average attendance ${dashboard.totals.avgAttendancePercent}% hai.`;
+    nextAction = "show_attendance_summary";
+  } else if (parsed.intent === "admission_summary") {
+    replyText = `Admission summary ready hai. ${dashboard.totals.admissionsThisMonth} admissions aur ${dashboard.totals.pendingFollowups} pending follow-ups preview me hain.`;
+    nextAction = "show_admission_summary";
+  } else if (parsed.intent === "device_summary") {
+    replyText = `Device readiness summary ready hai. Average readiness ${dashboard.totals.avgDeviceReadinessPercent}% hai.`;
+    nextAction = "show_device_summary";
+  } else if (parsed.intent === "action_plan") {
+    replyText = access.canCreateActionPlan
+      ? "Branch action plan draft ready hai. Send/schedule confirmation ke bina nahi hoga."
+      : "Is role ko branch action plan create permission nahi hai.";
+    nextAction = "show_action_plan";
+  } else {
+    replyText = "Multi-Branch Command Centre overview ready hai. Branch KPI, alerts, comparison aur action plan preview available hain.";
+    nextAction = "show_command_centre_overview";
+  }
+
+  return {
+    access,
+    parsed,
+    branches: part102FilterBranchesForAccess(access),
+    allBranchPreviewCount: part102DemoBranches.length,
+    dashboard,
+    comparison,
+    alerts,
+    actionPlan,
+    roleScopedSummary,
+    privacyPolicy,
+    replyText,
+    spokenSafeSummary: replyText,
+    privateScreenFirst: true,
+    nextAction,
+    confirmationRequiredFor: ["branch_action_plan_send", "manager_review_schedule", "target_update", "branch_notice_send"],
+    ownerVerificationRequiredFor: ["cross_branch_export", "branch_settings_change", "branch_delete", "manager_reassignment", "bulk_message_send"],
+    auditLog: {
+      event: "part102_multi_branch_command_centre",
+      role: access.role,
+      intent: parsed.intent,
+      branchId: parsed.branchId,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+const part102Checklist = [
+  "Multi-Branch Command Centre page opens",
+  "Status API returns success true",
+  "Branch registry preview works",
+  "Multi-branch KPI dashboard works",
+  "Branch comparison works for owner",
+  "Assigned branch scope works for branch manager",
+  "Branch alerts appear",
+  "Action plan draft appears",
+  "Role scoped summary hides sensitive data",
+  "Private-screen-first privacy policy works",
+  "Student/parent scoped modes work",
+  "Accountant finance-safe summary works",
+  "VANI multi-branch command works",
+  "Previous Part 1–101 routes remain preserved"
+];
+
+app.get("/api/part102/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 102 — Multi-Branch Command Centre",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 102,
+    nextPart: "Part 103 — Franchise Management",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/multi-branch-command-centre", "/multi-branch-command-center", "/branch-command-centre", "/branch-command-center", "/vani-branch-command", "/owner-branch-centre"],
+    apiRoutes: [
+      "/api/part102/config",
+      "/api/part102/features",
+      "/api/part102/roles",
+      "/api/part102/access-check",
+      "/api/part102/branches",
+      "/api/part102/dashboard",
+      "/api/part102/branch-health",
+      "/api/part102/branch-comparison",
+      "/api/part102/alerts",
+      "/api/part102/action-plan",
+      "/api/part102/role-scoped-summary",
+      "/api/part102/privacy-policy",
+      "/api/part102/vani/greeting",
+      "/api/part102/vani/command"
+    ],
+    multiBranchCommandCentreEnabled: true
+  });
+});
+
+app.get("/api/part102/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "Multi-Branch Command Centre",
+    appType: "multi_branch_command_centre_foundation",
+    version: "2.0-multi-branch-command-centre",
+    policy: {
+      previewFirst: true,
+      ownerAllBranchesOnly: true,
+      branchManagerAssignedBranchOnly: true,
+      privateScreenFirst: true,
+      sensitiveDataNotSpokenLoudly: true,
+      noAutoBranchSettingChanges: true,
+      ownerVerificationForExportsAndSettings: true
+    }
+  });
+});
+
+app.get("/api/part102/features", (req, res) => {
+  res.json({ success: true, features: part102CommandCentreFeatures });
+});
+
+app.get("/api/part102/roles", (req, res) => {
+  res.json({ success: true, roles: part102RoleRules });
+});
+
+app.get("/api/part102/access-check", (req, res) => {
+  res.json({ success: true, access: part102AccessCheck(req.query || {}) });
+});
+
+app.get("/api/part102/branches", (req, res) => {
+  const access = part102AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, previewOnly: true, branches: part102FilterBranchesForAccess(access) });
+});
+
+app.get("/api/part102/dashboard", (req, res) => {
+  const access = part102AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, dashboard: part102BuildKpiDashboard(access) });
+});
+
+app.get("/api/part102/branch-health", (req, res) => {
+  const access = part102AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const branches = part102FilterBranchesForAccess(access);
+  res.json({ success: true, access, branchHealth: branches.map(part102BranchHealth) });
+});
+
+app.get("/api/part102/branch-comparison", (req, res) => {
+  const access = part102AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, comparison: part102BuildComparison(access) });
+});
+
+app.get("/api/part102/alerts", (req, res) => {
+  const access = part102AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, alerts: part102BuildAlerts(access) });
+});
+
+app.get("/api/part102/action-plan", (req, res) => {
+  const access = part102AccessCheck(req.query || {});
+  if (!access.allowed || !access.canCreateActionPlan) return res.status(403).json({ success: false, access, message: "This role cannot create branch action plan preview." });
+  res.json({ success: true, access, actionPlan: part102BranchActionPlan(access, req.query.branchId || access.branchId) });
+});
+
+app.get("/api/part102/role-scoped-summary", (req, res) => {
+  const access = part102AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, roleScopedSummary: part102RoleScopedSummary(access) });
+});
+
+app.get("/api/part102/privacy-policy", (req, res) => {
+  res.json({ success: true, privacyPolicy: part102PrivacyPolicy() });
+});
+
+app.get("/api/part102/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI Branch Command",
+    greeting: "Namaste, main VANI Multi-Branch Command Assistant hoon. Aap branch overview, comparison, alerts, fees, attendance, admissions ya action plan pooch sakte ho.",
+    exampleCommands: [
+      "VANI, saari branches ka overview dikhao",
+      "VANI, branches compare karo",
+      "VANI, high priority branch alerts batao",
+      "VANI, fee collection summary dikhao",
+      "VANI, attendance summary batao",
+      "VANI, South branch action plan banao"
+    ],
+    safety: "Sensitive fee/student/staff details loud nahi bolungi. Screen par private dikhengi. Export/settings confirmation ke bina nahi honge."
+  });
+});
+
+app.post("/api/part102/vani/command", (req, res) => {
+  const body = req.body || {};
+  const result = part102BuildCommandCentre({
+    command: body.command || body.q || "",
+    role: body.role || "institute_owner",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId,
+    assignedBranchId: body.assignedBranchId,
+    teacherId: body.teacherId,
+    studentId: body.studentId,
+    parentId: body.parentId,
+    body
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 102 — Multi-Branch Command Centre", ...result });
+});
+
+app.get("/api/part102/vani/command", (req, res) => {
+  const result = part102BuildCommandCentre({
+    command: req.query.command || req.query.q || "",
+    role: req.query.role || "institute_owner",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    assignedBranchId: req.query.assignedBranchId,
+    teacherId: req.query.teacherId,
+    studentId: req.query.studentId,
+    parentId: req.query.parentId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 102 — Multi-Branch Command Centre", ...result });
+});
+
+app.get("/api/part102/audit-log", (req, res) => {
+  res.json({
+    success: true,
+    auditLog: [
+      { event: "multi_branch_dashboard_preview", role: "institute_owner", createdAt: new Date().toISOString() },
+      { event: "private_screen_first_policy", rule: "Sensitive branch/student/fee/staff details are not spoken loudly.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part102/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "multi_branch_command_centre_created", message: "Part 102 Multi-Branch Command Centre active.", createdAt: new Date().toISOString() },
+      { type: "owner_branch_network_ready", message: "Owner can compare branches and view alerts in preview mode.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part102/checklist", (req, res) => {
+  res.json({ success: true, checklist: part102Checklist });
+});
+
+app.get("/api/part102/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part102-multi-branch-command-centre-readiness",
+    ownerVerificationRequiredForSensitiveExports: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      features: part102CommandCentreFeatures,
+      roles: part102RoleRules,
+      branches: part102DemoBranches,
+      checklist: part102Checklist,
+      privacyPolicy: part102PrivacyPolicy()
+    }
+  });
+});
+
+app.get("/api/part102/demo", (req, res) => {
+  const command = "VANI, branches compare karo aur high priority alerts batao";
+  const result = part102BuildCommandCentre({
+    command,
+    role: "institute_owner",
+    instituteId: "NX-DEMO-INST-001",
+    body: {}
+  });
+  res.json({
+    success: true,
+    demo: {
+      command,
+      result,
+      nextPart: "Part 103 — Franchise Management"
+    }
+  });
+});
+// ================= END PART 102 =================
+
 
 
 
