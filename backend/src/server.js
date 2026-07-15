@@ -10429,6 +10429,12 @@ const modulePageRoutes = {
   "/vani-student-support": "advanced-student-support-analytics.html",
   "/teacher-student-support": "advanced-student-support-analytics.html",
   "/owner-student-support-analytics": "advanced-student-support-analytics.html",
+  "/business-forecasting": "business-forecasting.html",
+  "/business-forecast": "business-forecasting.html",
+  "/owner-business-forecasting": "business-forecasting.html",
+  "/vani-business-forecasting": "business-forecasting.html",
+  "/revenue-forecasting": "business-forecasting.html",
+  "/institute-forecasting": "business-forecasting.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -27410,6 +27416,644 @@ app.get("/api/part105/demo", (req, res) => {
   });
 });
 // ================= END PART 105 =================
+
+// ================= PART 106 — BUSINESS FORECASTING =================
+// NAXORA OS 2.0 Business Forecasting.
+// This part adds owner-first forecasting foundation for admissions, revenue,
+// fees, expenses, cashflow, capacity, staff workload, risk and growth scenarios.
+// It uses rule-based demo data only, creates preview forecasts, and never gives
+// financial guarantees or changes targets/budgets without owner verification.
+
+const part106BusinessFeatures = [
+  { key: "admission_forecast", name: "Admission Forecast", summary: "Forecasts next 30/60/90 day admissions using enquiries, conversions and seasonality.", problemSolved: "Owner can plan batches and counsellor capacity." },
+  { key: "revenue_forecast", name: "Revenue Forecast", summary: "Forecasts fee revenue, pending collection and royalty/subscription-safe income preview.", problemSolved: "Owner can see expected income early." },
+  { key: "expense_cashflow_forecast", name: "Expense and Cashflow Forecast", summary: "Projects monthly expenses and cashflow gap preview.", problemSolved: "Owner can avoid surprise cash crunch." },
+  { key: "capacity_forecast", name: "Capacity Forecast", summary: "Predicts batch, teacher and classroom capacity pressure.", problemSolved: "Institute can hire/add batches at the right time." },
+  { key: "risk_forecast", name: "Risk Forecast", summary: "Highlights low conversion, fee delay, attendance drop and expense pressure risks.", problemSolved: "Business risks become visible earlier." },
+  { key: "scenario_planning", name: "Scenario Planning", summary: "Creates base, optimistic and conservative forecast scenarios.", problemSolved: "Owner can compare possible outcomes safely." },
+  { key: "forecast_action_plan", name: "Forecast Action Plan Draft", summary: "Creates action drafts for admissions, fees, staffing and marketing.", problemSolved: "Forecast becomes practical next steps." },
+  { key: "vani_business_forecasting", name: "VANI Business Forecasting", summary: "VANI can forecast revenue, admissions, cashflow, risks and action plans.", problemSolved: "Owner can ask business forecast questions by voice." }
+];
+
+const part106RoleRules = [
+  { role: "institute_owner", allowed: true, scope: "Can view authorised business forecasts and create scenario/action previews.", canViewForecast: true, canViewFinancials: true, canCreateScenario: true, canCreateActionPlan: true, canExport: true },
+  { role: "branch_manager", allowed: true, scope: "Can view assigned branch forecast summary and action plan preview.", canViewForecast: true, canViewFinancials: false, canCreateScenario: true, canCreateActionPlan: true, canExport: false, assignedBranchOnly: true },
+  { role: "accountant", allowed: true, scope: "Can view finance/cashflow forecast summary by permission.", canViewForecast: true, canViewFinancials: true, canCreateScenario: false, canCreateActionPlan: false, canExport: false, financeSummaryOnly: true },
+  { role: "receptionist_counsellor", allowed: true, scope: "Can view admission/enquiry forecast summary only.", canViewForecast: true, canViewFinancials: false, canCreateScenario: false, canCreateActionPlan: true, canExport: false, admissionSummaryOnly: true },
+  { role: "teacher", allowed: true, scope: "Can view capacity/workload forecast summary only.", canViewForecast: true, canViewFinancials: false, canCreateScenario: false, canCreateActionPlan: false, canExport: false, capacitySummaryOnly: true },
+  { role: "student", allowed: true, scope: "Can view own learning/service-safe institute update only.", canViewForecast: false, canViewFinancials: false, canCreateScenario: false, canCreateActionPlan: false, canExport: false, selfOnly: true },
+  { role: "parent", allowed: true, scope: "Can view linked child's service-safe institute update only.", canViewForecast: false, canViewFinancials: false, canCreateScenario: false, canCreateActionPlan: false, canExport: false, viewOnly: true },
+  { role: "naxora_super_admin", allowed: false, scope: "Platform support only; no unrestricted institute business forecast access.", canViewForecast: false, canViewFinancials: false, canCreateScenario: false, canCreateActionPlan: false, canExport: false }
+];
+
+const part106DemoBusiness = {
+  instituteId: "NX-DEMO-INST-001",
+  month: "2026-07",
+  branches: [
+    { branchId: "BR-DEMO-001", branchName: "Main Branch", enquiries: 210, hotLeads: 64, conversionPercent: 30, currentStudents: 420, monthlyFeeRevenue: 1260000, pendingFees: 145000, monthlyExpenses: 820000, teacherUtilizationPercent: 82, classroomUtilizationPercent: 76, marketingSpend: 62000, churnRiskStudents: 12 },
+    { branchId: "BR-DEMO-002", branchName: "South Branch", enquiries: 150, hotLeads: 39, conversionPercent: 22, currentStudents: 265, monthlyFeeRevenue: 675000, pendingFees: 210000, monthlyExpenses: 540000, teacherUtilizationPercent: 88, classroomUtilizationPercent: 84, marketingSpend: 48000, churnRiskStudents: 21 },
+    { branchId: "BR-DEMO-003", branchName: "West Branch", enquiries: 178, hotLeads: 52, conversionPercent: 28, currentStudents: 315, monthlyFeeRevenue: 910000, pendingFees: 98000, monthlyExpenses: 620000, teacherUtilizationPercent: 79, classroomUtilizationPercent: 72, marketingSpend: 52000, churnRiskStudents: 9 }
+  ],
+  avgFeePerAdmission: 18000,
+  seasonalityMultiplier: 1.08,
+  forecastDisclaimer: "Forecast is rule-based preview only, not a financial guarantee."
+};
+
+function normalizePart106Role(role) {
+  const r = String(role || "institute_owner").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part106AccessCheck({ role, instituteId, branchId, assignedBranchId, studentId, parentId }) {
+  const normalizedRole = normalizePart106Role(role);
+  const rule = part106RoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole, allowed: false, scope: "Unknown or unsupported role.",
+    canViewForecast: false, canViewFinancials: false, canCreateScenario: false, canCreateActionPlan: false, canExport: false
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const branchRequired = ["branch_manager", "accountant", "teacher", "receptionist_counsellor"].includes(normalizedRole) ? Boolean(String(branchId || assignedBranchId || "").trim()) : true;
+  const studentScoped = normalizedRole !== "student" || Boolean(String(studentId || "").trim());
+  const parentScoped = normalizedRole !== "parent" || Boolean(String(parentId || "").trim() || String(studentId || "").trim());
+  const allowed = Boolean(rule.allowed && hasInstituteId && branchRequired && studentScoped && parentScoped && normalizedRole !== "naxora_super_admin");
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    branchId: branchId || assignedBranchId || null,
+    assignedBranchId: assignedBranchId || branchId || null,
+    studentId: studentId || null,
+    parentId: parentId || null,
+    allowed,
+    canViewForecast: Boolean(rule.canViewForecast && allowed),
+    canViewFinancials: Boolean(rule.canViewFinancials && allowed),
+    canCreateScenario: Boolean(rule.canCreateScenario && allowed),
+    canCreateActionPlan: Boolean(rule.canCreateActionPlan && allowed),
+    canExport: Boolean(rule.canExport && allowed),
+    assignedBranchOnly: Boolean(rule.assignedBranchOnly),
+    financeSummaryOnly: Boolean(rule.financeSummaryOnly),
+    admissionSummaryOnly: Boolean(rule.admissionSummaryOnly),
+    capacitySummaryOnly: Boolean(rule.capacitySummaryOnly),
+    selfOnly: Boolean(rule.selfOnly),
+    viewOnly: Boolean(rule.viewOnly),
+    scope: rule.scope,
+    reason: !hasInstituteId ? "Institute ID missing." :
+      !rule.allowed ? rule.scope :
+      !branchRequired ? "This role requires assigned branch scope." :
+      !studentScoped ? "Student can view own service-safe update only." :
+      !parentScoped ? "Parent can view linked child service-safe update only." :
+      "Business Forecasting access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    confirmationRequiredFor: ["forecast_action_plan_send", "target_update", "budget_change", "campaign_budget_apply", "staff_hiring_task_create"],
+    ownerVerificationRequiredFor: ["financial_forecast_export", "budget_change", "fee_target_change", "bulk_campaign_send", "business_rule_change"]
+  };
+}
+
+function part106VisibleBranches(access) {
+  if (access.role === "institute_owner") return part106DemoBusiness.branches;
+  const branchId = access.branchId || access.assignedBranchId || "BR-DEMO-001";
+  return part106DemoBusiness.branches.filter((b) => b.branchId === branchId);
+}
+
+function part106Totals(branches) {
+  return branches.reduce((acc, b) => {
+    acc.enquiries += b.enquiries;
+    acc.hotLeads += b.hotLeads;
+    acc.currentStudents += b.currentStudents;
+    acc.monthlyFeeRevenue += b.monthlyFeeRevenue;
+    acc.pendingFees += b.pendingFees;
+    acc.monthlyExpenses += b.monthlyExpenses;
+    acc.marketingSpend += b.marketingSpend;
+    acc.churnRiskStudents += b.churnRiskStudents;
+    acc.teacherUtilizationWeighted += b.teacherUtilizationPercent * b.currentStudents;
+    acc.classroomUtilizationWeighted += b.classroomUtilizationPercent * b.currentStudents;
+    acc.studentWeight += b.currentStudents;
+    return acc;
+  }, { enquiries: 0, hotLeads: 0, currentStudents: 0, monthlyFeeRevenue: 0, pendingFees: 0, monthlyExpenses: 0, marketingSpend: 0, churnRiskStudents: 0, teacherUtilizationWeighted: 0, classroomUtilizationWeighted: 0, studentWeight: 0 });
+}
+
+function part106AdmissionForecast(access, months = 3) {
+  const branches = part106VisibleBranches(access);
+  const forecasts = branches.map((b) => {
+    const baseAdmissions = Math.round(b.hotLeads * (b.conversionPercent / 100) * part106DemoBusiness.seasonalityMultiplier);
+    return {
+      branchId: b.branchId,
+      branchName: b.branchName,
+      next30Days: baseAdmissions,
+      next60Days: Math.round(baseAdmissions * 1.92),
+      next90Days: Math.round(baseAdmissions * 2.78),
+      confidence: b.hotLeads >= 50 ? "medium_high_preview" : "medium_preview",
+      driver: `${b.hotLeads} hot leads and ${b.conversionPercent}% conversion preview`
+    };
+  });
+  return {
+    previewOnly: true,
+    forecasts,
+    totalNext30Days: forecasts.reduce((sum, f) => sum + f.next30Days, 0),
+    totalNext60Days: forecasts.reduce((sum, f) => sum + f.next60Days, 0),
+    totalNext90Days: forecasts.reduce((sum, f) => sum + f.next90Days, 0),
+    disclaimer: part106DemoBusiness.forecastDisclaimer
+  };
+}
+
+function part106RevenueForecast(access) {
+  const admission = part106AdmissionForecast(access);
+  const branches = part106VisibleBranches(access);
+  const totals = part106Totals(branches);
+  const newAdmissionRevenue30 = admission.totalNext30Days * part106DemoBusiness.avgFeePerAdmission;
+  const expectedFeeCollection = Math.round((totals.monthlyFeeRevenue + totals.pendingFees * 0.48 + newAdmissionRevenue30 * 0.72));
+  const conservative = Math.round(expectedFeeCollection * 0.88);
+  const optimistic = Math.round(expectedFeeCollection * 1.14);
+  return {
+    previewOnly: true,
+    canViewFinancials: Boolean(access.canViewFinancials),
+    currentMonthlyFeeRevenue: access.canViewFinancials ? totals.monthlyFeeRevenue : "hidden",
+    pendingFees: access.canViewFinancials ? totals.pendingFees : "hidden",
+    newAdmissionRevenue30: access.canViewFinancials ? newAdmissionRevenue30 : "hidden",
+    forecastCollection30Days: access.canViewFinancials ? expectedFeeCollection : "hidden",
+    conservative30Days: access.canViewFinancials ? conservative : "hidden",
+    optimistic30Days: access.canViewFinancials ? optimistic : "hidden",
+    disclaimer: "Revenue forecast is preview only; actual collection depends on payments, refunds and admissions."
+  };
+}
+
+function part106ExpenseCashflowForecast(access) {
+  const branches = part106VisibleBranches(access);
+  const totals = part106Totals(branches);
+  const revenue = part106RevenueForecast(access);
+  const expectedRevenue = access.canViewFinancials ? Number(revenue.forecastCollection30Days || 0) : 0;
+  const expectedExpenses = Math.round(totals.monthlyExpenses + totals.marketingSpend * 1.1);
+  const netCashflowPreview = expectedRevenue - expectedExpenses;
+  return {
+    previewOnly: true,
+    canViewFinancials: Boolean(access.canViewFinancials),
+    expectedRevenue30Days: access.canViewFinancials ? expectedRevenue : "hidden",
+    expectedExpenses30Days: access.canViewFinancials ? expectedExpenses : "hidden",
+    netCashflowPreview: access.canViewFinancials ? netCashflowPreview : "hidden",
+    cashflowStatus: access.canViewFinancials ? (netCashflowPreview >= 0 ? "positive_preview" : "gap_risk_preview") : "hidden",
+    suggestions: access.canViewFinancials
+      ? (netCashflowPreview >= 0 ? ["Maintain fee collection rhythm.", "Keep marketing ROI under review."] : ["Review pending fee recovery.", "Pause non-critical expenses.", "Owner review recommended."])
+      : ["Finance details hidden for this role."]
+  };
+}
+
+function part106CapacityForecast(access) {
+  const branches = part106VisibleBranches(access);
+  const admission = part106AdmissionForecast(access);
+  const forecasts = branches.map((b) => {
+    const admissionRow = admission.forecasts.find((f) => f.branchId === b.branchId) || { next30Days: 0 };
+    const projectedStudents = b.currentStudents + admissionRow.next30Days - Math.round(b.churnRiskStudents * 0.4);
+    const teacherPressure = Math.min(100, Math.round(b.teacherUtilizationPercent + admissionRow.next30Days * 0.25));
+    const classroomPressure = Math.min(100, Math.round(b.classroomUtilizationPercent + admissionRow.next30Days * 0.18));
+    return {
+      branchId: b.branchId,
+      branchName: b.branchName,
+      projectedStudents30Days: projectedStudents,
+      teacherPressure,
+      classroomPressure,
+      capacityRisk: teacherPressure >= 90 || classroomPressure >= 90 ? "high_preview" : teacherPressure >= 84 || classroomPressure >= 84 ? "medium_preview" : "stable_preview",
+      recommendation: teacherPressure >= 90 ? "Teacher hiring/extra batch planning required." : classroomPressure >= 90 ? "Classroom slot planning required." : "Capacity stable for now."
+    };
+  });
+  return { previewOnly: true, forecasts };
+}
+
+function part106RiskForecast(access) {
+  const branches = part106VisibleBranches(access);
+  const risks = [];
+  branches.forEach((b) => {
+    if (b.conversionPercent < 24) risks.push({ branchId: b.branchId, branchName: b.branchName, type: "low_conversion", level: "high", message: "Lead conversion low; counselling action plan needed." });
+    if (b.pendingFees > b.monthlyFeeRevenue * 0.25) risks.push({ branchId: b.branchId, branchName: b.branchName, type: "fee_delay", level: "high", message: "Pending fees high; finance-safe reminder plan needed." });
+    if (b.teacherUtilizationPercent >= 88) risks.push({ branchId: b.branchId, branchName: b.branchName, type: "teacher_capacity_pressure", level: "medium", message: "Teacher utilization high; staffing review recommended." });
+    if (b.classroomUtilizationPercent >= 84) risks.push({ branchId: b.branchId, branchName: b.branchName, type: "classroom_capacity_pressure", level: "medium", message: "Classroom utilization high; timetable planning needed." });
+    if (b.churnRiskStudents >= 20) risks.push({ branchId: b.branchId, branchName: b.branchName, type: "student_retention_risk", level: "medium", message: "Student support/retention plan recommended." });
+  });
+  return {
+    previewOnly: true,
+    risks,
+    highPriorityCount: risks.filter((r) => r.level === "high").length,
+    mediumPriorityCount: risks.filter((r) => r.level === "medium").length,
+    privateScreenFirst: true
+  };
+}
+
+function part106ScenarioPlanning(access) {
+  const admission = part106AdmissionForecast(access);
+  const revenue = part106RevenueForecast(access);
+  const baseAdmissions = admission.totalNext30Days;
+  const baseRevenue = access.canViewFinancials ? Number(revenue.forecastCollection30Days || 0) : null;
+  return {
+    previewOnly: true,
+    canCreateScenario: Boolean(access.canCreateScenario),
+    scenarios: [
+      { name: "conservative", admissions30Days: Math.round(baseAdmissions * 0.82), revenue30Days: baseRevenue === null ? "hidden" : Math.round(baseRevenue * 0.88), assumption: "slower conversions and delayed fee collection" },
+      { name: "base", admissions30Days: baseAdmissions, revenue30Days: baseRevenue === null ? "hidden" : baseRevenue, assumption: "current lead and collection trend continues" },
+      { name: "optimistic", admissions30Days: Math.round(baseAdmissions * 1.18), revenue30Days: baseRevenue === null ? "hidden" : Math.round(baseRevenue * 1.14), assumption: "better follow-ups and faster collections" }
+    ],
+    autoApplyTargets: false,
+    confirmationRequired: true
+  };
+}
+
+function part106ActionPlan(access) {
+  const risks = part106RiskForecast(access);
+  const capacity = part106CapacityForecast(access);
+  const actions = [];
+  if (risks.risks.some((r) => r.type === "low_conversion")) actions.push("Hot lead follow-up cadence improve karke counsellor action draft banao.");
+  if (risks.risks.some((r) => r.type === "fee_delay")) actions.push("Fee reminder plan draft banao, but auto-send off rakho.");
+  if (capacity.forecasts.some((c) => c.capacityRisk !== "stable_preview")) actions.push("Batch/staff capacity review schedule draft banao.");
+  if (risks.risks.some((r) => r.type === "student_retention_risk")) actions.push("Student support analytics se retention support queue review karo.");
+  if (!actions.length) actions.push("Business forecast stable hai. Weekly forecast review continue karo.");
+  return {
+    previewOnly: true,
+    canCreateActionPlan: Boolean(access.canCreateActionPlan),
+    actions,
+    ownerConfirmationRequired: true,
+    autoSend: false,
+    autoBudgetChange: false,
+    autoTargetChange: false
+  };
+}
+
+function part106RoleScopedSummary(access) {
+  const admission = part106AdmissionForecast(access);
+  const capacity = part106CapacityForecast(access);
+  const revenue = part106RevenueForecast(access);
+  if (access.admissionSummaryOnly) {
+    return { previewOnly: true, scope: "admission_forecast_summary_only", visibleData: { totalNext30Days: admission.totalNext30Days, totalNext60Days: admission.totalNext60Days }, hiddenData: ["financials", "expenses", "cashflow", "owner exports"] };
+  }
+  if (access.capacitySummaryOnly) {
+    return { previewOnly: true, scope: "capacity_forecast_summary_only", visibleData: capacity.forecasts.map((c) => ({ branchName: c.branchName, capacityRisk: c.capacityRisk, recommendation: c.recommendation })), hiddenData: ["financials", "admission conversion details", "cashflow"] };
+  }
+  if (access.financeSummaryOnly) {
+    return { previewOnly: true, scope: "finance_forecast_summary_only", visibleData: revenue, hiddenData: ["student private support data", "counsellor notes", "teacher private notes"] };
+  }
+  if (access.selfOnly || access.viewOnly) {
+    return { previewOnly: true, scope: access.selfOnly ? "student_service_safe_update" : "parent_service_safe_update", visibleData: { message: "Institute service planning is active. No private business forecast is visible to this role." }, hiddenData: ["admissions forecast", "revenue", "expenses", "business risks"] };
+  }
+  return { previewOnly: true, scope: access.canViewFinancials ? "owner_or_finance_forecast" : "assigned_branch_forecast", visibleData: { admission, capacity, revenue }, hiddenData: access.canViewFinancials ? [] : ["detailed financial forecast"] };
+}
+
+function part106PrivacyPolicy() {
+  return {
+    previewOnly: true,
+    privateScreenFirst: true,
+    notFinancialAdvice: true,
+    sensitiveDataNotSpokenLoudly: [
+      "revenue forecast amount",
+      "cashflow gap",
+      "pending fee details",
+      "staff capacity pressure by name",
+      "student retention list",
+      "branch financial export"
+    ],
+    allowedVoiceSummary: [
+      "forecast direction",
+      "count-level admissions",
+      "risk count",
+      "safe recommendations",
+      "capacity status by permission"
+    ],
+    confirmationRequiredFor: ["forecast_action_plan_send", "target_update", "budget_change", "campaign_budget_apply"],
+    ownerVerificationRequiredFor: ["financial_forecast_export", "budget_change", "fee_target_change", "bulk_campaign_send"],
+    safety: "Forecast is planning support only; it is not a guarantee or financial advice."
+  };
+}
+
+function part106ParseCommand(text = "", body = {}) {
+  const input = String(text || body.command || body.q || "").trim();
+  const intent = /admission|enquiry|lead/i.test(input) ? "admission_forecast"
+    : /revenue|income|collection|fee/i.test(input) ? "revenue_forecast"
+      : /expense|cashflow|cash flow|profit|loss/i.test(input) ? "cashflow_forecast"
+        : /capacity|teacher|classroom|batch/i.test(input) ? "capacity_forecast"
+          : /risk|problem|alert/i.test(input) ? "risk_forecast"
+            : /scenario|conservative|optimistic|base/i.test(input) ? "scenario"
+              : /action|plan|next step|strategy/i.test(input) ? "action_plan"
+                : /privacy|safe|permission/i.test(input) ? "privacy_policy"
+                  : "overview";
+  return {
+    intent,
+    rawCommand: input
+  };
+}
+
+function part106BuildBusinessForecasting({ command, role, instituteId, branchId, assignedBranchId, studentId, parentId, body = {} }) {
+  const parsed = part106ParseCommand(command, body);
+  const access = part106AccessCheck({
+    role,
+    instituteId,
+    branchId: body.branchId || branchId,
+    assignedBranchId: body.assignedBranchId || assignedBranchId,
+    studentId: body.studentId || studentId,
+    parentId: body.parentId || parentId
+  });
+
+  const branches = part106VisibleBranches(access);
+  const admissionForecast = part106AdmissionForecast(access);
+  const revenueForecast = part106RevenueForecast(access);
+  const cashflowForecast = part106ExpenseCashflowForecast(access);
+  const capacityForecast = part106CapacityForecast(access);
+  const riskForecast = part106RiskForecast(access);
+  const scenarioPlanning = part106ScenarioPlanning(access);
+  const actionPlan = part106ActionPlan(access);
+  const roleScopedSummary = part106RoleScopedSummary(access);
+  const privacyPolicy = part106PrivacyPolicy();
+
+  let replyText = "";
+  let nextAction = "none";
+  if (!access.allowed) {
+    replyText = "Is role/scope ko business forecasting access nahi hai.";
+    nextAction = "blocked";
+  } else if (parsed.intent === "admission_forecast") {
+    replyText = `Admission forecast ready hai. Next 30 days me ${admissionForecast.totalNext30Days} admissions ka preview hai.`;
+    nextAction = "show_admission_forecast";
+  } else if (parsed.intent === "revenue_forecast") {
+    replyText = access.canViewFinancials ? "Revenue forecast preview ready hai. Amounts private screen par hain." : "Is role ko revenue amount details permission nahi hai.";
+    nextAction = "show_revenue_forecast";
+  } else if (parsed.intent === "cashflow_forecast") {
+    replyText = access.canViewFinancials ? `Cashflow forecast ready hai. Status: ${cashflowForecast.cashflowStatus}.` : "Cashflow details is role ke liye hidden hain.";
+    nextAction = "show_cashflow_forecast";
+  } else if (parsed.intent === "capacity_forecast") {
+    replyText = "Capacity forecast ready hai. Teacher/classroom pressure private screen par dikh raha hai.";
+    nextAction = "show_capacity_forecast";
+  } else if (parsed.intent === "risk_forecast") {
+    replyText = `Risk forecast ready hai. ${riskForecast.highPriorityCount} high priority aur ${riskForecast.mediumPriorityCount} medium risks mile.`;
+    nextAction = "show_risk_forecast";
+  } else if (parsed.intent === "scenario") {
+    replyText = access.canCreateScenario ? "Scenario planning preview ready hai. Targets auto-apply nahi honge." : "Is role ko scenario planning permission nahi hai.";
+    nextAction = "show_scenario_planning";
+  } else if (parsed.intent === "action_plan") {
+    replyText = access.canCreateActionPlan ? "Forecast action plan draft ready hai. Send/budget/target change confirmation ke bina nahi hoga." : "Is role ko forecast action plan permission nahi hai.";
+    nextAction = "show_action_plan";
+  } else if (parsed.intent === "privacy_policy") {
+    replyText = "Business forecasting privacy policy ready hai. Sensitive financial details loud nahi bole jayenge.";
+    nextAction = "show_privacy_policy";
+  } else {
+    replyText = `Business forecasting overview ready hai. ${branches.length} branch forecast visible hai.`;
+    nextAction = "show_forecast_overview";
+  }
+
+  return {
+    access,
+    parsed,
+    branches,
+    admissionForecast,
+    revenueForecast,
+    cashflowForecast,
+    capacityForecast,
+    riskForecast,
+    scenarioPlanning,
+    actionPlan,
+    roleScopedSummary,
+    privacyPolicy,
+    replyText,
+    spokenSafeSummary: replyText,
+    privateScreenFirst: true,
+    disclaimer: part106DemoBusiness.forecastDisclaimer,
+    nextAction,
+    confirmationRequiredFor: ["forecast_action_plan_send", "target_update", "budget_change", "campaign_budget_apply", "staff_hiring_task_create"],
+    ownerVerificationRequiredFor: ["financial_forecast_export", "budget_change", "fee_target_change", "bulk_campaign_send", "business_rule_change"],
+    auditLog: {
+      event: "part106_business_forecasting",
+      role: access.role,
+      intent: parsed.intent,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+const part106Checklist = [
+  "Business Forecasting page opens",
+  "Status API returns success true",
+  "Admission forecast works",
+  "Revenue forecast role permissions work",
+  "Cashflow forecast works for allowed roles",
+  "Capacity forecast works",
+  "Risk forecast works",
+  "Scenario planning does not auto-apply targets",
+  "Action plan draft does not auto-send",
+  "Role scoped summary hides sensitive financial data",
+  "VANI business forecasting command works",
+  "Previous Part 1–105 routes remain preserved"
+];
+
+app.get("/api/part106/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 106 — Business Forecasting",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 106,
+    nextPart: "Part 107 — Automated Marketing System",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/business-forecasting", "/business-forecast", "/owner-business-forecasting", "/vani-business-forecasting", "/revenue-forecasting", "/institute-forecasting"],
+    apiRoutes: [
+      "/api/part106/config",
+      "/api/part106/features",
+      "/api/part106/roles",
+      "/api/part106/access-check",
+      "/api/part106/overview",
+      "/api/part106/admission-forecast",
+      "/api/part106/revenue-forecast",
+      "/api/part106/cashflow-forecast",
+      "/api/part106/capacity-forecast",
+      "/api/part106/risk-forecast",
+      "/api/part106/scenario-planning",
+      "/api/part106/action-plan",
+      "/api/part106/role-scoped-summary",
+      "/api/part106/privacy-policy",
+      "/api/part106/vani/greeting",
+      "/api/part106/vani/command"
+    ],
+    businessForecastingEnabled: true
+  });
+});
+
+app.get("/api/part106/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "Business Forecasting",
+    appType: "business_forecasting_foundation",
+    version: "2.0-business-forecasting",
+    policy: {
+      previewFirst: true,
+      notFinancialAdvice: true,
+      noGuarantees: true,
+      noAutoBudgetChange: true,
+      noAutoTargetChange: true,
+      privateScreenFirst: true,
+      sensitiveFinancialDataNotSpokenLoudly: true
+    }
+  });
+});
+
+app.get("/api/part106/features", (req, res) => res.json({ success: true, features: part106BusinessFeatures }));
+app.get("/api/part106/roles", (req, res) => res.json({ success: true, roles: part106RoleRules }));
+app.get("/api/part106/access-check", (req, res) => res.json({ success: true, access: part106AccessCheck(req.query || {}) }));
+
+app.get("/api/part106/overview", (req, res) => {
+  const access = part106AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, result: part106BuildBusinessForecasting({ command: "overview", ...req.query, body: req.query || {} }) });
+});
+
+app.get("/api/part106/admission-forecast", (req, res) => {
+  const access = part106AccessCheck(req.query || {});
+  if (!access.allowed || !access.canViewForecast) return res.status(403).json({ success: false, access, message: "Admission forecast not allowed for this role." });
+  res.json({ success: true, access, admissionForecast: part106AdmissionForecast(access) });
+});
+
+app.get("/api/part106/revenue-forecast", (req, res) => {
+  const access = part106AccessCheck(req.query || {});
+  if (!access.allowed || !access.canViewFinancials) return res.status(403).json({ success: false, access, message: "Revenue forecast financial details not allowed for this role." });
+  res.json({ success: true, access, revenueForecast: part106RevenueForecast(access) });
+});
+
+app.get("/api/part106/cashflow-forecast", (req, res) => {
+  const access = part106AccessCheck(req.query || {});
+  if (!access.allowed || !access.canViewFinancials) return res.status(403).json({ success: false, access, message: "Cashflow forecast financial details not allowed for this role." });
+  res.json({ success: true, access, cashflowForecast: part106ExpenseCashflowForecast(access) });
+});
+
+app.get("/api/part106/capacity-forecast", (req, res) => {
+  const access = part106AccessCheck(req.query || {});
+  if (!access.allowed || !access.canViewForecast) return res.status(403).json({ success: false, access, message: "Capacity forecast not allowed for this role." });
+  res.json({ success: true, access, capacityForecast: part106CapacityForecast(access) });
+});
+
+app.get("/api/part106/risk-forecast", (req, res) => {
+  const access = part106AccessCheck(req.query || {});
+  if (!access.allowed || !access.canViewForecast) return res.status(403).json({ success: false, access, message: "Risk forecast not allowed for this role." });
+  res.json({ success: true, access, riskForecast: part106RiskForecast(access) });
+});
+
+app.get("/api/part106/scenario-planning", (req, res) => {
+  const access = part106AccessCheck(req.query || {});
+  if (!access.allowed || !access.canCreateScenario) return res.status(403).json({ success: false, access, message: "Scenario planning not allowed for this role." });
+  res.json({ success: true, access, scenarioPlanning: part106ScenarioPlanning(access) });
+});
+
+app.get("/api/part106/action-plan", (req, res) => {
+  const access = part106AccessCheck(req.query || {});
+  if (!access.allowed || !access.canCreateActionPlan) return res.status(403).json({ success: false, access, message: "Forecast action plan not allowed for this role." });
+  res.json({ success: true, access, actionPlan: part106ActionPlan(access) });
+});
+
+app.get("/api/part106/role-scoped-summary", (req, res) => {
+  const access = part106AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, roleScopedSummary: part106RoleScopedSummary(access) });
+});
+
+app.get("/api/part106/privacy-policy", (req, res) => res.json({ success: true, privacyPolicy: part106PrivacyPolicy() }));
+
+app.get("/api/part106/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI Business Forecasting",
+    greeting: "Namaste, main VANI Business Forecasting Assistant hoon. Aap admission forecast, revenue forecast, cashflow, risks, scenarios ya action plan pooch sakte ho.",
+    exampleCommands: [
+      "VANI, business forecast overview dikhao",
+      "VANI, next 30 days admission forecast banao",
+      "VANI, revenue forecast dikhao",
+      "VANI, cashflow risk batao",
+      "VANI, capacity forecast dikhao",
+      "VANI, forecast action plan banao"
+    ],
+    safety: "Forecast guarantee nahi hai. Budget, target, campaign ya export owner verification ke bina nahi hoga."
+  });
+});
+
+app.post("/api/part106/vani/command", (req, res) => {
+  const body = req.body || {};
+  const result = part106BuildBusinessForecasting({
+    command: body.command || body.q || "",
+    role: body.role || "institute_owner",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId,
+    assignedBranchId: body.assignedBranchId,
+    studentId: body.studentId,
+    parentId: body.parentId,
+    body
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 106 — Business Forecasting", ...result });
+});
+
+app.get("/api/part106/vani/command", (req, res) => {
+  const result = part106BuildBusinessForecasting({
+    command: req.query.command || req.query.q || "",
+    role: req.query.role || "institute_owner",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    assignedBranchId: req.query.assignedBranchId,
+    studentId: req.query.studentId,
+    parentId: req.query.parentId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 106 — Business Forecasting", ...result });
+});
+
+app.get("/api/part106/audit-log", (req, res) => {
+  res.json({
+    success: true,
+    auditLog: [
+      { event: "business_forecast_preview", role: "institute_owner", createdAt: new Date().toISOString() },
+      { event: "no_financial_guarantee_policy", rule: "Forecast is planning support only, not a guarantee.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part106/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "business_forecasting_created", message: "Part 106 Business Forecasting active.", createdAt: new Date().toISOString() },
+      { type: "forecast_action_plan_ready", message: "Owner can review forecast scenarios and action plan drafts.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part106/checklist", (req, res) => res.json({ success: true, checklist: part106Checklist }));
+
+app.get("/api/part106/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part106-business-forecasting-readiness",
+    ownerVerificationRequiredForSensitiveExports: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      features: part106BusinessFeatures,
+      roles: part106RoleRules,
+      checklist: part106Checklist,
+      privacyPolicy: part106PrivacyPolicy(),
+      disclaimer: part106DemoBusiness.forecastDisclaimer
+    }
+  });
+});
+
+app.get("/api/part106/demo", (req, res) => {
+  const command = "VANI, revenue forecast dikhao aur cashflow risk batao";
+  const result = part106BuildBusinessForecasting({
+    command,
+    role: "institute_owner",
+    instituteId: "NX-DEMO-INST-001",
+    body: {}
+  });
+  res.json({
+    success: true,
+    demo: {
+      command,
+      result,
+      nextPart: "Part 107 — Automated Marketing System"
+    }
+  });
+});
+// ================= END PART 106 =================
+
 
 
 
