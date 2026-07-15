@@ -1,34 +1,35 @@
 # NAXORA Master Progress Record
 
 ## Latest completed part
-Part 95 — Screen Sharing and Digital Whiteboard
+Part 94 — Native Live Classroom Foundation
 
 ## Date completed
 2026-07-15
 
 ## Feature name
-NAXORA OS 2.0 Screen Sharing and Digital Whiteboard
+NAXORA OS 2.0 Native Live Classroom Foundation
 
 ## Files changed
 - backend/src/server.js
-- frontend/screen-sharing-digital-whiteboard.html
-- frontend/screen-sharing-digital-whiteboard.css
-- frontend/screen-sharing-digital-whiteboard.js
+- frontend/native-live-classroom-foundation.html
+- frontend/native-live-classroom-foundation.css
+- frontend/native-live-classroom-foundation.js
 - frontend/vani-voice-starter.js
-- README_PART95_SCREEN_SHARING_DIGITAL_WHITEBOARD.md
-- START_HERE_PART95_ARUN.md
-- docs/PART95_SCREEN_SHARING_DIGITAL_WHITEBOARD_CHECKLIST.md
+- README_PART94_NATIVE_LIVE_CLASSROOM_FOUNDATION.md
+- START_HERE_PART94_ARUN.md
+- docs/PART94_NATIVE_LIVE_CLASSROOM_FOUNDATION_CHECKLIST.md
 - docs/NAXORA_MASTER_PROGRESS_RECORD.md
 
 ## Database/API changes
-No required database migration. Added `/api/part95/*` APIs.
+No required database migration.
+Added `/api/part94/*` Native Live Classroom Foundation APIs.
 
 ## VANI commands added
-- VANI, screen share preview start karo
-- VANI, whiteboard tools dikhao
-- VANI, board clear preview banao
-- VANI, whiteboard export preview banao
-- VANI, student draw permission policy batao
+- VANI, Class 10 Maths live classroom preview dikhao
+- VANI, device check karo
+- VANI, network check batao
+- VANI, teacher live class launch preview banao
+- VANI, student join preview dikhao
 
 ## Tests passed
 - backend/src/server.js syntax check
@@ -40,14 +41,18 @@ No required database migration. Added `/api/part95/*` APIs.
 - no secrets/API keys
 
 ## Errors remaining
-- Multi-user whiteboard sync pending Part 96.
+- Production WebRTC signalling pending.
+- Screen sharing and digital whiteboard pending Part 95.
 - Live chat, polls and hand raise pending Part 96.
 - Recording and automatic attendance pending Part 97.
-- AI class notes pending Part 98.
-- Cloud whiteboard save pending.
+- Real session persistence pending.
 
 ## Next part
-Part 96 — Live Chat, Polls and Hand Raise
+Part 95 — Screen Sharing and Digital Whiteboard
 
 ## Locked subscription rule
-NAXORA OS 1.0, 2.0 and future 3.0 have separate subscriptions. NAXORA OS 3.0 is future AI-first and owner-only.
+NAXORA OS 1.0, 2.0 and future 3.0 have separate subscriptions.
+NAXORA OS 3.0 is future AI-first and owner-only:
+- role must be institute_owner
+- valid instituteId required
+- active v3 subscription required
