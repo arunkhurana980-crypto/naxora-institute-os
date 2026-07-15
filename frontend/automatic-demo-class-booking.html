@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — Automatic Demo-Class Booking</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/automatic-demo-class-booking.css" />
+</head>
+<body>
+  <main class="demo-booking">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 92 • NAXORA OS 2.0</p>
+        <h1>Automatic Demo-Class Booking</h1>
+        <p class="lead">
+          Parse demo requests, check available slots, create booking preview, require confirmation,
+          and prepare reminder drafts. VANI now uses a softer calm voice where browser supports it.
+        </p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">Soft Calm VANI</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Tap Start, then ask demo booking.</p>
+        <div class="voice-actions">
+          <button id="startVaniBtn">Start VANI</button>
+          <button id="listenVaniBtn">Listen</button>
+          <button id="muteVaniBtn">Mute</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Access</p>
+      <div class="controls">
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="branchId" value="BR-DEMO-001" />
+        <select id="roleSelect">
+          <option value="receptionist_counsellor" selected>Receptionist / Counsellor</option>
+          <option value="institute_owner">Institute Owner</option>
+          <option value="branch_manager">Branch Manager</option>
+          <option value="teacher">Teacher Preview</option>
+          <option value="accountant">Accountant Preview</option>
+          <option value="student">Student Request Preview</option>
+          <option value="parent">Parent Request Preview</option>
+        </select>
+        <button id="demoBtn">Load Demo</button>
+      </div>
+      <pre id="accessBox" class="code">Waiting...</pre>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Demo Booking Command</p>
+        <h2>Speak or type</h2>
+        <p>Example: “VANI, Aman Class 10 Maths demo book karo parent phone 9876543210”.</p>
+        <div class="controls">
+          <input id="vaniCommand" value="VANI, Aman Class 10 Maths demo book karo parent phone 9876543210" />
+          <button id="previewBtn">Preview Booking</button>
+          <button id="confirmBtn">Confirm Demo</button>
+        </div>
+        <pre id="vaniOutput" class="code">Waiting...</pre>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Booking Preview</p>
+        <div id="previewBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Available Slots</p>
+        <div id="slotsBox" class="list"></div>
+      </article>
+      <article class="panel">
+        <p class="kicker">Reminder Draft</p>
+        <div id="reminderBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Missing Details</p>
+        <div id="missingBox" class="list"></div>
+      </article>
+      <article class="panel">
+        <p class="kicker">Confirmed Booking</p>
+        <div id="confirmedBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Demo Slot Catalog</p>
+      <div id="catalogBox" class="feature-grid"></div>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Testing links</p>
+      <div class="links">
+        <a href="/api/part92/status" target="_blank">Status</a>
+        <a href="/api/part92/demo" target="_blank">Demo</a>
+        <a href="/api/part92/demo-slots" target="_blank">Demo Slots</a>
+        <a href="/api/part92/booking/preview?role=receptionist_counsellor&instituteId=NX-DEMO-INST-001&q=VANI,%20Aman%20Class%2010%20Maths%20demo%20book%20karo%20parent%20phone%209876543210" target="_blank">Preview API</a>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/vani-voice-starter.js"></script>
+  <script src="/automatic-demo-class-booking.js"></script>
+</body>
+</html>

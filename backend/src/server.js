@@ -10345,6 +10345,12 @@ const modulePageRoutes = {
   "/batch-fee-assistant": "fee-batch-information-assistant.html",
   "/vani-fee-batch-info": "fee-batch-information-assistant.html",
   "/fee-batch-ai": "fee-batch-information-assistant.html",
+  "/automatic-demo-class-booking": "automatic-demo-class-booking.html",
+  "/demo-class-booking-ai": "automatic-demo-class-booking.html",
+  "/auto-demo-booking": "automatic-demo-class-booking.html",
+  "/vani-demo-booking": "automatic-demo-class-booking.html",
+  "/demo-booking-assistant": "automatic-demo-class-booking.html",
+  "/ai-demo-class-booking": "automatic-demo-class-booking.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -17601,6 +17607,748 @@ app.get("/api/part91/demo", (req, res) => {
   });
 });
 // ================= END PART 91 =================
+
+// ================= PART 92 — AUTOMATIC DEMO-CLASS BOOKING =================
+// NAXORA OS 2.0 Automatic Demo-Class Booking.
+// This part converts demo class enquiries into a safe preview-confirm workflow:
+// parse -> missing details -> availability -> slot selection -> preview -> confirmation
+// -> simulated booking record + reminder draft. Production DB persistence can be
+// connected later without changing the public API contract.
+
+const part92DemoSlotCatalog = [
+  {
+    slotId: "DEMO-10-MATH-EVE",
+    courseId: "CRS-BOARD-10",
+    courseName: "Class 10 Board Booster",
+    className: "Class 10",
+    subject: "maths",
+    batchId: "BAT-10-MATH-A",
+    teacherId: "TCH-MATH-001",
+    teacherName: "Demo Maths Teacher",
+    day: "Tomorrow",
+    dateLabel: "Next working day",
+    time: "6:00 PM - 6:45 PM",
+    mode: "offline",
+    seatsLeftPreview: 4,
+    location: "Room A1",
+    meetingLinkPolicy: "Created after final confirmation for online/hybrid demos."
+  },
+  {
+    slotId: "DEMO-10-SCI-EVE",
+    courseId: "CRS-BOARD-10",
+    courseName: "Class 10 Board Booster",
+    className: "Class 10",
+    subject: "science",
+    batchId: "BAT-10-SCI-A",
+    teacherId: "TCH-SCI-001",
+    teacherName: "Demo Science Teacher",
+    day: "Tomorrow",
+    dateLabel: "Next working day",
+    time: "6:00 PM - 6:45 PM",
+    mode: "offline",
+    seatsLeftPreview: 3,
+    location: "Room A2",
+    meetingLinkPolicy: "Created after final confirmation for online/hybrid demos."
+  },
+  {
+    slotId: "DEMO-JEE-HYB",
+    courseId: "CRS-COMPETITIVE",
+    courseName: "Competitive Exam Foundation",
+    className: "Class 11-12/Dropper",
+    subject: "physics",
+    batchId: "BAT-JEE-FND",
+    teacherId: "TCH-PHY-001",
+    teacherName: "Demo Physics Teacher",
+    day: "Saturday",
+    dateLabel: "Upcoming Saturday",
+    time: "5:00 PM - 5:50 PM",
+    mode: "hybrid",
+    seatsLeftPreview: 2,
+    location: "Room C1 / Online",
+    meetingLinkPolicy: "Online link after confirmation."
+  },
+  {
+    slotId: "DEMO-NEET-HYB",
+    courseId: "CRS-COMPETITIVE",
+    courseName: "Competitive Exam Foundation",
+    className: "Class 11-12/Dropper",
+    subject: "biology",
+    batchId: "BAT-NEET-FND",
+    teacherId: "TCH-BIO-001",
+    teacherName: "Demo Biology Teacher",
+    day: "Sunday",
+    dateLabel: "Upcoming Sunday",
+    time: "11:00 AM - 11:50 AM",
+    mode: "hybrid",
+    seatsLeftPreview: 3,
+    location: "Room C2 / Online",
+    meetingLinkPolicy: "Online link after confirmation."
+  },
+  {
+    slotId: "DEMO-REV-WKD",
+    courseId: "CRS-DOUBT-REVISION",
+    courseName: "Doubt Solving + Revision Plan",
+    className: "Class 8-12",
+    subject: "maths",
+    batchId: "BAT-DOUBT-WKD",
+    teacherId: "TCH-REV-001",
+    teacherName: "Demo Revision Teacher",
+    day: "Saturday",
+    dateLabel: "Upcoming Saturday",
+    time: "4:00 PM - 4:40 PM",
+    mode: "offline",
+    seatsLeftPreview: 8,
+    location: "Room D1",
+    meetingLinkPolicy: "Offline demo."
+  },
+  {
+    slotId: "DEMO-ONLINE-REV",
+    courseId: "CRS-DOUBT-REVISION",
+    courseName: "Doubt Solving + Revision Plan",
+    className: "Class 8-12",
+    subject: "science",
+    batchId: "BAT-REV-ONLINE",
+    teacherId: "TCH-ONLINE-001",
+    teacherName: "Online Demo Teacher",
+    day: "Today",
+    dateLabel: "Today evening",
+    time: "8:00 PM - 8:30 PM",
+    mode: "online",
+    seatsLeftPreview: 6,
+    location: "Online",
+    meetingLinkPolicy: "Online link after confirmation."
+  }
+];
+
+const part92Features = [
+  {
+    key: "demo_request_parser",
+    name: "Demo Request Parser",
+    summary: "Extracts student, class, subject, parent phone, preferred mode and timing.",
+    problemSolved: "Demo booking requests become structured automatically."
+  },
+  {
+    key: "missing_detail_questions",
+    name: "Missing Detail Questions",
+    summary: "Asks required details before booking preview.",
+    problemSolved: "Wrong demo bookings reduce."
+  },
+  {
+    key: "slot_availability_preview",
+    name: "Slot Availability Preview",
+    summary: "Matches available demo slots by class, subject, mode and timing.",
+    problemSolved: "Counsellor quickly sees suitable demo options."
+  },
+  {
+    key: "auto_slot_suggestion",
+    name: "Automatic Slot Suggestion",
+    summary: "Selects best slot from available options.",
+    problemSolved: "Demo class scheduling becomes faster."
+  },
+  {
+    key: "booking_preview",
+    name: "Booking Preview",
+    summary: "Shows full booking details before final confirmation.",
+    problemSolved: "No accidental bookings."
+  },
+  {
+    key: "confirmation_flow",
+    name: "Confirmation Flow",
+    summary: "Requires confirmation before demo booking record is created.",
+    problemSolved: "Safe action engine rule is preserved."
+  },
+  {
+    key: "reminder_draft",
+    name: "Reminder Draft",
+    summary: "Creates WhatsApp/call reminder draft without auto-send.",
+    problemSolved: "Follow-up becomes faster but safe."
+  },
+  {
+    key: "soft_calm_vani_voice",
+    name: "Soft Calm VANI Voice",
+    summary: "VANI browser voice now prefers a soft, calm female-style voice where available.",
+    problemSolved: "Voice feels more natural and less harsh."
+  }
+];
+
+const part92RoleRules = [
+  { role: "institute_owner", allowed: true, scope: "Full authorised demo booking workflow.", canConfirm: true, canApproveSensitive: true },
+  { role: "branch_manager", allowed: true, scope: "Assigned branch demo booking workflow.", canConfirm: true, canApproveSensitive: false },
+  { role: "receptionist_counsellor", allowed: true, scope: "Lead/demo intake, slot preview, confirmation and reminder drafts.", canConfirm: true, canApproveSensitive: false },
+  { role: "teacher", allowed: true, previewOnly: true, scope: "Assigned demo slot/class preview only.", canConfirm: false, canApproveSensitive: false },
+  { role: "accountant", allowed: true, previewOnly: true, scope: "Fee context preview only; no demo booking confirmation.", canConfirm: false, canApproveSensitive: false },
+  { role: "student", allowed: true, safeOnly: true, scope: "Can request demo preview only; staff confirmation required.", canConfirm: false, canApproveSensitive: false },
+  { role: "parent", allowed: true, safeOnly: true, scope: "Can request linked-child demo preview only; staff confirmation required.", canConfirm: false, canApproveSensitive: false },
+  { role: "naxora_super_admin", allowed: false, scope: "Platform support only; no unrestricted institute demo booking.", canConfirm: false, canApproveSensitive: false }
+];
+
+function normalizePart92Role(role) {
+  const r = String(role || "receptionist_counsellor").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor", "admission_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part92AccessCheck({ role, instituteId, branchId }) {
+  const normalizedRole = normalizePart92Role(role);
+  const rule = part92RoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole,
+    allowed: false,
+    scope: "Unknown or unsupported role.",
+    canConfirm: false,
+    canApproveSensitive: false
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const allowed = Boolean(rule.allowed && hasInstituteId && normalizedRole !== "naxora_super_admin");
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    branchId: branchId || null,
+    allowed,
+    previewOnly: Boolean(rule.previewOnly),
+    safeOnly: Boolean(rule.safeOnly),
+    canConfirm: Boolean(rule.canConfirm && allowed),
+    canApproveSensitive: Boolean(rule.canApproveSensitive),
+    scope: rule.scope,
+    reason: !hasInstituteId
+      ? "Institute ID missing."
+      : !rule.allowed
+        ? rule.scope
+        : rule.safeOnly
+          ? "Demo request preview only. Staff confirmation required for final booking."
+          : rule.previewOnly
+            ? "Preview allowed only. Final booking requires counsellor/owner/branch manager role."
+            : "Demo booking access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    confirmationRequiredFor: ["demo_book", "reminder_send", "reschedule", "cancel"],
+    ownerVerificationRequiredFor: ["discount", "fee_change", "refund", "delete", "export", "subscription_change"]
+  };
+}
+
+function part92ParseDemoRequest(text = "", body = {}) {
+  const input = String(text || body.command || body.q || "").trim();
+  const classMatch = input.match(/class\s*([0-9]{1,2})/i);
+  const phoneMatch = input.match(/(?:phone|mobile|number|contact)\s*[:\-]?\s*([6-9][0-9]{9})/i);
+  const subjectMatch = input.match(/\b(maths|math|science|english|physics|chemistry|biology|commerce|accounts|sst|social science)\b/i);
+  const nameMatch = input.match(/(?:student|name|lead|for)\s+([A-Z][a-zA-Z]{2,20})/) || input.match(/\b([A-Z][a-zA-Z]{2,20})\b/);
+  const mode = /online/i.test(input) ? "online" : /hybrid/i.test(input) ? "hybrid" : /offline|center|centre/i.test(input) ? "offline" : body.mode || null;
+  const timing = /today|aaj/i.test(input) ? "today" :
+    /tomorrow|kal/i.test(input) ? "tomorrow" :
+    /weekend|saturday|sunday|sat|sun/i.test(input) ? "weekend" :
+    /evening|shaam|after school/i.test(input) ? "evening" :
+    /morning|subah/i.test(input) ? "morning" : body.preferredTiming || null;
+  const source = /whatsapp/i.test(input) ? "WhatsApp" : /call/i.test(input) ? "Call" : /walk/i.test(input) ? "Walk-in" : /google/i.test(input) ? "Google" : body.source || "VANI";
+  return {
+    studentName: body.studentName || nameMatch?.[1] || null,
+    className: body.className || (classMatch ? `Class ${classMatch[1]}` : null),
+    subject: body.subject || (subjectMatch ? subjectMatch[1].toLowerCase().replace("math", "maths").replace("social science", "sst") : null),
+    parentPhone: body.parentPhone || phoneMatch?.[1] || null,
+    mode,
+    preferredTiming: timing,
+    source,
+    rawCommand: input
+  };
+}
+
+function part92MissingDetails(request = {}) {
+  const missing = [];
+  if (!request.studentName) missing.push({ key: "studentName", question: "Student ka naam kya hai?" });
+  if (!request.className) missing.push({ key: "className", question: "Student kis class me hai?" });
+  if (!request.subject) missing.push({ key: "subject", question: "Demo class ka subject kya chahiye?" });
+  if (!request.parentPhone) missing.push({ key: "parentPhone", question: "Parent ka mobile number kya hai?" });
+  return missing;
+}
+
+function part92SlotScore(slot, request = {}) {
+  let score = 10;
+  const reasons = [];
+  const cls = String(request.className || "").toLowerCase().replace("class ", "");
+  const subject = String(request.subject || "").toLowerCase();
+  const mode = String(request.mode || "").toLowerCase();
+  const timing = String(request.preferredTiming || "").toLowerCase();
+
+  if (cls && slot.className.toLowerCase().includes(cls)) {
+    score += 35;
+    reasons.push("class match");
+  } else if (cls && slot.className.includes("8-12")) {
+    score += 15;
+    reasons.push("broad class support");
+  }
+  if (subject && slot.subject === subject) {
+    score += 30;
+    reasons.push("subject match");
+  } else if (subject && ["maths", "science"].includes(subject) && slot.courseId === "CRS-DOUBT-REVISION") {
+    score += 10;
+    reasons.push("revision subject support");
+  }
+  if (mode && (slot.mode === mode || slot.mode === "hybrid")) {
+    score += 10;
+    reasons.push("mode fit");
+  }
+  if (timing) {
+    const hay = `${slot.day} ${slot.dateLabel} ${slot.time}`.toLowerCase();
+    if ((timing === "today" && hay.includes("today")) ||
+        (timing === "tomorrow" && hay.includes("tomorrow")) ||
+        (timing === "weekend" && /sat|sun|saturday|sunday/.test(hay)) ||
+        (timing === "evening" && /pm/.test(hay)) ||
+        (timing === "morning" && /am/.test(hay))) {
+      score += 10;
+      reasons.push("preferred timing fit");
+    }
+  }
+  if (Number(slot.seatsLeftPreview || 0) > 0) {
+    score += 5;
+    reasons.push("seat preview available");
+  }
+  return { slotId: slot.slotId, score: Math.min(100, score), reasons, slot };
+}
+
+function part92FindAvailableSlots(request = {}) {
+  return part92DemoSlotCatalog
+    .map((slot) => part92SlotScore(slot, request))
+    .filter((x) => Number(x.slot.seatsLeftPreview || 0) > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
+}
+
+function part92ConfirmationCode(request = {}) {
+  const name = String(request.studentName || "DEMO").replace(/[^a-zA-Z0-9]/g, "").slice(0, 4).toUpperCase() || "DEMO";
+  const phone = String(request.parentPhone || "0000").slice(-4);
+  return `${name}${phone}`;
+}
+
+function part92BuildReminderDraft({ request = {}, selectedSlot = {} }) {
+  const student = request.studentName || "student";
+  return {
+    autoSend: false,
+    confirmationRequired: true,
+    channel: "WhatsApp/call draft",
+    hindiHinglish: `Namaste, ${student} ki demo class ${selectedSlot.courseName || "selected course"} ke liye ${selectedSlot.day || "selected day"} ${selectedSlot.time || ""} par preview hai. Kripya confirm karein. Final booking confirmation ke baad hi slot reserve hoga.`,
+    english: `Hello, demo class preview for ${student} is available for ${selectedSlot.courseName || "selected course"} on ${selectedSlot.day || "selected day"} at ${selectedSlot.time || ""}. Please confirm before the slot is reserved.`
+  };
+}
+
+function part92BuildBookingPreview({ command, role, instituteId, branchId, body = {} }) {
+  const access = part92AccessCheck({ role, instituteId, branchId });
+  const request = part92ParseDemoRequest(command, body);
+  const missing = access.allowed ? part92MissingDetails(request) : [];
+  const availableSlots = part92FindAvailableSlots(request);
+  const selectedSlot = (body.slotId && part92DemoSlotCatalog.find((s) => s.slotId === body.slotId)) || availableSlots[0]?.slot || part92DemoSlotCatalog[0];
+  const confirmationCode = part92ConfirmationCode(request);
+  const bookingPreview = {
+    previewOnly: true,
+    bookingPreviewId: `DEMO-PREVIEW-${Date.now()}`,
+    studentName: request.studentName || "Pending",
+    parentPhone: request.parentPhone || "Pending",
+    className: request.className || "Pending",
+    subject: request.subject || "Pending",
+    source: request.source,
+    selectedSlot,
+    confirmationCode,
+    finalBookingRequiresConfirmation: true,
+    note: "Final booking confirmation ke bina slot reserve nahi hoga."
+  };
+
+  let replyText = "";
+  let nextAction = "none";
+  if (!access.allowed) {
+    replyText = "Is role ko demo class booking access nahi hai.";
+    nextAction = "blocked";
+  } else if (missing.length) {
+    replyText = missing[0].question;
+    nextAction = "ask_missing_detail";
+  } else if (!availableSlots.length) {
+    replyText = "Is request ke liye matching demo slot nahi mila. Manual review required hai.";
+    nextAction = "manual_review";
+  } else if (access.safeOnly || access.previewOnly) {
+    replyText = `${request.studentName} ke liye demo slot preview ready hai. Final booking staff confirmation se hi hoga.`;
+    nextAction = "safe_preview_only";
+  } else {
+    replyText = `${request.studentName} ke liye demo booking preview ready hai. Suggested slot: ${selectedSlot.day}, ${selectedSlot.time}. Confirm karne ke liye code ${confirmationCode} use karein.`;
+    nextAction = "wait_for_confirmation";
+  }
+
+  return {
+    access,
+    request,
+    missingDetails: missing,
+    availableSlots,
+    selectedSlot,
+    bookingPreview,
+    reminderDraft: part92BuildReminderDraft({ request, selectedSlot }),
+    replyText,
+    spokenSafeSummary: replyText,
+    privateScreenFirst: true,
+    nextAction,
+    confirmationRequiredFor: ["demo_book", "reminder_send", "reschedule", "cancel"],
+    ownerVerificationRequiredFor: ["discount", "fee_change", "refund", "delete", "export", "subscription_change"],
+    auditLog: {
+      event: "part92_demo_booking_preview",
+      role: access.role,
+      selectedSlotId: selectedSlot?.slotId || null,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+function part92ConfirmBooking({ command, role, instituteId, branchId, body = {} }) {
+  const preview = part92BuildBookingPreview({ command, role, instituteId, branchId, body });
+  const confirmationText = String(body.confirmationText || body.confirmationCode || "").trim().toUpperCase();
+  const expectedCode = String(preview.bookingPreview.confirmationCode || "").toUpperCase();
+  const hasConsent = Boolean(body.confirm === true || String(body.confirm || "").toLowerCase() === "true");
+  const codeValid = confirmationText === expectedCode || confirmationText === "CONFIRM DEMO";
+  const canFinalize = preview.access.allowed && preview.access.canConfirm && !preview.missingDetails.length && codeValid && hasConsent;
+
+  if (!preview.access.allowed) {
+    return { success: false, statusCode: 403, message: preview.access.reason, ...preview };
+  }
+  if (!preview.access.canConfirm) {
+    return { success: false, statusCode: 403, message: "This role cannot confirm final demo booking.", ...preview };
+  }
+  if (preview.missingDetails.length) {
+    return { success: false, statusCode: 400, message: "Missing details required before booking confirmation.", ...preview };
+  }
+  if (!hasConsent || !codeValid) {
+    return {
+      success: false,
+      statusCode: 400,
+      message: "Confirmation required. Send confirm=true and confirmationCode matching preview code.",
+      expectedConfirmationCode: expectedCode,
+      ...preview
+    };
+  }
+
+  const confirmedBooking = {
+    bookingId: `DEMO-BOOKED-${Date.now()}`,
+    status: "confirmed_foundation_mode",
+    dbPersistence: "pending_production_db_connection",
+    studentName: preview.request.studentName,
+    parentPhone: preview.request.parentPhone,
+    className: preview.request.className,
+    subject: preview.request.subject,
+    selectedSlot: preview.selectedSlot,
+    reminders: {
+      reminderDraftCreated: true,
+      autoSend: false,
+      sendRequiresConfirmation: true
+    },
+    auditLog: {
+      event: "part92_demo_booking_confirmed_foundation",
+      confirmedByRole: preview.access.role,
+      createdAt: new Date().toISOString()
+    }
+  };
+
+  return {
+    success: true,
+    message: "Demo booking confirmed in foundation mode. Production DB save can be connected next.",
+    ...preview,
+    confirmedBooking,
+    replyText: `${preview.request.studentName} ki demo class foundation mode me confirm ho gayi hai. Reminder draft ready hai, auto-send off hai.`,
+    spokenSafeSummary: `${preview.request.studentName} ki demo class confirm ho gayi hai. Details screen par dikh rahe hain.`
+  };
+}
+
+const part92Checklist = [
+  "Automatic Demo-Class Booking page opens",
+  "Status API returns success true",
+  "Demo request parser extracts student/class/subject/phone",
+  "Missing details are asked instead of guessed",
+  "Availability returns top demo slots",
+  "Booking preview returns confirmation code",
+  "Safe-only roles cannot final-confirm booking",
+  "Confirm API requires confirm=true and confirmationCode",
+  "Reminder draft is created but not auto-sent",
+  "Soft calm VANI voice loads on VANI pages",
+  "Previous Part 1–91 routes remain preserved"
+];
+
+app.get("/api/part92/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 92 — Automatic Demo-Class Booking",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 92,
+    nextPart: "Part 93 — AI Lead Qualification",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/automatic-demo-class-booking", "/demo-class-booking-ai", "/auto-demo-booking", "/vani-demo-booking", "/demo-booking-assistant", "/ai-demo-class-booking"],
+    apiRoutes: [
+      "/api/part92/config",
+      "/api/part92/features",
+      "/api/part92/roles",
+      "/api/part92/access-check",
+      "/api/part92/demo-slots",
+      "/api/part92/booking/parse",
+      "/api/part92/booking/availability",
+      "/api/part92/booking/preview",
+      "/api/part92/booking/confirm",
+      "/api/part92/reminder/draft",
+      "/api/part92/vani/greeting",
+      "/api/part92/vani/command"
+    ],
+    automaticDemoClassBookingEnabled: true,
+    softCalmVaniVoiceEnabled: true
+  });
+});
+
+app.get("/api/part92/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "Automatic Demo-Class Booking",
+    appType: "safe_demo_booking_foundation",
+    version: "2.0-automatic-demo-class-booking",
+    policy: {
+      previewFirst: true,
+      noAutoBookingWithoutConfirmation: true,
+      noAutoReminderSend: true,
+      noSeatHoldWithoutConfirmation: true,
+      missingDetailsNotGuessed: true,
+      softCalmVaniVoice: true
+    }
+  });
+});
+
+app.get("/api/part92/features", (req, res) => {
+  res.json({ success: true, features: part92Features });
+});
+
+app.get("/api/part92/roles", (req, res) => {
+  res.json({ success: true, roles: part92RoleRules });
+});
+
+app.get("/api/part92/access-check", (req, res) => {
+  res.json({ success: true, access: part92AccessCheck(req.query || {}) });
+});
+
+app.get("/api/part92/demo-slots", (req, res) => {
+  res.json({ success: true, previewOnly: true, slots: part92DemoSlotCatalog });
+});
+
+app.get("/api/part92/booking/parse", (req, res) => {
+  const request = part92ParseDemoRequest(req.query.q || req.query.command || "", req.query || {});
+  res.json({ success: true, request, missingDetails: part92MissingDetails(request) });
+});
+
+app.post("/api/part92/booking/parse", (req, res) => {
+  const body = req.body || {};
+  const request = part92ParseDemoRequest(body.q || body.command || "", body);
+  res.json({ success: true, request, missingDetails: part92MissingDetails(request) });
+});
+
+app.get("/api/part92/booking/availability", (req, res) => {
+  const request = part92ParseDemoRequest(req.query.q || req.query.command || "", req.query || {});
+  res.json({ success: true, request, missingDetails: part92MissingDetails(request), availableSlots: part92FindAvailableSlots(request) });
+});
+
+app.get("/api/part92/booking/preview", (req, res) => {
+  const result = part92BuildBookingPreview({
+    command: req.query.q || req.query.command || "",
+    role: req.query.role || "receptionist_counsellor",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, ...result });
+  res.json({ success: true, ...result });
+});
+
+app.post("/api/part92/booking/preview", (req, res) => {
+  const body = req.body || {};
+  const result = part92BuildBookingPreview({
+    command: body.q || body.command || "",
+    role: body.role || "receptionist_counsellor",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId,
+    body
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, ...result });
+  res.json({ success: true, ...result });
+});
+
+app.post("/api/part92/booking/confirm", (req, res) => {
+  const body = req.body || {};
+  const result = part92ConfirmBooking({
+    command: body.q || body.command || "",
+    role: body.role || "receptionist_counsellor",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId,
+    body
+  });
+  if (!result.success) return res.status(result.statusCode || 400).json(result);
+  res.json(result);
+});
+
+app.get("/api/part92/booking/confirm", (req, res) => {
+  const result = part92ConfirmBooking({
+    command: req.query.q || req.query.command || "",
+    role: req.query.role || "receptionist_counsellor",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    body: req.query || {}
+  });
+  if (!result.success) return res.status(result.statusCode || 400).json(result);
+  res.json(result);
+});
+
+app.get("/api/part92/booking/reschedule-preview", (req, res) => {
+  const result = part92BuildBookingPreview({
+    command: req.query.q || req.query.command || "",
+    role: req.query.role || "receptionist_counsellor",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, ...result });
+  res.json({
+    success: true,
+    previewOnly: true,
+    rescheduleRequiresConfirmation: true,
+    currentBookingId: req.query.bookingId || "DEMO-BOOKED-DEMO",
+    suggestedSlots: result.availableSlots,
+    message: "Reschedule preview ready. Final reschedule confirmation ke bina nahi hoga."
+  });
+});
+
+app.get("/api/part92/booking/cancel-preview", (req, res) => {
+  const access = part92AccessCheck(req.query || {});
+  if (!access.allowed || !access.canConfirm) return res.status(403).json({ success: false, access, message: "Only authorised staff can prepare cancellation preview." });
+  res.json({
+    success: true,
+    previewOnly: true,
+    cancellationRequiresConfirmation: true,
+    bookingId: req.query.bookingId || "DEMO-BOOKED-DEMO",
+    message: "Cancellation preview ready. Final cancel confirmation ke bina nahi hoga."
+  });
+});
+
+app.get("/api/part92/reminder/draft", (req, res) => {
+  const result = part92BuildBookingPreview({
+    command: req.query.q || req.query.command || "",
+    role: req.query.role || "receptionist_counsellor",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, ...result });
+  res.json({ success: true, access: result.access, request: result.request, selectedSlot: result.selectedSlot, reminderDraft: result.reminderDraft });
+});
+
+app.get("/api/part92/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI Demo Booking",
+    greeting: "Namaste, main VANI Demo Booking Assistant hoon. Aap demo class ke liye student, class, subject aur parent phone batayein. Main suitable slot preview bana dungi.",
+    voiceStyle: "soft_calm_female_style_browser_voice",
+    exampleCommands: [
+      "VANI, Aman Class 10 Maths demo book karo parent phone 9876543210",
+      "VANI, Class 10 Science demo slot batao",
+      "VANI, JEE Physics online demo book karo parent phone 9876543210",
+      "VANI, weekend revision demo slot chahiye",
+      "VANI, demo reminder draft banao"
+    ],
+    safety: "Final demo booking, reminder send, reschedule ya cancel confirmation ke bina nahi hoga."
+  });
+});
+
+app.post("/api/part92/vani/command", (req, res) => {
+  const body = req.body || {};
+  const command = body.command || body.q || "";
+  const wantsConfirm = /confirm|book final|final booking|haan book/i.test(String(command));
+  const result = wantsConfirm
+    ? part92ConfirmBooking({
+        command,
+        role: body.role || "receptionist_counsellor",
+        instituteId: body.instituteId || "NX-DEMO-INST-001",
+        branchId: body.branchId,
+        body
+      })
+    : part92BuildBookingPreview({
+        command,
+        role: body.role || "receptionist_counsellor",
+        instituteId: body.instituteId || "NX-DEMO-INST-001",
+        branchId: body.branchId,
+        body
+      });
+  if (!result.access?.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: result.success !== false, assistant: "VANI", part: "Part 92 — Automatic Demo-Class Booking", ...result });
+});
+
+app.get("/api/part92/vani/command", (req, res) => {
+  const command = req.query.command || req.query.q || "";
+  const result = part92BuildBookingPreview({
+    command,
+    role: req.query.role || "receptionist_counsellor",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 92 — Automatic Demo-Class Booking", ...result });
+});
+
+app.get("/api/part92/audit-log", (req, res) => {
+  res.json({
+    success: true,
+    auditLog: [
+      { event: "demo_booking_preview_created", role: "receptionist_counsellor", createdAt: new Date().toISOString() },
+      { event: "confirmation_required_policy", rule: "Demo booking requires confirmation code.", createdAt: new Date().toISOString() },
+      { event: "soft_calm_vani_voice_enabled", rule: "Browser voice prefers soft calm female-style voice where available.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part92/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "automatic_demo_booking_created", message: "Part 92 Automatic Demo-Class Booking active.", createdAt: new Date().toISOString() },
+      { type: "no_auto_send_policy", message: "Reminder drafts are created but not auto-sent.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part92/checklist", (req, res) => {
+  res.json({ success: true, checklist: part92Checklist });
+});
+
+app.get("/api/part92/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part92-automatic-demo-class-booking-readiness",
+    ownerVerificationRequiredForSensitiveExports: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      features: part92Features,
+      roles: part92RoleRules,
+      slots: part92DemoSlotCatalog,
+      checklist: part92Checklist
+    }
+  });
+});
+
+app.get("/api/part92/demo", (req, res) => {
+  const command = "VANI, Aman Class 10 Maths demo book karo parent phone 9876543210";
+  const preview = part92BuildBookingPreview({
+    command,
+    role: "receptionist_counsellor",
+    instituteId: "NX-DEMO-INST-001",
+    body: {}
+  });
+  res.json({
+    success: true,
+    demo: {
+      command,
+      preview,
+      confirmExample: `/api/part92/booking/confirm?role=receptionist_counsellor&instituteId=NX-DEMO-INST-001&confirm=true&confirmationCode=${preview.bookingPreview.confirmationCode}&q=${encodeURIComponent(command)}`,
+      nextPart: "Part 93 — AI Lead Qualification"
+    }
+  });
+});
+// ================= END PART 92 =================
+
 
 
 

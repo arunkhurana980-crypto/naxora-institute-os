@@ -1,34 +1,35 @@
 # NAXORA Master Progress Record
 
 ## Latest completed part
-Part 91 — Fee and Batch Information Assistant
+Part 92 — Automatic Demo-Class Booking
 
 ## Date completed
 2026-07-15
 
 ## Feature name
-NAXORA OS 2.0 Fee and Batch Information Assistant
+NAXORA OS 2.0 Automatic Demo-Class Booking + Soft Calm VANI Voice
 
 ## Files changed
 - backend/src/server.js
-- frontend/fee-batch-information-assistant.html
-- frontend/fee-batch-information-assistant.css
-- frontend/fee-batch-information-assistant.js
-- README_PART91_FEE_BATCH_INFORMATION_ASSISTANT.md
-- START_HERE_PART91_ARUN.md
-- docs/PART91_FEE_BATCH_INFORMATION_ASSISTANT_CHECKLIST.md
+- frontend/automatic-demo-class-booking.html
+- frontend/automatic-demo-class-booking.css
+- frontend/automatic-demo-class-booking.js
+- frontend/vani-voice-starter.js
+- README_PART92_AUTOMATIC_DEMO_CLASS_BOOKING.md
+- START_HERE_PART92_ARUN.md
+- docs/PART92_AUTOMATIC_DEMO_CLASS_BOOKING_CHECKLIST.md
 - docs/NAXORA_MASTER_PROGRESS_RECORD.md
 
 ## Database/API changes
 No required database migration.
-Added `/api/part91/*` Fee and Batch Information APIs.
+Added `/api/part92/*` Automatic Demo-Class Booking APIs.
 
 ## VANI commands added
-- VANI, Class 10 Maths ki fee aur batch timing batao
-- VANI, JEE foundation ka batch aur fee batao
-- VANI, weekend revision batch available hai?
-- VANI, Class 10 Science installment preview dikhao
-- VANI, demo slot preview banao
+- VANI, Aman Class 10 Maths demo book karo parent phone 9876543210
+- VANI, Class 10 Science demo slot batao
+- VANI, JEE Physics online demo book karo parent phone 9876543210
+- VANI, weekend revision demo slot chahiye
+- VANI, demo reminder draft banao
 
 ## Tests passed
 - backend/src/server.js syntax check
@@ -39,14 +40,13 @@ Added `/api/part91/*` Fee and Batch Information APIs.
 - no secrets/API keys
 
 ## Errors remaining
-- Rule-based foundation only.
-- Production DB write pending.
-- Real batch capacity sync pending.
-- Real demo booking pending Part 92.
-- Browser mic support depends on permission/support.
+- Production DB persistence pending.
+- Real calendar availability pending.
+- Real WhatsApp/SMS reminder send pending.
+- External natural TTS API pending.
 
 ## Next part
-Part 92 — Automatic Demo-Class Booking
+Part 93 — AI Lead Qualification
 
 ## Locked subscription rule
 NAXORA OS 1.0, 2.0 and future 3.0 have separate subscriptions.
