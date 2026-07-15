@@ -10375,6 +10375,12 @@ const modulePageRoutes = {
   "/hand-raise-live-class": "live-chat-polls-hand-raise.html",
   "/vani-classroom-interaction": "live-chat-polls-hand-raise.html",
   "/live-classroom-interactions": "live-chat-polls-hand-raise.html",
+  "/recording-automatic-attendance": "recording-automatic-attendance.html",
+  "/recording-attendance": "recording-automatic-attendance.html",
+  "/live-class-recording": "recording-automatic-attendance.html",
+  "/automatic-attendance": "recording-automatic-attendance.html",
+  "/vani-recording-attendance": "recording-automatic-attendance.html",
+  "/class-recording-attendance": "recording-automatic-attendance.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -20328,6 +20334,709 @@ app.get("/api/part96/demo", (req, res) => {
   });
 });
 // ================= END PART 96 =================
+
+// ================= PART 97 — RECORDING AND AUTOMATIC ATTENDANCE =================
+// NAXORA OS 2.0 Recording and Automatic Attendance.
+// This part adds safe foundation for live-class recording policy, browser recording
+// capability preview, recording start/stop previews, attendance detection preview,
+// attendance marking preview, manual review and parent summary draft.
+// It does not upload real recordings, auto-save attendance permanently or export
+// sensitive recordings without owner verification.
+
+const part97RecordingFeatures = [
+  {
+    key: "recording_policy",
+    name: "Recording Policy Foundation",
+    summary: "Defines who can start/stop recording and when consent/review is required.",
+    problemSolved: "Live class recordings stay controlled and auditable."
+  },
+  {
+    key: "browser_recording_capability",
+    name: "Browser Recording Capability",
+    summary: "Checks MediaRecorder/camera/mic support and gives teacher guidance.",
+    problemSolved: "Teacher can test recording readiness before class."
+  },
+  {
+    key: "recording_start_stop_preview",
+    name: "Recording Start/Stop Preview",
+    summary: "Creates safe start/stop preview without cloud upload.",
+    problemSolved: "Recording workflow can be tested before storage is connected."
+  },
+  {
+    key: "automatic_attendance_preview",
+    name: "Automatic Attendance Preview",
+    summary: "Calculates attendance status from join duration, late entry and participation signals.",
+    problemSolved: "Teacher gets draft attendance automatically."
+  },
+  {
+    key: "manual_review_queue",
+    name: "Manual Review Queue",
+    summary: "Marks doubtful attendance entries for teacher review.",
+    problemSolved: "System does not wrongly finalise attendance."
+  },
+  {
+    key: "parent_summary_draft",
+    name: "Parent Summary Draft",
+    summary: "Creates safe draft summary of attendance/class recording status.",
+    problemSolved: "Parent communication becomes easier without auto-send."
+  },
+  {
+    key: "vani_recording_attendance",
+    name: "VANI Recording and Attendance Commands",
+    summary: "VANI can read recording status and attendance preview.",
+    problemSolved: "Teacher can manage recording/attendance foundation by voice."
+  }
+];
+
+const part97RoleRules = [
+  { role: "institute_owner", allowed: true, scope: "Can monitor authorised recording and attendance reports, exports require verification.", canRecord: false, canFinalizeAttendance: true, canMonitor: true, canExport: true },
+  { role: "branch_manager", allowed: true, scope: "Can monitor assigned branch recording and attendance reports.", canRecord: false, canFinalizeAttendance: true, canMonitor: true, canExport: false },
+  { role: "teacher", allowed: true, scope: "Can start/stop recording preview and review attendance for assigned classes.", canRecord: true, canFinalizeAttendance: true, canMonitor: false, canExport: false },
+  { role: "student", allowed: true, scope: "Can view own attendance status and recording availability only.", canRecord: false, canFinalizeAttendance: false, canMonitor: false, canExport: false, selfOnly: true },
+  { role: "parent", allowed: true, scope: "Can view linked child's attendance/recording availability summary only.", canRecord: false, canFinalizeAttendance: false, canMonitor: false, canExport: false, viewOnly: true },
+  { role: "receptionist_counsellor", allowed: true, scope: "Can view demo-class attendance preview only, no recording control.", canRecord: false, canFinalizeAttendance: false, canMonitor: false, canExport: false, demoOnly: true },
+  { role: "accountant", allowed: false, scope: "Finance role has no recording/attendance access by default.", canRecord: false, canFinalizeAttendance: false, canMonitor: false, canExport: false },
+  { role: "naxora_super_admin", allowed: false, scope: "Platform support only; no unrestricted recording or attendance access.", canRecord: false, canFinalizeAttendance: false, canMonitor: false, canExport: false }
+];
+
+const part97DemoRecordingSession = {
+  sessionId: "REC-SESSION-DEMO-CLASS10-MATHS",
+  roomId: "LIVE-DEMO-CLASS10-MATHS",
+  title: "Class 10 Maths Live Class",
+  batchId: "BAT-10-MATH-A",
+  teacherId: "TCH-DEMO-001",
+  subject: "Maths",
+  schedule: "Today 6:00 PM - 7:30 PM",
+  recordingStatus: "not_started_preview",
+  attendanceStatus: "draft_preview",
+  expectedStudents: 32,
+  recordingConsentMode: "institute_policy_required",
+  storageMode: "local_browser_preview_only"
+};
+
+const part97DemoAttendanceSignals = [
+  { studentId: "STU-DEMO-001", studentName: "Aman", joinedMinutes: 78, totalClassMinutes: 90, lateMinutes: 4, chatCount: 2, pollVotes: 1, handRaises: 1, connectionDrops: 0 },
+  { studentId: "STU-DEMO-002", studentName: "Riya", joinedMinutes: 52, totalClassMinutes: 90, lateMinutes: 18, chatCount: 0, pollVotes: 1, handRaises: 0, connectionDrops: 2 },
+  { studentId: "STU-DEMO-003", studentName: "Kabir", joinedMinutes: 14, totalClassMinutes: 90, lateMinutes: 35, chatCount: 0, pollVotes: 0, handRaises: 0, connectionDrops: 1 },
+  { studentId: "STU-DEMO-004", studentName: "Meera", joinedMinutes: 88, totalClassMinutes: 90, lateMinutes: 0, chatCount: 3, pollVotes: 2, handRaises: 0, connectionDrops: 0 }
+];
+
+function normalizePart97Role(role) {
+  const r = String(role || "teacher").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part97AccessCheck({ role, instituteId, branchId, batchId, teacherId, studentId, parentId, sessionId }) {
+  const normalizedRole = normalizePart97Role(role);
+  const rule = part97RoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole,
+    allowed: false,
+    scope: "Unknown or unsupported role.",
+    canRecord: false,
+    canFinalizeAttendance: false,
+    canMonitor: false,
+    canExport: false
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const teacherAssigned = normalizedRole !== "teacher" || Boolean(String(teacherId || "").trim() || String(batchId || "").trim());
+  const studentOwnOnly = normalizedRole !== "student" || Boolean(String(studentId || "").trim());
+  const parentLinkedOnly = normalizedRole !== "parent" || Boolean(String(parentId || "").trim() || String(studentId || "").trim());
+  const allowed = Boolean(rule.allowed && hasInstituteId && teacherAssigned && studentOwnOnly && parentLinkedOnly && normalizedRole !== "naxora_super_admin");
+
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    branchId: branchId || null,
+    batchId: batchId || null,
+    teacherId: teacherId || null,
+    studentId: studentId || null,
+    parentId: parentId || null,
+    sessionId: sessionId || part97DemoRecordingSession.sessionId,
+    allowed,
+    canRecord: Boolean(rule.canRecord && allowed),
+    canFinalizeAttendance: Boolean(rule.canFinalizeAttendance && allowed),
+    canMonitor: Boolean(rule.canMonitor && allowed),
+    canExport: Boolean(rule.canExport && allowed),
+    selfOnly: Boolean(rule.selfOnly),
+    viewOnly: Boolean(rule.viewOnly),
+    demoOnly: Boolean(rule.demoOnly),
+    scope: rule.scope,
+    reason: !hasInstituteId
+      ? "Institute ID missing."
+      : !rule.allowed
+        ? rule.scope
+        : !teacherAssigned
+          ? "Teacher recording/attendance access requires assigned teacherId or batchId."
+          : !studentOwnOnly
+            ? "Student can view own attendance only; studentId required."
+            : !parentLinkedOnly
+              ? "Parent can view linked child only; parentId/studentId required."
+              : "Recording and attendance access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    confirmationRequiredFor: ["start_recording", "stop_recording", "finalize_attendance", "edit_attendance", "send_parent_summary"],
+    ownerVerificationRequiredFor: ["recording_export", "delete_recording", "export_attendance", "privacy_change"]
+  };
+}
+
+function part97ParseCommand(text = "", body = {}) {
+  const input = String(text || body.command || body.q || "").trim();
+  const intent = /start.*record|recording start|record karo/i.test(input) ? "start_recording"
+    : /stop.*record|recording stop/i.test(input) ? "stop_recording"
+      : /attendance|present|absent|automatic/i.test(input) ? "attendance"
+        : /review|doubtful|manual/i.test(input) ? "manual_review"
+          : /parent|summary|draft/i.test(input) ? "parent_summary"
+            : /capability|camera|mic|mediarecorder|device/i.test(input) ? "capability"
+              : /status|recording/i.test(input) ? "status"
+                : "help";
+  return {
+    intent,
+    sessionId: body.sessionId || part97DemoRecordingSession.sessionId,
+    rawCommand: input
+  };
+}
+
+function part97RecordingCapability(userAgent = "") {
+  return {
+    previewOnly: true,
+    browserAPIs: {
+      mediaRecorder: true,
+      mediaDevices: true,
+      getDisplayMedia: true,
+      getUserMedia: true,
+      webmSupport: true
+    },
+    checks: [
+      { key: "camera_permission", status: "needs_browser_permission", message: "Camera permission browser popup se allow karni hogi." },
+      { key: "microphone_permission", status: "needs_browser_permission", message: "Mic permission browser popup se allow karni hogi." },
+      { key: "screen_recording", status: "browser_supported_preview", message: "Screen/tab recording browser permission ke saath preview mode me test hoga." },
+      { key: "cloud_upload", status: "pending", message: "Cloud recording upload abhi enabled nahi hai." },
+      { key: "recording_export", status: "owner_verification_required", message: "Recording export/delete owner verification ke bina nahi hoga." }
+    ],
+    recommendation: "Chrome/Edge latest version best. Class start se pehle short local recording test karna.",
+    userAgent: userAgent || "not_provided"
+  };
+}
+
+function part97RecordingPolicy(access = {}) {
+  return {
+    previewOnly: true,
+    role: access.role,
+    canStartRecording: Boolean(access.canRecord),
+    canStopRecording: Boolean(access.canRecord),
+    canViewRecordingStatus: Boolean(access.allowed),
+    canExportRecording: Boolean(access.canExport),
+    consentRequired: true,
+    consentMessage: "Recording start se pehle institute policy ke according teacher/student notice/consent required hai.",
+    storageMode: "local_browser_preview_only",
+    rules: [
+      "Recording auto-start nahi hoga.",
+      "Teacher start/stop preview karega.",
+      "Recording upload/export owner verification ke bina nahi.",
+      "Student/parent recording control nahi kar sakte.",
+      "Sensitive data private-screen-first."
+    ]
+  };
+}
+
+function part97RecordingStartPreview({ access, session = part97DemoRecordingSession }) {
+  return {
+    previewOnly: true,
+    canStart: Boolean(access.canRecord),
+    sessionId: session.sessionId,
+    recordingId: `REC-PREVIEW-${Date.now()}`,
+    status: access.canRecord ? "start_preview_ready" : "not_allowed",
+    consentRequired: true,
+    confirmationRequired: true,
+    storageMode: "local_browser_preview_only",
+    note: "Frontend local MediaRecorder preview can test recording. No cloud upload in this part."
+  };
+}
+
+function part97RecordingStopPreview({ access, session = part97DemoRecordingSession }) {
+  return {
+    previewOnly: true,
+    canStop: Boolean(access.canRecord),
+    sessionId: session.sessionId,
+    recordingId: `REC-PREVIEW-${Date.now()}`,
+    status: access.canRecord ? "stop_preview_ready" : "not_allowed",
+    metadataPreview: {
+      durationPreview: "00:12:30",
+      fileTypePreview: "webm",
+      storageMode: "local_browser_preview_only",
+      uploadPending: true
+    },
+    confirmationRequired: true
+  };
+}
+
+function part97AttendanceRule(signal = {}) {
+  const total = Number(signal.totalClassMinutes || 90);
+  const joined = Number(signal.joinedMinutes || 0);
+  const percent = total ? Math.round((joined / total) * 100) : 0;
+  const participationScore = Number(signal.chatCount || 0) + Number(signal.pollVotes || 0) * 2 + Number(signal.handRaises || 0) * 2;
+  let status = "absent";
+  let reviewRequired = false;
+  const reasons = [];
+
+  if (percent >= 75) {
+    status = "present";
+    reasons.push("75%+ class duration joined");
+  } else if (percent >= 50) {
+    status = "partial_present";
+    reviewRequired = true;
+    reasons.push("50–74% duration joined; teacher review needed");
+  } else if (percent >= 20 && participationScore >= 2) {
+    status = "manual_review";
+    reviewRequired = true;
+    reasons.push("Low duration but some participation; review needed");
+  } else {
+    status = "absent";
+    reasons.push("Insufficient join duration");
+  }
+
+  if (Number(signal.lateMinutes || 0) > 15) {
+    reviewRequired = true;
+    reasons.push("late entry over 15 minutes");
+  }
+  if (Number(signal.connectionDrops || 0) >= 2) {
+    reviewRequired = true;
+    reasons.push("connection drops detected");
+  }
+
+  return {
+    studentId: signal.studentId,
+    studentName: signal.studentName,
+    joinedMinutes: joined,
+    totalClassMinutes: total,
+    attendancePercent: percent,
+    participationScore,
+    status,
+    reviewRequired,
+    reasons,
+    finalStatusRequiresTeacherReview: reviewRequired
+  };
+}
+
+function part97AttendancePreview(signals = part97DemoAttendanceSignals) {
+  const entries = signals.map(part97AttendanceRule);
+  return {
+    previewOnly: true,
+    sessionId: part97DemoRecordingSession.sessionId,
+    entries,
+    summary: {
+      total: entries.length,
+      present: entries.filter((e) => e.status === "present").length,
+      partialPresent: entries.filter((e) => e.status === "partial_present").length,
+      manualReview: entries.filter((e) => e.reviewRequired).length,
+      absent: entries.filter((e) => e.status === "absent").length
+    },
+    rule: "Present >=75% duration. 50–74% or high late/drops requires teacher review.",
+    finalizationRequiresTeacherConfirmation: true
+  };
+}
+
+function part97AttendanceMarkPreview({ access, studentId, status, reason }) {
+  return {
+    previewOnly: true,
+    canMark: Boolean(access.canFinalizeAttendance),
+    studentId: studentId || "STU-DEMO-001",
+    status: status || "present",
+    reason: reason || "Teacher review confirmation pending",
+    finalSaveRequiresConfirmation: true,
+    allowedStatuses: ["present", "partial_present", "absent", "excused", "manual_review"]
+  };
+}
+
+function part97ManualReviewQueue(preview = part97AttendancePreview()) {
+  return {
+    previewOnly: true,
+    queue: preview.entries.filter((e) => e.reviewRequired),
+    teacherReviewRequired: true,
+    note: "System does not finalize doubtful attendance automatically."
+  };
+}
+
+function part97ParentSummaryDraft({ studentName, attendanceStatus, recordingAvailable }) {
+  return {
+    previewOnly: true,
+    autoSend: false,
+    confirmationRequired: true,
+    draft: `Namaste, aaj ki live class attendance preview: ${studentName || "student"} ka status ${attendanceStatus || "teacher review pending"} hai. Recording availability: ${recordingAvailable ? "available after institute approval" : "not available yet"}. Final update teacher/institute confirmation ke baad milegi.`,
+    safety: "Parent summary auto-send nahi hoga."
+  };
+}
+
+function part97BuildRecordingAttendance({ command, role, instituteId, branchId, batchId, teacherId, studentId, parentId, body = {}, userAgent = "" }) {
+  const parsed = part97ParseCommand(command, body);
+  const access = part97AccessCheck({
+    role,
+    instituteId,
+    branchId,
+    batchId: body.batchId || batchId,
+    teacherId: body.teacherId || teacherId,
+    studentId: body.studentId || studentId,
+    parentId: body.parentId || parentId,
+    sessionId: parsed.sessionId
+  });
+
+  const recordingCapability = part97RecordingCapability(userAgent);
+  const recordingPolicy = part97RecordingPolicy(access);
+  const startPreview = part97RecordingStartPreview({ access });
+  const stopPreview = part97RecordingStopPreview({ access });
+  const attendancePreview = part97AttendancePreview(body.signals || part97DemoAttendanceSignals);
+  const manualReviewQueue = part97ManualReviewQueue(attendancePreview);
+  const attendanceMarkPreview = part97AttendanceMarkPreview({ access, studentId: body.studentId || studentId, status: body.status, reason: body.reason });
+  const parentSummaryDraft = part97ParentSummaryDraft({
+    studentName: body.studentName || "Aman",
+    attendanceStatus: attendancePreview.entries.find((e) => e.studentId === (body.studentId || studentId))?.status || "present preview",
+    recordingAvailable: false
+  });
+
+  let replyText = "";
+  let nextAction = "none";
+  if (!access.allowed) {
+    replyText = "Is role/scope ko recording ya automatic attendance access nahi hai.";
+    nextAction = "blocked";
+  } else if (parsed.intent === "start_recording") {
+    replyText = access.canRecord
+      ? "Recording start preview ready hai. Consent aur confirmation ke bina recording start nahi hogi."
+      : "Is role ko recording start permission nahi hai.";
+    nextAction = "show_recording_start_preview";
+  } else if (parsed.intent === "stop_recording") {
+    replyText = access.canRecord
+      ? "Recording stop preview ready hai. Cloud upload abhi enabled nahi hai."
+      : "Is role ko recording stop permission nahi hai.";
+    nextAction = "show_recording_stop_preview";
+  } else if (parsed.intent === "attendance") {
+    replyText = "Automatic attendance draft preview ready hai. Doubtful entries teacher review ke bina final nahi hongi.";
+    nextAction = "show_attendance_preview";
+  } else if (parsed.intent === "manual_review") {
+    replyText = "Manual review queue ready hai. Teacher doubtful attendance entries check karega.";
+    nextAction = "show_manual_review_queue";
+  } else if (parsed.intent === "parent_summary") {
+    replyText = "Parent attendance summary draft ready hai. Auto-send off hai.";
+    nextAction = "show_parent_summary_draft";
+  } else if (parsed.intent === "capability") {
+    replyText = "Recording capability preview ready hai. Browser camera/mic permission required hai.";
+    nextAction = "show_recording_capability";
+  } else {
+    replyText = "Recording aur automatic attendance foundation preview ready hai.";
+    nextAction = "show_recording_attendance_summary";
+  }
+
+  return {
+    access,
+    parsed,
+    session: part97DemoRecordingSession,
+    recordingCapability,
+    recordingPolicy,
+    recordingStartPreview: startPreview,
+    recordingStopPreview: stopPreview,
+    attendancePreview,
+    attendanceMarkPreview,
+    manualReviewQueue,
+    parentSummaryDraft,
+    replyText,
+    spokenSafeSummary: replyText,
+    privateScreenFirst: true,
+    nextAction,
+    productionRecordingUploadPending: true,
+    productionAttendancePersistencePending: true,
+    confirmationRequiredFor: ["start_recording", "stop_recording", "finalize_attendance", "edit_attendance", "send_parent_summary"],
+    ownerVerificationRequiredFor: ["recording_export", "delete_recording", "export_attendance", "privacy_change"],
+    auditLog: {
+      event: "part97_recording_automatic_attendance",
+      role: access.role,
+      intent: parsed.intent,
+      sessionId: parsed.sessionId,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+const part97Checklist = [
+  "Recording and Automatic Attendance page opens",
+  "Status API returns success true",
+  "Recording capability preview works",
+  "Recording policy preview works",
+  "Teacher recording start/stop preview works",
+  "Automatic attendance preview calculates statuses",
+  "Manual review queue appears",
+  "Attendance mark preview requires confirmation",
+  "Parent summary draft is auto-send off",
+  "Student/parent safe view works",
+  "Accountant blocked mode works",
+  "VANI recording/attendance command works",
+  "Previous Part 1–96 routes remain preserved"
+];
+
+app.get("/api/part97/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 97 — Recording and Automatic Attendance",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 97,
+    nextPart: "Part 98 — AI Class Notes and Summary",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/recording-automatic-attendance", "/recording-attendance", "/live-class-recording", "/automatic-attendance", "/vani-recording-attendance", "/class-recording-attendance"],
+    apiRoutes: [
+      "/api/part97/config",
+      "/api/part97/features",
+      "/api/part97/roles",
+      "/api/part97/access-check",
+      "/api/part97/recording/session",
+      "/api/part97/recording/capability",
+      "/api/part97/recording/policy",
+      "/api/part97/recording/start-preview",
+      "/api/part97/recording/stop-preview",
+      "/api/part97/recording/metadata-preview",
+      "/api/part97/attendance/detect-preview",
+      "/api/part97/attendance/mark-preview",
+      "/api/part97/attendance/manual-review",
+      "/api/part97/attendance/report-preview",
+      "/api/part97/parent-summary/draft",
+      "/api/part97/vani/greeting",
+      "/api/part97/vani/command"
+    ],
+    recordingAutomaticAttendanceEnabled: true
+  });
+});
+
+app.get("/api/part97/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "Recording and Automatic Attendance",
+    appType: "live_class_recording_attendance_foundation",
+    version: "2.0-recording-automatic-attendance",
+    policy: {
+      previewFirst: true,
+      noCloudRecordingUploadYet: true,
+      noAutoAttendanceFinalization: true,
+      consentRequired: true,
+      teacherReviewRequiredForDoubtfulAttendance: true,
+      parentAutoSendOff: true,
+      recordingExportOwnerVerificationRequired: true
+    }
+  });
+});
+
+app.get("/api/part97/features", (req, res) => {
+  res.json({ success: true, features: part97RecordingFeatures });
+});
+
+app.get("/api/part97/roles", (req, res) => {
+  res.json({ success: true, roles: part97RoleRules });
+});
+
+app.get("/api/part97/access-check", (req, res) => {
+  res.json({ success: true, access: part97AccessCheck(req.query || {}) });
+});
+
+app.get("/api/part97/recording/session", (req, res) => {
+  res.json({ success: true, previewOnly: true, session: part97DemoRecordingSession });
+});
+
+app.get("/api/part97/recording/capability", (req, res) => {
+  res.json({ success: true, recordingCapability: part97RecordingCapability(req.headers["user-agent"] || "") });
+});
+
+app.get("/api/part97/recording/policy", (req, res) => {
+  const access = part97AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, recordingPolicy: part97RecordingPolicy(access) });
+});
+
+app.get("/api/part97/recording/start-preview", (req, res) => {
+  const access = part97AccessCheck(req.query || {});
+  if (!access.allowed || !access.canRecord) return res.status(403).json({ success: false, access, message: "Only assigned teacher can start recording preview." });
+  res.json({ success: true, access, recordingStartPreview: part97RecordingStartPreview({ access }) });
+});
+
+app.get("/api/part97/recording/stop-preview", (req, res) => {
+  const access = part97AccessCheck(req.query || {});
+  if (!access.allowed || !access.canRecord) return res.status(403).json({ success: false, access, message: "Only assigned teacher can stop recording preview." });
+  res.json({ success: true, access, recordingStopPreview: part97RecordingStopPreview({ access }) });
+});
+
+app.get("/api/part97/recording/metadata-preview", (req, res) => {
+  const access = part97AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({
+    success: true,
+    access,
+    metadataPreview: {
+      previewOnly: true,
+      recordingId: "REC-PREVIEW-META-001",
+      sessionId: part97DemoRecordingSession.sessionId,
+      durationPreview: "00:12:30",
+      fileTypePreview: "webm",
+      storageMode: "local_browser_preview_only",
+      cloudUploadPending: true,
+      exportOwnerVerificationRequired: true
+    }
+  });
+});
+
+app.get("/api/part97/attendance/detect-preview", (req, res) => {
+  const access = part97AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, attendancePreview: part97AttendancePreview() });
+});
+
+app.get("/api/part97/attendance/mark-preview", (req, res) => {
+  const access = part97AccessCheck(req.query || {});
+  if (!access.allowed || !access.canFinalizeAttendance) return res.status(403).json({ success: false, access, message: "Teacher/owner/branch manager can mark attendance preview." });
+  res.json({ success: true, access, attendanceMarkPreview: part97AttendanceMarkPreview({ access, studentId: req.query.studentId, status: req.query.status, reason: req.query.reason }) });
+});
+
+app.get("/api/part97/attendance/manual-review", (req, res) => {
+  const access = part97AccessCheck(req.query || {});
+  if (!access.allowed || !access.canFinalizeAttendance) return res.status(403).json({ success: false, access, message: "Manual review requires teacher/owner/branch manager access." });
+  const attendancePreview = part97AttendancePreview();
+  res.json({ success: true, access, manualReviewQueue: part97ManualReviewQueue(attendancePreview) });
+});
+
+app.get("/api/part97/attendance/report-preview", (req, res) => {
+  const access = part97AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  const attendancePreview = part97AttendancePreview();
+  res.json({
+    success: true,
+    access,
+    reportPreview: {
+      previewOnly: true,
+      session: part97DemoRecordingSession,
+      attendancePreview,
+      privateScreenFirst: true,
+      finalizationRequiresTeacherConfirmation: true,
+      exportOwnerVerificationRequired: true
+    }
+  });
+});
+
+app.get("/api/part97/parent-summary/draft", (req, res) => {
+  const access = part97AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, parentSummaryDraft: part97ParentSummaryDraft({ studentName: req.query.studentName || "Aman", attendanceStatus: req.query.attendanceStatus || "present preview", recordingAvailable: false }) });
+});
+
+app.get("/api/part97/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI Recording and Attendance",
+    greeting: "Namaste, main VANI Recording aur Automatic Attendance Assistant hoon. Aap recording status, attendance draft ya manual review queue pooch sakte ho.",
+    exampleCommands: [
+      "VANI, recording capability check karo",
+      "VANI, recording start preview banao",
+      "VANI, recording stop preview banao",
+      "VANI, automatic attendance draft dikhao",
+      "VANI, manual review queue batao",
+      "VANI, parent attendance summary draft banao"
+    ],
+    safety: "Recording start/stop, attendance finalization aur parent summary send confirmation ke bina nahi hoga."
+  });
+});
+
+app.post("/api/part97/vani/command", (req, res) => {
+  const body = req.body || {};
+  const result = part97BuildRecordingAttendance({
+    command: body.command || body.q || "",
+    role: body.role || "teacher",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId,
+    batchId: body.batchId,
+    teacherId: body.teacherId,
+    studentId: body.studentId,
+    parentId: body.parentId,
+    body,
+    userAgent: req.headers["user-agent"] || ""
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 97 — Recording and Automatic Attendance", ...result });
+});
+
+app.get("/api/part97/vani/command", (req, res) => {
+  const result = part97BuildRecordingAttendance({
+    command: req.query.command || req.query.q || "",
+    role: req.query.role || "teacher",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    batchId: req.query.batchId,
+    teacherId: req.query.teacherId,
+    studentId: req.query.studentId,
+    parentId: req.query.parentId,
+    body: req.query || {},
+    userAgent: req.headers["user-agent"] || ""
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 97 — Recording and Automatic Attendance", ...result });
+});
+
+app.get("/api/part97/audit-log", (req, res) => {
+  res.json({
+    success: true,
+    auditLog: [
+      { event: "recording_attendance_preview", role: "teacher", createdAt: new Date().toISOString() },
+      { event: "no_auto_attendance_finalization_policy", rule: "Doubtful attendance requires teacher review.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part97/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "recording_automatic_attendance_created", message: "Part 97 Recording and Automatic Attendance active.", createdAt: new Date().toISOString() },
+      { type: "local_browser_recording_preview", message: "Cloud recording upload pending production storage connection.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part97/checklist", (req, res) => {
+  res.json({ success: true, checklist: part97Checklist });
+});
+
+app.get("/api/part97/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part97-recording-automatic-attendance-readiness",
+    ownerVerificationRequiredForSensitiveExports: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      features: part97RecordingFeatures,
+      roles: part97RoleRules,
+      session: part97DemoRecordingSession,
+      checklist: part97Checklist
+    }
+  });
+});
+
+app.get("/api/part97/demo", (req, res) => {
+  const command = "VANI, automatic attendance draft dikhao";
+  const result = part97BuildRecordingAttendance({
+    command,
+    role: "teacher",
+    instituteId: "NX-DEMO-INST-001",
+    batchId: "BAT-10-MATH-A",
+    teacherId: "TCH-DEMO-001",
+    body: {}
+  });
+  res.json({
+    success: true,
+    demo: {
+      command,
+      result,
+      nextPart: "Part 98 — AI Class Notes and Summary"
+    }
+  });
+});
+// ================= END PART 97 =================
+
 
 
 

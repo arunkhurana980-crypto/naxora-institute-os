@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — Recording and Automatic Attendance</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/recording-automatic-attendance.css" />
+</head>
+<body>
+  <main class="recording-attendance">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 97 • NAXORA OS 2.0</p>
+        <h1>Recording and Automatic Attendance</h1>
+        <p class="lead">
+          Safe classroom recording foundation with browser recording preview,
+          attendance detection draft, manual review queue and parent summary draft.
+        </p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">VANI Recording + Attendance</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Tap Start, then ask recording or attendance status.</p>
+        <div class="voice-actions">
+          <button id="startVaniBtn">Start VANI</button>
+          <button id="listenVaniBtn">Listen</button>
+          <button id="muteVaniBtn">Mute</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Access</p>
+      <div class="controls">
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="branchId" value="BR-DEMO-001" />
+        <input id="batchId" value="BAT-10-MATH-A" />
+        <input id="teacherId" value="TCH-DEMO-001" />
+        <input id="studentId" value="STU-DEMO-001" />
+        <select id="roleSelect">
+          <option value="teacher" selected>Teacher Recording Control</option>
+          <option value="student">Student Own Attendance</option>
+          <option value="parent">Parent Linked Child View</option>
+          <option value="institute_owner">Institute Owner Monitor</option>
+          <option value="branch_manager">Branch Manager Monitor</option>
+          <option value="receptionist_counsellor">Receptionist Demo View</option>
+          <option value="accountant">Accountant Block Test</option>
+        </select>
+        <button id="demoBtn">Load Demo</button>
+      </div>
+      <pre id="accessBox" class="code">Waiting...</pre>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">VANI Command</p>
+        <h2>Speak or type</h2>
+        <p>Example: “VANI, automatic attendance draft dikhao”.</p>
+        <div class="controls">
+          <input id="vaniCommand" value="VANI, automatic attendance draft dikhao" />
+          <button id="askVaniBtn">Ask VANI</button>
+        </div>
+        <pre id="vaniOutput" class="code">Waiting...</pre>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Local Browser Recording Preview</p>
+        <p class="small">
+          This tests local browser recording only. Nothing uploads to cloud in Part 97.
+        </p>
+        <div class="controls">
+          <button id="startLocalRecBtn">Start Local Test</button>
+          <button id="stopLocalRecBtn">Stop Local Test</button>
+        </div>
+        <video id="previewVideo" autoplay muted playsinline></video>
+        <a id="recordingDownload" class="download-link" style="display:none" download="naxora-local-recording-preview.webm">Download local preview</a>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Recording Policy</p>
+        <div id="recordingBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Recording Capability</p>
+        <div id="capabilityBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Automatic Attendance Draft</p>
+        <div id="attendanceBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Manual Review Queue</p>
+        <div id="reviewBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Parent Summary Draft</p>
+        <div id="parentBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Session</p>
+        <div id="sessionBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Testing links</p>
+      <div class="links">
+        <a href="/api/part97/status" target="_blank">Status</a>
+        <a href="/api/part97/demo" target="_blank">Demo</a>
+        <a href="/api/part97/recording/capability" target="_blank">Capability</a>
+        <a href="/api/part97/attendance/detect-preview?role=teacher&instituteId=NX-DEMO-INST-001&teacherId=TCH-DEMO-001&batchId=BAT-10-MATH-A" target="_blank">Attendance Preview</a>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/vani-voice-starter.js"></script>
+  <script src="/recording-automatic-attendance.js"></script>
+</body>
+</html>
