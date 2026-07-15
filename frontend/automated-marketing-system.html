@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — Automated Marketing System</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/automated-marketing-system.css" />
+</head>
+<body>
+  <main class="marketing-system">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 107 • NAXORA OS 2.0</p>
+        <h1>Automated Marketing System</h1>
+        <p class="lead">
+          Consent-first campaign planning, audience segmentation, WhatsApp/SMS/email drafts,
+          schedule preview, budget ROI and approval workflow with VANI.
+        </p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">VANI Marketing</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Tap Start, then ask campaign plan or draft.</p>
+        <div class="voice-actions">
+          <button id="startVaniBtn">Start VANI</button>
+          <button id="listenVaniBtn">Listen</button>
+          <button id="muteVaniBtn">Mute</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Access</p>
+      <div class="controls">
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="branchId" value="BR-DEMO-001" />
+        <input id="assignedBranchId" value="BR-DEMO-001" />
+        <input id="studentId" value="STU-DEMO-001" />
+        <select id="roleSelect">
+          <option value="institute_owner" selected>Owner Marketing Control</option>
+          <option value="branch_manager">Branch Manager Draft</option>
+          <option value="receptionist_counsellor">Counsellor Lead Follow-up</option>
+          <option value="accountant">Accountant Budget Summary</option>
+          <option value="teacher">Teacher Academic Event Draft</option>
+          <option value="student">Student Notification Preference</option>
+          <option value="parent">Parent Notification Preference</option>
+        </select>
+        <button id="demoBtn">Load Demo</button>
+      </div>
+      <pre id="accessBox" class="code">Waiting...</pre>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">VANI Command</p>
+        <h2>Speak or type</h2>
+        <p>Example: “VANI, demo class campaign plan banao aur WhatsApp draft ready karo”.</p>
+        <div class="controls">
+          <input id="vaniCommand" value="VANI, demo class campaign plan banao aur WhatsApp draft ready karo" />
+          <button id="askVaniBtn">Ask VANI</button>
+        </div>
+        <pre id="vaniOutput" class="code">Waiting...</pre>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Campaign Planner</p>
+        <div id="plannerBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Campaigns</p>
+        <div id="campaignsBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Audience Segments</p>
+        <div id="segmentsBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Content Drafts</p>
+        <div id="contentBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Schedule Preview</p>
+        <div id="scheduleBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Budget ROI</p>
+        <div id="budgetBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Approval + Consent</p>
+        <div id="approvalBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Role Scoped Summary</p>
+        <div id="scopeBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Action Plan</p>
+        <div id="actionBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Testing links</p>
+      <div class="links">
+        <a href="/api/part107/status" target="_blank">Status</a>
+        <a href="/api/part107/demo" target="_blank">Demo</a>
+        <a href="/api/part107/campaigns?role=institute_owner&instituteId=NX-DEMO-INST-001" target="_blank">Campaigns</a>
+        <a href="/api/part107/content-draft?role=institute_owner&instituteId=NX-DEMO-INST-001" target="_blank">Content Draft</a>
+        <a href="/api/part107/consent-policy" target="_blank">Consent Policy</a>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/vani-voice-starter.js"></script>
+  <script src="/automated-marketing-system.js"></script>
+</body>
+</html>

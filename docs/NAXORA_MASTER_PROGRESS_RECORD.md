@@ -1,36 +1,36 @@
 # NAXORA Master Progress Record
 
 ## Latest completed part
-Part 106 — Business Forecasting
+Part 107 — Automated Marketing System
 
 ## Date completed
 2026-07-15
 
 ## Feature name
-NAXORA OS 2.0 Business Forecasting
+NAXORA OS 2.0 Automated Marketing System
 
 ## Files changed
 - backend/src/server.js
-- frontend/business-forecasting.html
-- frontend/business-forecasting.css
-- frontend/business-forecasting.js
+- frontend/automated-marketing-system.html
+- frontend/automated-marketing-system.css
+- frontend/automated-marketing-system.js
 - frontend/vani-voice-starter.js
-- README_PART106_BUSINESS_FORECASTING.md
-- START_HERE_PART106_ARUN.md
-- docs/PART106_BUSINESS_FORECASTING_CHECKLIST.md
+- README_PART107_AUTOMATED_MARKETING_SYSTEM.md
+- START_HERE_PART107_ARUN.md
+- docs/PART107_AUTOMATED_MARKETING_SYSTEM_CHECKLIST.md
 - docs/NAXORA_MASTER_PROGRESS_RECORD.md
 
 ## Database/API changes
 No required database migration.
-Added `/api/part106/*` Business Forecasting APIs.
+Added `/api/part107/*` Automated Marketing System APIs.
 
 ## VANI commands added
-- VANI, business forecast overview dikhao
-- VANI, next 30 days admission forecast banao
-- VANI, revenue forecast dikhao
-- VANI, cashflow risk batao
-- VANI, capacity forecast dikhao
-- VANI, forecast action plan banao
+- VANI, demo class campaign plan banao
+- VANI, hot leads audience segment dikhao
+- VANI, WhatsApp marketing draft banao
+- VANI, budget ROI preview dikhao
+- VANI, consent policy batao
+- VANI, marketing action plan banao
 
 ## Tests passed
 - backend/src/server.js syntax check
@@ -42,13 +42,14 @@ Added `/api/part106/*` Business Forecasting APIs.
 - no secrets/API keys
 
 ## Errors remaining
-- Preview/demo business data only.
-- Production forecasting database persistence pending.
-- Real historical trend model pending.
-- Real budget/target approval workflow pending.
+- Preview/demo marketing data only.
+- Real WhatsApp/SMS/email provider APIs not connected yet.
+- Real ad platform APIs not connected yet.
+- Production consent database pending.
+- Real campaign send workflow pending.
 
 ## Next part
-Part 107 — Automated Marketing System
+Part 108 — Complete Institute Marketplace
 
 ## Locked subscription rule
 NAXORA OS 1.0, 2.0 and future 3.0 have separate subscriptions.

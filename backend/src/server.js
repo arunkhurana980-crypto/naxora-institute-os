@@ -10435,6 +10435,12 @@ const modulePageRoutes = {
   "/vani-business-forecasting": "business-forecasting.html",
   "/revenue-forecasting": "business-forecasting.html",
   "/institute-forecasting": "business-forecasting.html",
+  "/automated-marketing-system": "automated-marketing-system.html",
+  "/marketing-automation": "automated-marketing-system.html",
+  "/automated-marketing": "automated-marketing-system.html",
+  "/vani-marketing": "automated-marketing-system.html",
+  "/owner-marketing-system": "automated-marketing-system.html",
+  "/campaign-automation": "automated-marketing-system.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -28053,6 +28059,668 @@ app.get("/api/part106/demo", (req, res) => {
   });
 });
 // ================= END PART 106 =================
+
+// ================= PART 107 — AUTOMATED MARKETING SYSTEM =================
+// NAXORA OS 2.0 Automated Marketing System.
+// This part creates a consent-first marketing automation foundation:
+// campaign planning, audience segmentation, content drafts, follow-up sequences,
+// schedule preview, budget/ROI preview, approval workflow, consent/DND policy,
+// and VANI marketing commands. It never sends WhatsApp/SMS/email automatically,
+// never bypasses consent/DND, and never stores provider API keys in source code.
+
+const part107MarketingFeatures = [
+  { key: "campaign_planner", name: "Campaign Planner", summary: "Plans admission, demo-class, renewal and parent engagement campaigns.", problemSolved: "Institute can organise campaigns before spending money." },
+  { key: "audience_segmentation", name: "Audience Segmentation", summary: "Builds safe audience segments such as hot leads, warm leads, inactive enquiries and parent updates.", problemSolved: "Marketing becomes targeted instead of random." },
+  { key: "content_draft_engine", name: "Content Draft Engine", summary: "Creates WhatsApp/SMS/email/ad copy drafts with approval required.", problemSolved: "Team saves time while avoiding accidental sends." },
+  { key: "followup_sequence", name: "Follow-up Sequence Preview", summary: "Creates multi-step nurturing schedule previews for leads and demo students.", problemSolved: "Leads are followed consistently." },
+  { key: "budget_roi_preview", name: "Budget and ROI Preview", summary: "Estimates campaign spend, expected leads, admissions and ROI preview.", problemSolved: "Owner can plan marketing budget safely." },
+  { key: "consent_dnd_policy", name: "Consent and DND Policy", summary: "Blocks auto-send without opt-in, consent and compliance checks.", problemSolved: "Marketing stays respectful and compliant." },
+  { key: "approval_workflow", name: "Approval Workflow", summary: "Owner/manager approval required before campaign publish/send.", problemSolved: "No accidental bulk message or ad spend." },
+  { key: "vani_marketing", name: "VANI Marketing Commands", summary: "VANI can draft campaigns, segments, content, budget preview and approval plan.", problemSolved: "Owner can plan marketing with voice." }
+];
+
+const part107RoleRules = [
+  { role: "institute_owner", allowed: true, scope: "Can plan campaigns, approve budget/publish and view authorised campaign analytics.", canPlanCampaign: true, canApproveCampaign: true, canViewBudget: true, canCreateContent: true, canExport: true },
+  { role: "branch_manager", allowed: true, scope: "Can draft assigned branch campaigns and request approval.", canPlanCampaign: true, canApproveCampaign: false, canViewBudget: false, canCreateContent: true, canExport: false, assignedBranchOnly: true },
+  { role: "receptionist_counsellor", allowed: true, scope: "Can create enquiry/demo follow-up campaign drafts for assigned branch.", canPlanCampaign: true, canApproveCampaign: false, canViewBudget: false, canCreateContent: true, canExport: false, leadFollowupOnly: true },
+  { role: "accountant", allowed: true, scope: "Can view campaign budget/ROI safe summary only.", canPlanCampaign: false, canApproveCampaign: false, canViewBudget: true, canCreateContent: false, canExport: false, budgetSummaryOnly: true },
+  { role: "teacher", allowed: true, scope: "Can view academic event/webinar campaign draft summary only.", canPlanCampaign: false, canApproveCampaign: false, canViewBudget: false, canCreateContent: true, canExport: false, academicEventDraftOnly: true },
+  { role: "student", allowed: true, scope: "Can view own notification preference/opt-in status only.", canPlanCampaign: false, canApproveCampaign: false, canViewBudget: false, canCreateContent: false, canExport: false, selfPreferenceOnly: true },
+  { role: "parent", allowed: true, scope: "Can view linked child/family notification preference/opt-in status only.", canPlanCampaign: false, canApproveCampaign: false, canViewBudget: false, canCreateContent: false, canExport: false, preferenceViewOnly: true },
+  { role: "naxora_super_admin", allowed: false, scope: "Platform support only; no unrestricted institute marketing/private lead access.", canPlanCampaign: false, canApproveCampaign: false, canViewBudget: false, canCreateContent: false, canExport: false }
+];
+
+const part107DemoCampaigns = [
+  {
+    campaignId: "MKT-DEMO-001",
+    campaignName: "Class 10 Maths Demo Class Campaign",
+    branchId: "BR-DEMO-001",
+    type: "demo_class",
+    audience: "hot_leads_class10_maths",
+    channelMix: ["whatsapp_draft", "sms_draft", "email_draft"],
+    status: "draft_preview",
+    estimatedAudience: 220,
+    consentEligible: 184,
+    blockedByDnd: 21,
+    expectedLeads: 54,
+    expectedAdmissions: 16,
+    budgetPreview: 12000,
+    expectedRevenuePreview: 288000,
+    ownerApprovalRequired: true
+  },
+  {
+    campaignId: "MKT-DEMO-002",
+    campaignName: "Fee Reminder Friendly Nurture",
+    branchId: "BR-DEMO-002",
+    type: "parent_engagement",
+    audience: "parent_safe_reminder_optin",
+    channelMix: ["whatsapp_draft", "email_draft"],
+    status: "approval_pending_preview",
+    estimatedAudience: 95,
+    consentEligible: 81,
+    blockedByDnd: 8,
+    expectedLeads: 0,
+    expectedAdmissions: 0,
+    budgetPreview: 1800,
+    expectedRevenuePreview: 0,
+    ownerApprovalRequired: true
+  },
+  {
+    campaignId: "MKT-DEMO-003",
+    campaignName: "Summer Crash Course Campaign",
+    branchId: "BR-DEMO-003",
+    type: "admission_growth",
+    audience: "warm_leads_and_old_enquiries",
+    channelMix: ["whatsapp_draft", "sms_draft", "email_draft", "ad_copy_draft"],
+    status: "draft_preview",
+    estimatedAudience: 410,
+    consentEligible: 320,
+    blockedByDnd: 36,
+    expectedLeads: 86,
+    expectedAdmissions: 24,
+    budgetPreview: 25000,
+    expectedRevenuePreview: 432000,
+    ownerApprovalRequired: true
+  }
+];
+
+const part107DemoSegments = [
+  { segmentId: "SEG-HOT-10-MATH", name: "Hot Class 10 Maths Leads", branchId: "BR-DEMO-001", size: 220, consentEligible: 184, description: "High intent leads interested in Class 10 Maths demo." },
+  { segmentId: "SEG-WARM-OLD", name: "Warm Old Enquiries", branchId: "BR-DEMO-003", size: 410, consentEligible: 320, description: "Old enquiries that need reactivation with course offer." },
+  { segmentId: "SEG-PARENT-OPTIN", name: "Parent Opt-in Updates", branchId: "BR-DEMO-002", size: 95, consentEligible: 81, description: "Parents who opted in for service/engagement updates." },
+  { segmentId: "SEG-DEMO-NOSHOW", name: "Demo No-show Follow-up", branchId: "BR-DEMO-001", size: 72, consentEligible: 61, description: "Leads who booked demo but did not attend." }
+];
+
+function normalizePart107Role(role) {
+  const r = String(role || "institute_owner").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part107AccessCheck({ role, instituteId, branchId, assignedBranchId, studentId, parentId }) {
+  const normalizedRole = normalizePart107Role(role);
+  const rule = part107RoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole, allowed: false, scope: "Unknown or unsupported role.",
+    canPlanCampaign: false, canApproveCampaign: false, canViewBudget: false, canCreateContent: false, canExport: false
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const branchRequired = ["branch_manager", "receptionist_counsellor", "accountant", "teacher"].includes(normalizedRole) ? Boolean(String(branchId || assignedBranchId || "").trim()) : true;
+  const studentScoped = normalizedRole !== "student" || Boolean(String(studentId || "").trim());
+  const parentScoped = normalizedRole !== "parent" || Boolean(String(parentId || "").trim() || String(studentId || "").trim());
+  const allowed = Boolean(rule.allowed && hasInstituteId && branchRequired && studentScoped && parentScoped && normalizedRole !== "naxora_super_admin");
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    branchId: branchId || assignedBranchId || null,
+    assignedBranchId: assignedBranchId || branchId || null,
+    studentId: studentId || null,
+    parentId: parentId || null,
+    allowed,
+    canPlanCampaign: Boolean(rule.canPlanCampaign && allowed),
+    canApproveCampaign: Boolean(rule.canApproveCampaign && allowed),
+    canViewBudget: Boolean(rule.canViewBudget && allowed),
+    canCreateContent: Boolean(rule.canCreateContent && allowed),
+    canExport: Boolean(rule.canExport && allowed),
+    assignedBranchOnly: Boolean(rule.assignedBranchOnly),
+    leadFollowupOnly: Boolean(rule.leadFollowupOnly),
+    budgetSummaryOnly: Boolean(rule.budgetSummaryOnly),
+    academicEventDraftOnly: Boolean(rule.academicEventDraftOnly),
+    selfPreferenceOnly: Boolean(rule.selfPreferenceOnly),
+    preferenceViewOnly: Boolean(rule.preferenceViewOnly),
+    scope: rule.scope,
+    reason: !hasInstituteId ? "Institute ID missing." :
+      !rule.allowed ? rule.scope :
+      !branchRequired ? "This role requires assigned branch scope." :
+      !studentScoped ? "Student can view own preference only; studentId required." :
+      !parentScoped ? "Parent can view linked child/family preference only." :
+      "Automated Marketing System access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    confirmationRequiredFor: ["campaign_create", "campaign_schedule", "content_publish", "test_message_send", "approval_request"],
+    ownerVerificationRequiredFor: ["bulk_campaign_send", "campaign_budget_apply", "marketing_export", "provider_api_key_change", "consent_policy_change", "template_publish"]
+  };
+}
+
+function part107VisibleCampaigns(access) {
+  if (access.role === "institute_owner") return part107DemoCampaigns;
+  const branchId = access.branchId || access.assignedBranchId || "BR-DEMO-001";
+  if (access.budgetSummaryOnly) return part107DemoCampaigns.filter((c) => c.branchId === branchId).map((c) => ({ campaignId: c.campaignId, campaignName: c.campaignName, branchId: c.branchId, budgetPreview: c.budgetPreview, status: c.status }));
+  if (access.selfPreferenceOnly || access.preferenceViewOnly) return [];
+  return part107DemoCampaigns.filter((c) => c.branchId === branchId);
+}
+
+function part107VisibleSegments(access) {
+  if (access.role === "institute_owner") return part107DemoSegments;
+  const branchId = access.branchId || access.assignedBranchId || "BR-DEMO-001";
+  if (access.selfPreferenceOnly || access.preferenceViewOnly || access.budgetSummaryOnly) return [];
+  return part107DemoSegments.filter((s) => s.branchId === branchId);
+}
+
+function part107FindCampaign(campaignId, access) {
+  const visible = part107VisibleCampaigns(access);
+  return visible.find((c) => c.campaignId === campaignId) || visible[0] || part107DemoCampaigns[0];
+}
+
+function part107CampaignPlanner(access, body = {}) {
+  const branchId = body.branchId || access.branchId || "BR-DEMO-001";
+  const campaignType = body.campaignType || "demo_class";
+  const segment = part107VisibleSegments(access).find((s) => s.branchId === branchId) || part107DemoSegments[0];
+  return {
+    previewOnly: true,
+    canPlanCampaign: Boolean(access.canPlanCampaign),
+    planId: `MKT-PLAN-PREVIEW-${Date.now()}`,
+    campaignName: body.campaignName || (campaignType === "admission_growth" ? "Admission Growth Campaign" : "Demo Class Campaign"),
+    branchId,
+    campaignType,
+    selectedSegment: segment,
+    channelMix: body.channelMix || ["whatsapp_draft", "sms_draft", "email_draft"],
+    objective: body.objective || "increase qualified demo bookings",
+    status: "planner_preview",
+    finalCreateRequiresConfirmation: true,
+    noAutoSend: true
+  };
+}
+
+function part107AudienceSegments(access) {
+  const segments = part107VisibleSegments(access);
+  return {
+    previewOnly: true,
+    segments,
+    totalAudience: segments.reduce((sum, s) => sum + s.size, 0),
+    totalConsentEligible: segments.reduce((sum, s) => sum + s.consentEligible, 0),
+    consentRequired: true,
+    dndRespectRequired: true
+  };
+}
+
+function part107ContentDraft(access, body = {}) {
+  const campaignType = body.campaignType || "demo_class";
+  const course = body.course || "Class 10 Maths";
+  const instituteName = body.instituteName || "NAXORA Institute";
+  const tone = body.tone || "polite_hinglish";
+  const whatsapp = campaignType === "parent_engagement"
+    ? `Namaste, ${instituteName} se friendly update: aapke child ke learning support ke liye teacher-reviewed guidance available hai. Reply YES for details.`
+    : `Namaste! ${instituteName} me ${course} ka demo class available hai. Interested hain to YES reply karein, counsellor details share karega.`;
+  const sms = `${instituteName}: ${course} demo/support update ke liye YES reply karein. Consent/DND rules apply.`;
+  const emailSubject = campaignType === "admission_growth" ? `${course} admission/demo update` : `${course} learning support update`;
+  return {
+    previewOnly: true,
+    canCreateContent: Boolean(access.canCreateContent),
+    tone,
+    drafts: {
+      whatsappDraft: whatsapp,
+      smsDraft: sms,
+      emailSubject,
+      emailBody: `${emailSubject}\n\nThis is a teacher/owner-review required draft. Final sending is disabled until approval.`,
+      adCopyDraft: `${course} demo class seats open. Book a safe counselling callback.`
+    },
+    approvalRequired: true,
+    noAutoSend: true,
+    sensitiveDataBlocked: true
+  };
+}
+
+function part107SchedulePreview(access, body = {}) {
+  const steps = [
+    { day: 0, channel: "whatsapp_draft", action: "intro/demo invite", autoSend: false },
+    { day: 1, channel: "sms_draft", action: "short reminder for consent-eligible audience", autoSend: false },
+    { day: 3, channel: "email_draft", action: "course details and demo slot summary", autoSend: false },
+    { day: 5, channel: "counsellor_task", action: "manual call list for warm leads", autoSend: false },
+    { day: 7, channel: "whatsapp_draft", action: "last reminder only for consent-eligible leads", autoSend: false }
+  ];
+  return {
+    previewOnly: true,
+    scheduleId: `MKT-SCHEDULE-PREVIEW-${Date.now()}`,
+    steps,
+    bestTimePreview: body.bestTimePreview || "6:00 PM - 8:00 PM",
+    timezone: "Asia/Kolkata",
+    approvalRequiredBeforeScheduling: true,
+    noAutoSend: true
+  };
+}
+
+function part107BudgetRoiPreview(access, campaign = {}) {
+  const selected = campaign.campaignId ? campaign : part107FindCampaign(campaign.campaignId, access);
+  const budget = Number(campaign.budgetPreview || selected.budgetPreview || 10000);
+  const expectedLeads = Number(campaign.expectedLeads || selected.expectedLeads || Math.round(budget / 220));
+  const expectedAdmissions = Number(campaign.expectedAdmissions || selected.expectedAdmissions || Math.round(expectedLeads * 0.25));
+  const expectedRevenue = Number(campaign.expectedRevenuePreview || selected.expectedRevenuePreview || expectedAdmissions * 18000);
+  const roiMultiple = budget ? Number((expectedRevenue / budget).toFixed(2)) : 0;
+  return {
+    previewOnly: true,
+    canViewBudget: Boolean(access.canViewBudget),
+    campaignId: selected.campaignId || "new_campaign_preview",
+    budgetPreview: access.canViewBudget ? budget : "hidden",
+    expectedLeads: access.canViewBudget ? expectedLeads : "hidden",
+    expectedAdmissions: access.canViewBudget ? expectedAdmissions : "hidden",
+    expectedRevenuePreview: access.canViewBudget ? expectedRevenue : "hidden",
+    roiMultiplePreview: access.canViewBudget ? roiMultiple : "hidden",
+    notGuarantee: true,
+    budgetAutoApply: false,
+    ownerApprovalRequired: true
+  };
+}
+
+function part107ConsentPolicy() {
+  return {
+    previewOnly: true,
+    consentFirst: true,
+    dndRespectRequired: true,
+    optOutRequired: true,
+    noAutoSend: true,
+    blockedWithoutConsent: ["bulk WhatsApp", "bulk SMS", "bulk email", "ad retargeting export"],
+    requiredBeforeSend: ["opt-in/consent check", "DND/suppression check", "template approval", "owner/manager approval", "provider API configured in env"],
+    futureEnvKeys: ["WHATSAPP_PROVIDER_API_KEY", "SMS_PROVIDER_API_KEY", "EMAIL_PROVIDER_API_KEY"],
+    secretsInChatAllowed: false,
+    safety: "Marketing automation must be respectful, consent-based, and approval-first."
+  };
+}
+
+function part107ApprovalPreview(access, campaignId) {
+  const campaign = part107FindCampaign(campaignId, access);
+  return {
+    previewOnly: true,
+    campaignId: campaign.campaignId,
+    campaignName: campaign.campaignName,
+    currentStatus: campaign.status,
+    canApproveCampaign: Boolean(access.canApproveCampaign),
+    approvalsRequired: ["content review", "consent/DND check", "budget review", "owner approval before bulk send"],
+    approvalDecisionPreview: access.canApproveCampaign ? "owner_can_approve_after_review" : "approval_request_can_be_created",
+    bulkSendStillDisabled: true,
+    ownerVerificationRequiredForSend: true
+  };
+}
+
+function part107ActionPlan(access) {
+  const campaigns = part107VisibleCampaigns(access);
+  const actions = [];
+  if (access.canPlanCampaign) actions.push("Hot leads ke liye demo-class campaign plan draft banao.");
+  if (access.leadFollowupOnly) actions.push("Demo no-show leads ke liye counsellor follow-up sequence draft banao.");
+  if (access.canViewBudget) actions.push("Budget/ROI preview owner review ke liye prepare karo.");
+  if (campaigns.some((c) => c.status === "approval_pending_preview")) actions.push("Approval pending campaigns ki consent/DND checklist review karo.");
+  if (!actions.length) actions.push("Marketing preferences safe summary review karo; no campaign access for this role.");
+  return {
+    previewOnly: true,
+    canCreateActionPlan: Boolean(access.canPlanCampaign || access.canViewBudget || access.leadFollowupOnly),
+    actions,
+    autoSend: false,
+    autoBudgetApply: false,
+    confirmationRequired: true
+  };
+}
+
+function part107RoleScopedSummary(access) {
+  if (access.selfPreferenceOnly || access.preferenceViewOnly) {
+    return {
+      previewOnly: true,
+      scope: access.selfPreferenceOnly ? "student_notification_preference" : "parent_notification_preference",
+      visibleData: { marketingMessages: "opt_in_required", serviceUpdates: "allowed_by_policy", optOutAvailable: true },
+      hiddenData: ["campaign budgets", "lead lists", "other users", "marketing analytics"]
+    };
+  }
+  if (access.budgetSummaryOnly) {
+    return {
+      previewOnly: true,
+      scope: "campaign_budget_summary_only",
+      visibleData: part107VisibleCampaigns(access),
+      hiddenData: ["lead contact data", "message body personalisation", "provider credentials"]
+    };
+  }
+  if (access.academicEventDraftOnly) {
+    return {
+      previewOnly: true,
+      scope: "academic_event_draft_only",
+      visibleData: { allowedDrafts: ["webinar announcement", "demo class academic agenda", "revision session invite"], noBulkSend: true },
+      hiddenData: ["lead phone/email list", "budget approval", "campaign exports"]
+    };
+  }
+  return {
+    previewOnly: true,
+    scope: access.canApproveCampaign ? "owner_marketing_control" : "assigned_marketing_draft",
+    visibleData: { campaigns: part107VisibleCampaigns(access), segments: part107VisibleSegments(access) },
+    hiddenData: access.canApproveCampaign ? ["provider secrets"] : ["other branches", "bulk send approval", "financial exports"]
+  };
+}
+
+function part107ParseCommand(text = "", body = {}) {
+  const input = String(text || body.command || body.q || "").trim();
+  const intent = /segment|audience|lead list/i.test(input) ? "segments"
+    : /draft|content|message|whatsapp|sms|email|ad copy/i.test(input) ? "content_draft"
+      : /schedule|sequence|follow.?up/i.test(input) ? "schedule"
+        : /budget|roi|spend|cost/i.test(input) ? "budget_roi"
+          : /approve|approval|publish/i.test(input) ? "approval"
+            : /consent|dnd|privacy|opt.?in|permission/i.test(input) ? "consent_policy"
+              : /action|plan|next step/i.test(input) ? "action_plan"
+                : /campaign|marketing|demo|admission/i.test(input) ? "campaign_plan"
+                  : "overview";
+  return { intent, rawCommand: input };
+}
+
+function part107BuildMarketing({ command, role, instituteId, branchId, assignedBranchId, studentId, parentId, body = {} }) {
+  const parsed = part107ParseCommand(command, body);
+  const access = part107AccessCheck({
+    role,
+    instituteId,
+    branchId: body.branchId || branchId,
+    assignedBranchId: body.assignedBranchId || assignedBranchId,
+    studentId: body.studentId || studentId,
+    parentId: body.parentId || parentId
+  });
+
+  const campaigns = part107VisibleCampaigns(access);
+  const campaignPlanner = part107CampaignPlanner(access, body);
+  const audienceSegments = part107AudienceSegments(access);
+  const contentDraft = part107ContentDraft(access, body);
+  const schedulePreview = part107SchedulePreview(access, body);
+  const budgetRoiPreview = part107BudgetRoiPreview(access, campaigns[0] || {});
+  const consentPolicy = part107ConsentPolicy();
+  const approvalPreview = part107ApprovalPreview(access, body.campaignId || (campaigns[0] && campaigns[0].campaignId));
+  const actionPlan = part107ActionPlan(access);
+  const roleScopedSummary = part107RoleScopedSummary(access);
+
+  let replyText = "";
+  let nextAction = "none";
+  if (!access.allowed) {
+    replyText = "Is role/scope ko automated marketing system access nahi hai.";
+    nextAction = "blocked";
+  } else if (parsed.intent === "segments") {
+    replyText = `Audience segments preview ready hai. ${audienceSegments.totalConsentEligible} consent-eligible contacts screen par dikh rahe hain.`;
+    nextAction = "show_segments";
+  } else if (parsed.intent === "content_draft") {
+    replyText = access.canCreateContent ? "Marketing content drafts ready hain. Auto-send off hai." : "Is role ko content draft permission nahi hai.";
+    nextAction = "show_content_draft";
+  } else if (parsed.intent === "schedule") {
+    replyText = "Follow-up schedule preview ready hai. Scheduling approval ke bina nahi hoga.";
+    nextAction = "show_schedule_preview";
+  } else if (parsed.intent === "budget_roi") {
+    replyText = access.canViewBudget ? "Budget and ROI preview ready hai. Forecast guarantee nahi hai." : "Is role ko budget/ROI details permission nahi hai.";
+    nextAction = "show_budget_roi";
+  } else if (parsed.intent === "approval") {
+    replyText = "Approval preview ready hai. Bulk send owner verification ke bina nahi hoga.";
+    nextAction = "show_approval_preview";
+  } else if (parsed.intent === "consent_policy") {
+    replyText = "Consent and DND policy ready hai. Consent ke bina marketing send nahi hoga.";
+    nextAction = "show_consent_policy";
+  } else if (parsed.intent === "action_plan") {
+    replyText = "Marketing action plan draft ready hai. Auto-send aur auto-budget apply off hai.";
+    nextAction = "show_action_plan";
+  } else {
+    replyText = `Automated Marketing System overview ready hai. ${campaigns.length} visible campaign drafts available hain.`;
+    nextAction = "show_marketing_overview";
+  }
+
+  return {
+    access,
+    parsed,
+    campaigns,
+    campaignPlanner,
+    audienceSegments,
+    contentDraft,
+    schedulePreview,
+    budgetRoiPreview,
+    consentPolicy,
+    approvalPreview,
+    actionPlan,
+    roleScopedSummary,
+    replyText,
+    spokenSafeSummary: replyText,
+    privateScreenFirst: true,
+    nextAction,
+    providerApisConnected: false,
+    noAutoSend: true,
+    confirmationRequiredFor: ["campaign_create", "campaign_schedule", "content_publish", "test_message_send", "approval_request"],
+    ownerVerificationRequiredFor: ["bulk_campaign_send", "campaign_budget_apply", "marketing_export", "provider_api_key_change", "consent_policy_change", "template_publish"],
+    auditLog: {
+      event: "part107_automated_marketing_system",
+      role: access.role,
+      intent: parsed.intent,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+const part107Checklist = [
+  "Automated Marketing System page opens",
+  "Status API returns success true",
+  "Campaign planner works",
+  "Audience segments work",
+  "Content drafts work without auto-send",
+  "Schedule preview works without scheduling",
+  "Budget/ROI preview permission works",
+  "Consent/DND policy appears",
+  "Approval preview blocks bulk send",
+  "Role scoped summary hides sensitive data",
+  "VANI marketing command works",
+  "Previous Part 1–106 routes remain preserved"
+];
+
+app.get("/api/part107/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 107 — Automated Marketing System",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 107,
+    nextPart: "Part 108 — Complete Institute Marketplace",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/automated-marketing-system", "/marketing-automation", "/automated-marketing", "/vani-marketing", "/owner-marketing-system", "/campaign-automation"],
+    apiRoutes: [
+      "/api/part107/config", "/api/part107/features", "/api/part107/roles", "/api/part107/access-check",
+      "/api/part107/campaigns", "/api/part107/audience-segments", "/api/part107/campaign-planner",
+      "/api/part107/content-draft", "/api/part107/schedule-preview", "/api/part107/budget-roi-preview",
+      "/api/part107/consent-policy", "/api/part107/approval-preview", "/api/part107/action-plan",
+      "/api/part107/role-scoped-summary", "/api/part107/vani/greeting", "/api/part107/vani/command"
+    ],
+    automatedMarketingSystemEnabled: true
+  });
+});
+
+app.get("/api/part107/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "Automated Marketing System",
+    appType: "automated_marketing_foundation",
+    version: "2.0-automated-marketing-system",
+    policy: {
+      previewFirst: true,
+      noAutoSend: true,
+      consentFirst: true,
+      dndRespectRequired: true,
+      noProviderApiKeysIncluded: true,
+      approvalRequiredBeforeBulkSend: true,
+      privateScreenFirst: true
+    }
+  });
+});
+
+app.get("/api/part107/features", (req, res) => res.json({ success: true, features: part107MarketingFeatures }));
+app.get("/api/part107/roles", (req, res) => res.json({ success: true, roles: part107RoleRules }));
+app.get("/api/part107/access-check", (req, res) => res.json({ success: true, access: part107AccessCheck(req.query || {}) }));
+
+app.get("/api/part107/campaigns", (req, res) => {
+  const access = part107AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, campaigns: part107VisibleCampaigns(access) });
+});
+
+app.get("/api/part107/audience-segments", (req, res) => {
+  const access = part107AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, audienceSegments: part107AudienceSegments(access) });
+});
+
+app.get("/api/part107/campaign-planner", (req, res) => {
+  const access = part107AccessCheck(req.query || {});
+  if (!access.allowed || !access.canPlanCampaign) return res.status(403).json({ success: false, access, message: "Campaign planner not allowed for this role." });
+  res.json({ success: true, access, campaignPlanner: part107CampaignPlanner(access, req.query || {}) });
+});
+
+app.get("/api/part107/content-draft", (req, res) => {
+  const access = part107AccessCheck(req.query || {});
+  if (!access.allowed || !access.canCreateContent) return res.status(403).json({ success: false, access, message: "Content draft not allowed for this role." });
+  res.json({ success: true, access, contentDraft: part107ContentDraft(access, req.query || {}) });
+});
+
+app.get("/api/part107/schedule-preview", (req, res) => {
+  const access = part107AccessCheck(req.query || {});
+  if (!access.allowed || !access.canPlanCampaign) return res.status(403).json({ success: false, access, message: "Schedule preview not allowed for this role." });
+  res.json({ success: true, access, schedulePreview: part107SchedulePreview(access, req.query || {}) });
+});
+
+app.get("/api/part107/budget-roi-preview", (req, res) => {
+  const access = part107AccessCheck(req.query || {});
+  if (!access.allowed || !access.canViewBudget) return res.status(403).json({ success: false, access, message: "Budget/ROI preview not allowed for this role." });
+  res.json({ success: true, access, budgetRoiPreview: part107BudgetRoiPreview(access, req.query || {}) });
+});
+
+app.get("/api/part107/consent-policy", (req, res) => res.json({ success: true, consentPolicy: part107ConsentPolicy() }));
+
+app.get("/api/part107/approval-preview", (req, res) => {
+  const access = part107AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, approvalPreview: part107ApprovalPreview(access, req.query.campaignId) });
+});
+
+app.get("/api/part107/action-plan", (req, res) => {
+  const access = part107AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, actionPlan: part107ActionPlan(access) });
+});
+
+app.get("/api/part107/role-scoped-summary", (req, res) => {
+  const access = part107AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, roleScopedSummary: part107RoleScopedSummary(access) });
+});
+
+app.get("/api/part107/privacy-policy", (req, res) => res.json({ success: true, privacyPolicy: part107ConsentPolicy() }));
+
+app.get("/api/part107/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI Marketing",
+    greeting: "Namaste, main VANI Automated Marketing Assistant hoon. Aap campaign plan, audience segment, WhatsApp/SMS/email draft, budget ROI, consent policy ya approval preview pooch sakte ho.",
+    exampleCommands: [
+      "VANI, demo class campaign plan banao",
+      "VANI, hot leads audience segment dikhao",
+      "VANI, WhatsApp marketing draft banao",
+      "VANI, budget ROI preview dikhao",
+      "VANI, consent policy batao",
+      "VANI, marketing action plan banao"
+    ],
+    safety: "Koi bhi WhatsApp, SMS, email, ad ya bulk campaign auto-send nahi hoga. Consent aur owner approval required hai."
+  });
+});
+
+app.post("/api/part107/vani/command", (req, res) => {
+  const body = req.body || {};
+  const result = part107BuildMarketing({
+    command: body.command || body.q || "",
+    role: body.role || "institute_owner",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId,
+    assignedBranchId: body.assignedBranchId,
+    studentId: body.studentId,
+    parentId: body.parentId,
+    body
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 107 — Automated Marketing System", ...result });
+});
+
+app.get("/api/part107/vani/command", (req, res) => {
+  const result = part107BuildMarketing({
+    command: req.query.command || req.query.q || "",
+    role: req.query.role || "institute_owner",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    assignedBranchId: req.query.assignedBranchId,
+    studentId: req.query.studentId,
+    parentId: req.query.parentId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 107 — Automated Marketing System", ...result });
+});
+
+app.get("/api/part107/audit-log", (req, res) => {
+  res.json({
+    success: true,
+    auditLog: [
+      { event: "marketing_campaign_preview", role: "institute_owner", createdAt: new Date().toISOString() },
+      { event: "no_auto_send_policy", rule: "Bulk campaign send requires consent, approval and owner verification.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part107/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "automated_marketing_system_created", message: "Part 107 Automated Marketing System active.", createdAt: new Date().toISOString() },
+      { type: "consent_first_marketing_ready", message: "Campaign planning, drafts and approval workflow are ready in preview mode.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part107/checklist", (req, res) => res.json({ success: true, checklist: part107Checklist }));
+
+app.get("/api/part107/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part107-automated-marketing-system-readiness",
+    ownerVerificationRequiredForSensitiveExports: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      features: part107MarketingFeatures,
+      roles: part107RoleRules,
+      checklist: part107Checklist,
+      consentPolicy: part107ConsentPolicy()
+    }
+  });
+});
+
+app.get("/api/part107/demo", (req, res) => {
+  const command = "VANI, demo class campaign plan banao aur WhatsApp draft ready karo";
+  const result = part107BuildMarketing({
+    command,
+    role: "institute_owner",
+    instituteId: "NX-DEMO-INST-001",
+    body: {}
+  });
+  res.json({
+    success: true,
+    demo: {
+      command,
+      result,
+      nextPart: "Part 108 — Complete Institute Marketplace"
+    }
+  });
+});
+// ================= END PART 107 =================
+
 
 
 
