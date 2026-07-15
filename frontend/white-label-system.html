@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — White-Label System</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/white-label-system.css" />
+</head>
+<body>
+  <main class="white-label">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 109 • NAXORA OS 2.0</p>
+        <h1>White-Label System</h1>
+        <p class="lead">
+          Owner-controlled branding, theme, custom domain, portal branding, communication sender,
+          mobile app branding and marketplace identity preview.
+        </p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">VANI White-Label</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Tap Start, then ask theme or domain checklist.</p>
+        <div class="voice-actions">
+          <button id="startVaniBtn">Start VANI</button>
+          <button id="listenVaniBtn">Listen</button>
+          <button id="muteVaniBtn">Mute</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Access</p>
+      <div class="controls">
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="branchId" value="BR-DEMO-001" />
+        <input id="customDomain" value="learn.naxorademo.com" />
+        <input id="primaryColor" value="#0f172a" />
+        <input id="accentColor" value="#f5c451" />
+        <select id="roleSelect">
+          <option value="institute_owner" selected>Owner White-Label Manager</option>
+          <option value="branch_manager">Branch Manager Brand Preview</option>
+          <option value="teacher">Teacher Portal Preview</option>
+          <option value="receptionist_counsellor">Counsellor Communication Preview</option>
+          <option value="accountant">Accountant Invoice Brand Preview</option>
+          <option value="student">Student Portal Preview</option>
+          <option value="parent">Parent Portal Preview</option>
+        </select>
+        <button id="demoBtn">Load Demo</button>
+      </div>
+      <pre id="accessBox" class="code">Waiting...</pre>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">VANI Command</p>
+        <h2>Speak or type</h2>
+        <p>Example: “VANI, white-label theme preview banao aur custom domain checklist dikhao”.</p>
+        <div class="controls">
+          <input id="vaniCommand" value="VANI, white-label theme preview banao aur custom domain checklist dikhao" />
+          <button id="askVaniBtn">Ask VANI</button>
+        </div>
+        <pre id="vaniOutput" class="code">Waiting...</pre>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Brand Profile</p>
+        <div id="brandBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Theme Preview</p>
+        <div id="themeBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Custom Domain</p>
+        <div id="domainBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Portal Branding</p>
+        <div id="portalBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Communication Branding</p>
+        <div id="communicationBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Mobile App + Marketplace</p>
+        <div id="appBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Approval + Security</p>
+        <div id="securityBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Role Scoped Summary</p>
+        <div id="scopeBox" class="list"></div>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Testing links</p>
+        <div class="links">
+          <a href="/api/part109/status" target="_blank">Status</a>
+          <a href="/api/part109/demo" target="_blank">Demo</a>
+          <a href="/api/part109/brand-profile?role=institute_owner&instituteId=NX-DEMO-INST-001" target="_blank">Brand Profile</a>
+          <a href="/api/part109/custom-domain-preview?role=institute_owner&instituteId=NX-DEMO-INST-001" target="_blank">Domain Preview</a>
+          <a href="/api/part109/security-policy" target="_blank">Security Policy</a>
+        </div>
+      </article>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/vani-voice-starter.js"></script>
+  <script src="/white-label-system.js"></script>
+</body>
+</html>

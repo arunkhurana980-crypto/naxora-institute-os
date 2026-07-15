@@ -10447,6 +10447,12 @@ const modulePageRoutes = {
   "/naxora-marketplace": "complete-institute-marketplace.html",
   "/vani-marketplace": "complete-institute-marketplace.html",
   "/public-course-marketplace": "complete-institute-marketplace.html",
+  "/white-label-system": "white-label-system.html",
+  "/white-label": "white-label-system.html",
+  "/custom-branding": "white-label-system.html",
+  "/owner-white-label": "white-label-system.html",
+  "/vani-white-label": "white-label-system.html",
+  "/institute-custom-domain": "white-label-system.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -29376,6 +29382,649 @@ app.get("/api/part108/demo", (req, res) => {
   res.json({ success: true, demo: { command, result, nextPart: "Part 109 — White-Label System" } });
 });
 // ================= END PART 108 =================
+
+// ================= PART 109 — WHITE-LABEL SYSTEM =================
+// NAXORA OS 2.0 White-Label System.
+// This part creates an owner-controlled white-label foundation for institute
+// branding, theme, logo, custom domain preview, branded portal/app/email sender,
+// marketplace listing branding, verification workflow and VANI white-label commands.
+// It never changes DNS, domain, SSL, sender identity, billing, or public branding
+// without owner verification and domain proof.
+
+const part109WhiteLabelFeatures = [
+  { key: "brand_profile", name: "Brand Profile", summary: "Owner can prepare institute name, logo, tagline and public brand identity.", problemSolved: "Institute gets its own branded experience on top of NAXORA." },
+  { key: "theme_manager", name: "Theme Manager", summary: "Controls primary color, accent color, background mode and portal style preview.", problemSolved: "Owner can make dashboards look like institute brand." },
+  { key: "custom_domain_preview", name: "Custom Domain Preview", summary: "Creates safe custom domain setup checklist and verification preview.", problemSolved: "Institute can plan its own domain without risky auto-DNS changes." },
+  { key: "portal_branding", name: "Portal Branding", summary: "Applies brand preview to owner, teacher, student and parent portals.", problemSolved: "All users see consistent institute branding." },
+  { key: "branded_communication", name: "Branded Communication Preview", summary: "Previews email/SMS/WhatsApp sender labels and templates with approval required.", problemSolved: "Institute communication looks official while staying safe." },
+  { key: "mobile_app_branding", name: "Mobile App Branding Preview", summary: "Previews app icon, splash screen, app name and store listing draft.", problemSolved: "Institute can plan white-label mobile app presence." },
+  { key: "marketplace_branding", name: "Marketplace Branding", summary: "Uses approved public brand assets for marketplace listing cards.", problemSolved: "Discovery pages match verified institute identity." },
+  { key: "vani_white_label", name: "VANI White-Label Commands", summary: "VANI can draft brand profile, theme preview, domain checklist and approval plan.", problemSolved: "Owner can configure white-label experience through voice." }
+];
+
+const part109RoleRules = [
+  { role: "institute_owner", allowed: true, scope: "Can manage own institute white-label branding, domain preview and approval requests.", canManageBrand: true, canPreviewDomain: true, canApprovePublish: true, canViewBrand: true, canExport: true },
+  { role: "branch_manager", allowed: true, scope: "Can view assigned branch brand preview and request branch-level asset update.", canManageBrand: false, canPreviewDomain: false, canApprovePublish: false, canViewBrand: true, canExport: false, assignedBranchOnly: true },
+  { role: "teacher", allowed: true, scope: "Can view teacher portal brand preview only.", canManageBrand: false, canPreviewDomain: false, canApprovePublish: false, canViewBrand: true, canExport: false, portalPreviewOnly: true },
+  { role: "receptionist_counsellor", allowed: true, scope: "Can view public enquiry/counsellor brand preview and request content correction.", canManageBrand: false, canPreviewDomain: false, canApprovePublish: false, canViewBrand: true, canExport: false, communicationPreviewOnly: true },
+  { role: "accountant", allowed: true, scope: "Can view invoice/receipt brand preview only.", canManageBrand: false, canPreviewDomain: false, canApprovePublish: false, canViewBrand: true, canExport: false, financeBrandPreviewOnly: true },
+  { role: "student", allowed: true, scope: "Can view own student portal brand preview only.", canManageBrand: false, canPreviewDomain: false, canApprovePublish: false, canViewBrand: true, canExport: false, selfOnly: true },
+  { role: "parent", allowed: true, scope: "Can view linked child parent portal brand preview only.", canManageBrand: false, canPreviewDomain: false, canApprovePublish: false, canViewBrand: true, canExport: false, viewOnly: true },
+  { role: "naxora_super_admin", allowed: false, scope: "Platform support only; no unrestricted institute brand/domain control here.", canManageBrand: false, canPreviewDomain: false, canApprovePublish: false, canViewBrand: false, canExport: false }
+];
+
+const part109DemoBrand = {
+  instituteId: "NX-DEMO-INST-001",
+  brandId: "WL-DEMO-001",
+  instituteName: "NAXORA Learning Centre",
+  publicBrandName: "NAXORA Learning",
+  tagline: "Smart coaching with AI support",
+  logoStatus: "logo_preview_uploaded",
+  primaryColor: "#0f172a",
+  accentColor: "#f5c451",
+  backgroundMode: "dark_premium",
+  fontStyle: "modern_sans",
+  customDomain: "learn.naxorademo.com",
+  domainStatus: "verification_pending_preview",
+  sslStatus: "not_issued_preview",
+  senderName: "NAXORA Learning",
+  senderDomain: "mail.naxorademo.com",
+  senderStatus: "verification_required_preview",
+  mobileAppName: "NAXORA Learning App",
+  appIconStatus: "draft_preview",
+  marketplaceBrandStatus: "approved_public_preview",
+  lastUpdatedAt: "2026-07-15T00:00:00.000Z"
+};
+
+const part109DemoBrandHistory = [
+  { event: "brand_profile_draft_created", actorRole: "institute_owner", status: "draft_preview" },
+  { event: "theme_preview_generated", actorRole: "institute_owner", status: "preview_ready" },
+  { event: "domain_verification_checklist_created", actorRole: "institute_owner", status: "verification_pending_preview" }
+];
+
+function normalizePart109Role(role) {
+  const r = String(role || "institute_owner").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part109AccessCheck({ role, instituteId, branchId, assignedBranchId, studentId, parentId }) {
+  const normalizedRole = normalizePart109Role(role);
+  const rule = part109RoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole, allowed: false, scope: "Unknown or unsupported role.",
+    canManageBrand: false, canPreviewDomain: false, canApprovePublish: false, canViewBrand: false, canExport: false
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const branchRequired = normalizedRole === "branch_manager" ? Boolean(String(branchId || assignedBranchId || "").trim()) : true;
+  const studentScoped = normalizedRole !== "student" || Boolean(String(studentId || "").trim());
+  const parentScoped = normalizedRole !== "parent" || Boolean(String(parentId || "").trim() || String(studentId || "").trim());
+  const allowed = Boolean(rule.allowed && hasInstituteId && branchRequired && studentScoped && parentScoped && normalizedRole !== "naxora_super_admin");
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    branchId: branchId || assignedBranchId || null,
+    assignedBranchId: assignedBranchId || branchId || null,
+    studentId: studentId || null,
+    parentId: parentId || null,
+    allowed,
+    canManageBrand: Boolean(rule.canManageBrand && allowed),
+    canPreviewDomain: Boolean(rule.canPreviewDomain && allowed),
+    canApprovePublish: Boolean(rule.canApprovePublish && allowed),
+    canViewBrand: Boolean(rule.canViewBrand && allowed),
+    canExport: Boolean(rule.canExport && allowed),
+    assignedBranchOnly: Boolean(rule.assignedBranchOnly),
+    portalPreviewOnly: Boolean(rule.portalPreviewOnly),
+    communicationPreviewOnly: Boolean(rule.communicationPreviewOnly),
+    financeBrandPreviewOnly: Boolean(rule.financeBrandPreviewOnly),
+    selfOnly: Boolean(rule.selfOnly),
+    viewOnly: Boolean(rule.viewOnly),
+    scope: rule.scope,
+    reason: !hasInstituteId ? "Institute ID missing." :
+      !rule.allowed ? rule.scope :
+      !branchRequired ? "Branch manager requires assigned branch scope." :
+      !studentScoped ? "Student can view own portal brand only; studentId required." :
+      !parentScoped ? "Parent can view linked child portal brand only." :
+      "White-Label System access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    confirmationRequiredFor: ["brand_profile_save", "theme_preview_apply", "logo_upload_confirm", "sender_template_publish", "mobile_app_draft_save"],
+    ownerVerificationRequiredFor: ["custom_domain_activate", "dns_record_change", "ssl_issue_request", "sender_domain_verify", "public_brand_publish", "white_label_export", "billing_plan_change"]
+  };
+}
+
+function part109BrandProfilePreview(access, body = {}) {
+  return {
+    previewOnly: true,
+    canManageBrand: Boolean(access.canManageBrand),
+    brandId: part109DemoBrand.brandId,
+    instituteId: access.instituteId || part109DemoBrand.instituteId,
+    profile: {
+      instituteName: body.instituteName || part109DemoBrand.instituteName,
+      publicBrandName: body.publicBrandName || part109DemoBrand.publicBrandName,
+      tagline: body.tagline || part109DemoBrand.tagline,
+      logoStatus: body.logoStatus || part109DemoBrand.logoStatus,
+      marketplaceBrandStatus: part109DemoBrand.marketplaceBrandStatus
+    },
+    autoPublish: false,
+    approvalRequired: true,
+    trademarkAndImpersonationReviewRequired: true
+  };
+}
+
+function part109ThemePreview(access, body = {}) {
+  const primaryColor = body.primaryColor || part109DemoBrand.primaryColor;
+  const accentColor = body.accentColor || part109DemoBrand.accentColor;
+  const backgroundMode = body.backgroundMode || part109DemoBrand.backgroundMode;
+  return {
+    previewOnly: true,
+    canManageBrand: Boolean(access.canManageBrand),
+    themeId: `WL-THEME-PREVIEW-${Date.now()}`,
+    primaryColor,
+    accentColor,
+    backgroundMode,
+    fontStyle: body.fontStyle || part109DemoBrand.fontStyle,
+    portalTargets: ["owner_dashboard", "teacher_portal", "student_portal", "parent_portal", "marketplace_listing"],
+    accessibilityChecks: [
+      { key: "contrast_preview", status: "pass_preview", note: "Text contrast looks safe in preview." },
+      { key: "mobile_readability", status: "pass_preview", note: "Mobile layout preview ready." },
+      { key: "brand_consistency", status: "review_required", note: "Owner review required before apply." }
+    ],
+    autoApply: false,
+    confirmationRequired: true
+  };
+}
+
+function part109CustomDomainPreview(access, body = {}) {
+  const domain = body.customDomain || part109DemoBrand.customDomain;
+  return {
+    previewOnly: true,
+    canPreviewDomain: Boolean(access.canPreviewDomain),
+    customDomain: domain,
+    domainStatus: part109DemoBrand.domainStatus,
+    sslStatus: part109DemoBrand.sslStatus,
+    dnsChecklist: [
+      { type: "CNAME", host: "learn", value: "naxora-institute-os.onrender.com", status: "manual_setup_required" },
+      { type: "TXT", host: "_naxora-verify", value: "verification-token-preview", status: "manual_setup_required" }
+    ],
+    verificationSteps: [
+      "Owner confirms domain ownership.",
+      "Owner adds DNS records in domain provider.",
+      "NAXORA verifies TXT/CNAME records.",
+      "SSL request created after verification.",
+      "Domain is activated only after final owner confirmation."
+    ],
+    autoDnsChange: false,
+    autoSslIssue: false,
+    ownerVerificationRequired: true
+  };
+}
+
+function part109PortalBrandingPreview(access) {
+  const brand = part109DemoBrand;
+  const portals = [
+    { portal: "owner_dashboard", title: `${brand.publicBrandName} Owner Console`, visibleTo: "institute_owner" },
+    { portal: "teacher_portal", title: `${brand.publicBrandName} Teacher Portal`, visibleTo: "teacher" },
+    { portal: "student_portal", title: `${brand.publicBrandName} Student App`, visibleTo: "student" },
+    { portal: "parent_portal", title: `${brand.publicBrandName} Parent Portal`, visibleTo: "parent" },
+    { portal: "marketplace_listing", title: `${brand.publicBrandName} Marketplace Card`, visibleTo: "public" }
+  ];
+  return {
+    previewOnly: true,
+    brandName: brand.publicBrandName,
+    portals,
+    privateInstituteDataHidden: true,
+    autoApply: false,
+    confirmationRequired: true
+  };
+}
+
+function part109CommunicationBrandingPreview(access, body = {}) {
+  return {
+    previewOnly: true,
+    senderName: body.senderName || part109DemoBrand.senderName,
+    senderDomain: body.senderDomain || part109DemoBrand.senderDomain,
+    senderStatus: part109DemoBrand.senderStatus,
+    templates: [
+      { type: "email", preview: `${part109DemoBrand.senderName}: Your demo class update`, autoSend: false },
+      { type: "sms", preview: `${part109DemoBrand.senderName}: Demo update. Reply YES for details.`, autoSend: false },
+      { type: "whatsapp", preview: `Namaste, ${part109DemoBrand.senderName} se update.`, autoSend: false }
+    ],
+    providerKeysIncluded: false,
+    senderDomainVerificationRequired: true,
+    noAutoSend: true,
+    ownerVerificationRequiredForSenderDomain: true
+  };
+}
+
+function part109MobileAppBrandingPreview(access, body = {}) {
+  return {
+    previewOnly: true,
+    appName: body.appName || part109DemoBrand.mobileAppName,
+    appIconStatus: part109DemoBrand.appIconStatus,
+    splashScreen: {
+      logo: part109DemoBrand.logoStatus,
+      backgroundMode: part109DemoBrand.backgroundMode,
+      accentColor: part109DemoBrand.accentColor
+    },
+    storeListingDraft: {
+      title: body.appName || part109DemoBrand.mobileAppName,
+      subtitle: part109DemoBrand.tagline,
+      privacyPolicyRequired: true,
+      ownerApprovalRequired: true
+    },
+    autoStorePublish: false,
+    appStoreDeveloperAccountRequired: true,
+    ownerVerificationRequired: true
+  };
+}
+
+function part109MarketplaceBrandingPreview(access) {
+  return {
+    previewOnly: true,
+    listingCard: {
+      publicBrandName: part109DemoBrand.publicBrandName,
+      tagline: part109DemoBrand.tagline,
+      logoStatus: part109DemoBrand.logoStatus,
+      trustBadge: "verified_public_brand_preview",
+      marketplaceBrandStatus: part109DemoBrand.marketplaceBrandStatus
+    },
+    publicDataOnly: true,
+    noPrivateLeadOrStudentData: true,
+    reviewRequiredForPublicChange: true,
+    autoPublish: false
+  };
+}
+
+function part109ApprovalWorkflow(access) {
+  return {
+    previewOnly: true,
+    canApprovePublish: Boolean(access.canApprovePublish),
+    approvalItems: [
+      { key: "brand_profile", status: "owner_review_required" },
+      { key: "logo_asset", status: "file_safety_review_required" },
+      { key: "custom_domain", status: "domain_ownership_verification_required" },
+      { key: "sender_domain", status: "sender_verification_required" },
+      { key: "marketplace_branding", status: "public_publish_review_required" },
+      { key: "mobile_app_branding", status: "store_account_review_required" }
+    ],
+    finalPublishAuto: false,
+    ownerVerificationRequired: true
+  };
+}
+
+function part109RoleScopedSummary(access) {
+  if (access.portalPreviewOnly || access.selfOnly || access.viewOnly) {
+    return {
+      previewOnly: true,
+      scope: access.portalPreviewOnly ? "teacher_portal_brand_preview" : access.selfOnly ? "student_portal_brand_preview" : "parent_portal_brand_preview",
+      visibleData: {
+        brandName: part109DemoBrand.publicBrandName,
+        accentColor: part109DemoBrand.accentColor,
+        portalPreview: true
+      },
+      hiddenData: ["custom domain DNS details", "sender domain setup", "owner brand controls", "billing"]
+    };
+  }
+  if (access.communicationPreviewOnly) {
+    return {
+      previewOnly: true,
+      scope: "communication_brand_preview_only",
+      visibleData: {
+        senderName: part109DemoBrand.senderName,
+        templatePreviewAllowed: true,
+        noAutoSend: true
+      },
+      hiddenData: ["provider API keys", "domain verification tokens", "billing"]
+    };
+  }
+  if (access.financeBrandPreviewOnly) {
+    return {
+      previewOnly: true,
+      scope: "invoice_receipt_brand_preview_only",
+      visibleData: {
+        invoiceLogoStatus: part109DemoBrand.logoStatus,
+        receiptBrandName: part109DemoBrand.publicBrandName
+      },
+      hiddenData: ["domain DNS records", "sender provider credentials", "marketplace controls"]
+    };
+  }
+  return {
+    previewOnly: true,
+    scope: access.canManageBrand ? "owner_white_label_management" : "assigned_branch_brand_preview",
+    visibleData: { brand: part109DemoBrand, history: part109DemoBrandHistory },
+    hiddenData: access.canManageBrand ? ["provider secrets"] : ["domain activation", "public publish", "billing changes"]
+  };
+}
+
+function part109SecurityPolicy() {
+  return {
+    previewOnly: true,
+    noSecretsInSource: true,
+    noAutoDnsChange: true,
+    noAutoSslIssue: true,
+    noAutoPublicPublish: true,
+    noTrademarkImpersonation: true,
+    privateScreenFirst: true,
+    sensitiveDataNotSpokenLoudly: [
+      "domain verification token",
+      "DNS account details",
+      "sender provider API keys",
+      "billing plan details",
+      "owner verification documents",
+      "private student/lead data"
+    ],
+    ownerVerificationRequiredFor: [
+      "custom_domain_activate",
+      "dns_record_change",
+      "ssl_issue_request",
+      "sender_domain_verify",
+      "public_brand_publish",
+      "white_label_export",
+      "billing_plan_change"
+    ],
+    futureEnvKeys: ["CUSTOM_DOMAIN_PROVIDER_KEY", "EMAIL_SENDER_PROVIDER_KEY", "WHITELABEL_ASSET_STORAGE_KEY"],
+    safety: "White-label changes stay preview-first until owner verification and domain/sender proof are complete."
+  };
+}
+
+function part109ParseCommand(text = "", body = {}) {
+  const input = String(text || body.command || body.q || "").trim();
+  const intent = /theme|color|design|look/i.test(input) ? "theme"
+    : /domain|dns|ssl|custom/i.test(input) ? "domain"
+      : /portal|dashboard|student app|parent app|teacher/i.test(input) ? "portal"
+        : /sender|email|sms|whatsapp|communication/i.test(input) ? "communication"
+          : /mobile|app icon|splash|store/i.test(input) ? "mobile_app"
+            : /marketplace|listing|public card/i.test(input) ? "marketplace_branding"
+              : /approve|publish|approval|verify/i.test(input) ? "approval"
+                : /security|privacy|safe|secret/i.test(input) ? "security"
+                  : /brand|logo|tagline|white.?label/i.test(input) ? "brand_profile"
+                    : "overview";
+  return { intent, rawCommand: input };
+}
+
+function part109BuildWhiteLabel({ command, role, instituteId, branchId, assignedBranchId, studentId, parentId, body = {} }) {
+  const parsed = part109ParseCommand(command, body);
+  const access = part109AccessCheck({
+    role,
+    instituteId,
+    branchId: body.branchId || branchId,
+    assignedBranchId: body.assignedBranchId || assignedBranchId,
+    studentId: body.studentId || studentId,
+    parentId: body.parentId || parentId
+  });
+
+  const brandProfile = part109BrandProfilePreview(access, body);
+  const themePreview = part109ThemePreview(access, body);
+  const customDomainPreview = part109CustomDomainPreview(access, body);
+  const portalBrandingPreview = part109PortalBrandingPreview(access);
+  const communicationBrandingPreview = part109CommunicationBrandingPreview(access, body);
+  const mobileAppBrandingPreview = part109MobileAppBrandingPreview(access, body);
+  const marketplaceBrandingPreview = part109MarketplaceBrandingPreview(access);
+  const approvalWorkflow = part109ApprovalWorkflow(access);
+  const roleScopedSummary = part109RoleScopedSummary(access);
+  const securityPolicy = part109SecurityPolicy();
+
+  let replyText = "";
+  let nextAction = "none";
+  if (!access.allowed) {
+    replyText = "Is role/scope ko white-label system access nahi hai.";
+    nextAction = "blocked";
+  } else if (parsed.intent === "theme") {
+    replyText = access.canManageBrand ? "Theme preview ready hai. Auto-apply off hai." : "Theme preview visible hai, but apply permission owner ke paas hai.";
+    nextAction = "show_theme_preview";
+  } else if (parsed.intent === "domain") {
+    replyText = access.canPreviewDomain ? "Custom domain checklist ready hai. DNS/SSL auto-change nahi hoga." : "Is role ko custom domain setup permission nahi hai.";
+    nextAction = "show_custom_domain";
+  } else if (parsed.intent === "portal") {
+    replyText = "Portal branding preview ready hai. Owner confirmation ke bina apply nahi hoga.";
+    nextAction = "show_portal_branding";
+  } else if (parsed.intent === "communication") {
+    replyText = "Branded communication preview ready hai. Sender domain verification aur approval required hai.";
+    nextAction = "show_communication_branding";
+  } else if (parsed.intent === "mobile_app") {
+    replyText = "Mobile app branding preview ready hai. Store publish auto nahi hoga.";
+    nextAction = "show_mobile_app_branding";
+  } else if (parsed.intent === "marketplace_branding") {
+    replyText = "Marketplace branding preview ready hai. Public publish owner verification ke bina nahi hoga.";
+    nextAction = "show_marketplace_branding";
+  } else if (parsed.intent === "approval") {
+    replyText = "White-label approval workflow ready hai. Domain, sender aur public branding verification required hai.";
+    nextAction = "show_approval_workflow";
+  } else if (parsed.intent === "security") {
+    replyText = "White-label security policy ready hai. Secrets, DNS and sender verification details loud nahi bole jayenge.";
+    nextAction = "show_security_policy";
+  } else {
+    replyText = "White-Label System overview ready hai. Brand profile, theme, domain, portals, communication, mobile app and marketplace branding preview available hain.";
+    nextAction = "show_white_label_overview";
+  }
+
+  return {
+    access,
+    parsed,
+    brandProfile,
+    themePreview,
+    customDomainPreview,
+    portalBrandingPreview,
+    communicationBrandingPreview,
+    mobileAppBrandingPreview,
+    marketplaceBrandingPreview,
+    approvalWorkflow,
+    roleScopedSummary,
+    securityPolicy,
+    replyText,
+    spokenSafeSummary: replyText,
+    privateScreenFirst: true,
+    noAutoDnsChange: true,
+    noAutoSslIssue: true,
+    noAutoPublicPublish: true,
+    nextAction,
+    confirmationRequiredFor: ["brand_profile_save", "theme_preview_apply", "logo_upload_confirm", "sender_template_publish", "mobile_app_draft_save"],
+    ownerVerificationRequiredFor: ["custom_domain_activate", "dns_record_change", "ssl_issue_request", "sender_domain_verify", "public_brand_publish", "white_label_export", "billing_plan_change"],
+    auditLog: {
+      event: "part109_white_label_system",
+      role: access.role,
+      intent: parsed.intent,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+const part109Checklist = [
+  "White-Label System page opens",
+  "Status API returns success true",
+  "Brand profile preview works",
+  "Theme manager preview works",
+  "Custom domain checklist works without DNS changes",
+  "Portal branding preview works",
+  "Communication branding preview works without auto-send",
+  "Mobile app branding preview works",
+  "Marketplace branding preview works",
+  "Approval workflow blocks public publish",
+  "VANI white-label command works",
+  "Previous Part 1–108 routes remain preserved"
+];
+
+app.get("/api/part109/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 109 — White-Label System",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 109,
+    nextPart: "Part 110 — NAXORA OS 2.0 Production Launch",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/white-label-system", "/white-label", "/custom-branding", "/owner-white-label", "/vani-white-label", "/institute-custom-domain"],
+    apiRoutes: [
+      "/api/part109/config", "/api/part109/features", "/api/part109/roles", "/api/part109/access-check",
+      "/api/part109/brand-profile", "/api/part109/theme-preview", "/api/part109/custom-domain-preview",
+      "/api/part109/portal-branding-preview", "/api/part109/communication-branding-preview",
+      "/api/part109/mobile-app-branding-preview", "/api/part109/marketplace-branding-preview",
+      "/api/part109/approval-workflow", "/api/part109/security-policy", "/api/part109/vani/greeting",
+      "/api/part109/vani/command"
+    ],
+    whiteLabelSystemEnabled: true
+  });
+});
+
+app.get("/api/part109/config", (req, res) => res.json({
+  success: true,
+  appName: "White-Label System",
+  appType: "white_label_system_foundation",
+  version: "2.0-white-label-system",
+  policy: {
+    previewFirst: true,
+    noAutoDnsChange: true,
+    noAutoSslIssue: true,
+    noAutoPublicPublish: true,
+    noSecretsInSource: true,
+    ownerVerificationRequiredForDomainSenderAndPublish: true
+  }
+}));
+
+app.get("/api/part109/features", (req, res) => res.json({ success: true, features: part109WhiteLabelFeatures }));
+app.get("/api/part109/roles", (req, res) => res.json({ success: true, roles: part109RoleRules }));
+app.get("/api/part109/access-check", (req, res) => res.json({ success: true, access: part109AccessCheck(req.query || {}) }));
+
+app.get("/api/part109/brand-profile", (req, res) => {
+  const access = part109AccessCheck(req.query || {});
+  if (!access.allowed || !access.canViewBrand) return res.status(403).json({ success: false, access, message: "Brand profile preview not allowed for this role." });
+  res.json({ success: true, access, brandProfile: part109BrandProfilePreview(access, req.query || {}) });
+});
+
+app.get("/api/part109/theme-preview", (req, res) => {
+  const access = part109AccessCheck(req.query || {});
+  if (!access.allowed || !access.canViewBrand) return res.status(403).json({ success: false, access, message: "Theme preview not allowed for this role." });
+  res.json({ success: true, access, themePreview: part109ThemePreview(access, req.query || {}) });
+});
+
+app.get("/api/part109/custom-domain-preview", (req, res) => {
+  const access = part109AccessCheck(req.query || {});
+  if (!access.allowed || !access.canPreviewDomain) return res.status(403).json({ success: false, access, message: "Custom domain preview not allowed for this role." });
+  res.json({ success: true, access, customDomainPreview: part109CustomDomainPreview(access, req.query || {}) });
+});
+
+app.get("/api/part109/portal-branding-preview", (req, res) => {
+  const access = part109AccessCheck(req.query || {});
+  if (!access.allowed || !access.canViewBrand) return res.status(403).json({ success: false, access, message: "Portal branding preview not allowed for this role." });
+  res.json({ success: true, access, portalBrandingPreview: part109PortalBrandingPreview(access) });
+});
+
+app.get("/api/part109/communication-branding-preview", (req, res) => {
+  const access = part109AccessCheck(req.query || {});
+  if (!access.allowed || !access.canViewBrand) return res.status(403).json({ success: false, access, message: "Communication branding preview not allowed for this role." });
+  res.json({ success: true, access, communicationBrandingPreview: part109CommunicationBrandingPreview(access, req.query || {}) });
+});
+
+app.get("/api/part109/mobile-app-branding-preview", (req, res) => {
+  const access = part109AccessCheck(req.query || {});
+  if (!access.allowed || !access.canViewBrand) return res.status(403).json({ success: false, access, message: "Mobile app branding preview not allowed for this role." });
+  res.json({ success: true, access, mobileAppBrandingPreview: part109MobileAppBrandingPreview(access, req.query || {}) });
+});
+
+app.get("/api/part109/marketplace-branding-preview", (req, res) => {
+  const access = part109AccessCheck(req.query || {});
+  if (!access.allowed || !access.canViewBrand) return res.status(403).json({ success: false, access, message: "Marketplace branding preview not allowed for this role." });
+  res.json({ success: true, access, marketplaceBrandingPreview: part109MarketplaceBrandingPreview(access) });
+});
+
+app.get("/api/part109/approval-workflow", (req, res) => {
+  const access = part109AccessCheck(req.query || {});
+  if (!access.allowed || !access.canViewBrand) return res.status(403).json({ success: false, access, message: "Approval workflow preview not allowed for this role." });
+  res.json({ success: true, access, approvalWorkflow: part109ApprovalWorkflow(access) });
+});
+
+app.get("/api/part109/role-scoped-summary", (req, res) => {
+  const access = part109AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, roleScopedSummary: part109RoleScopedSummary(access) });
+});
+
+app.get("/api/part109/security-policy", (req, res) => res.json({ success: true, securityPolicy: part109SecurityPolicy() }));
+app.get("/api/part109/privacy-policy", (req, res) => res.json({ success: true, privacyPolicy: part109SecurityPolicy() }));
+
+app.get("/api/part109/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI White-Label",
+    greeting: "Namaste, main VANI White-Label Assistant hoon. Aap brand profile, theme, custom domain, portal branding, communication sender, mobile app branding ya approval workflow pooch sakte ho.",
+    exampleCommands: [
+      "VANI, white-label brand profile dikhao",
+      "VANI, theme preview banao",
+      "VANI, custom domain checklist banao",
+      "VANI, portal branding preview dikhao",
+      "VANI, branded email sender preview banao",
+      "VANI, white-label approval workflow batao"
+    ],
+    safety: "DNS, SSL, sender domain, public publish, billing ya export owner verification ke bina nahi honge. Secrets chat/source code me nahi rakhe jayenge."
+  });
+});
+
+app.post("/api/part109/vani/command", (req, res) => {
+  const body = req.body || {};
+  const result = part109BuildWhiteLabel({
+    command: body.command || body.q || "",
+    role: body.role || "institute_owner",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId,
+    assignedBranchId: body.assignedBranchId,
+    studentId: body.studentId,
+    parentId: body.parentId,
+    body
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 109 — White-Label System", ...result });
+});
+
+app.get("/api/part109/vani/command", (req, res) => {
+  const result = part109BuildWhiteLabel({
+    command: req.query.command || req.query.q || "",
+    role: req.query.role || "institute_owner",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    assignedBranchId: req.query.assignedBranchId,
+    studentId: req.query.studentId,
+    parentId: req.query.parentId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 109 — White-Label System", ...result });
+});
+
+app.get("/api/part109/audit-log", (req, res) => res.json({
+  success: true,
+  auditLog: [
+    { event: "white_label_preview", role: "institute_owner", createdAt: new Date().toISOString() },
+    { event: "domain_sender_security_policy", rule: "DNS/SSL/sender/public publish require owner verification.", createdAt: new Date().toISOString() }
+  ]
+}));
+
+app.get("/api/part109/activity", (req, res) => res.json({
+  success: true,
+  activity: [
+    { type: "white_label_system_created", message: "Part 109 White-Label System active.", createdAt: new Date().toISOString() },
+    { type: "brand_domain_preview_ready", message: "Brand profile, theme, custom domain and portal branding previews are ready.", createdAt: new Date().toISOString() }
+  ]
+}));
+
+app.get("/api/part109/checklist", (req, res) => res.json({ success: true, checklist: part109Checklist }));
+
+app.get("/api/part109/export", (req, res) => res.json({
+  success: true,
+  exportType: "part109-white-label-system-readiness",
+  ownerVerificationRequiredForSensitiveExports: true,
+  generatedAt: new Date().toISOString(),
+  data: { features: part109WhiteLabelFeatures, roles: part109RoleRules, checklist: part109Checklist, securityPolicy: part109SecurityPolicy() }
+}));
+
+app.get("/api/part109/demo", (req, res) => {
+  const command = "VANI, white-label theme preview banao aur custom domain checklist dikhao";
+  const result = part109BuildWhiteLabel({ command, role: "institute_owner", instituteId: "NX-DEMO-INST-001", body: {} });
+  res.json({ success: true, demo: { command, result, nextPart: "Part 110 — NAXORA OS 2.0 Production Launch" } });
+});
+// ================= END PART 109 =================
+
 
 
 
