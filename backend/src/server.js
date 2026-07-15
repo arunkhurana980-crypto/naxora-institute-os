@@ -10357,6 +10357,18 @@ const modulePageRoutes = {
   "/vani-lead-qualification": "ai-lead-qualification.html",
   "/lead-score-ai": "ai-lead-qualification.html",
   "/lead-priority-ai": "ai-lead-qualification.html",
+  "/native-live-classroom-foundation": "native-live-classroom-foundation.html",
+  "/native-live-classroom": "native-live-classroom-foundation.html",
+  "/live-classroom-foundation": "native-live-classroom-foundation.html",
+  "/live-classroom-native": "native-live-classroom-foundation.html",
+  "/live-room-foundation": "native-live-classroom-foundation.html",
+  "/vani-live-classroom": "native-live-classroom-foundation.html",
+  "/screen-sharing-digital-whiteboard": "screen-sharing-digital-whiteboard.html",
+  "/screen-share-whiteboard": "screen-sharing-digital-whiteboard.html",
+  "/digital-whiteboard": "screen-sharing-digital-whiteboard.html",
+  "/live-classroom-whiteboard": "screen-sharing-digital-whiteboard.html",
+  "/vani-whiteboard": "screen-sharing-digital-whiteboard.html",
+  "/teacher-whiteboard": "screen-sharing-digital-whiteboard.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -18972,6 +18984,713 @@ app.get("/api/part93/demo", (req, res) => {
   });
 });
 // ================= END PART 93 =================
+
+// ================= PART 94 — NATIVE LIVE CLASSROOM FOUNDATION =================
+// NAXORA OS 2.0 Native Live Classroom Foundation.
+// This part creates the safe foundation for browser-native live classes:
+// classroom preview, room policy, device readiness, network readiness, join-token
+// preview, participant permissions, chat/hand-raise placeholders and VANI live
+// classroom commands. It does not yet implement production WebRTC signalling,
+// screen sharing/whiteboard/recording. Those arrive in Parts 95-97.
+
+const part94ClassroomFeatures = [
+  {
+    key: "native_room_foundation",
+    name: "Native Live Room Foundation",
+    summary: "Creates browser-native classroom room preview with class/batch/teacher context.",
+    problemSolved: "Live class can start from NAXORA instead of relying only on external links."
+  },
+  {
+    key: "device_readiness",
+    name: "Device Readiness Check",
+    summary: "Checks browser support for camera, microphone, speaker and permissions.",
+    problemSolved: "Teacher/student can test device before class."
+  },
+  {
+    key: "network_readiness",
+    name: "Network Readiness Check",
+    summary: "Provides foundation latency/bandwidth guidance.",
+    problemSolved: "Live class issues can be detected earlier."
+  },
+  {
+    key: "join_token_preview",
+    name: "Join Token Preview",
+    summary: "Creates safe preview token for teacher/student/parent joining flow.",
+    problemSolved: "Class access can be role-protected."
+  },
+  {
+    key: "participant_policy",
+    name: "Participant Policy",
+    summary: "Defines teacher, student, parent and owner permissions.",
+    problemSolved: "Live class privacy and access stay controlled."
+  },
+  {
+    key: "classroom_controls",
+    name: "Classroom Controls Foundation",
+    summary: "Mute, camera, join, leave, raise hand and chat placeholders.",
+    problemSolved: "UI foundation is ready for Parts 95-97."
+  },
+  {
+    key: "vani_live_classroom",
+    name: "VANI Live Classroom Commands",
+    summary: "VANI can start preview, read class status and guide device checks.",
+    problemSolved: "Teacher can manage live class foundation through voice."
+  }
+];
+
+const part94RoleRules = [
+  { role: "institute_owner", allowed: true, scope: "Can view authorised institute live classroom overview and launch preview.", canHost: false, canMonitor: true },
+  { role: "branch_manager", allowed: true, scope: "Can monitor assigned branch live classrooms.", canHost: false, canMonitor: true },
+  { role: "teacher", allowed: true, scope: "Can host assigned batches/classes only.", canHost: true, canMonitor: false },
+  { role: "student", allowed: true, scope: "Can join own scheduled live classes only.", canHost: false, canMonitor: false },
+  { role: "parent", allowed: true, scope: "Can view linked child's scheduled class status only, no classroom entry unless institute allows.", canHost: false, canMonitor: false, viewOnly: true },
+  { role: "accountant", allowed: false, scope: "Finance role has no live classroom access by default.", canHost: false, canMonitor: false },
+  { role: "receptionist_counsellor", allowed: true, scope: "Can view demo-class live room preview only.", canHost: false, canMonitor: false, demoOnly: true },
+  { role: "naxora_super_admin", allowed: false, scope: "Platform support only; no unrestricted live classroom access.", canHost: false, canMonitor: false }
+];
+
+const part94DemoRooms = [
+  {
+    roomId: "LIVE-DEMO-CLASS10-MATHS",
+    title: "Class 10 Maths Live Class",
+    batchId: "BAT-10-MATH-A",
+    teacherId: "TCH-DEMO-001",
+    subject: "Maths",
+    schedule: "Today 6:00 PM - 7:30 PM",
+    mode: "native_browser_foundation",
+    status: "preview_ready",
+    expectedStudents: 32,
+    maxParticipantsPreview: 60
+  },
+  {
+    roomId: "LIVE-DEMO-SCIENCE",
+    title: "Class 10 Science Demo",
+    batchId: "BAT-10-SCI-A",
+    teacherId: "TCH-DEMO-002",
+    subject: "Science",
+    schedule: "Tomorrow 5:00 PM - 6:00 PM",
+    mode: "native_browser_foundation",
+    status: "scheduled_preview",
+    expectedStudents: 18,
+    maxParticipantsPreview: 40
+  }
+];
+
+function normalizePart94Role(role) {
+  const r = String(role || "student").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part94AccessCheck({ role, instituteId, branchId, batchId, teacherId, studentId, parentId, roomId }) {
+  const normalizedRole = normalizePart94Role(role);
+  const rule = part94RoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole,
+    allowed: false,
+    scope: "Unknown or unsupported role.",
+    canHost: false,
+    canMonitor: false
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const allowed = Boolean(rule.allowed && hasInstituteId && normalizedRole !== "naxora_super_admin");
+  const teacherAssigned = normalizedRole !== "teacher" || Boolean(String(teacherId || "").trim() || String(batchId || "").trim());
+  const studentOwnClass = normalizedRole !== "student" || Boolean(String(studentId || "").trim() || String(batchId || "").trim());
+  const parentLinkedOnly = normalizedRole !== "parent" || Boolean(String(parentId || "").trim() || String(studentId || "").trim());
+
+  const scopedAllowed = allowed && teacherAssigned && studentOwnClass && parentLinkedOnly;
+
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    branchId: branchId || null,
+    batchId: batchId || null,
+    teacherId: teacherId || null,
+    studentId: studentId || null,
+    parentId: parentId || null,
+    roomId: roomId || null,
+    allowed: scopedAllowed,
+    canHost: Boolean(rule.canHost && scopedAllowed),
+    canMonitor: Boolean(rule.canMonitor && scopedAllowed),
+    viewOnly: Boolean(rule.viewOnly),
+    demoOnly: Boolean(rule.demoOnly),
+    scope: rule.scope,
+    reason: !hasInstituteId
+      ? "Institute ID missing."
+      : !rule.allowed
+        ? rule.scope
+        : !teacherAssigned
+          ? "Teacher live classroom access requires assigned teacherId or batchId."
+          : !studentOwnClass
+            ? "Student can join own scheduled class only; studentId or batchId required."
+            : !parentLinkedOnly
+              ? "Parent can view linked child status only; parentId/studentId required."
+              : "Native live classroom foundation access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    requiresAssignedScope: ["teacher", "student", "parent"].includes(normalizedRole),
+    confirmationRequiredFor: ["start_live_class", "end_live_class", "admit_participant", "remove_participant", "record_class"],
+    ownerVerificationRequiredFor: ["recording_export", "delete_recording", "bulk_remove", "privacy_change"]
+  };
+}
+
+function part94ParseCommand(text = "", body = {}) {
+  const input = String(text || body.command || body.q || "").trim();
+  const classMatch = input.match(/class\s*([0-9]{1,2})/i);
+  const subjectMatch = input.match(/\b(maths|math|science|english|physics|chemistry|biology|commerce|accounts|sst|social science)\b/i);
+  const intent = /device|camera|mic|microphone|speaker/i.test(input) ? "device_check"
+    : /network|internet|speed|latency/i.test(input) ? "network_check"
+      : /join|student/i.test(input) ? "join_preview"
+        : /start|launch|live class|classroom/i.test(input) ? "launch_preview"
+          : /status|room/i.test(input) ? "room_status"
+            : "help";
+  return {
+    intent,
+    className: body.className || (classMatch ? `Class ${classMatch[1]}` : null),
+    subject: body.subject || (subjectMatch ? subjectMatch[1].toLowerCase().replace("math", "maths").replace("social science", "sst") : null),
+    roomId: body.roomId || (/science/i.test(input) ? "LIVE-DEMO-SCIENCE" : "LIVE-DEMO-CLASS10-MATHS"),
+    rawCommand: input
+  };
+}
+
+function part94DeviceReadiness(userAgent = "") {
+  return {
+    previewOnly: true,
+    browserAPIs: {
+      mediaDevices: true,
+      getUserMedia: true,
+      webRTC: true,
+      speechSynthesis: true,
+      speechRecognition: true
+    },
+    checks: [
+      { key: "camera", status: "needs_browser_permission", message: "Camera permission browser popup se allow karni hogi." },
+      { key: "microphone", status: "needs_browser_permission", message: "Microphone permission browser popup se allow karni hogi." },
+      { key: "speaker", status: "browser_output", message: "Speaker output device browser/OS se control hoga." },
+      { key: "screen_share", status: "part95_pending", message: "Screen sharing Part 95 me production foundation ke saath aayega." },
+      { key: "recording", status: "part97_pending", message: "Recording and automatic attendance Part 97 me aayega." }
+    ],
+    recommendation: "Chrome/Edge latest version best. Class se pehle camera/mic test karna zaroori hai.",
+    userAgent: userAgent || "not_provided"
+  };
+}
+
+function part94NetworkReadiness() {
+  return {
+    previewOnly: true,
+    recommendedMinimum: {
+      teacherUpload: "3 Mbps+",
+      teacherDownload: "5 Mbps+",
+      studentDownload: "2 Mbps+",
+      latency: "Under 150ms preferred"
+    },
+    qualityLevels: [
+      { level: "good", condition: "Stable Wi-Fi/4G/5G and low latency" },
+      { level: "medium", condition: "Video may reduce quality automatically" },
+      { level: "low", condition: "Audio-first mode recommended" }
+    ],
+    note: "Real WebRTC bandwidth scoring will be added in later live classroom parts."
+  };
+}
+
+function part94FindRoom({ roomId, batchId, subject }) {
+  const id = String(roomId || "").trim();
+  if (id) {
+    const match = part94DemoRooms.find((r) => r.roomId === id);
+    if (match) return match;
+  }
+  const b = String(batchId || "").trim();
+  if (b) {
+    const match = part94DemoRooms.find((r) => r.batchId === b);
+    if (match) return match;
+  }
+  const s = String(subject || "").toLowerCase();
+  if (s) {
+    const match = part94DemoRooms.find((r) => r.subject.toLowerCase().includes(s));
+    if (match) return match;
+  }
+  return part94DemoRooms[0];
+}
+
+function part94ParticipantPolicy(access = {}) {
+  return {
+    previewOnly: true,
+    role: access.role,
+    permissions: {
+      canJoin: Boolean(access.allowed && !access.viewOnly),
+      canHost: Boolean(access.canHost),
+      canMonitor: Boolean(access.canMonitor),
+      canUseMic: access.role === "teacher" || access.role === "student",
+      canUseCamera: access.role === "teacher" || access.role === "student",
+      canRaiseHand: access.role === "student",
+      canChat: ["teacher", "student"].includes(access.role),
+      canAdmitParticipants: access.role === "teacher",
+      canRemoveParticipants: access.role === "teacher",
+      canRecord: false,
+      canScreenShare: false
+    },
+    pendingParts: {
+      screenShareAndWhiteboard: "Part 95",
+      liveChatPollsHandRaise: "Part 96",
+      recordingAttendance: "Part 97"
+    },
+    safety: "Live classroom actions require assigned scope and confirmation for sensitive actions."
+  };
+}
+
+function part94JoinTokenPreview(access = {}, room = {}) {
+  const role = access.role || "student";
+  return {
+    previewOnly: true,
+    tokenId: `JOIN-PREVIEW-${role.toUpperCase()}-${Date.now()}`,
+    roomId: room.roomId,
+    role,
+    expiresInPreview: "15 minutes",
+    finalTokenRequiresAuth: true,
+    allowed: Boolean(access.allowed && !access.viewOnly),
+    safety: "Token is a preview only. Production join token signing will be added with real session storage."
+  };
+}
+
+function part94RoomPreview({ command, role, instituteId, branchId, batchId, teacherId, studentId, parentId, body = {} }) {
+  const parsed = part94ParseCommand(command, body);
+  const access = part94AccessCheck({
+    role,
+    instituteId,
+    branchId,
+    batchId: body.batchId || batchId,
+    teacherId: body.teacherId || teacherId,
+    studentId: body.studentId || studentId,
+    parentId: body.parentId || parentId,
+    roomId: parsed.roomId
+  });
+  const room = part94FindRoom({ roomId: parsed.roomId, batchId: body.batchId || batchId, subject: parsed.subject });
+  const deviceReadiness = part94DeviceReadiness(body.userAgent || "");
+  const networkReadiness = part94NetworkReadiness();
+  const participantPolicy = part94ParticipantPolicy(access);
+  const joinTokenPreview = part94JoinTokenPreview(access, room);
+
+  let replyText = "";
+  let nextAction = "none";
+  if (!access.allowed) {
+    replyText = "Is role/scope ko native live classroom access nahi hai.";
+    nextAction = "blocked";
+  } else if (access.viewOnly) {
+    replyText = "Parent view-only mode me linked child ki class status dekh sakta hai. Classroom join institute policy ke bina allowed nahi.";
+    nextAction = "show_child_class_status";
+  } else if (parsed.intent === "device_check") {
+    replyText = "Device readiness preview ready hai. Camera aur mic permission browser se allow karni hogi.";
+    nextAction = "show_device_readiness";
+  } else if (parsed.intent === "network_check") {
+    replyText = "Network readiness guidance ready hai. Stable internet live class ke liye zaroori hai.";
+    nextAction = "show_network_readiness";
+  } else if (parsed.intent === "join_preview") {
+    replyText = `${room.title} ke liye join preview ready hai. Real join token auth ke baad generate hoga.`;
+    nextAction = "show_join_preview";
+  } else {
+    replyText = `${room.title} native live classroom foundation preview ready hai. Start live class confirmation ke bina nahi hoga.`;
+    nextAction = access.canHost ? "show_launch_preview" : "show_room_preview";
+  }
+
+  return {
+    access,
+    parsed,
+    room,
+    deviceReadiness,
+    networkReadiness,
+    participantPolicy,
+    joinTokenPreview,
+    launchPreview: {
+      previewOnly: true,
+      roomId: room.roomId,
+      title: room.title,
+      teacherId: room.teacherId,
+      batchId: room.batchId,
+      schedule: room.schedule,
+      canLaunchNow: Boolean(access.canHost),
+      confirmationRequired: true,
+      productionSignallingPending: true,
+      note: "Production WebRTC signalling, whiteboard, screen share, chat and recording will be added across Parts 95-97."
+    },
+    replyText,
+    spokenSafeSummary: replyText,
+    privateScreenFirst: true,
+    nextAction,
+    confirmationRequiredFor: ["start_live_class", "end_live_class", "admit_participant", "remove_participant", "record_class"],
+    ownerVerificationRequiredFor: ["recording_export", "delete_recording", "bulk_remove", "privacy_change"],
+    auditLog: {
+      event: "part94_native_live_classroom_foundation",
+      role: access.role,
+      roomId: room.roomId,
+      intent: parsed.intent,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+const part94Checklist = [
+  "Native Live Classroom Foundation page opens",
+  "Status API returns success true",
+  "Device readiness preview works",
+  "Network readiness preview works",
+  "Room preview works",
+  "Join token preview is preview-only",
+  "Teacher host scope is checked",
+  "Student own class scope is checked",
+  "Parent view-only linked child mode works",
+  "VANI live classroom command works",
+  "Previous Part 1–93 routes remain preserved"
+];
+
+app.get("/api/part94/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 94 — Native Live Classroom Foundation",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 94,
+    nextPart: "Part 95 — Screen Sharing and Digital Whiteboard",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/native-live-classroom-foundation", "/native-live-classroom", "/live-classroom-foundation", "/live-classroom-native", "/live-room-foundation", "/vani-live-classroom"],
+    apiRoutes: [
+      "/api/part94/config",
+      "/api/part94/features",
+      "/api/part94/roles",
+      "/api/part94/access-check",
+      "/api/part94/demo-rooms",
+      "/api/part94/device-readiness",
+      "/api/part94/network-readiness",
+      "/api/part94/participant-policy",
+      "/api/part94/join-token-preview",
+      "/api/part94/room/preview",
+      "/api/part94/room/launch-preview",
+      "/api/part94/room/status",
+      "/api/part94/vani/greeting",
+      "/api/part94/vani/command"
+    ],
+    nativeLiveClassroomFoundationEnabled: true
+  });
+});
+
+app.get("/api/part94/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "Native Live Classroom Foundation",
+    appType: "native_live_classroom_foundation",
+    version: "2.0-native-live-classroom-foundation",
+    policy: {
+      previewFirst: true,
+      assignedScopeRequired: true,
+      noAutoStartClass: true,
+      noRecordingYet: true,
+      noScreenShareYet: true,
+      noExternalWebRTCProviderKeysIncluded: true,
+      browserNativeFoundation: true
+    }
+  });
+});
+
+app.get("/api/part94/features", (req, res) => {
+  res.json({ success: true, features: part94ClassroomFeatures });
+});
+
+app.get("/api/part94/roles", (req, res) => {
+  res.json({ success: true, roles: part94RoleRules });
+});
+
+app.get("/api/part94/access-check", (req, res) => {
+  res.json({ success: true, access: part94AccessCheck(req.query || {}) });
+});
+
+app.get("/api/part94/demo-rooms", (req, res) => {
+  res.json({ success: true, previewOnly: true, rooms: part94DemoRooms });
+});
+
+app.get("/api/part94/device-readiness", (req, res) => {
+  res.json({ success: true, deviceReadiness: part94DeviceReadiness(req.headers["user-agent"] || "") });
+});
+
+app.get("/api/part94/network-readiness", (req, res) => {
+  res.json({ success: true, networkReadiness: part94NetworkReadiness() });
+});
+
+app.get("/api/part94/participant-policy", (req, res) => {
+  const access = part94AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, participantPolicy: part94ParticipantPolicy(access) });
+});
+
+app.get("/api/part94/join-token-preview", (req, res) => {
+  const access = part94AccessCheck(req.query || {});
+  const room = part94FindRoom(req.query || {});
+  if (!access.allowed || access.viewOnly) return res.status(403).json({ success: false, access, message: access.viewOnly ? "View-only role cannot get classroom join token." : access.reason });
+  res.json({ success: true, access, room, joinTokenPreview: part94JoinTokenPreview(access, room) });
+});
+
+app.get("/api/part94/room/preview", (req, res) => {
+  const result = part94RoomPreview({
+    command: req.query.q || req.query.command || "",
+    role: req.query.role || "teacher",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    batchId: req.query.batchId,
+    teacherId: req.query.teacherId,
+    studentId: req.query.studentId,
+    parentId: req.query.parentId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, ...result });
+  res.json({ success: true, ...result });
+});
+
+app.post("/api/part94/room/preview", (req, res) => {
+  const body = req.body || {};
+  const result = part94RoomPreview({
+    command: body.q || body.command || "",
+    role: body.role || "teacher",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId,
+    batchId: body.batchId,
+    teacherId: body.teacherId,
+    studentId: body.studentId,
+    parentId: body.parentId,
+    body
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, ...result });
+  res.json({ success: true, ...result });
+});
+
+app.get("/api/part94/room/launch-preview", (req, res) => {
+  const result = part94RoomPreview({
+    command: req.query.q || req.query.command || "launch live classroom",
+    role: req.query.role || "teacher",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    batchId: req.query.batchId || "BAT-10-MATH-A",
+    teacherId: req.query.teacherId || "TCH-DEMO-001",
+    body: req.query || {}
+  });
+  if (!result.access.allowed || !result.access.canHost) return res.status(403).json({ success: false, ...result, message: result.access.canHost ? result.access.reason : "Only assigned teacher can launch class preview." });
+  res.json({ success: true, access: result.access, room: result.room, launchPreview: result.launchPreview, deviceReadiness: result.deviceReadiness });
+});
+
+app.get("/api/part94/room/status", (req, res) => {
+  const room = part94FindRoom(req.query || {});
+  res.json({
+    success: true,
+    room,
+    status: {
+      previewOnly: true,
+      currentStatus: room.status,
+      participantsOnlinePreview: 0,
+      teacherReady: false,
+      recording: false,
+      screenShare: false,
+      chatEnabled: false,
+      note: "Live presence and signalling will be production-connected later."
+    }
+  });
+});
+
+app.get("/api/part94/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI Live Classroom",
+    greeting: "Namaste, main VANI Live Classroom Assistant hoon. Aap live class start preview, device check ya room status pooch sakte ho.",
+    exampleCommands: [
+      "VANI, Class 10 Maths live classroom preview dikhao",
+      "VANI, device check karo",
+      "VANI, network check batao",
+      "VANI, teacher live class launch preview banao",
+      "VANI, student join preview dikhao"
+    ],
+    safety: "Class start, recording, admit/remove participant confirmation ke bina nahi hoga."
+  });
+});
+
+app.post("/api/part94/vani/command", (req, res) => {
+  const body = req.body || {};
+  const result = part94RoomPreview({
+    command: body.command || body.q || "",
+    role: body.role || "teacher",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId,
+    batchId: body.batchId,
+    teacherId: body.teacherId,
+    studentId: body.studentId,
+    parentId: body.parentId,
+    body
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 94 — Native Live Classroom Foundation", ...result });
+});
+
+app.get("/api/part94/vani/command", (req, res) => {
+  const result = part94RoomPreview({
+    command: req.query.command || req.query.q || "",
+    role: req.query.role || "teacher",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    batchId: req.query.batchId,
+    teacherId: req.query.teacherId,
+    studentId: req.query.studentId,
+    parentId: req.query.parentId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 94 — Native Live Classroom Foundation", ...result });
+});
+
+app.get("/api/part94/audit-log", (req, res) => {
+  res.json({
+    success: true,
+    auditLog: [
+      { event: "native_live_classroom_preview", role: "teacher", createdAt: new Date().toISOString() },
+      { event: "no_recording_yet_policy", rule: "Recording and attendance pending Part 97.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part94/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "native_live_classroom_foundation_created", message: "Part 94 Native Live Classroom Foundation active.", createdAt: new Date().toISOString() },
+      { type: "assigned_scope_policy", message: "Teacher/student/parent access requires assigned scope.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part94/checklist", (req, res) => {
+  res.json({ success: true, checklist: part94Checklist });
+});
+
+app.get("/api/part94/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part94-native-live-classroom-foundation-readiness",
+    ownerVerificationRequiredForSensitiveExports: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      features: part94ClassroomFeatures,
+      roles: part94RoleRules,
+      rooms: part94DemoRooms,
+      checklist: part94Checklist
+    }
+  });
+});
+
+app.get("/api/part94/demo", (req, res) => {
+  const command = "VANI, Class 10 Maths live classroom preview dikhao";
+  const result = part94RoomPreview({
+    command,
+    role: "teacher",
+    instituteId: "NX-DEMO-INST-001",
+    batchId: "BAT-10-MATH-A",
+    teacherId: "TCH-DEMO-001",
+    body: {}
+  });
+  res.json({
+    success: true,
+    demo: {
+      command,
+      result,
+      nextPart: "Part 95 — Screen Sharing and Digital Whiteboard"
+    }
+  });
+});
+// ================= END PART 94 =================
+
+// ================= PART 95 — SCREEN SHARING AND DIGITAL WHITEBOARD =================
+// NAXORA OS 2.0 Screen Sharing and Digital Whiteboard.
+// Browser-native screen share preview + local digital whiteboard foundation.
+// Multi-user sync, chat/polls and recording continue in Parts 96-97.
+
+const part95Tools = [
+  { key: "pen", name: "Pen", teacherOnly: false, description: "Draw/write on local board." },
+  { key: "eraser", name: "Eraser", teacherOnly: false, description: "Erase local strokes." },
+  { key: "clear", name: "Clear Board", teacherOnly: true, description: "Clear board after confirmation." },
+  { key: "export_png", name: "Export PNG", teacherOnly: true, description: "Download local board image." },
+  { key: "screen_share", name: "Screen Share", teacherOnly: true, description: "Browser getDisplayMedia preview." },
+  { key: "pointer", name: "Pointer", teacherOnly: false, description: "Pointer foundation." }
+];
+const part95Features = [
+  { key:"screen_share_readiness", name:"Screen Share Readiness", summary:"Checks browser screen sharing support.", problemSolved:"Teacher can test screen share before class." },
+  { key:"local_screen_share_preview", name:"Local Screen Share Preview", summary:"Starts browser screen capture preview.", problemSolved:"Classroom screen share foundation starts inside NAXORA." },
+  { key:"digital_whiteboard_canvas", name:"Digital Whiteboard Canvas", summary:"Pen/eraser/clear/export local canvas.", problemSolved:"Teacher can explain visually." },
+  { key:"tool_policy", name:"Tool Policy", summary:"Controls teacher/student/parent permissions.", problemSolved:"Students and parents cannot misuse tools." },
+  { key:"vani_whiteboard", name:"VANI Whiteboard Commands", summary:"Voice guidance for screen share and whiteboard.", problemSolved:"Teacher can ask VANI for tool status." }
+];
+const part95Roles = [
+  { role:"institute_owner", allowed:true, scope:"Monitor authorised classroom tools.", canScreenShare:false, canDraw:false, canExport:true, canClear:false },
+  { role:"branch_manager", allowed:true, scope:"Monitor assigned branch classroom tools.", canScreenShare:false, canDraw:false, canExport:false, canClear:false },
+  { role:"teacher", allowed:true, scope:"Use screen share and whiteboard for assigned class.", canScreenShare:true, canDraw:true, canExport:true, canClear:true },
+  { role:"student", allowed:true, scope:"Limited draw mode for own scheduled class.", canScreenShare:false, canDraw:true, canExport:false, canClear:false, studentLimited:true },
+  { role:"parent", allowed:true, scope:"Linked child view-only classroom status.", canScreenShare:false, canDraw:false, canExport:false, canClear:false, viewOnly:true },
+  { role:"receptionist_counsellor", allowed:true, scope:"Demo-class preview only.", canScreenShare:false, canDraw:false, canExport:false, canClear:false, demoOnly:true },
+  { role:"accountant", allowed:false, scope:"No classroom tool access.", canScreenShare:false, canDraw:false, canExport:false, canClear:false },
+  { role:"naxora_super_admin", allowed:false, scope:"Platform support only; no unrestricted classroom tool access.", canScreenShare:false, canDraw:false, canExport:false, canClear:false }
+];
+const part95Sessions = [
+  { sessionId:"WB-LIVE-DEMO-CLASS10-MATHS", roomId:"LIVE-DEMO-CLASS10-MATHS", title:"Class 10 Maths Whiteboard", teacherId:"TCH-DEMO-001", batchId:"BAT-10-MATH-A", status:"local_canvas_ready", activeTool:"pen", screenShareStatus:"permission_required" },
+  { sessionId:"WB-LIVE-DEMO-SCIENCE", roomId:"LIVE-DEMO-SCIENCE", title:"Class 10 Science Whiteboard", teacherId:"TCH-DEMO-002", batchId:"BAT-10-SCI-A", status:"scheduled_preview", activeTool:"pen", screenShareStatus:"permission_required" }
+];
+function normalizePart95Role(role){ const r=String(role||"teacher").toLowerCase().trim().replace(/\s+/g,"_"); if(["owner","instituteowner","institute_owner"].includes(r))return"institute_owner"; if(["branchmanager","branch_manager"].includes(r))return"branch_manager"; if(["receptionist","counsellor","receptionist_counsellor"].includes(r))return"receptionist_counsellor"; return r; }
+function part95AccessCheck({role,instituteId,branchId,batchId,teacherId,studentId,parentId,sessionId}={}){
+  const nr=normalizePart95Role(role); const rule=part95Roles.find(r=>r.role===nr)||{role:nr,allowed:false,scope:"Unknown role.",canScreenShare:false,canDraw:false,canExport:false,canClear:false};
+  const hasInst=Boolean(String(instituteId||"").trim()); const base=Boolean(rule.allowed&&hasInst&&nr!=="naxora_super_admin");
+  const teacherOk=nr!=="teacher"||Boolean(String(teacherId||"").trim()||String(batchId||"").trim());
+  const studentOk=nr!=="student"||Boolean(String(studentId||"").trim()||String(batchId||"").trim());
+  const parentOk=nr!=="parent"||Boolean(String(parentId||"").trim()||String(studentId||"").trim());
+  const allowed=base&&teacherOk&&studentOk&&parentOk;
+  return { role:nr,instituteId:instituteId||null,branchId:branchId||null,batchId:batchId||null,teacherId:teacherId||null,studentId:studentId||null,parentId:parentId||null,sessionId:sessionId||null,allowed,canScreenShare:Boolean(rule.canScreenShare&&allowed),canDraw:Boolean(rule.canDraw&&allowed),canExport:Boolean(rule.canExport&&allowed),canClear:Boolean(rule.canClear&&allowed),studentLimited:Boolean(rule.studentLimited),viewOnly:Boolean(rule.viewOnly),demoOnly:Boolean(rule.demoOnly),scope:rule.scope,reason:!hasInst?"Institute ID missing.":!rule.allowed?rule.scope:!teacherOk?"Teacher tool access requires assigned teacherId or batchId.":!studentOk?"Student can access own scheduled class only; studentId or batchId required.":!parentOk?"Parent can view linked child status only; parentId/studentId required.":"Screen sharing and whiteboard access allowed.",requiresLogin:true,requiresInstituteId:true,requiresAssignedScope:["teacher","student","parent"].includes(nr),confirmationRequiredFor:["start_screen_share","stop_screen_share","clear_whiteboard","export_whiteboard","enable_student_draw"],ownerVerificationRequiredFor:["whiteboard_export_all","delete_board","privacy_change"] };
+}
+function part95FindSession({sessionId,roomId,batchId}={}){ return part95Sessions.find(s=>s.sessionId===sessionId)||part95Sessions.find(s=>s.roomId===roomId)||part95Sessions.find(s=>s.batchId===batchId)||part95Sessions[0]; }
+function part95ParseCommand(text="",body={}){ const input=String(text||body.command||body.q||"").trim(); const intent=/screen|share|present/i.test(input)?"screen_share":/clear|clean/i.test(input)?"clear_board":/export|save|download/i.test(input)?"export_board":/policy|permission|allow/i.test(input)?"tool_policy":/whiteboard|board|draw|pen|eraser/i.test(input)?"whiteboard":"tool_status"; return {intent,roomId:body.roomId||(/science/i.test(input)?"LIVE-DEMO-SCIENCE":"LIVE-DEMO-CLASS10-MATHS"),sessionId:body.sessionId||(/science/i.test(input)?"WB-LIVE-DEMO-SCIENCE":"WB-LIVE-DEMO-CLASS10-MATHS"),rawCommand:input}; }
+function part95ScreenShareCapability(userAgent=""){ return { previewOnly:true,browserAPIs:{mediaDevices:true,getDisplayMedia:true,secureContextRequired:true},supportedBrowsers:["Chrome","Edge","Firefox","Safari latest"],permissionFlow:["Click Start Screen Share","Choose tab/window/screen","Confirm browser permission","Preview appears locally"],limitations:["Permission required every time","Mobile support can be limited","Production broadcast signalling pending"],userAgent:userAgent||"not_provided"}; }
+function part95WhiteboardPolicy(access={}){ return { previewOnly:true,role:access.role,permissions:{canViewBoard:Boolean(access.allowed),canDraw:Boolean(access.canDraw),canUseEraser:Boolean(access.canDraw),canClearBoard:Boolean(access.canClear),canExportBoard:Boolean(access.canExport),canScreenShare:Boolean(access.canScreenShare),canEnableStudentDraw:access.role==="teacher",canSaveToClassNotes:false},tools:part95Tools.map(t=>({...t,enabled:t.key==="screen_share"?Boolean(access.canScreenShare):t.key==="clear"?Boolean(access.canClear):t.key==="export_png"?Boolean(access.canExport):Boolean(access.canDraw||!t.teacherOnly)})),pendingParts:{multiUserSync:"Part 96",chatPollsHandRaise:"Part 96",recordingAttendance:"Part 97",aiClassNotes:"Part 98"},safety:"Students have limited draw access; teacher controls clear/export/screen share."}; }
+function part95StrokePreview(body={}){ return {previewOnly:true,strokeId:`STROKE-PREVIEW-${Date.now()}`,tool:body.tool||"pen",color:body.color||"#f5c451",width:Number(body.width||4),pointsCount:Array.isArray(body.points)?Math.min(body.points.length,100):0,syncStatus:"local_only",note:"Multi-user whiteboard sync will be added in Part 96."}; }
+function part95ExportPreview(session={},access={}){ return {previewOnly:true,exportId:`WB-EXPORT-PREVIEW-${Date.now()}`,sessionId:session.sessionId,format:"png",allowed:Boolean(access.canExport),finalSaveToCloudPending:true,ownerVerificationRequiredForBulkExport:true,note:"Frontend can export local canvas image. Server/cloud persistence pending."}; }
+function part95BuildToolResponse({command,role,instituteId,branchId,batchId,teacherId,studentId,parentId,body={}}={}){
+  const parsed=part95ParseCommand(command,body); const session=part95FindSession({sessionId:parsed.sessionId,roomId:parsed.roomId,batchId:body.batchId||batchId});
+  const access=part95AccessCheck({role,instituteId,branchId,batchId:body.batchId||batchId||session.batchId,teacherId:body.teacherId||teacherId,studentId:body.studentId||studentId,parentId:body.parentId||parentId,sessionId:session.sessionId});
+  const screenShareCapability=part95ScreenShareCapability(body.userAgent||""); const whiteboardPolicy=part95WhiteboardPolicy(access); const strokePreview=part95StrokePreview(body); const exportPreview=part95ExportPreview(session,access);
+  let replyText="",nextAction="none";
+  if(!access.allowed){replyText="Is role/scope ko screen sharing ya whiteboard access nahi hai."; nextAction="blocked";}
+  else if(access.viewOnly){replyText="Parent view-only mode me whiteboard status dekh sakta hai, tools use nahi kar sakta."; nextAction="show_view_only_status";}
+  else if(parsed.intent==="screen_share"){ replyText=access.canScreenShare?"Screen share preview ready hai. Browser permission allow karni hogi. Production broadcast signalling next integration me aayega.":"Is role ko screen share permission nahi hai."; nextAction=access.canScreenShare?"start_screen_share_preview":"screen_share_blocked"; }
+  else if(parsed.intent==="clear_board"){ replyText=access.canClear?"Clear board preview ready hai. Board clear karne se pehle confirmation zaroori hai.":"Is role ko whiteboard clear permission nahi hai."; nextAction=access.canClear?"confirm_clear_board":"clear_blocked"; }
+  else if(parsed.intent==="export_board"){ replyText=access.canExport?"Whiteboard export preview ready hai. Local PNG export allowed hai; cloud save later aayega.":"Is role ko whiteboard export permission nahi hai."; nextAction=access.canExport?"export_whiteboard_preview":"export_blocked"; }
+  else { replyText=`${session.title} whiteboard tools preview ready hai. Teacher screen share/clear/export control kar sakta hai; student limited draw mode me rahega.`; nextAction="show_whiteboard_tools"; }
+  return {access,parsed,session,screenShareCapability,whiteboardPolicy,strokePreview,exportPreview,replyText,spokenSafeSummary:replyText,privateScreenFirst:true,nextAction,confirmationRequiredFor:["start_screen_share","stop_screen_share","clear_whiteboard","export_whiteboard","enable_student_draw"],ownerVerificationRequiredFor:["whiteboard_export_all","delete_board","privacy_change"],auditLog:{event:"part95_screen_sharing_digital_whiteboard",role:access.role,sessionId:session.sessionId,intent:parsed.intent,createdAt:new Date().toISOString()}};
+}
+const part95Checklist=["Screen Sharing and Digital Whiteboard page opens","Status API returns success true","Screen share capability preview works","Local screen share frontend uses browser permission","Whiteboard canvas draw works","Eraser/clear/export local controls work","Tool policy respects teacher/student/parent roles","Parent view-only mode blocks tools","VANI whiteboard command works","Previous Part 1–94 routes remain preserved"];
+app.get("/api/part95/status",(req,res)=>res.json({success:true,part:"Part 95 — Screen Sharing and Digital Whiteboard",status:"active",versionPhase:"NAXORA OS 2.0",latestCompletedPart:95,nextPart:"Part 96 — Live Chat, Polls and Hand Raise",preservesPreviousFeatures:true,frontendRoutes:["/screen-sharing-digital-whiteboard","/screen-share-whiteboard","/digital-whiteboard","/live-classroom-whiteboard","/vani-whiteboard","/teacher-whiteboard"],apiRoutes:["/api/part95/config","/api/part95/features","/api/part95/roles","/api/part95/access-check","/api/part95/whiteboard-tools","/api/part95/whiteboard-sessions","/api/part95/screen-share/capability","/api/part95/whiteboard/policy","/api/part95/whiteboard/session-preview","/api/part95/whiteboard/stroke-preview","/api/part95/whiteboard/export-preview","/api/part95/whiteboard/clear-preview","/api/part95/vani/greeting","/api/part95/vani/command"],screenSharingDigitalWhiteboardEnabled:true}));
+app.get("/api/part95/config",(req,res)=>res.json({success:true,appName:"Screen Sharing and Digital Whiteboard",appType:"screen_share_whiteboard_foundation",version:"2.0-screen-sharing-digital-whiteboard",policy:{previewFirst:true,browserPermissionRequired:true,teacherControlsScreenShare:true,teacherControlsClearExport:true,studentLimitedDraw:true,parentViewOnly:true,noCloudWhiteboardSaveYet:true,noRecordingYet:true}}));
+app.get("/api/part95/features",(req,res)=>res.json({success:true,features:part95Features}));
+app.get("/api/part95/roles",(req,res)=>res.json({success:true,roles:part95Roles}));
+app.get("/api/part95/access-check",(req,res)=>res.json({success:true,access:part95AccessCheck(req.query||{})}));
+app.get("/api/part95/whiteboard-tools",(req,res)=>res.json({success:true,tools:part95Tools}));
+app.get("/api/part95/whiteboard-sessions",(req,res)=>res.json({success:true,previewOnly:true,sessions:part95Sessions}));
+app.get("/api/part95/screen-share/capability",(req,res)=>res.json({success:true,screenShareCapability:part95ScreenShareCapability(req.headers["user-agent"]||"")}));
+app.get("/api/part95/whiteboard/policy",(req,res)=>{const access=part95AccessCheck(req.query||{}); if(!access.allowed)return res.status(403).json({success:false,access,message:access.reason}); res.json({success:true,access,whiteboardPolicy:part95WhiteboardPolicy(access)});});
+app.get("/api/part95/whiteboard/session-preview",(req,res)=>{const result=part95BuildToolResponse({command:req.query.q||req.query.command||"whiteboard preview",role:req.query.role||"teacher",instituteId:req.query.instituteId||"NX-DEMO-INST-001",branchId:req.query.branchId,batchId:req.query.batchId||"BAT-10-MATH-A",teacherId:req.query.teacherId||"TCH-DEMO-001",studentId:req.query.studentId,parentId:req.query.parentId,body:req.query||{}}); if(!result.access.allowed)return res.status(403).json({success:false,...result}); res.json({success:true,...result});});
+app.post("/api/part95/whiteboard/session-preview",(req,res)=>{const body=req.body||{}; const result=part95BuildToolResponse({command:body.q||body.command||"whiteboard preview",role:body.role||"teacher",instituteId:body.instituteId||"NX-DEMO-INST-001",branchId:body.branchId,batchId:body.batchId,teacherId:body.teacherId,studentId:body.studentId,parentId:body.parentId,body}); if(!result.access.allowed)return res.status(403).json({success:false,...result}); res.json({success:true,...result});});
+app.post("/api/part95/whiteboard/stroke-preview",(req,res)=>{const body=req.body||{}; const access=part95AccessCheck(body); if(!access.allowed||!access.canDraw)return res.status(403).json({success:false,access,message:access.canDraw?access.reason:"This role cannot draw on whiteboard."}); res.json({success:true,access,strokePreview:part95StrokePreview(body)});});
+app.get("/api/part95/whiteboard/export-preview",(req,res)=>{const access=part95AccessCheck(req.query||{}); const session=part95FindSession(req.query||{}); if(!access.allowed||!access.canExport)return res.status(403).json({success:false,access,message:access.canExport?access.reason:"This role cannot export whiteboard."}); res.json({success:true,access,session,exportPreview:part95ExportPreview(session,access)});});
+app.get("/api/part95/whiteboard/clear-preview",(req,res)=>{const access=part95AccessCheck(req.query||{}); const session=part95FindSession(req.query||{}); if(!access.allowed||!access.canClear)return res.status(403).json({success:false,access,message:access.canClear?access.reason:"Only assigned teacher can clear board preview."}); res.json({success:true,access,clearPreview:{previewOnly:true,sessionId:session.sessionId,confirmationRequired:true,impact:"Local board strokes will be cleared in preview mode.",note:"Production multi-user board clear sync pending Part 96."}});});
+app.get("/api/part95/vani/greeting",(req,res)=>res.json({success:true,assistant:"VANI Whiteboard",greeting:"Namaste, main VANI Whiteboard Assistant hoon. Aap screen share, board, pen, clear ya export ke baare me bol sakte ho.",exampleCommands:["VANI, screen share preview start karo","VANI, whiteboard tools dikhao","VANI, board clear preview banao","VANI, whiteboard export preview banao","VANI, student draw permission policy batao"],safety:"Screen share browser permission ke bina start nahi hoga. Board clear/export confirmation ke bina nahi hoga."}));
+app.post("/api/part95/vani/command",(req,res)=>{const body=req.body||{}; const result=part95BuildToolResponse({command:body.command||body.q||"",role:body.role||"teacher",instituteId:body.instituteId||"NX-DEMO-INST-001",branchId:body.branchId,batchId:body.batchId,teacherId:body.teacherId,studentId:body.studentId,parentId:body.parentId,body}); if(!result.access.allowed)return res.status(403).json({success:false,assistant:"VANI",...result}); res.json({success:true,assistant:"VANI",part:"Part 95 — Screen Sharing and Digital Whiteboard",...result});});
+app.get("/api/part95/vani/command",(req,res)=>{const result=part95BuildToolResponse({command:req.query.command||req.query.q||"",role:req.query.role||"teacher",instituteId:req.query.instituteId||"NX-DEMO-INST-001",branchId:req.query.branchId,batchId:req.query.batchId||"BAT-10-MATH-A",teacherId:req.query.teacherId||"TCH-DEMO-001",studentId:req.query.studentId,parentId:req.query.parentId,body:req.query||{}}); if(!result.access.allowed)return res.status(403).json({success:false,assistant:"VANI",...result}); res.json({success:true,assistant:"VANI",part:"Part 95 — Screen Sharing and Digital Whiteboard",...result});});
+app.get("/api/part95/audit-log",(req,res)=>res.json({success:true,auditLog:[{event:"screen_share_whiteboard_preview",role:"teacher",createdAt:new Date().toISOString()},{event:"teacher_control_policy",rule:"Screen share, clear and export are teacher-controlled.",createdAt:new Date().toISOString()}]}));
+app.get("/api/part95/activity",(req,res)=>res.json({success:true,activity:[{type:"screen_sharing_digital_whiteboard_created",message:"Part 95 Screen Sharing and Digital Whiteboard active.",createdAt:new Date().toISOString()},{type:"multi_user_sync_pending",message:"Multi-user sync and chat tools continue in Part 96.",createdAt:new Date().toISOString()}]}));
+app.get("/api/part95/checklist",(req,res)=>res.json({success:true,checklist:part95Checklist}));
+app.get("/api/part95/export",(req,res)=>res.json({success:true,exportType:"part95-screen-sharing-digital-whiteboard-readiness",ownerVerificationRequiredForSensitiveExports:true,generatedAt:new Date().toISOString(),data:{features:part95Features,roles:part95Roles,tools:part95Tools,sessions:part95Sessions,checklist:part95Checklist}}));
+app.get("/api/part95/demo",(req,res)=>{const command="VANI, screen share aur whiteboard tools dikhao"; const result=part95BuildToolResponse({command,role:"teacher",instituteId:"NX-DEMO-INST-001",batchId:"BAT-10-MATH-A",teacherId:"TCH-DEMO-001",body:{}}); res.json({success:true,demo:{command,result,nextPart:"Part 96 — Live Chat, Polls and Hand Raise"}});});
+// ================= END PART 95 =================
+
+
 
 
 

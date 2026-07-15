@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NAXORA OS 2.0 — Native Live Classroom Foundation</title>
+  <link rel="stylesheet" href="/brand-system.css" />
+  <link rel="stylesheet" href="/native-live-classroom-foundation.css" />
+</head>
+<body>
+  <main class="live-classroom">
+    <section class="hero">
+      <div>
+        <p class="kicker">Part 94 • NAXORA OS 2.0</p>
+        <h1>Native Live Classroom Foundation</h1>
+        <p class="lead">
+          Browser-native live class foundation with device readiness, network readiness,
+          room preview, join token preview and role-based classroom policy.
+        </p>
+      </div>
+      <aside class="voice-card">
+        <p class="kicker">VANI Live Classroom</p>
+        <h2 id="statusText">Checking...</h2>
+        <p id="statusSub">Tap Start, then ask classroom preview.</p>
+        <div class="voice-actions">
+          <button id="startVaniBtn">Start VANI</button>
+          <button id="listenVaniBtn">Listen</button>
+          <button id="muteVaniBtn">Mute</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Access</p>
+      <div class="controls">
+        <input id="instituteId" value="NX-DEMO-INST-001" />
+        <input id="branchId" value="BR-DEMO-001" />
+        <input id="batchId" value="BAT-10-MATH-A" />
+        <input id="teacherId" value="TCH-DEMO-001" />
+        <select id="roleSelect">
+          <option value="teacher" selected>Teacher Host</option>
+          <option value="institute_owner">Institute Owner Monitor</option>
+          <option value="branch_manager">Branch Manager Monitor</option>
+          <option value="student">Student Join</option>
+          <option value="parent">Parent View Only</option>
+          <option value="receptionist_counsellor">Receptionist Demo Only</option>
+          <option value="accountant">Accountant Block Test</option>
+        </select>
+        <button id="demoBtn">Load Demo</button>
+      </div>
+      <pre id="accessBox" class="code">Waiting...</pre>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Live Classroom Command</p>
+        <h2>Speak or type</h2>
+        <p>Example: “VANI, Class 10 Maths live classroom preview dikhao”.</p>
+        <div class="controls">
+          <input id="vaniCommand" value="VANI, Class 10 Maths live classroom preview dikhao" />
+          <button id="askVaniBtn">Preview Room</button>
+        </div>
+        <pre id="vaniOutput" class="code">Waiting...</pre>
+      </article>
+
+      <article class="panel">
+        <p class="kicker">Room Preview</p>
+        <div id="roomBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Device Readiness</p>
+        <div id="deviceBox" class="list"></div>
+      </article>
+      <article class="panel">
+        <p class="kicker">Network Readiness</p>
+        <div id="networkBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <p class="kicker">Participant Policy</p>
+        <div id="policyBox" class="list"></div>
+      </article>
+      <article class="panel">
+        <p class="kicker">Join + Launch Preview</p>
+        <div id="joinBox" class="list"></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Demo Rooms</p>
+      <div id="roomsBox" class="feature-grid"></div>
+    </section>
+
+    <section class="panel">
+      <p class="kicker">Testing links</p>
+      <div class="links">
+        <a href="/api/part94/status" target="_blank">Status</a>
+        <a href="/api/part94/demo" target="_blank">Demo</a>
+        <a href="/api/part94/device-readiness" target="_blank">Device Readiness</a>
+        <a href="/api/part94/room/preview?role=teacher&instituteId=NX-DEMO-INST-001&teacherId=TCH-DEMO-001&batchId=BAT-10-MATH-A&q=VANI,%20Class%2010%20Maths%20live%20classroom%20preview%20dikhao" target="_blank">Room Preview</a>
+      </div>
+    </section>
+  </main>
+  <script src="/brand-system.js"></script>
+  <script src="/vani-voice-starter.js"></script>
+  <script src="/native-live-classroom-foundation.js"></script>
+</body>
+</html>
