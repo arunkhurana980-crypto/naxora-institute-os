@@ -10441,6 +10441,12 @@ const modulePageRoutes = {
   "/vani-marketing": "automated-marketing-system.html",
   "/owner-marketing-system": "automated-marketing-system.html",
   "/campaign-automation": "automated-marketing-system.html",
+  "/complete-institute-marketplace": "complete-institute-marketplace.html",
+  "/institute-marketplace": "complete-institute-marketplace.html",
+  "/marketplace": "complete-institute-marketplace.html",
+  "/naxora-marketplace": "complete-institute-marketplace.html",
+  "/vani-marketplace": "complete-institute-marketplace.html",
+  "/public-course-marketplace": "complete-institute-marketplace.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -28720,6 +28726,657 @@ app.get("/api/part107/demo", (req, res) => {
   });
 });
 // ================= END PART 107 =================
+
+// ================= PART 108 — COMPLETE INSTITUTE MARKETPLACE =================
+// NAXORA OS 2.0 Complete Institute Marketplace.
+// This part creates a public-discovery and owner-controlled marketplace foundation:
+// institute listings, courses, filters, demo booking/request callback, trust score,
+// reviews preview, lead handoff, marketplace approval workflow and VANI marketplace.
+// It never publishes private institute/student data, never auto-accepts paid ads,
+// never auto-books final admission, and never exposes secrets/API keys.
+
+const part108MarketplaceFeatures = [
+  { key: "public_marketplace_home", name: "Public Marketplace Home", summary: "Discover institutes, courses, branches and demo classes from approved public listings.", problemSolved: "Parents/students can find institutes in one place." },
+  { key: "institute_listing_manager", name: "Institute Listing Manager", summary: "Owner can prepare public listing, branch/courses and trust information for approval.", problemSolved: "Institutes can manage their marketplace presence." },
+  { key: "course_catalog", name: "Course Catalog", summary: "Shows course cards with class, subject, duration, mode and public fee range preview.", problemSolved: "Visitors can understand offerings quickly." },
+  { key: "search_filter_compare", name: "Search, Filter and Compare", summary: "Filters by city, class, subject, mode, rating, fee range and demo availability.", problemSolved: "Families can shortlist the right institute faster." },
+  { key: "demo_callback_leads", name: "Demo and Callback Leads", summary: "Creates consent-first demo/callback lead draft and routes to institute CRM.", problemSolved: "Marketplace discovery becomes qualified leads." },
+  { key: "trust_score_reviews", name: "Trust Score and Reviews Preview", summary: "Displays verified/public-safe trust indicators and moderated review preview.", problemSolved: "Visitors can make better decisions." },
+  { key: "marketplace_approval_workflow", name: "Marketplace Approval Workflow", summary: "Public listing, featured placement and review publishing require approval.", problemSolved: "No accidental public publishing or misleading content." },
+  { key: "vani_marketplace", name: "VANI Marketplace Assistant", summary: "VANI can search institutes, compare courses, draft listing updates and lead follow-ups.", problemSolved: "Discovery and owner listing work through voice." }
+];
+
+const part108RoleRules = [
+  { role: "guest", allowed: true, scope: "Can browse public marketplace listings and create consent-first enquiry/callback draft.", canBrowsePublic: true, canCreateLead: true, canManageListing: false, canApprovePublish: false, canExport: false },
+  { role: "institute_owner", allowed: true, scope: "Can manage own institute marketplace listing, courses, leads and approval requests.", canBrowsePublic: true, canCreateLead: true, canManageListing: true, canApprovePublish: true, canViewLeads: true, canExport: true },
+  { role: "branch_manager", allowed: true, scope: "Can manage assigned branch marketplace listing draft and leads.", canBrowsePublic: true, canCreateLead: true, canManageListing: true, canApprovePublish: false, canViewLeads: true, canExport: false, assignedBranchOnly: true },
+  { role: "receptionist_counsellor", allowed: true, scope: "Can view marketplace leads and create callback/demo follow-up drafts.", canBrowsePublic: true, canCreateLead: true, canManageListing: false, canApprovePublish: false, canViewLeads: true, canExport: false, leadFollowupOnly: true },
+  { role: "teacher", allowed: true, scope: "Can draft public-safe course/teacher profile snippets by permission.", canBrowsePublic: true, canCreateLead: false, canManageListing: false, canApprovePublish: false, canViewLeads: false, canExport: false, courseSnippetOnly: true },
+  { role: "accountant", allowed: true, scope: "Can view marketplace fee/lead conversion safe summary only.", canBrowsePublic: false, canCreateLead: false, canManageListing: false, canApprovePublish: false, canViewLeads: false, canExport: false, feeSummaryOnly: true },
+  { role: "student", allowed: true, scope: "Can browse public listing and own marketplace enquiry status only.", canBrowsePublic: true, canCreateLead: true, canManageListing: false, canApprovePublish: false, canViewLeads: false, canExport: false, selfOnly: true },
+  { role: "parent", allowed: true, scope: "Can browse public listing and linked child/family enquiry status only.", canBrowsePublic: true, canCreateLead: true, canManageListing: false, canApprovePublish: false, canViewLeads: false, canExport: false, viewOnly: true },
+  { role: "naxora_super_admin", allowed: false, scope: "Platform support/moderation workflow only; no unrestricted institute-private data access here.", canBrowsePublic: false, canCreateLead: false, canManageListing: false, canApprovePublish: false, canExport: false }
+];
+
+const part108DemoInstitutes = [
+  {
+    instituteId: "NX-DEMO-INST-001",
+    listingId: "LIST-DEMO-001",
+    name: "NAXORA Learning Centre",
+    city: "Delhi",
+    areas: ["Rohini", "Pitampura"],
+    publicStatus: "approved_preview",
+    ratingPreview: 4.7,
+    reviewCountPreview: 128,
+    trustScore: 91,
+    verifiedBadges: ["verified_owner", "demo_available", "online_offline", "fee_transparency_preview"],
+    courses: [
+      { courseId: "COURSE-10-MATH", title: "Class 10 Maths Mastery", className: "Class 10", subject: "Maths", mode: "hybrid", duration: "6 months", publicFeeRange: "₹1,500–₹3,000/month", demoAvailable: true },
+      { courseId: "COURSE-10-SCI", title: "Class 10 Science Complete", className: "Class 10", subject: "Science", mode: "offline", duration: "6 months", publicFeeRange: "₹1,800–₹3,200/month", demoAvailable: true }
+    ],
+    leadStatsPreview: { enquiriesThisMonth: 82, callbacksPending: 14, demosBookedPreview: 28 },
+    highlights: ["Small batches", "Weekly parent updates", "VANI-powered learning support"]
+  },
+  {
+    instituteId: "NX-DEMO-INST-002",
+    listingId: "LIST-DEMO-002",
+    name: "Bright Path Coaching",
+    city: "Gurugram",
+    areas: ["Sector 14", "Sector 31"],
+    publicStatus: "approved_preview",
+    ratingPreview: 4.4,
+    reviewCountPreview: 74,
+    trustScore: 84,
+    verifiedBadges: ["verified_owner", "demo_available"],
+    courses: [
+      { courseId: "COURSE-9-ENG", title: "Class 9 English Foundation", className: "Class 9", subject: "English", mode: "offline", duration: "4 months", publicFeeRange: "₹1,200–₹2,400/month", demoAvailable: true },
+      { courseId: "COURSE-11-COM", title: "Class 11 Commerce Starter", className: "Class 11", subject: "Commerce", mode: "online", duration: "8 months", publicFeeRange: "₹2,000–₹4,000/month", demoAvailable: false }
+    ],
+    leadStatsPreview: { enquiriesThisMonth: 49, callbacksPending: 9, demosBookedPreview: 16 },
+    highlights: ["Exam-focused plans", "Online support", "Counsellor callbacks"]
+  },
+  {
+    instituteId: "NX-DEMO-INST-003",
+    listingId: "LIST-DEMO-003",
+    name: "Future Rank Academy",
+    city: "Noida",
+    areas: ["Sector 62", "Sector 18"],
+    publicStatus: "review_pending_preview",
+    ratingPreview: 4.2,
+    reviewCountPreview: 42,
+    trustScore: 76,
+    verifiedBadges: ["owner_review_pending"],
+    courses: [
+      { courseId: "COURSE-JEE-FND", title: "JEE Foundation", className: "Class 11", subject: "Physics", mode: "hybrid", duration: "12 months", publicFeeRange: "₹3,000–₹6,000/month", demoAvailable: true }
+    ],
+    leadStatsPreview: { enquiriesThisMonth: 34, callbacksPending: 7, demosBookedPreview: 9 },
+    highlights: ["Foundation batches", "Doubt sessions", "Practice tests"]
+  }
+];
+
+const part108DemoLeads = [
+  { leadId: "MKTPLC-LEAD-001", listingId: "LIST-DEMO-001", studentName: "Demo Student A", className: "Class 10", subject: "Maths", city: "Delhi", consent: true, source: "marketplace_demo_request", status: "callback_pending_preview" },
+  { leadId: "MKTPLC-LEAD-002", listingId: "LIST-DEMO-001", studentName: "Demo Student B", className: "Class 10", subject: "Science", city: "Delhi", consent: true, source: "marketplace_compare", status: "demo_slot_draft_preview" },
+  { leadId: "MKTPLC-LEAD-003", listingId: "LIST-DEMO-002", studentName: "Demo Student C", className: "Class 9", subject: "English", city: "Gurugram", consent: true, source: "marketplace_callback", status: "qualified_preview" }
+];
+
+function normalizePart108Role(role) {
+  const r = String(role || "guest").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part108AccessCheck({ role, instituteId, branchId, assignedBranchId, listingId, studentId, parentId }) {
+  const normalizedRole = normalizePart108Role(role);
+  const rule = part108RoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole, allowed: false, scope: "Unknown or unsupported role.",
+    canBrowsePublic: false, canCreateLead: false, canManageListing: false, canApprovePublish: false, canViewLeads: false, canExport: false
+  };
+  const instituteRequired = !["guest"].includes(normalizedRole) ? Boolean(String(instituteId || "").trim()) : true;
+  const branchRequired = ["branch_manager"].includes(normalizedRole) ? Boolean(String(branchId || assignedBranchId || "").trim()) : true;
+  const studentScoped = normalizedRole !== "student" || Boolean(String(studentId || "").trim());
+  const parentScoped = normalizedRole !== "parent" || Boolean(String(parentId || "").trim() || String(studentId || "").trim());
+  const allowed = Boolean(rule.allowed && instituteRequired && branchRequired && studentScoped && parentScoped && normalizedRole !== "naxora_super_admin");
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    branchId: branchId || assignedBranchId || null,
+    assignedBranchId: assignedBranchId || branchId || null,
+    listingId: listingId || null,
+    studentId: studentId || null,
+    parentId: parentId || null,
+    allowed,
+    canBrowsePublic: Boolean(rule.canBrowsePublic && allowed),
+    canCreateLead: Boolean(rule.canCreateLead && allowed),
+    canManageListing: Boolean(rule.canManageListing && allowed),
+    canApprovePublish: Boolean(rule.canApprovePublish && allowed),
+    canViewLeads: Boolean(rule.canViewLeads && allowed),
+    canExport: Boolean(rule.canExport && allowed),
+    assignedBranchOnly: Boolean(rule.assignedBranchOnly),
+    leadFollowupOnly: Boolean(rule.leadFollowupOnly),
+    courseSnippetOnly: Boolean(rule.courseSnippetOnly),
+    feeSummaryOnly: Boolean(rule.feeSummaryOnly),
+    selfOnly: Boolean(rule.selfOnly),
+    viewOnly: Boolean(rule.viewOnly),
+    scope: rule.scope,
+    reason: !rule.allowed ? rule.scope :
+      !instituteRequired ? "Institute ID required for this role." :
+      !branchRequired ? "Branch manager requires assigned branch scope." :
+      !studentScoped ? "Student can view own marketplace enquiry only; studentId required." :
+      !parentScoped ? "Parent can view linked child/family enquiry only." :
+      "Complete Institute Marketplace access allowed.",
+    requiresLoginForPrivateActions: true,
+    confirmationRequiredFor: ["listing_draft_save", "callback_request_create", "demo_booking_draft", "review_reply_draft", "lead_handoff_to_crm"],
+    ownerVerificationRequiredFor: ["listing_publish", "featured_listing_payment", "review_publish", "marketplace_export", "public_fee_change", "badge_claim_change"]
+  };
+}
+
+function part108SearchInstitutes(query = {}) {
+  const city = String(query.city || "").toLowerCase();
+  const className = String(query.className || query.class || "").toLowerCase();
+  const subject = String(query.subject || "").toLowerCase();
+  const mode = String(query.mode || "").toLowerCase();
+  const demoOnly = String(query.demoOnly || "false") === "true";
+  let results = part108DemoInstitutes.filter((inst) => inst.publicStatus === "approved_preview" || query.includePending === "true");
+  if (city) results = results.filter((inst) => inst.city.toLowerCase().includes(city) || inst.areas.some((a) => a.toLowerCase().includes(city)));
+  if (className) results = results.filter((inst) => inst.courses.some((c) => c.className.toLowerCase().includes(className)));
+  if (subject) results = results.filter((inst) => inst.courses.some((c) => c.subject.toLowerCase().includes(subject)));
+  if (mode) results = results.filter((inst) => inst.courses.some((c) => c.mode.toLowerCase().includes(mode)));
+  if (demoOnly) results = results.filter((inst) => inst.courses.some((c) => c.demoAvailable));
+  return {
+    previewOnly: true,
+    query: { city, className, subject, mode, demoOnly },
+    results: results.sort((a, b) => b.trustScore - a.trustScore),
+    resultCount: results.length,
+    publicDataOnly: true
+  };
+}
+
+function part108CourseCatalog(query = {}) {
+  const search = part108SearchInstitutes(query);
+  const courses = [];
+  search.results.forEach((inst) => {
+    inst.courses.forEach((course) => {
+      courses.push({
+        ...course,
+        instituteId: inst.instituteId,
+        listingId: inst.listingId,
+        instituteName: inst.name,
+        city: inst.city,
+        trustScore: inst.trustScore,
+        ratingPreview: inst.ratingPreview
+      });
+    });
+  });
+  return { previewOnly: true, courses, courseCount: courses.length, publicFeeRangeOnly: true };
+}
+
+function part108CompareListings(listingIds = []) {
+  const ids = Array.isArray(listingIds) && listingIds.length ? listingIds : ["LIST-DEMO-001", "LIST-DEMO-002"];
+  const listings = part108DemoInstitutes.filter((inst) => ids.includes(inst.listingId));
+  return {
+    previewOnly: true,
+    listings: listings.map((inst) => ({
+      listingId: inst.listingId,
+      name: inst.name,
+      city: inst.city,
+      trustScore: inst.trustScore,
+      ratingPreview: inst.ratingPreview,
+      reviewCountPreview: inst.reviewCountPreview,
+      demoCourses: inst.courses.filter((c) => c.demoAvailable).length,
+      courseCount: inst.courses.length,
+      highlights: inst.highlights
+    })),
+    winnerByTrustScore: listings.slice().sort((a, b) => b.trustScore - a.trustScore)[0] || null,
+    note: "Comparison uses public preview data only."
+  };
+}
+
+function part108ListingDraft(access, body = {}) {
+  return {
+    previewOnly: true,
+    canManageListing: Boolean(access.canManageListing),
+    listingId: body.listingId || "LIST-DRAFT-PREVIEW",
+    instituteId: access.instituteId || body.instituteId || "NX-DEMO-INST-001",
+    draft: {
+      name: body.name || "NAXORA Learning Centre",
+      city: body.city || "Delhi",
+      publicSummary: body.publicSummary || "Coaching institute with demo classes, parent updates and structured learning support.",
+      coursesToPublish: body.coursesToPublish || ["Class 10 Maths", "Class 10 Science"],
+      demoAvailable: body.demoAvailable !== "false",
+      publicFeeRangeOnly: true
+    },
+    autoPublish: false,
+    approvalRequired: true,
+    ownerVerificationRequiredForPublish: true
+  };
+}
+
+function part108LeadDraft(access, body = {}) {
+  return {
+    previewOnly: true,
+    canCreateLead: Boolean(access.canCreateLead),
+    leadId: `MKTPLC-LEAD-PREVIEW-${Date.now()}`,
+    listingId: body.listingId || "LIST-DEMO-001",
+    studentName: body.studentName || "Demo Student",
+    className: body.className || "Class 10",
+    subject: body.subject || "Maths",
+    city: body.city || "Delhi",
+    consent: body.consent === true || body.consent === "true",
+    preferredAction: body.preferredAction || "request_callback",
+    autoBookAdmission: false,
+    autoSendToCRM: false,
+    confirmationRequired: true,
+    blockedIfNoConsent: !(body.consent === true || body.consent === "true")
+  };
+}
+
+function part108TrustScore(listingId = "LIST-DEMO-001") {
+  const inst = part108DemoInstitutes.find((i) => i.listingId === listingId) || part108DemoInstitutes[0];
+  const components = {
+    profileCompleteness: inst.publicStatus === "approved_preview" ? 92 : 58,
+    verifiedBadges: Math.min(100, inst.verifiedBadges.length * 22),
+    reviewQuality: Math.round(inst.ratingPreview * 18),
+    demoAvailability: inst.courses.some((c) => c.demoAvailable) ? 90 : 55,
+    transparency: inst.verifiedBadges.includes("fee_transparency_preview") ? 95 : 68
+  };
+  const trustScore = Math.round(components.profileCompleteness * 0.25 + components.verifiedBadges * 0.15 + components.reviewQuality * 0.25 + components.demoAvailability * 0.15 + components.transparency * 0.2);
+  return {
+    previewOnly: true,
+    listingId: inst.listingId,
+    instituteName: inst.name,
+    trustScore,
+    components,
+    publicBadges: inst.verifiedBadges,
+    noPrivateDataUsedInPublicScore: true
+  };
+}
+
+function part108ReviewModerationPreview(access, body = {}) {
+  return {
+    previewOnly: true,
+    reviewId: body.reviewId || "REV-PREVIEW-001",
+    listingId: body.listingId || "LIST-DEMO-001",
+    canApprovePublish: Boolean(access.canApprovePublish),
+    moderationStatus: "review_required_preview",
+    publicReviewDraft: "Good demo class and helpful teacher support.",
+    blockedContentTypes: ["personal phone/address", "student private details", "abusive content", "unverified claims"],
+    autoPublish: false,
+    ownerVerificationRequiredForPublish: true
+  };
+}
+
+function part108MarketplaceApproval(access, body = {}) {
+  return {
+    previewOnly: true,
+    canApprovePublish: Boolean(access.canApprovePublish),
+    approvalType: body.approvalType || "listing_publish",
+    listingId: body.listingId || "LIST-DEMO-001",
+    checks: [
+      { key: "public_data_only", status: "pass_preview" },
+      { key: "fee_range_public_safe", status: "pass_preview" },
+      { key: "review_moderation", status: "review_required_preview" },
+      { key: "owner_verification", status: access.canApprovePublish ? "owner_can_verify" : "owner_required" }
+    ],
+    finalPublishAuto: false,
+    ownerVerificationRequired: true
+  };
+}
+
+function part108MarketplaceAnalytics(access) {
+  const listings = access.canManageListing || access.canViewLeads ? part108DemoInstitutes : [];
+  const leads = access.canViewLeads ? part108DemoLeads : [];
+  return {
+    previewOnly: true,
+    canViewLeads: Boolean(access.canViewLeads),
+    listingCount: listings.length,
+    leadCount: leads.length,
+    callbacksPending: listings.reduce((sum, i) => sum + (i.leadStatsPreview?.callbacksPending || 0), 0),
+    demosBookedPreview: listings.reduce((sum, i) => sum + (i.leadStatsPreview?.demosBookedPreview || 0), 0),
+    privateLeadDetailsHiddenForPublic: true
+  };
+}
+
+function part108RoleScopedSummary(access) {
+  if (access.feeSummaryOnly) {
+    return {
+      previewOnly: true,
+      scope: "marketplace_fee_summary_only",
+      visibleData: { publicFeeRangeOnly: true, leadConversionSummary: "count-level only" },
+      hiddenData: ["lead contact data", "visitor identity", "owner listing controls", "marketplace exports"]
+    };
+  }
+  if (access.courseSnippetOnly) {
+    return {
+      previewOnly: true,
+      scope: "teacher_course_snippet_only",
+      visibleData: { allowedDrafts: ["course overview", "demo agenda", "teacher intro public-safe snippet"], noPublishPermission: true },
+      hiddenData: ["lead list", "reviews approval", "featured listing payments"]
+    };
+  }
+  if (access.selfOnly || access.viewOnly || access.role === "guest") {
+    return {
+      previewOnly: true,
+      scope: access.role === "guest" ? "public_marketplace_browse" : "own_marketplace_enquiry_status",
+      visibleData: { publicListings: part108SearchInstitutes({}).results.length, canCreateConsentLead: access.canCreateLead },
+      hiddenData: ["institute CRM", "lead contact lists", "listing approval data", "private reviews"]
+    };
+  }
+  return {
+    previewOnly: true,
+    scope: access.canManageListing ? "owner_or_branch_marketplace_management" : "marketplace_followup",
+    visibleData: { campaigns: "not included", listings: part108DemoInstitutes.length, analytics: part108MarketplaceAnalytics(access) },
+    hiddenData: access.canApprovePublish ? ["provider/payment secrets"] : ["other institute private controls", "publish approval"]
+  };
+}
+
+function part108PrivacyPolicy() {
+  return {
+    previewOnly: true,
+    publicDataOnly: true,
+    privateScreenFirst: true,
+    noAutoPublish: true,
+    noAutoAdmission: true,
+    noAutoPayment: true,
+    sensitiveDataNotPublic: [
+      "student/parent phone or address",
+      "private fee records",
+      "teacher/staff private data",
+      "unmoderated reviews",
+      "CRM notes",
+      "lead contact list",
+      "owner verification documents"
+    ],
+    consentRequiredFor: ["callback request", "demo booking draft", "lead handoff to CRM", "marketing follow-up"],
+    ownerVerificationRequiredFor: ["listing_publish", "featured_listing_payment", "review_publish", "marketplace_export", "public_fee_change"],
+    safety: "Marketplace shows only approved public-safe data. Leads and private institute data stay protected."
+  };
+}
+
+function part108ParseCommand(text = "", body = {}) {
+  const input = String(text || body.command || body.q || "").trim();
+  const intent = /search|find|discover|near|marketplace/i.test(input) ? "search"
+    : /course|catalog|class|subject/i.test(input) ? "courses"
+      : /compare|best|shortlist/i.test(input) ? "compare"
+        : /listing|profile|publish|draft/i.test(input) ? "listing_draft"
+          : /demo|callback|lead|enquiry/i.test(input) ? "lead_draft"
+            : /trust|rating|review|badge/i.test(input) ? "trust_reviews"
+              : /approval|approve|moderation/i.test(input) ? "approval"
+                : /analytics|leads|performance/i.test(input) ? "analytics"
+                  : /privacy|safe|permission|consent/i.test(input) ? "privacy"
+                    : "overview";
+  return { intent, rawCommand: input };
+}
+
+function part108BuildMarketplace({ command, role, instituteId, branchId, assignedBranchId, listingId, studentId, parentId, body = {} }) {
+  const parsed = part108ParseCommand(command, body);
+  const access = part108AccessCheck({
+    role,
+    instituteId,
+    branchId: body.branchId || branchId,
+    assignedBranchId: body.assignedBranchId || assignedBranchId,
+    listingId: body.listingId || listingId,
+    studentId: body.studentId || studentId,
+    parentId: body.parentId || parentId
+  });
+
+  const searchResults = part108SearchInstitutes(body);
+  const courseCatalog = part108CourseCatalog(body);
+  const comparison = part108CompareListings(body.listingIds);
+  const listingDraft = part108ListingDraft(access, body);
+  const leadDraft = part108LeadDraft(access, body);
+  const trustScore = part108TrustScore(body.listingId || "LIST-DEMO-001");
+  const reviewModerationPreview = part108ReviewModerationPreview(access, body);
+  const marketplaceApproval = part108MarketplaceApproval(access, body);
+  const marketplaceAnalytics = part108MarketplaceAnalytics(access);
+  const roleScopedSummary = part108RoleScopedSummary(access);
+  const privacyPolicy = part108PrivacyPolicy();
+
+  let replyText = "";
+  let nextAction = "none";
+  if (!access.allowed) {
+    replyText = "Is role/scope ko marketplace access nahi hai.";
+    nextAction = "blocked";
+  } else if (parsed.intent === "search") {
+    replyText = `Marketplace search ready hai. ${searchResults.resultCount} public listings mile.`;
+    nextAction = "show_search_results";
+  } else if (parsed.intent === "courses") {
+    replyText = `Course catalog ready hai. ${courseCatalog.courseCount} public course cards available hain.`;
+    nextAction = "show_course_catalog";
+  } else if (parsed.intent === "compare") {
+    replyText = "Institute comparison preview ready hai. Sirf public data use hua hai.";
+    nextAction = "show_comparison";
+  } else if (parsed.intent === "listing_draft") {
+    replyText = access.canManageListing ? "Marketplace listing draft ready hai. Auto-publish off hai." : "Is role ko listing manage permission nahi hai.";
+    nextAction = "show_listing_draft";
+  } else if (parsed.intent === "lead_draft") {
+    replyText = access.canCreateLead ? "Demo/callback lead draft ready hai. Consent ke bina block rahega aur auto-admission nahi hoga." : "Is role ko marketplace lead create permission nahi hai.";
+    nextAction = "show_lead_draft";
+  } else if (parsed.intent === "trust_reviews") {
+    replyText = "Trust score and review moderation preview ready hai. Review auto-publish nahi hoga.";
+    nextAction = "show_trust_reviews";
+  } else if (parsed.intent === "approval") {
+    replyText = "Marketplace approval preview ready hai. Owner verification ke bina public publish nahi hoga.";
+    nextAction = "show_approval";
+  } else if (parsed.intent === "analytics") {
+    replyText = access.canViewLeads ? "Marketplace analytics ready hai. Lead details private screen par hain." : "Is role ko private marketplace lead analytics permission nahi hai.";
+    nextAction = "show_analytics";
+  } else if (parsed.intent === "privacy") {
+    replyText = "Marketplace privacy policy ready hai. Public listing me private data nahi jayega.";
+    nextAction = "show_privacy";
+  } else {
+    replyText = "Complete Institute Marketplace overview ready hai. Search, courses, compare, listing draft, demo lead aur approval workflow available hain.";
+    nextAction = "show_marketplace_overview";
+  }
+
+  return {
+    access,
+    parsed,
+    searchResults,
+    courseCatalog,
+    comparison,
+    listingDraft,
+    leadDraft,
+    trustScore,
+    reviewModerationPreview,
+    marketplaceApproval,
+    marketplaceAnalytics,
+    roleScopedSummary,
+    privacyPolicy,
+    replyText,
+    spokenSafeSummary: replyText,
+    privateScreenFirst: true,
+    noAutoPublish: true,
+    noAutoAdmission: true,
+    noAutoPayment: true,
+    nextAction,
+    confirmationRequiredFor: ["listing_draft_save", "callback_request_create", "demo_booking_draft", "review_reply_draft", "lead_handoff_to_crm"],
+    ownerVerificationRequiredFor: ["listing_publish", "featured_listing_payment", "review_publish", "marketplace_export", "public_fee_change", "badge_claim_change"],
+    auditLog: {
+      event: "part108_complete_institute_marketplace",
+      role: access.role,
+      intent: parsed.intent,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+const part108Checklist = [
+  "Complete Institute Marketplace page opens",
+  "Status API returns success true",
+  "Public marketplace search works",
+  "Course catalog works",
+  "Institute compare works",
+  "Listing draft is auto-publish off",
+  "Demo/callback lead draft requires consent",
+  "Trust score/review moderation works",
+  "Marketplace approval blocks public publish",
+  "Role scoped summary hides sensitive data",
+  "VANI marketplace command works",
+  "Previous Part 1–107 routes remain preserved"
+];
+
+app.get("/api/part108/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 108 — Complete Institute Marketplace",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 108,
+    nextPart: "Part 109 — White-Label System",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/complete-institute-marketplace", "/institute-marketplace", "/marketplace", "/naxora-marketplace", "/vani-marketplace", "/public-course-marketplace"],
+    apiRoutes: [
+      "/api/part108/config", "/api/part108/features", "/api/part108/roles", "/api/part108/access-check",
+      "/api/part108/search", "/api/part108/course-catalog", "/api/part108/compare", "/api/part108/listing-draft",
+      "/api/part108/lead-draft", "/api/part108/trust-score", "/api/part108/review-moderation-preview",
+      "/api/part108/approval-preview", "/api/part108/analytics", "/api/part108/privacy-policy",
+      "/api/part108/vani/greeting", "/api/part108/vani/command"
+    ],
+    completeInstituteMarketplaceEnabled: true
+  });
+});
+
+app.get("/api/part108/config", (req, res) => res.json({
+  success: true,
+  appName: "Complete Institute Marketplace",
+  appType: "complete_institute_marketplace_foundation",
+  version: "2.0-complete-institute-marketplace",
+  policy: { publicDataOnly: true, noAutoPublish: true, noAutoAdmission: true, noAutoPayment: true, consentRequiredForLeads: true, ownerVerificationForPublish: true }
+}));
+
+app.get("/api/part108/features", (req, res) => res.json({ success: true, features: part108MarketplaceFeatures }));
+app.get("/api/part108/roles", (req, res) => res.json({ success: true, roles: part108RoleRules }));
+app.get("/api/part108/access-check", (req, res) => res.json({ success: true, access: part108AccessCheck(req.query || {}) }));
+app.get("/api/part108/search", (req, res) => res.json({ success: true, searchResults: part108SearchInstitutes(req.query || {}) }));
+app.get("/api/part108/course-catalog", (req, res) => res.json({ success: true, courseCatalog: part108CourseCatalog(req.query || {}) }));
+app.get("/api/part108/compare", (req, res) => res.json({ success: true, comparison: part108CompareListings(String(req.query.listingIds || "").split(",").filter(Boolean)) }));
+
+app.get("/api/part108/listing-draft", (req, res) => {
+  const access = part108AccessCheck(req.query || {});
+  if (!access.allowed || !access.canManageListing) return res.status(403).json({ success: false, access, message: "Listing draft not allowed for this role." });
+  res.json({ success: true, access, listingDraft: part108ListingDraft(access, req.query || {}) });
+});
+
+app.get("/api/part108/lead-draft", (req, res) => {
+  const access = part108AccessCheck(req.query || {});
+  if (!access.allowed || !access.canCreateLead) return res.status(403).json({ success: false, access, message: "Lead draft not allowed for this role." });
+  res.json({ success: true, access, leadDraft: part108LeadDraft(access, req.query || {}) });
+});
+
+app.get("/api/part108/trust-score", (req, res) => res.json({ success: true, trustScore: part108TrustScore(req.query.listingId || "LIST-DEMO-001") }));
+
+app.get("/api/part108/review-moderation-preview", (req, res) => {
+  const access = part108AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, reviewModerationPreview: part108ReviewModerationPreview(access, req.query || {}) });
+});
+
+app.get("/api/part108/approval-preview", (req, res) => {
+  const access = part108AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, marketplaceApproval: part108MarketplaceApproval(access, req.query || {}) });
+});
+
+app.get("/api/part108/analytics", (req, res) => {
+  const access = part108AccessCheck(req.query || {});
+  if (!access.allowed || !access.canViewLeads) return res.status(403).json({ success: false, access, message: "Marketplace analytics not allowed for this role." });
+  res.json({ success: true, access, marketplaceAnalytics: part108MarketplaceAnalytics(access) });
+});
+
+app.get("/api/part108/role-scoped-summary", (req, res) => {
+  const access = part108AccessCheck(req.query || {});
+  if (!access.allowed) return res.status(403).json({ success: false, access, message: access.reason });
+  res.json({ success: true, access, roleScopedSummary: part108RoleScopedSummary(access) });
+});
+
+app.get("/api/part108/privacy-policy", (req, res) => res.json({ success: true, privacyPolicy: part108PrivacyPolicy() }));
+
+app.get("/api/part108/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI Marketplace",
+    greeting: "Namaste, main VANI Institute Marketplace Assistant hoon. Aap institute search, course catalog, comparison, listing draft, demo lead, trust score ya approval workflow pooch sakte ho.",
+    exampleCommands: [
+      "VANI, Delhi me Class 10 Maths institutes dhoondo",
+      "VANI, course catalog dikhao",
+      "VANI, institutes compare karo",
+      "VANI, marketplace listing draft banao",
+      "VANI, demo callback lead draft banao",
+      "VANI, marketplace privacy policy batao"
+    ],
+    safety: "Private data public nahi hoga. Listing publish, review publish, featured payment aur marketplace export owner verification ke bina nahi honge."
+  });
+});
+
+app.post("/api/part108/vani/command", (req, res) => {
+  const body = req.body || {};
+  const result = part108BuildMarketplace({
+    command: body.command || body.q || "",
+    role: body.role || "guest",
+    instituteId: body.instituteId,
+    branchId: body.branchId,
+    assignedBranchId: body.assignedBranchId,
+    listingId: body.listingId,
+    studentId: body.studentId,
+    parentId: body.parentId,
+    body
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 108 — Complete Institute Marketplace", ...result });
+});
+
+app.get("/api/part108/vani/command", (req, res) => {
+  const result = part108BuildMarketplace({
+    command: req.query.command || req.query.q || "",
+    role: req.query.role || "guest",
+    instituteId: req.query.instituteId,
+    branchId: req.query.branchId,
+    assignedBranchId: req.query.assignedBranchId,
+    listingId: req.query.listingId,
+    studentId: req.query.studentId,
+    parentId: req.query.parentId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 108 — Complete Institute Marketplace", ...result });
+});
+
+app.get("/api/part108/audit-log", (req, res) => res.json({
+  success: true,
+  auditLog: [
+    { event: "marketplace_preview", role: "guest", createdAt: new Date().toISOString() },
+    { event: "no_auto_publish_policy", rule: "Marketplace listing/review publish requires owner verification.", createdAt: new Date().toISOString() }
+  ]
+}));
+
+app.get("/api/part108/activity", (req, res) => res.json({
+  success: true,
+  activity: [
+    { type: "complete_institute_marketplace_created", message: "Part 108 Complete Institute Marketplace active.", createdAt: new Date().toISOString() },
+    { type: "public_discovery_ready", message: "Search, catalog, compare and lead drafts are ready in preview mode.", createdAt: new Date().toISOString() }
+  ]
+}));
+
+app.get("/api/part108/checklist", (req, res) => res.json({ success: true, checklist: part108Checklist }));
+
+app.get("/api/part108/export", (req, res) => res.json({
+  success: true,
+  exportType: "part108-complete-institute-marketplace-readiness",
+  ownerVerificationRequiredForSensitiveExports: true,
+  generatedAt: new Date().toISOString(),
+  data: { features: part108MarketplaceFeatures, roles: part108RoleRules, checklist: part108Checklist, privacyPolicy: part108PrivacyPolicy() }
+}));
+
+app.get("/api/part108/demo", (req, res) => {
+  const command = "VANI, Delhi me Class 10 Maths institutes dhoondo aur compare karo";
+  const result = part108BuildMarketplace({ command, role: "guest", body: { city: "Delhi", className: "Class 10", subject: "Maths", demoOnly: "true" } });
+  res.json({ success: true, demo: { command, result, nextPart: "Part 109 — White-Label System" } });
+});
+// ================= END PART 108 =================
+
 
 
 
