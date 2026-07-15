@@ -1,33 +1,34 @@
 # NAXORA Master Progress Record
 
 ## Latest completed part
-Part 90 — AI Course Recommendation
+Part 91 — Fee and Batch Information Assistant
 
 ## Date completed
 2026-07-15
 
 ## Feature name
-NAXORA OS 2.0 AI Course Recommendation
+NAXORA OS 2.0 Fee and Batch Information Assistant
 
 ## Files changed
 - backend/src/server.js
-- frontend/ai-course-recommendation.html
-- frontend/ai-course-recommendation.css
-- frontend/ai-course-recommendation.js
-- README_PART90_AI_COURSE_RECOMMENDATION.md
-- START_HERE_PART90_ARUN.md
-- docs/PART90_AI_COURSE_RECOMMENDATION_CHECKLIST.md
+- frontend/fee-batch-information-assistant.html
+- frontend/fee-batch-information-assistant.css
+- frontend/fee-batch-information-assistant.js
+- README_PART91_FEE_BATCH_INFORMATION_ASSISTANT.md
+- START_HERE_PART91_ARUN.md
+- docs/PART91_FEE_BATCH_INFORMATION_ASSISTANT_CHECKLIST.md
 - docs/NAXORA_MASTER_PROGRESS_RECORD.md
 
 ## Database/API changes
 No required database migration.
-Added `/api/part90/*` AI Course Recommendation APIs.
+Added `/api/part91/*` Fee and Batch Information APIs.
 
 ## VANI commands added
-- VANI, Aman Class 10 Maths board exam ke liye course recommend karo budget 3500
-- VANI, Riya Class 11 Physics JEE ke liye best course batao
-- VANI, English communication ke liye course recommend karo
-- VANI, weak maths revision ke liye batch suggest karo
+- VANI, Class 10 Maths ki fee aur batch timing batao
+- VANI, JEE foundation ka batch aur fee batao
+- VANI, weekend revision batch available hai?
+- VANI, Class 10 Science installment preview dikhao
+- VANI, demo slot preview banao
 
 ## Tests passed
 - backend/src/server.js syntax check
@@ -38,13 +39,14 @@ Added `/api/part90/*` AI Course Recommendation APIs.
 - no secrets/API keys
 
 ## Errors remaining
-- Rule-based foundation only; external LLM integration pending.
+- Rule-based foundation only.
 - Production DB write pending.
-- Real batch availability integration pending.
+- Real batch capacity sync pending.
+- Real demo booking pending Part 92.
 - Browser mic support depends on permission/support.
 
 ## Next part
-Part 91 — Fee and Batch Information Assistant
+Part 92 — Automatic Demo-Class Booking
 
 ## Locked subscription rule
 NAXORA OS 1.0, 2.0 and future 3.0 have separate subscriptions.

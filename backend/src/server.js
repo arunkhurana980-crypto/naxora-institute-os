@@ -10339,6 +10339,12 @@ const modulePageRoutes = {
   "/course-fit-ai": "ai-course-recommendation.html",
   "/ai-course-finder": "ai-course-recommendation.html",
   "/course-recommender": "ai-course-recommendation.html",
+  "/fee-batch-information-assistant": "fee-batch-information-assistant.html",
+  "/fee-batch-assistant": "fee-batch-information-assistant.html",
+  "/fee-and-batch-info": "fee-batch-information-assistant.html",
+  "/batch-fee-assistant": "fee-batch-information-assistant.html",
+  "/vani-fee-batch-info": "fee-batch-information-assistant.html",
+  "/fee-batch-ai": "fee-batch-information-assistant.html",
 };
 
 for (const [route, fileName] of Object.entries(modulePageRoutes)) {
@@ -16945,6 +16951,657 @@ app.get("/api/part90/demo", (req, res) => {
   });
 });
 // ================= END PART 90 =================
+
+// ================= PART 91 — FEE AND BATCH INFORMATION ASSISTANT =================
+// NAXORA OS 2.0 Fee and Batch Information Assistant.
+// This part answers fee structure, batch timing, seats, eligibility, installment
+// preview and demo-slot information. It is preview-only and never commits fee,
+// discount, admission, booking, refund or seat allotment without confirmation.
+
+const part91CourseBatchCatalog = [
+  {
+    courseId: "CRS-FOUNDATION-8-9",
+    courseName: "Foundation Skill Builder",
+    className: "Class 8-9",
+    subjects: ["maths", "science", "english"],
+    monthlyFeePreview: 2500,
+    registrationFeePreview: 500,
+    duration: "3 months starter plan",
+    batches: [
+      { batchId: "BAT-FND-EVE", name: "Foundation Evening", days: "Mon/Wed/Fri", time: "5:00 PM - 6:15 PM", mode: "offline", seatsPreview: 8 },
+      { batchId: "BAT-FND-WKD", name: "Foundation Weekend", days: "Sat/Sun", time: "11:00 AM - 12:30 PM", mode: "hybrid", seatsPreview: 5 }
+    ]
+  },
+  {
+    courseId: "CRS-BOARD-10",
+    courseName: "Class 10 Board Booster",
+    className: "Class 10",
+    subjects: ["maths", "science", "english", "sst"],
+    monthlyFeePreview: 3500,
+    registrationFeePreview: 700,
+    duration: "4 months board plan",
+    batches: [
+      { batchId: "BAT-10-MATH-A", name: "Class 10 Maths A", days: "Mon/Wed/Fri", time: "6:00 PM - 7:30 PM", mode: "offline", seatsPreview: 6 },
+      { batchId: "BAT-10-SCI-A", name: "Class 10 Science A", days: "Tue/Thu/Sat", time: "6:00 PM - 7:30 PM", mode: "offline", seatsPreview: 4 },
+      { batchId: "BAT-10-FAST", name: "Class 10 Fast Track", days: "Daily", time: "7:30 PM - 8:45 PM", mode: "hybrid", seatsPreview: 3 }
+    ]
+  },
+  {
+    courseId: "CRS-SENIOR-11-12",
+    courseName: "Senior Board + Concept Support",
+    className: "Class 11-12",
+    subjects: ["physics", "chemistry", "maths", "biology", "commerce", "accounts"],
+    monthlyFeePreview: 4500,
+    registrationFeePreview: 1000,
+    duration: "6 months concept plan",
+    batches: [
+      { batchId: "BAT-12-PCM", name: "Class 12 PCM", days: "Mon/Wed/Fri", time: "4:30 PM - 6:00 PM", mode: "offline", seatsPreview: 7 },
+      { batchId: "BAT-11-BIO", name: "Class 11 Biology", days: "Tue/Thu/Sat", time: "5:00 PM - 6:30 PM", mode: "hybrid", seatsPreview: 5 }
+    ]
+  },
+  {
+    courseId: "CRS-COMPETITIVE",
+    courseName: "Competitive Exam Foundation",
+    className: "Class 11-12/Dropper",
+    subjects: ["physics", "chemistry", "maths", "biology"],
+    monthlyFeePreview: 6500,
+    registrationFeePreview: 1500,
+    duration: "6 months intensive plan",
+    batches: [
+      { batchId: "BAT-JEE-FND", name: "JEE Foundation", days: "Mon/Wed/Fri/Sun", time: "6:30 PM - 8:30 PM", mode: "hybrid", seatsPreview: 4 },
+      { batchId: "BAT-NEET-FND", name: "NEET Foundation", days: "Tue/Thu/Sat/Sun", time: "6:30 PM - 8:30 PM", mode: "hybrid", seatsPreview: 5 }
+    ]
+  },
+  {
+    courseId: "CRS-DOUBT-REVISION",
+    courseName: "Doubt Solving + Revision Plan",
+    className: "Class 8-12",
+    subjects: ["maths", "science", "physics", "chemistry", "biology", "english", "sst", "commerce", "accounts"],
+    monthlyFeePreview: 1800,
+    registrationFeePreview: 300,
+    duration: "1 month rolling plan",
+    batches: [
+      { batchId: "BAT-DOUBT-WKD", name: "Weekend Doubt Clinic", days: "Sat/Sun", time: "4:00 PM - 6:00 PM", mode: "offline", seatsPreview: 10 },
+      { batchId: "BAT-REV-ONLINE", name: "Online Revision Support", days: "Tue/Thu", time: "8:00 PM - 9:00 PM", mode: "online", seatsPreview: 12 }
+    ]
+  }
+];
+
+const part91Features = [
+  {
+    key: "fee_structure_lookup",
+    name: "Fee Structure Lookup",
+    summary: "Shows course fee preview, registration fee preview and duration.",
+    problemSolved: "Counsellor can answer fee questions quickly without searching."
+  },
+  {
+    key: "batch_timing_lookup",
+    name: "Batch Timing Lookup",
+    summary: "Shows days, time, mode and seats preview for batches.",
+    problemSolved: "Parents/students can get clear timing options."
+  },
+  {
+    key: "course_fee_batch_combiner",
+    name: "Course + Fee + Batch Combined View",
+    summary: "Connects course info with fee and batch availability in one answer.",
+    problemSolved: "Admission counselling becomes faster."
+  },
+  {
+    key: "installment_preview",
+    name: "Installment Preview",
+    summary: "Shows monthly/quarterly/full plan preview.",
+    problemSolved: "Fee planning can be discussed safely without commitment."
+  },
+  {
+    key: "demo_slot_preview",
+    name: "Demo Slot Preview",
+    summary: "Suggests demo class slot from matching batch.",
+    problemSolved: "Demo booking preview becomes easier."
+  },
+  {
+    key: "eligibility_preview",
+    name: "Eligibility Preview",
+    summary: "Checks class/subject fit against available courses.",
+    problemSolved: "Wrong course suggestions reduce."
+  },
+  {
+    key: "vani_fee_batch_info",
+    name: "VANI Fee and Batch Information",
+    summary: "Hindi/Hinglish voice answers for fee, batch and demo info.",
+    problemSolved: "Staff can ask naturally and get structured answers."
+  }
+];
+
+const part91RoleRules = [
+  { role: "institute_owner", allowed: true, scope: "Full authorised fee and batch information.", canApproveSensitive: true },
+  { role: "branch_manager", allowed: true, scope: "Assigned branch fee/batch information only.", canApproveSensitive: false },
+  { role: "receptionist_counsellor", allowed: true, scope: "Course, batch, fee preview and demo information for counselling.", canApproveSensitive: false },
+  { role: "accountant", allowed: true, scope: "Fee structure and installment preview only.", canApproveSensitive: false },
+  { role: "teacher", allowed: true, previewOnly: true, scope: "Assigned batch timing and academic info preview only.", canApproveSensitive: false },
+  { role: "student", allowed: true, safeOnly: true, scope: "Own/public fee and batch safe information only.", canApproveSensitive: false },
+  { role: "parent", allowed: true, safeOnly: true, scope: "Linked child/public fee and batch safe information only.", canApproveSensitive: false },
+  { role: "naxora_super_admin", allowed: false, scope: "Platform support only; no unrestricted institute fee/batch access.", canApproveSensitive: false }
+];
+
+function normalizePart91Role(role) {
+  const r = String(role || "receptionist_counsellor").toLowerCase().trim().replace(/\s+/g, "_");
+  if (["owner", "instituteowner", "institute_owner"].includes(r)) return "institute_owner";
+  if (["branchmanager", "branch_manager"].includes(r)) return "branch_manager";
+  if (["receptionist", "counsellor", "receptionist_counsellor", "admission_counsellor"].includes(r)) return "receptionist_counsellor";
+  return r;
+}
+
+function part91AccessCheck({ role, instituteId, branchId }) {
+  const normalizedRole = normalizePart91Role(role);
+  const rule = part91RoleRules.find((r) => r.role === normalizedRole) || {
+    role: normalizedRole,
+    allowed: false,
+    scope: "Unknown or unsupported role.",
+    canApproveSensitive: false
+  };
+  const hasInstituteId = Boolean(String(instituteId || "").trim());
+  const allowed = Boolean(rule.allowed && hasInstituteId && normalizedRole !== "naxora_super_admin");
+  return {
+    role: normalizedRole,
+    instituteId: instituteId || null,
+    branchId: branchId || null,
+    allowed,
+    previewOnly: Boolean(rule.previewOnly),
+    safeOnly: Boolean(rule.safeOnly),
+    canApproveSensitive: Boolean(rule.canApproveSensitive),
+    scope: rule.scope,
+    reason: !hasInstituteId
+      ? "Institute ID missing."
+      : !rule.allowed
+        ? rule.scope
+        : rule.safeOnly
+          ? "Safe fee and batch information only. No admission, discount or seat booking from this role."
+          : rule.previewOnly
+            ? "Preview allowed only. Final admission/seat/fee action requires counsellor/owner."
+            : "Fee and batch information access allowed.",
+    requiresLogin: true,
+    requiresInstituteId: true,
+    confirmationRequiredFor: ["demo_book", "seat_hold", "admission_create", "followup_send"],
+    ownerVerificationRequiredFor: ["discount", "fee_change", "refund", "delete", "export", "subscription_change"]
+  };
+}
+
+function part91ParseQuery(text = "", body = {}) {
+  const input = String(text || body.command || body.q || "").trim();
+  const classMatch = input.match(/class\s*([0-9]{1,2})/i);
+  const subjectMatch = input.match(/\b(maths|math|science|english|physics|chemistry|biology|commerce|accounts|sst|social science)\b/i);
+  const goal = /jee/i.test(input) ? "jee" :
+    /neet/i.test(input) ? "neet" :
+    /board|marks/i.test(input) ? "board exam" :
+    /doubt|revision|weak/i.test(input) ? "revision" :
+    /foundation/i.test(input) ? "foundation" : null;
+  const timing = /weekend|sunday|sat/i.test(input) ? "weekend" :
+    /evening|shaam|after school/i.test(input) ? "evening" :
+    /morning|subah/i.test(input) ? "morning" :
+    /online/i.test(input) ? "online" : null;
+  const infoType = /fee|fees|installment|payment|amount/i.test(input) ? "fee" :
+    /batch|timing|time|seat|slot/i.test(input) ? "batch" :
+    /demo/i.test(input) ? "demo" :
+    /eligibility|eligible/i.test(input) ? "eligibility" : "combined";
+  const nameMatch = input.match(/(?:student|name|for)\s+([A-Z][a-zA-Z]{2,20})/) || input.match(/\b([A-Z][a-zA-Z]{2,20})\b/);
+  return {
+    studentName: body.studentName || nameMatch?.[1] || null,
+    className: body.className || (classMatch ? `Class ${classMatch[1]}` : null),
+    subject: body.subject || (subjectMatch ? subjectMatch[1].toLowerCase().replace("math", "maths").replace("social science", "sst") : null),
+    goal: body.goal || goal,
+    preferredTiming: body.preferredTiming || timing,
+    infoType: body.infoType || infoType,
+    rawCommand: input
+  };
+}
+
+function part91MissingDetails(query = {}) {
+  const missing = [];
+  if (!query.className && !query.subject && !query.goal) {
+    missing.push({ key: "courseContext", question: "Kaunsi class, subject ya course ke liye fee/batch info chahiye?" });
+  }
+  return missing;
+}
+
+function part91ScoreCourse(course, query = {}) {
+  let score = 10;
+  const reasons = [];
+  const cls = String(query.className || "").toLowerCase();
+  const subject = String(query.subject || "").toLowerCase();
+  const goal = String(query.goal || "").toLowerCase();
+  const timing = String(query.preferredTiming || "").toLowerCase();
+
+  if (cls && course.className.toLowerCase().includes(cls.replace("class ", ""))) {
+    score += 35;
+    reasons.push("class match");
+  }
+  if (subject && course.subjects.includes(subject)) {
+    score += 30;
+    reasons.push("subject match");
+  }
+  if (goal === "jee" && course.courseId === "CRS-COMPETITIVE") {
+    score += 25;
+    reasons.push("competitive goal match");
+  }
+  if (goal === "neet" && course.courseId === "CRS-COMPETITIVE") {
+    score += 25;
+    reasons.push("competitive goal match");
+  }
+  if (goal === "board exam" && course.courseId === "CRS-BOARD-10") {
+    score += 20;
+    reasons.push("board exam fit");
+  }
+  if (goal === "revision" && course.courseId === "CRS-DOUBT-REVISION") {
+    score += 20;
+    reasons.push("revision/doubt fit");
+  }
+  if (timing && course.batches.some((b) => b.days.toLowerCase().includes(timing) || b.mode.toLowerCase().includes(timing))) {
+    score += 5;
+    reasons.push("timing/mode fit");
+  }
+  return {
+    courseId: course.courseId,
+    courseName: course.courseName,
+    score: Math.min(100, score),
+    reasons,
+    course
+  };
+}
+
+function part91FindMatches(query = {}) {
+  return part91CourseBatchCatalog
+    .map((course) => part91ScoreCourse(course, query))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
+}
+
+function part91InstallmentPreview(course = {}) {
+  const monthly = Number(course.monthlyFeePreview || 0);
+  const registration = Number(course.registrationFeePreview || 0);
+  return {
+    previewOnly: true,
+    currency: "INR",
+    registrationFeePreview: registration,
+    monthlyPlan: {
+      firstMonthPreview: monthly + registration,
+      monthlyFeePreview: monthly,
+      note: "Registration + first month preview only."
+    },
+    quarterlyPlan: {
+      totalPreview: monthly * 3 + registration,
+      note: "Quarterly preview; final discount/offer requires owner approval."
+    },
+    fullCoursePlan: {
+      totalPreview: monthly * 4 + registration,
+      note: "Estimated preview based on starter duration. Final plan depends on institute policy."
+    },
+    safety: "No fee commitment, discount or receipt without authorised confirmation."
+  };
+}
+
+function part91DemoSlotPreview(course = {}, query = {}) {
+  const preferred = String(query.preferredTiming || "").toLowerCase();
+  const batch = course.batches?.find((b) => preferred && (b.days.toLowerCase().includes(preferred) || b.mode.toLowerCase().includes(preferred))) || course.batches?.[0];
+  return {
+    previewOnly: true,
+    demoId: `DEMO-FEE-BATCH-${Date.now()}`,
+    suggestedBatchId: batch?.batchId || null,
+    suggestedBatchName: batch?.name || "Demo Batch",
+    suggestedSlot: batch ? `${batch.days}, ${batch.time}` : "Tomorrow 5:00 PM",
+    mode: batch?.mode || "offline_or_online",
+    confirmationRequired: true,
+    note: "Final demo booking confirmation ke bina nahi hoga."
+  };
+}
+
+function part91EligibilityPreview(course = {}, query = {}) {
+  const classOk = query.className ? course.className.toLowerCase().includes(String(query.className).toLowerCase().replace("class ", "")) : true;
+  const subjectOk = query.subject ? course.subjects.includes(String(query.subject).toLowerCase()) : true;
+  return {
+    previewOnly: true,
+    eligiblePreview: Boolean(classOk && subjectOk),
+    classFit: classOk,
+    subjectFit: subjectOk,
+    note: classOk && subjectOk
+      ? "Student details is course ke liye suitable preview dikhate hain."
+      : "Course fit weak hai. Alternative course recommend karna better hoga."
+  };
+}
+
+function part91BuildInfo({ command, role, instituteId, branchId, body = {} }) {
+  const access = part91AccessCheck({ role, instituteId, branchId });
+  const query = part91ParseQuery(command, body);
+  const missing = access.allowed ? part91MissingDetails(query) : [];
+  const matches = part91FindMatches(query);
+  const selected = matches[0]?.course || part91CourseBatchCatalog[0];
+  const feeInfo = {
+    previewOnly: true,
+    courseId: selected.courseId,
+    courseName: selected.courseName,
+    className: selected.className,
+    subjects: selected.subjects,
+    duration: selected.duration,
+    monthlyFeePreview: selected.monthlyFeePreview,
+    registrationFeePreview: selected.registrationFeePreview,
+    privateScreenFirst: true
+  };
+  const batchInfo = {
+    previewOnly: true,
+    courseId: selected.courseId,
+    courseName: selected.courseName,
+    batches: selected.batches,
+    seatsArePreviewOnly: true,
+    seatHoldRequiresConfirmation: true
+  };
+  const installmentPreview = part91InstallmentPreview(selected);
+  const demoSlotPreview = part91DemoSlotPreview(selected, query);
+  const eligibilityPreview = part91EligibilityPreview(selected, query);
+
+  let replyText = "";
+  let nextAction = "none";
+  if (!access.allowed) {
+    replyText = "Is role ko fee/batch information access nahi hai.";
+    nextAction = "blocked";
+  } else if (missing.length) {
+    replyText = missing[0].question;
+    nextAction = "ask_missing_detail";
+  } else {
+    replyText = `${selected.courseName} ke liye fee aur batch information preview ready hai. Monthly fee preview ₹${selected.monthlyFeePreview} hai. Final fee, discount, seat hold ya demo booking confirmation ke bina nahi hoga.`;
+    nextAction = access.safeOnly ? "show_safe_info" : "show_fee_batch_preview";
+  }
+
+  return {
+    access,
+    query,
+    missingDetails: missing,
+    matches,
+    selectedCourse: selected,
+    feeInfo,
+    batchInfo,
+    installmentPreview,
+    demoSlotPreview,
+    eligibilityPreview,
+    replyText,
+    spokenSafeSummary: access.safeOnly || feeInfo.privateScreenFirst
+      ? `${selected.courseName} ke liye fee aur batch preview ready hai. Sensitive fee details screen par privately dikhaye gaye hain.`
+      : replyText,
+    privateScreenFirst: true,
+    nextAction,
+    confirmationRequiredFor: ["demo_book", "seat_hold", "admission_create", "followup_send"],
+    ownerVerificationRequiredFor: ["discount", "fee_change", "refund", "delete", "export", "subscription_change"],
+    auditLog: {
+      event: "part91_fee_batch_information",
+      role: access.role,
+      selectedCourse: selected.courseId,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+const part91Checklist = [
+  "Fee and Batch Information Assistant page opens",
+  "Status API returns success true",
+  "Fee structure lookup returns preview-only info",
+  "Batch timing lookup returns days/time/mode",
+  "Installment preview is preview-only",
+  "Demo slot preview requires confirmation",
+  "Eligibility preview works",
+  "VANI fee/batch command works",
+  "Student/parent get safe-only info",
+  "Previous Part 1–90 routes remain preserved"
+];
+
+app.get("/api/part91/status", (req, res) => {
+  res.json({
+    success: true,
+    part: "Part 91 — Fee and Batch Information Assistant",
+    status: "active",
+    versionPhase: "NAXORA OS 2.0",
+    latestCompletedPart: 91,
+    nextPart: "Part 92 — Automatic Demo-Class Booking",
+    preservesPreviousFeatures: true,
+    frontendRoutes: ["/fee-batch-information-assistant", "/fee-batch-assistant", "/fee-and-batch-info", "/batch-fee-assistant", "/vani-fee-batch-info", "/fee-batch-ai"],
+    apiRoutes: [
+      "/api/part91/config",
+      "/api/part91/features",
+      "/api/part91/roles",
+      "/api/part91/access-check",
+      "/api/part91/course-batch-catalog",
+      "/api/part91/query/parse",
+      "/api/part91/fee-structure",
+      "/api/part91/batch-info",
+      "/api/part91/course-fee-batch",
+      "/api/part91/installment-preview",
+      "/api/part91/demo-slot-preview",
+      "/api/part91/eligibility-preview",
+      "/api/part91/vani/greeting",
+      "/api/part91/vani/command"
+    ],
+    feeBatchInformationAssistantEnabled: true
+  });
+});
+
+app.get("/api/part91/config", (req, res) => {
+  res.json({
+    success: true,
+    appName: "Fee and Batch Information Assistant",
+    appType: "fee_batch_info_foundation",
+    version: "2.0-fee-batch-information-assistant",
+    policy: {
+      previewFirst: true,
+      noFeeCommitmentWithoutApproval: true,
+      noSeatHoldWithoutConfirmation: true,
+      noAutoDemoBooking: true,
+      noDiscountCommitmentWithoutOwnerVerification: true
+    }
+  });
+});
+
+app.get("/api/part91/features", (req, res) => {
+  res.json({ success: true, features: part91Features });
+});
+
+app.get("/api/part91/roles", (req, res) => {
+  res.json({ success: true, roles: part91RoleRules });
+});
+
+app.get("/api/part91/access-check", (req, res) => {
+  res.json({ success: true, access: part91AccessCheck(req.query || {}) });
+});
+
+app.get("/api/part91/course-batch-catalog", (req, res) => {
+  res.json({ success: true, previewOnly: true, catalog: part91CourseBatchCatalog });
+});
+
+app.get("/api/part91/query/parse", (req, res) => {
+  const query = part91ParseQuery(req.query.q || req.query.command || "", req.query || {});
+  res.json({ success: true, query, missingDetails: part91MissingDetails(query), matches: part91FindMatches(query) });
+});
+
+app.get("/api/part91/fee-structure", (req, res) => {
+  const result = part91BuildInfo({
+    command: req.query.q || req.query.command || "",
+    role: req.query.role || "receptionist_counsellor",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, ...result });
+  res.json({ success: true, access: result.access, query: result.query, feeInfo: result.feeInfo, installmentPreview: result.installmentPreview, privateScreenFirst: true });
+});
+
+app.get("/api/part91/batch-info", (req, res) => {
+  const result = part91BuildInfo({
+    command: req.query.q || req.query.command || "",
+    role: req.query.role || "receptionist_counsellor",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, ...result });
+  res.json({ success: true, access: result.access, query: result.query, batchInfo: result.batchInfo });
+});
+
+app.get("/api/part91/course-fee-batch", (req, res) => {
+  const result = part91BuildInfo({
+    command: req.query.q || req.query.command || "",
+    role: req.query.role || "receptionist_counsellor",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, ...result });
+  res.json({ success: true, ...result });
+});
+
+app.post("/api/part91/course-fee-batch", (req, res) => {
+  const body = req.body || {};
+  const result = part91BuildInfo({
+    command: body.q || body.command || "",
+    role: body.role || "receptionist_counsellor",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId,
+    body
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, ...result });
+  res.json({ success: true, ...result });
+});
+
+app.get("/api/part91/installment-preview", (req, res) => {
+  const result = part91BuildInfo({
+    command: req.query.q || req.query.command || "",
+    role: req.query.role || "accountant",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, ...result });
+  res.json({ success: true, access: result.access, selectedCourse: result.selectedCourse, installmentPreview: result.installmentPreview });
+});
+
+app.get("/api/part91/demo-slot-preview", (req, res) => {
+  const result = part91BuildInfo({
+    command: req.query.q || req.query.command || "",
+    role: req.query.role || "receptionist_counsellor",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed || result.access.safeOnly) return res.status(403).json({ success: false, ...result, message: result.access.safeOnly ? "Safe-only role cannot create demo booking preview." : result.access.reason });
+  res.json({ success: true, access: result.access, selectedCourse: result.selectedCourse, demoSlotPreview: result.demoSlotPreview });
+});
+
+app.get("/api/part91/eligibility-preview", (req, res) => {
+  const result = part91BuildInfo({
+    command: req.query.q || req.query.command || "",
+    role: req.query.role || "receptionist_counsellor",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, ...result });
+  res.json({ success: true, access: result.access, query: result.query, selectedCourse: result.selectedCourse, eligibilityPreview: result.eligibilityPreview });
+});
+
+app.get("/api/part91/vani/greeting", (req, res) => {
+  res.json({
+    success: true,
+    assistant: "VANI Fee and Batch Information",
+    greeting: "Namaste, main VANI Fee aur Batch Information Assistant hoon. Aap class, subject ya course batayein, main fee preview aur batch timing bataungi.",
+    exampleCommands: [
+      "VANI, Class 10 Maths ki fee aur batch timing batao",
+      "VANI, JEE foundation ka batch aur fee batao",
+      "VANI, weekend revision batch available hai?",
+      "VANI, Class 10 Science installment preview dikhao",
+      "VANI, demo slot preview banao"
+    ],
+    safety: "Final fee commitment, discount, seat hold ya demo booking confirmation ke bina nahi hoga."
+  });
+});
+
+app.post("/api/part91/vani/command", (req, res) => {
+  const body = req.body || {};
+  const result = part91BuildInfo({
+    command: body.command || body.q || "",
+    role: body.role || "receptionist_counsellor",
+    instituteId: body.instituteId || "NX-DEMO-INST-001",
+    branchId: body.branchId,
+    body
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 91 — Fee and Batch Information Assistant", ...result });
+});
+
+app.get("/api/part91/vani/command", (req, res) => {
+  const result = part91BuildInfo({
+    command: req.query.command || req.query.q || "",
+    role: req.query.role || "receptionist_counsellor",
+    instituteId: req.query.instituteId || "NX-DEMO-INST-001",
+    branchId: req.query.branchId,
+    body: req.query || {}
+  });
+  if (!result.access.allowed) return res.status(403).json({ success: false, assistant: "VANI", ...result });
+  res.json({ success: true, assistant: "VANI", part: "Part 91 — Fee and Batch Information Assistant", ...result });
+});
+
+app.get("/api/part91/audit-log", (req, res) => {
+  res.json({
+    success: true,
+    auditLog: [
+      { event: "fee_batch_information_preview", role: "receptionist_counsellor", createdAt: new Date().toISOString() },
+      { event: "no_fee_commitment_policy", rule: "Fee, discount, seat hold and demo booking require confirmation.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part91/activity", (req, res) => {
+  res.json({
+    success: true,
+    activity: [
+      { type: "fee_batch_assistant_created", message: "Part 91 Fee and Batch Information Assistant active.", createdAt: new Date().toISOString() },
+      { type: "private_screen_first_fee", message: "Fee details are preview-only and private-screen-first.", createdAt: new Date().toISOString() }
+    ]
+  });
+});
+
+app.get("/api/part91/checklist", (req, res) => {
+  res.json({ success: true, checklist: part91Checklist });
+});
+
+app.get("/api/part91/export", (req, res) => {
+  res.json({
+    success: true,
+    exportType: "part91-fee-batch-information-assistant-readiness",
+    ownerVerificationRequiredForSensitiveExports: true,
+    generatedAt: new Date().toISOString(),
+    data: {
+      features: part91Features,
+      roles: part91RoleRules,
+      catalog: part91CourseBatchCatalog,
+      checklist: part91Checklist
+    }
+  });
+});
+
+app.get("/api/part91/demo", (req, res) => {
+  const command = "VANI, Class 10 Maths ki fee aur batch timing batao";
+  const result = part91BuildInfo({
+    command,
+    role: "receptionist_counsellor",
+    instituteId: "NX-DEMO-INST-001",
+    body: {}
+  });
+  res.json({
+    success: true,
+    demo: {
+      command,
+      result,
+      nextPart: "Part 92 — Automatic Demo-Class Booking"
+    }
+  });
+});
+// ================= END PART 91 =================
+
 
 
 
