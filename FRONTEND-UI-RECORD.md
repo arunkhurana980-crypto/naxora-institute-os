@@ -1,36 +1,23 @@
-# Frontend UI Record — Part 116
+# Frontend UI Record — Part 117
 
 ## Main page
-`/subscription-access-control`
+`/vani-subscription-manager`
 
 Aliases:
-- `/feature-access-control`
-- `/part116`
+- `/subscription-manager`
+- `/part117`
 
 ## UI
-- Detect any logged-in role JWT.
-- Show current base plan.
-- Show separate V3 status.
-- Show role entitlement count.
-- Show authenticated plans waiting for active.
-- Check any feature.
-- Test backend gate.
-- Generate role-safe navigation.
-- Show plan/role catalogue.
-- Ask VANI about access.
+1. Detect owner JWT.
+2. Enter private Owner Action Secret.
+3. Load current Subscriptions.
+4. Select action.
+5. Select target plan when required.
+6. Create safe preview.
+7. Review billing/access impact.
+8. Check exact confirmation.
+9. Execute Test action.
+10. Wait for webhook and access recalculation.
+11. Review action history.
 
-## Reusable client
-`/naxora-subscription-access-client.js`
-
-```html
-<script src="/naxora-subscription-access-client.js"></script>
-<button data-naxora-feature="fees.manage">Fees</button>
-<script>
-  NaxoraSubscriptionAccess.configure({
-    token: existingJwt,
-    instituteId: currentInstituteId
-  }).apply();
-</script>
-```
-
-Protected backend APIs must also use the Part 116 middleware.
+The owner-verification field uses password input and is not stored in browser storage.

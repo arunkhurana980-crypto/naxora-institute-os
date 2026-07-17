@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NAXORA Part 117 — VANI Subscription Manager</title>
+  <link rel="stylesheet" href="/vani-subscription-manager.css" />
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">NAXORA Institute OS • Part 117</p>
+        <h1>VANI Subscription Manager</h1>
+        <p class="lead">Owner subscription ko VANI se samajh, preview aur Test Mode me safely manage kar sakta hai—exact confirmation aur private owner verification ke saath.</p>
+      </div>
+      <aside class="status-card">
+        <span id="modeBadge" class="badge">Checking…</span>
+        <strong id="statusHeadline">Loading manager status</strong>
+        <small id="statusText">Live actions Part 118 tak locked hain.</small>
+      </aside>
+    </section>
+
+    <section class="warning">
+      <strong>Private verification:</strong> Owner Action Secret ko VANI, chat, screenshot ya GitHub me mat daalna. Sirf private password field aur Render Environment use karo.
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Owner Session</p>
+        <h2>Verified control access</h2>
+        <label>Institute ID
+          <input id="instituteId" value="NX-DEMO-INST-001" autocomplete="off" />
+        </label>
+        <label>Owner JWT — private
+          <input id="jwtToken" type="password" placeholder="Existing institute_owner token" autocomplete="off" />
+        </label>
+        <label>Owner Action Secret — private
+          <input id="ownerActionSecret" type="password" placeholder="Never speak or screenshot this" autocomplete="new-password" />
+        </label>
+        <div class="buttons">
+          <button id="detectTokenBtn" class="secondary">Detect Token</button>
+          <button id="loadSubscriptionsBtn">Load Subscriptions</button>
+        </div>
+        <pre id="sessionOutput">Waiting…</pre>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Subscriptions</p>
+        <h2>Select current subscription</h2>
+        <label>Current Subscription
+          <select id="localSubscriptionId"><option value="">Load subscriptions first</option></select>
+        </label>
+        <div id="subscriptionCards" class="card-grid"></div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Step 1 • Action</p>
+        <h2>Create safe preview</h2>
+        <label>Action
+          <select id="actionType">
+            <option value="PAUSE_NOW">Pause now</option>
+            <option value="RESUME_NOW">Resume now</option>
+            <option value="CANCEL_CYCLE_END">Cancel at cycle end</option>
+            <option value="CANCEL_NOW">Cancel now — irreversible</option>
+            <option value="CHANGE_PLAN_CYCLE_END">Change plan at cycle end</option>
+            <option value="CHANGE_PLAN_NOW">Change plan now</option>
+          </select>
+        </label>
+        <label id="targetPlanWrap">Target plan
+          <select id="targetLocalPlanId"><option value="">Load target plans first</option></select>
+        </label>
+        <label>Reason
+          <input id="reason" value="Owner requested Test Mode subscription management" />
+        </label>
+        <button id="previewBtn">Create Safe Preview</button>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Step 2 • Review</p>
+        <h2>Access and billing impact</h2>
+        <pre id="previewOutput">No preview yet.</pre>
+        <label>Exact confirmation text
+          <input id="confirmationText" autocomplete="off" placeholder="Preview se exact text copy karo" />
+        </label>
+        <button id="executeBtn">Execute Confirmed Test Action</button>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Global VANI • Owner Only</p>
+        <h2>Subscription conversation</h2>
+        <label>Command
+          <input id="vaniCommand" value="VANI, meri subscription status dikhao" />
+        </label>
+        <button id="askVaniBtn">Ask VANI</button>
+        <pre id="vaniOutput">Waiting…</pre>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Action History</p>
+        <h2>Preview and provider actions</h2>
+        <button id="loadActionsBtn" class="secondary">Load Action History</button>
+        <pre id="actionsOutput">Waiting…</pre>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="eyebrow">Testing Links</p>
+      <div class="links">
+        <a href="/api/part117/status" target="_blank" rel="noreferrer">Status</a>
+        <a href="/api/part117/security-policy" target="_blank" rel="noreferrer">Security Policy</a>
+        <a href="/api/part117/demo" target="_blank" rel="noreferrer">Demo Record</a>
+      </div>
+    </section>
+  </main>
+  <script src="/vani-subscription-manager.js"></script>
+</body>
+</html>

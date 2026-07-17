@@ -1,35 +1,37 @@
-# Feature Explanation — Part 116
+# Feature Explanation — Part 117
 
-## Access formula
+## Supported Test actions
+- Pause now.
+- Resume now.
+- Cancel at cycle end.
+- Cancel now.
+- Change plan at cycle end.
+- Change plan now.
+
+## Safe action flow
 
 ```text
-Valid JWT
-+ matching instituteId
-+ allowed role
-+ verified Part 115 status = active
-+ required base plan or separate V3 subscription
-= feature allowed
+Owner login
+→ instituteId check
+→ current verified status
+→ target plan check
+→ preview
+→ access-impact preview
+→ exact confirmation
+→ private owner verification
+→ Razorpay Test action
+→ Part 115 webhook sync
+→ Part 116 access recalculation
 ```
 
-## Base plans
-- FREE: dashboard and self profile.
-- STARTER: students, attendance, fees, reports, student/parent portals.
-- PROFESSIONAL: Starter plus VANI 2.0, live classes and AI support.
-- BUSINESS: Professional plus branches, franchise, marketing, marketplace and white-label.
+## Why final access does not change directly
+Part 117 does not declare the final subscription status by itself. The provider action is followed by a verified Part 115 webhook. Part 116 then evaluates the verified state.
 
-## Separate V3
-`V3_AI` is evaluated separately and does not replace the base plan.
-
-V3 features require:
-- `institute_owner`,
-- valid instituteId,
-- active V3_AI subscription.
-
-## Enforcement
-- Backend feature-check API.
-- Backend gated test API.
-- Exported Express middleware factory.
-- Role-safe navigation API.
-- Reusable frontend client.
-
-Frontend hiding is convenience only; backend gate is the security boundary.
+## Risk rules
+- Cancel-now is irreversible.
+- Pausing requires an active Subscription.
+- Resuming requires a paused Subscription.
+- Plan changes require an authenticated or active Subscription.
+- Immediate plan change can create a prorated charge or credit/refund adjustment.
+- Cycle-end change avoids an immediate plan switch.
+- Live Mode is blocked until Part 118.

@@ -1,36 +1,52 @@
-# Part 116 Testing Guide
+# Part 117 Testing Guide
 
-## No active subscription
+## Setup
+- Use Razorpay Test Mode.
+- Use a Test Subscription created in Part 114.
+- Part 115 webhook must be configured.
+- Part 116 access engine must be deployed.
+- Configure `NAXORA_OWNER_ACTION_SECRET` privately.
+
+## Pause
+Use an active Test Subscription.
 Expected:
-- base plan FREE,
-- dashboard/profile allowed,
-- paid and V3 features denied.
+- preview ready,
+- exact confirmation required,
+- private verification required,
+- provider accepts pause,
+- webhook changes state,
+- paid access locks after verified sync.
 
-## Authenticated only
+## Resume
+Use a paused Test Subscription.
 Expected:
-- appears under `pendingAuthenticatedPlanCodes`,
-- paid features remain denied.
+- provider accepts resume if supported for the mandate,
+- access restores only after verified state becomes active.
 
-## Active Starter
-Student, attendance, fees and reports become available to allowed roles.
-
-## Active Professional
-Starter features plus VANI 2.0, live classes and AI support.
-
-## Active Business
-Professional features plus branches, franchise, marketing, marketplace and white-label.
-
-## Separate V3
-- Active V3 + owner → V3 allowed.
-- Active V3 + teacher/student/parent → V3 denied.
-- Active V3 without Business → V3 allowed to owner, Business modules denied.
-
-## Direct backend test
-`GET /api/part116/gated/marketplace.manage`
-
+## Cancel at cycle end
 Expected:
-- Business owner: 200.
-- Starter owner: 402.
-- Teacher: 403.
+- provider schedules cancellation,
+- current-cycle behaviour remains provider-controlled,
+- final cancellation arrives through webhook.
 
-Part 116 uses Test Mode evidence until Part 118. Test access is not commercial payment proof.
+## Cancel now
+Expected:
+- irreversible warning,
+- exact confirmation and owner verification,
+- cancelled Subscription cannot be restarted.
+
+## Plan change
+Use an authenticated or active Subscription and another provider-created Part 113 plan.
+- Cycle-end change: scheduled.
+- Immediate change: may generate Test adjustment.
+- Part 116 access waits for verified plan/status sync.
+
+## Negative tests
+- Non-owner token.
+- Wrong instituteId.
+- Wrong confirmation.
+- Wrong owner secret.
+- Live Mode.
+- Invalid state.
+- Same target plan.
+- Duplicate execute request.

@@ -30528,6 +30528,12 @@ registerPart115RazorpayWebhooks({ app });
 const { registerPart116SubscriptionAccess } = await import("./part116-subscription-access-control.js");
 registerPart116SubscriptionAccess({ app });
 
+
+
+// ================= PART 117 — VANI SUBSCRIPTION MANAGER =================
+const { registerPart117VaniSubscriptionManager } = await import("./part117-vani-subscription-manager.js");
+registerPart117VaniSubscriptionManager({ app });
+
 app.use(notFound);
 app.use(errorHandler);
 

@@ -1,40 +1,40 @@
-# Backend API Record — Part 116
+# Backend API Record — Part 117
 
 ## Public
-- `GET /api/part116/status`
-- `GET /api/part116/catalog`
-- `GET /api/part116/security-policy`
-- `GET /api/part116/demo`
-
-## Logged-in role
-- `GET /api/part116/access/me`
-- `GET /api/part116/navigation`
-- `POST /api/part116/access/check`
-- `GET /api/part116/gated/:featureKey`
-- `POST /api/part116/vani/command`
+- `GET /api/part117/status`
+- `GET /api/part117/security-policy`
+- `GET /api/part117/demo`
 
 ## Owner-only
-- `GET /api/part116/institute-access`
-- `POST /api/part116/recalculate`
+- `GET /api/part117/subscriptions`
+- `GET /api/part117/target-plans`
+- `GET /api/part117/actions`
+- `POST /api/part117/action/preview`
+- `POST /api/part117/action/execute-confirmed`
+- `POST /api/part117/vani/command`
 
-## Future-module exports
-- `resolvePart116Access({ instituteId, role, userId })`
-- `createPart116FeatureGate(featureKey)`
+## Required headers
 
-Example:
+```http
+Authorization: Bearer <institute_owner_jwt>
+x-naxora-institute-id: <institute_id>
+```
 
-```js
-import { createPart116FeatureGate } from "./part116-subscription-access-control.js";
+Confirmed sensitive execution also requires:
 
-app.get(
-  "/api/business/branches",
-  createPart116FeatureGate("branches.command_centre"),
-  async (req, res) => res.json({ success: true })
-);
+```http
+x-naxora-owner-action-secret: <private verification value>
 ```
 
 ## Models
-- `Part116AccessSnapshot`
-- `Part116AccessAudit`
+- `Part117SubscriptionAction`
+- `Part117SubscriptionManagerAudit`
 
-Part 116 reads `Part115SubscriptionSyncState`. Only matching evidence with status `active` unlocks paid entitlements.
+## Provider calls
+- Pause: `subscriptions.pause`
+- Resume: `subscriptions.resume`
+- Cancel: `subscriptions.cancel`
+- Plan change: `subscriptions.update`
+
+## Idempotency
+The preview fingerprint contains institute, local Subscription, action type, target plan, current status and reason. An accepted provider action is returned rather than repeated.
