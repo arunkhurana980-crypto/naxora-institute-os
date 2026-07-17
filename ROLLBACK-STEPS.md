@@ -1,21 +1,21 @@
-# Rollback Steps — Part 113
+# Rollback Steps — Part 114
 
 Run:
 
 ```powershell
-node .\ROLLBACK-PART113.js
+node .\ROLLBACK-PART114.js
 node --check .\backend\src\server.js
 ```
 
-Then remove Part 113 new files if required.
+Then optionally remove the new Part 114 backend/frontend files.
 
-After commit, preferred rollback:
+After commit:
 
 ```powershell
-git revert <part-113-commit-sha>
+git revert <part-114-commit-sha>
 git push
 ```
 
-Deploy the reverted commit through Render.
+Render the reverted commit.
 
-Razorpay provider Plans already created cannot be removed by this code. Rollback removes NAXORA Part 113 app integration only.
+Razorpay Test Subscriptions already created at the provider remain Test Dashboard records. App rollback does not claim to delete them.

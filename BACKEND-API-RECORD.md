@@ -1,37 +1,32 @@
-# Backend API Record — Part 113
+# Backend API Record — Part 114
 
 ## Public APIs
-- `GET /api/part113/status`
-- `GET /api/part113/templates`
-- `GET /api/part113/security-policy`
-- `GET /api/part113/demo`
+- `GET /api/part114/status`
+- `GET /api/part114/security-policy`
+- `GET /api/part114/demo`
 
 ## Owner-only APIs
-- `GET /api/part113/readiness`
-- `GET /api/part113/plans/local`
-- `GET /api/part113/plans/provider`
-- `POST /api/part113/plan/preview`
-- `POST /api/part113/plan/create-confirmed`
-- `POST /api/part113/plan/:id/archive-preview`
-- `POST /api/part113/plan/:id/archive-confirm`
-- `POST /api/part113/vani/command`
+- `GET /api/part114/plans`
+- `GET /api/part114/subscriptions/local`
+- `POST /api/part114/subscription/preview`
+- `POST /api/part114/subscription/create-confirmed`
+- `GET /api/part114/checkout/options/:id`
+- `POST /api/part114/checkout/verify`
+- `POST /api/part114/subscription/:id/refresh`
+- `POST /api/part114/vani/command`
 
-Required:
+## Signature verification
+Server computes HMAC SHA-256 from:
 
-```http
-Authorization: Bearer <owner-jwt>
-x-naxora-institute-id: <institute-id>
+```text
+razorpay_payment_id + "|" + server-created razorpay_subscription_id
 ```
 
-## Provider call
-Test Plan creation uses the Razorpay Plans resource with:
-- period
-- interval
-- item name
-- amount in paise
-- INR currency
-- description
-- safe NAXORA notes
+The returned subscription ID must match the ID stored on the server. The Razorpay Key Secret is used only on the backend and is never returned.
 
-## Idempotency
-NAXORA creates a SHA-256 fingerprint from institute, plan code, period, amount, currency and name. Exact duplicates return the existing record instead of creating another provider Plan.
+## MongoDB models
+- `Part114CheckoutSubscription`
+- `Part114CheckoutAudit`
+
+## No payment credential storage
+NAXORA never receives/stores card number, CVV, OTP, UPI PIN or bank credentials. Razorpay Checkout handles those fields.

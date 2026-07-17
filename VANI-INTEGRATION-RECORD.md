@@ -1,22 +1,22 @@
-# VANI Integration Record — Part 113
+# VANI Integration Record — Part 114
 
-## Example commands
-- `VANI, Professional monthly plan price INR 2999 ka preview banao`
-- `VANI, Business yearly plan price ₹29999 ka preview banao`
-- `VANI, subscription plans dikhao`
+## Commands
+- `VANI, Professional subscription checkout ready karo`
+- `VANI, Test subscriptions dikhao`
+- `VANI, subscription status dikhao`
 
-## Missing details behaviour
-If plan name, period or price is missing, VANI asks for it.
-
-## Safety
+## Behaviour
 - Owner-only.
 - instituteId checked.
-- Test Mode only.
-- Preview before creation.
-- Exact confirmation required.
-- Provider secrets not spoken.
-- Live Mode requests blocked.
-- Duplicate creation blocked.
+- VANI asks for plan, billing cycles, test customer details and customer consent.
+- VANI can guide and prepare the flow.
+- VANI cannot authorise the mandate for the customer.
+- Customer must interact with Razorpay Checkout.
+- VANI never asks for CVV, OTP, UPI PIN, card number or bank credentials.
+- Live Mode requests are blocked.
 
-## Current action boundary
-VANI prepares the plan preview. Provider creation is completed through the confirmed action using the exact preview confirmation. Customer subscription/checkout remains Part 114.
+## Action levels
+- Level 1: list/status/readiness.
+- Level 2: checkout preview guidance.
+- Level 3: exact owner confirmation creates Test Subscription.
+- Separate customer action: Razorpay Checkout authorisation.

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NAXORA Part 114 — Test Subscription Checkout</title>
+  <link rel="stylesheet" href="/customer-subscription-checkout.css" />
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">NAXORA Institute OS • Part 114</p>
+        <h1>Customer Subscription Checkout</h1>
+        <p class="lead">Test Plan select karo, preview confirm karo, phir Razorpay ke private Checkout me customer authorisation complete karo.</p>
+      </div>
+      <aside class="status-card">
+        <span id="modeBadge" class="badge">Checking…</span>
+        <strong id="statusHeadline">Loading checkout status</strong>
+        <small id="statusText">Live payments and feature unlock are blocked.</small>
+      </aside>
+    </section>
+
+    <section class="warning">
+      <strong>Test Mode only:</strong> CVV, OTP, UPI PIN, card number ya bank credentials NAXORA/VANI me kabhi mat enter karna. Yeh details sirf Razorpay Checkout me jayengi.
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Owner Session</p>
+        <h2>Protected checkout controls</h2>
+        <label>Institute ID
+          <input id="instituteId" value="NX-DEMO-INST-001" autocomplete="off" />
+        </label>
+        <label>Owner JWT — private
+          <input id="jwtToken" type="password" placeholder="Existing owner login token auto-detect hoga" autocomplete="off" />
+        </label>
+        <div class="buttons">
+          <button id="detectTokenBtn" class="secondary">Detect Token</button>
+          <button id="loadPlansBtn">Load Confirmed Test Plans</button>
+        </div>
+        <pre id="sessionOutput">Waiting…</pre>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Eligible Plans</p>
+        <h2>Part 113 provider-created plans</h2>
+        <div id="planCards" class="plan-grid"></div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Step 1 • Details</p>
+        <h2>Create checkout preview</h2>
+        <label>Plan
+          <select id="localPlanId"><option value="">Load plans first</option></select>
+        </label>
+        <label>Total billing cycles
+          <input id="totalCount" type="number" min="1" value="12" />
+        </label>
+        <label>Test customer name
+          <input id="customerName" value="NAXORA Test Owner" />
+        </label>
+        <label>Test customer email
+          <input id="customerEmail" type="email" value="owner.test@example.com" />
+        </label>
+        <label>Test customer contact
+          <input id="customerContact" inputmode="tel" value="9999999999" />
+        </label>
+        <label class="check"><input id="testDataConfirmed" type="checkbox" /> I confirm this is Test Mode/test contact data.</label>
+        <label class="check"><input id="consentAccepted" type="checkbox" /> Customer authorisation and recurring-payment consent will be completed in Razorpay Checkout.</label>
+        <button id="previewBtn">Create Safe Preview</button>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Step 2 • Confirm</p>
+        <h2>Create Razorpay Test Subscription</h2>
+        <pre id="previewOutput">No preview yet.</pre>
+        <label>Exact confirmation text
+          <input id="confirmationText" placeholder="Preview se exact text copy karo" autocomplete="off" />
+        </label>
+        <button id="createSubscriptionBtn">Create Confirmed Test Subscription</button>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel checkout-panel">
+        <p class="eyebrow">Step 3 • Customer Authorisation</p>
+        <h2>Open Razorpay Test Checkout</h2>
+        <p>Customer khud Razorpay screen par authorisation complete karega. Browser pop-up block ho to address bar se pop-ups allow karo.</p>
+        <button id="openCheckoutBtn">Authorise Test Subscription</button>
+        <pre id="checkoutOutput">Create a confirmed Test Subscription first.</pre>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Step 4 • Verify</p>
+        <h2>Server verification result</h2>
+        <pre id="verificationOutput">Checkout result pending.</pre>
+        <button id="refreshStatusBtn" class="secondary">Refresh Provider Status</button>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Global VANI • Owner Only</p>
+        <h2>Checkout assistant</h2>
+        <label>Command
+          <input id="vaniCommand" value="VANI, Professional subscription checkout ready karo" />
+        </label>
+        <button id="askVaniBtn">Ask VANI</button>
+        <pre id="vaniOutput">Waiting…</pre>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Local Records</p>
+        <h2>Test Subscription history</h2>
+        <button id="loadSubscriptionsBtn" class="secondary">Load Records</button>
+        <pre id="recordsOutput">Waiting…</pre>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="eyebrow">Testing Links</p>
+      <div class="links">
+        <a href="/api/part114/status" target="_blank" rel="noreferrer">Status</a>
+        <a href="/api/part114/security-policy" target="_blank" rel="noreferrer">Security Policy</a>
+        <a href="/api/part114/demo" target="_blank" rel="noreferrer">Demo Record</a>
+      </div>
+    </section>
+  </main>
+  <script src="/customer-subscription-checkout.js"></script>
+</body>
+</html>

@@ -1,18 +1,18 @@
-# Files Changed — Part 113
+# Files Changed — Part 114
 
 ## Backend
-- `backend/src/part113-subscription-plans.js`
+- `backend/src/part114-customer-checkout-subscription.js`
 
 ## Frontend
-- `frontend/naxora-subscription-plans.html`
-- `frontend/naxora-subscription-plans.css`
-- `frontend/naxora-subscription-plans.js`
+- `frontend/customer-subscription-checkout.html`
+- `frontend/customer-subscription-checkout.css`
+- `frontend/customer-subscription-checkout.js`
 
-## Installer/testing
-- `APPLY-PART113.js`
-- `APPLY-PART113.cmd`
-- `ROLLBACK-PART113.js`
-- `ROLLBACK-PART113.cmd`
-- `VERIFY-PART113.js`
+## Installer and testing
+- `APPLY-PART114.js`
+- `APPLY-PART114.cmd`
+- `VERIFY-PART114.js`
+- `ROLLBACK-PART114.js`
+- `ROLLBACK-PART114.cmd`
 
-The installer adds one registration block to the existing `backend/src/server.js`. It does not replace the full server file.
+The installer inserts Part 114 immediately before the Express 404/notFound handler and refuses to continue if Parts 112/113 are still after that handler.

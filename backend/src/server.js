@@ -30510,6 +30510,12 @@ const { registerPart113SubscriptionPlans } = await import("./part113-subscriptio
 registerPart113SubscriptionPlans({ app });
 // ================= END NAXORA PAYMENT ROUTES =================
 
+
+
+// ================= PART 114 — CUSTOMER CHECKOUT AND SUBSCRIPTION ACTIVATION =================
+const { registerPart114CustomerCheckout } = await import("./part114-customer-checkout-subscription.js");
+registerPart114CustomerCheckout({ app });
+
 app.use(notFound);
 app.use(errorHandler);
 

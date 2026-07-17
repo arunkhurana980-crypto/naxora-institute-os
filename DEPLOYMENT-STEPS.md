@@ -1,40 +1,45 @@
-# Deployment Steps — Part 113
+# Deployment Steps — Part 114
 
-## Local commands
-Run one command at a time. Terminal prompt must start with `PS ...>` and not `>>`.
+## Local
+Run one command at a time:
 
 ```powershell
 node --check .\backend\src\server.js
-node .\APPLY-PART113.js
-node .\VERIFY-PART113.js
+node .\APPLY-PART114.js
+node .\VERIFY-PART114.js
 git status
 git add .
-git commit -m "Add Part 113 NAXORA Subscription Plans"
+git commit -m "Add Part 114 Customer Checkout and Subscription Activation"
 git push
 ```
 
 ## Render
-Build command remains:
+Keep existing build:
 
 ```bash
 cd backend && npm install --no-audit --no-fund --legacy-peer-deps
 ```
 
-Start command remains:
+Keep existing start:
 
 ```bash
 cd backend && node src/server.js
 ```
 
-Use the Part 112 Test environment variables. Do not add Live keys.
+Keep Test Mode environment variables from Part 112.
 
 Render → Manual Deploy → Clear build cache & deploy.
 
-## Smoke tests
-1. Status API.
-2. Templates API.
-3. Owner readiness.
-4. Create a low-value Test Plan preview after deciding a test price.
-5. Confirm exact text.
-6. Verify Plan ID starts with `plan_`.
-7. Verify no payment/customer subscription was created.
+## Smoke-test order
+1. `/api/part112/status`
+2. `/api/part113/status`
+3. `/api/part114/status`
+4. `/subscription-checkout`
+5. Load a confirmed Part 113 Test Plan.
+6. Create preview.
+7. Create Test Subscription.
+8. Open Test Checkout.
+9. Complete test authorisation.
+10. Verify server response.
+
+Do not switch to Live Mode.

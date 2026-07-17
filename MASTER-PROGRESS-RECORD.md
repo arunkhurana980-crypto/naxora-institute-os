@@ -1,26 +1,26 @@
 # NAXORA Master Progress Record
 
 ## Previous
-- Parts 52–78: OS 1.0 feature foundation.
-- Parts 79–110: OS 2.0 feature foundation.
-- Part 111: Unified launcher foundation.
 - Part 112: Razorpay Test Mode Foundation.
+- Part 113: NAXORA Subscription Plans.
+- Route-order hotfix: Parts 112/113 registered before Express 404 handler.
 
 ## Current
-- Part 113: NAXORA Subscription Plans.
+- Part 114: Customer Checkout and Subscription Activation — Test Mode.
 
-Part 113 complete only after:
-- server syntax passes,
-- deployment succeeds,
+Part 114 complete only after:
+- route-order verifier passes,
+- deploy succeeds,
 - owner role security passes,
-- preview works,
-- exact confirmation works,
-- Razorpay Test Plan ID is saved,
-- duplicate test passes,
-- no checkout or real payment occurs.
+- eligible Test Plan loads,
+- Test Subscription ID is created,
+- Razorpay Test Checkout opens,
+- customer test authorisation completes,
+- server signature verification succeeds,
+- provider state is recorded,
+- real money and feature unlock remain disabled.
 
-## Locked next
-- Part 114: Customer Checkout and Subscription Activation.
+## Next
 - Part 115: Secure Webhooks and Status Sync.
 - Part 116: Subscription Feature Access Control.
 - Part 117: VANI Subscription Manager.

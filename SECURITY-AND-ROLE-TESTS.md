@@ -1,37 +1,43 @@
-# Security and Role Tests — Part 113
+# Security and Role Tests — Part 114
 
-## Mandatory tests
+## Mandatory
+
+### Route order
+`VERIFY-PART114.js` must show Parts 112, 113 and 114 before the 404 handler.
 
 ### Public status
 Expected:
 - testModeLocked true
-- customerSubscriptionCreationEnabled false
-- checkoutEnabled false
-- livePlanCreationEnabled false
+- liveModeEnabled false
+- realMoneyCollectionEnabled false
+- webhookAuthorityEnabled false
+- featureAccessUnlockEnabled false
 
-### No login
-Protected API should return 401.
+### Role checks
+- no JWT → 401
+- teacher/student/parent JWT → 403
+- institute mismatch → 403
 
-### Non-owner role
-Teacher/student/parent token should return 403.
+### Dependency check
+No Part 113 provider-created plan → checkout plan list empty; provider subscription cannot be created.
 
-### Institute mismatch
-Token institute and requested institute mismatch should return 403.
-
-### Invalid amount
-Letters, negative values, more than two decimal places and out-of-range values should fail.
-
-### Missing confirmation
-Provider plan creation should fail with `EXACT_CONFIRMATION_REQUIRED`.
+### Consent
+Preview must fail unless both Test Mode/test-data confirmation and customer authorisation acknowledgement are true.
 
 ### Duplicate protection
-Create the same preview twice. It should return the same local record. Confirm twice; second call should return the existing provider plan without duplicate creation.
+Same institute + plan + cycles + email + contact returns the existing local preview/provider Subscription.
 
-### Live Mode lock
-Part 113 should refuse provider actions when `RAZORPAY_MODE` is not `test`.
+### Exact confirmation
+Wrong phrase must fail.
+
+### Signature security
+- missing fields → fail
+- returned subscription ID mismatch → fail
+- wrong signature → fail
+- correct signature → provider status refresh
 
 ### Secret protection
-No response should contain Key Secret, Webhook Secret or JWT.
+No API response returns Key Secret. Public checkout options may return only the Test Key ID.
 
-### Local archive
-Archive should hide/mark the NAXORA local record only. It must not claim to delete the Razorpay Plan.
+### Sensitive data
+Never enter or speak CVV, OTP, UPI PIN, card number or bank password in NAXORA/VANI.

@@ -1,29 +1,17 @@
-# Feature Explanation — Part 113
+# Feature Explanation — Part 114
 
-Part 113 adds NAXORA's Test Mode subscription-plan layer.
+## Flow
+1. Owner selects a confirmed Part 113 Razorpay Test Plan.
+2. Owner enters test customer details and billing-cycle count.
+3. NAXORA creates a preview and exact confirmation phrase.
+4. Confirmed action creates a Razorpay Test Subscription.
+5. Customer opens Razorpay Standard Checkout and authorises recurring billing.
+6. Razorpay returns payment ID, subscription ID and signature.
+7. NAXORA verifies the signature on the server using the server-created Subscription ID.
+8. NAXORA fetches and records the current provider Subscription status.
 
-## Added
-- Starter, Professional, Business and V3 AI plan templates.
-- Owner-defined monthly/yearly prices.
-- Plan preview stored in MongoDB.
-- Duplicate fingerprint protection.
-- Exact confirmation before provider creation.
-- Razorpay Test Plan API integration.
-- Local-to-provider Plan ID mapping.
-- Provider and local plan lists.
-- Local archive only; provider plan remains unchanged.
-- VANI plan-detail conversation and preview.
-- Audit records.
+## Why customer interaction remains mandatory
+Recurring billing requires customer authentication/authorisation. VANI cannot enter OTP, CVV, card number or UPI PIN and cannot bypass customer consent.
 
-## Why preview matters
-A Razorpay Plan is a reusable billing template. NAXORA therefore confirms name, period and amount before creating it.
-
-## Not included
-- Customer subscription creation.
-- Checkout/mandate authorisation.
-- Signature verification.
-- Webhook status sync.
-- Live Mode.
-- Refunds.
-
-These remain locked for later parts.
+## Authority boundary
+A valid Checkout signature proves the immediate response is authentic. Part 115 webhooks become the authoritative asynchronous source for ongoing subscription events.
