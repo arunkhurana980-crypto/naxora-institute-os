@@ -1,22 +1,23 @@
-# Files Changed — Part 121
+# Files Changed — Part 122
 
 ## Backend
-- `backend/src/part121-owner-consolidation.js`
+- `backend/src/part122-teacher-consolidation.js`
 
 ## Frontend
-- `frontend/naxora-owner-workspace.html`
-- `frontend/naxora-owner-workspace.css`
-- `frontend/naxora-owner-workspace.js`
+- `frontend/naxora-teacher-workspace.html`
+- `frontend/naxora-teacher-workspace.css`
+- `frontend/naxora-teacher-workspace.js`
 
 ## Part 119 integration
 Installer updates:
-- Owner module label/description/route.
-- Adds Account Access module.
-- Adds VANI aliases for Account Access.
+- Teacher module label.
+- Teacher module description.
+- Teacher route to `/teacher-workspace`.
+- Teacher Workspace VANI alias.
 
 ## Installer/testing
-- `APPLY-PART121.js`
-- `APPLY-PART121.cmd`
-- `VERIFY-PART121.js`
-- `ROLLBACK-PART121.js`
-- `ROLLBACK-PART121.cmd`
+- `APPLY-PART122.js`
+- `APPLY-PART122.cmd`
+- `VERIFY-PART122.js`
+- `ROLLBACK-PART122.js`
+- `ROLLBACK-PART122.cmd`

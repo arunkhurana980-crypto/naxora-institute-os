@@ -1,23 +1,23 @@
-# Backend API Record — Part 121
+# Backend API Record — Part 122
 
 ## Public
-- `GET /api/part121/status`
-- `GET /api/part121/security-policy`
-- `GET /api/part121/catalog`
-- `GET /api/part121/demo`
+- `GET /api/part122/status`
+- `GET /api/part122/security-policy`
+- `GET /api/part122/catalog`
+- `GET /api/part122/demo`
 
-## Owner-only
-- `GET /api/part121/overview`
-- `GET /api/part121/modules`
-- `GET /api/part121/activity`
-- `GET /api/part121/health`
-- `POST /api/part121/module/open`
-- `POST /api/part121/vani/command`
+## Teacher or Owner
+- `GET /api/part122/overview`
+- `GET /api/part122/modules`
+- `GET /api/part122/activity`
+- `GET /api/part122/health`
+- `POST /api/part122/module/open`
+- `POST /api/part122/vani/command`
 
 ## Export
-- `getPart121OwnerOverview(...)`
+- `getPart122TeacherOverview(...)`
 
-This export is reserved for Part 125 Global VANI orchestration.
+Part 125 can use this export for Global VANI orchestration.
 
 ## Model
-- `Part121OwnerWorkspaceAudit`
+- `Part122TeacherWorkspaceAudit`

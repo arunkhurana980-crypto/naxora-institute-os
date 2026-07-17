@@ -1,20 +1,20 @@
-# VANI Integration Record — Part 121
+# VANI Integration Record — Part 122
 
-## Owner commands
-- `VANI, owner summary dikhao`
+## Commands
+- `VANI, teacher summary dikhao`
 - `VANI, aaj kya pending hai?`
-- `VANI, account manager kholo`
-- `VANI, fees kholo`
-- `VANI, subscription manager kholo`
-- `VANI, marketplace kholo`
-- `VANI, VANI 3 kholo`
+- `VANI, attendance kholo`
+- `VANI, reports kholo`
+- `VANI, live class kholo`
+- `VANI, class notes kholo`
+- `VANI, student support kholo`
+- `VANI, Teacher VANI kholo`
 
-## Security
-- Owner JWT required.
-- instituteId must match.
-- Part 116 entitlement checked.
-- Sensitive credential requests are blocked.
-- Module routes come from a server allowlist.
-- Part 121 VANI performs summary and navigation only.
+## Checks
+- Teacher or Owner JWT.
+- Matching instituteId.
+- Part 116 role/plan entitlement.
+- Server module allowlist.
+- Sensitive credential blocking.
 
-Part 125 will use `getPart121OwnerOverview` for cross-module multi-step VANI actions.
+Part 122 performs summary and safe navigation only. Part 125 adds preview/confirmation-based multi-step teaching actions.

@@ -1,23 +1,23 @@
-# Frontend UI Record — Part 121
+# Frontend UI Record — Part 122
 
 ## Main page
-`/owner-workspace`
+`/teacher-workspace`
 
-Alias:
-- `/owner-command-centre`
-- `/part121`
+Aliases:
+- `/teacher-command-centre`
+- `/part122`
 
 ## UI sections
-- Owner identity and plan badge.
+- Teacher identity and access state.
+- Strict teacher-linked/supervisor mode badge.
 - Consolidated alerts.
-- Summary cards.
-- Searchable owner module launcher.
-- Institute operational record counts.
-- Unified account status.
-- Plan and V3 access.
-- Billing/provider state.
-- Dependency health.
-- Recent activity.
-- Owner VANI.
+- Teaching summary cards.
+- Searchable Teacher module launcher.
+- Safely linked teaching metrics.
+- Part 116 plan entitlements.
+- AI notes/support/VANI availability.
+- Workspace health.
+- Recent Teacher Workspace activity.
+- Teacher VANI.
 
-When opened inside Part 119, module buttons use `NaxoraShellBridge` so the selected module replaces the current content pane without leaving the unified app.
+When opened inside Part 119, module buttons use Naxora Shell Bridge and remain inside the unified app.

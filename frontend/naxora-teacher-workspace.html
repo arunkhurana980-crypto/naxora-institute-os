@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#071426" />
+  <title>Teacher Workspace — NAXORA</title>
+  <link rel="stylesheet" href="/naxora-teacher-workspace.css" />
+</head>
+<body>
+  <main class="teacher-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">NAXORA Institute OS • Part 122</p>
+        <h1>Teacher Workspace</h1>
+        <p>Classes, attendance, reports, live classroom, AI notes, student-support insights aur Teacher VANI—ek consolidated teaching screen me.</p>
+      </div>
+      <aside class="hero-status">
+        <span id="teacherName">Teacher</span>
+        <strong id="planStatus">Loading access…</strong>
+        <small id="workspaceMode">Waiting for session</small>
+      </aside>
+    </section>
+
+    <section id="alertsPanel" class="alerts-panel" hidden></section>
+
+    <section id="summaryCards" class="summary-grid">
+      <article><span>Loading</span><strong>—</strong><small>Teaching overview</small></article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Teacher Quick Actions</p>
+            <h2>Open an allowed classroom module</h2>
+          </div>
+          <input id="moduleSearch" type="search" placeholder="Search teacher modules…" />
+        </div>
+        <div id="moduleGrid" class="module-grid">Loading modules…</div>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Teaching Records</p>
+        <h2>Safely linked classroom data</h2>
+        <div id="metricGrid" class="metric-grid"></div>
+        <p id="precisionNote" class="precision-note">Teacher records are loading.</p>
+      </article>
+    </section>
+
+    <section class="grid three">
+      <article class="panel">
+        <p class="eyebrow">Classroom Access</p>
+        <h2>Plan entitlements</h2>
+        <div id="accessSummary" class="stack-list">Loading…</div>
+        <button class="secondary module-button" data-module-key="live-classes">Open Live Classes</button>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Teaching AI</p>
+        <h2>Notes and support</h2>
+        <div class="stack-list">
+          <div class="stack-row"><span>AI Class Notes</span><strong id="notesAccess">—</strong></div>
+          <div class="stack-row"><span>Student Support AI</span><strong id="supportAccess">—</strong></div>
+          <div class="stack-row"><span>Teacher VANI</span><strong id="vaniAccess">—</strong></div>
+        </div>
+        <button class="secondary module-button" data-module-key="ai-class-notes">Open AI Class Notes</button>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Workspace Health</p>
+        <h2>Teaching integration</h2>
+        <div id="healthList" class="health-list">Loading…</div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Recent Activity</p>
+        <h2>Teacher Workspace events</h2>
+        <div id="activityList" class="activity-list">Loading…</div>
+      </article>
+
+      <article class="panel vani-panel">
+        <div>
+          <p class="eyebrow">Global VANI • Teacher</p>
+          <h2>Ask for summary or open a module</h2>
+          <p>Examples: “VANI, teacher summary dikhao”, “attendance kholo”, “class notes kholo”, “kya pending hai?”</p>
+        </div>
+        <form id="vaniForm">
+          <input id="vaniCommand" autocomplete="off" value="VANI, teacher summary dikhao" />
+          <button id="voiceBtn" type="button" class="secondary">🎙</button>
+          <button type="submit">Ask VANI</button>
+        </form>
+        <pre id="vaniOutput">Waiting…</pre>
+      </article>
+    </section>
+  </main>
+
+  <script src="/naxora-common-session.js"></script>
+  <script src="/naxora-shell-bridge.js"></script>
+  <script src="/naxora-teacher-workspace.js"></script>
+</body>
+</html>

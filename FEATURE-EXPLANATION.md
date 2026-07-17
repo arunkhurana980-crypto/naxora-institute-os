@@ -1,31 +1,33 @@
-# Feature Explanation — Part 121
+# Feature Explanation — Part 122
 
-## Owner consolidation flow
+## Teacher flow
 
 ```text
-Part 120 common owner login
+Part 120 common Teacher login
 → Part 119 unified app
-→ Owner Workspace
-→ institute-scoped overview
-→ allowed owner modules
-→ module opens inside the same shell
+→ Teacher Workspace
+→ strict institute + teacher record scope
+→ Part 116 role/plan entitlements
+→ allowed classroom modules
+→ module opens inside the same app shell
 ```
 
-## Owner Workspace data
-- Part 116 supplies base plan, V3 and entitlements.
-- Part 120 supplies account status and role counts.
-- Part 115 supplies verified Subscription states.
-- Part 117 supplies Subscription Manager action state.
-- Part 118 supplies controlled Live-launch state.
-- Existing institute-scoped models supply detected operational counts.
+## Teacher metrics
+The workspace safely detects:
+- Classes/Batches/Courses.
+- Assigned Students/Enrolments.
+- Assignments/Homework/Tasks.
+- Attendance records.
+- Live sessions.
+- Class notes/summaries.
 
-## Model discovery safety
-Part 121 does not count an unscoped MongoDB model. A model must contain an institute/tenant field before it is included. Missing model mapping shows “Not detected” instead of showing another institute’s data.
+## Owner supervisor mode
+Institute Owner can open Teacher Workspace because Part 119 already allows Owner access to Teacher App. Owner sees institute-scoped teaching aggregates and the UI clearly labels Supervisor Mode.
 
 ## VANI boundary
-Part 121 VANI:
-- explains owner summary,
+Part 122 VANI:
+- explains the teaching summary,
 - shows alerts,
-- opens allowed owner modules.
+- opens allowed Teacher modules.
 
-It does not yet execute admission, fee, messaging or other multi-step changes. That is Part 125.
+Attendance marking, assignment creation, notes publishing and student messaging are connected in Part 125.

@@ -1,35 +1,30 @@
-# Part 121 Testing Guide
+# Part 122 Testing Guide
+
+## Teacher
+1. Login from `/login` as Teacher.
+2. Open `/app`.
+3. Select Teacher Workspace.
+4. Confirm strict Teacher-linked mode.
+5. Review classes, students, assignments, attendance and sessions.
+6. `Not linked` is acceptable when safe teacher field mapping does not exist.
+7. Open Attendance, Reports and Live Classes.
+8. Open AI Class Notes when entitlement permits.
 
 ## Owner
-1. Login from `/login`.
-2. Open `/app`.
-3. Select Owner Workspace.
-4. Confirm Owner name, plan and V3 state.
-5. Confirm unified role-account counts.
-6. Confirm subscription and Live-launch states.
-7. Open Account Access.
-8. Open three allowed modules.
-
-## Plan access
-- FREE owner: always-available and billing-control modules remain visible.
-- Starter/Professional/Business: matching Part 116 modules unlock.
-- V3 modules unlock only with active V3_AI entitlement.
+1. Login as Owner.
+2. Open Teacher Workspace.
+3. Confirm Owner supervisor mode.
+4. Metrics may use institute-scoped aggregates.
 
 ## Negative roles
-Try direct `/api/part121/overview` with:
-- Teacher token.
-- Student token.
-- Parent token.
-
-Expected: `403 OWNER_ONLY`.
-
-## Model discovery
-When a Student/Fee/Attendance model is not institute-scoped, its count must not be included.
+Student, Parent, Accountant, Counsellor and Staff should receive:
+`403 TEACHER_OR_OWNER_ONLY`.
 
 ## VANI
-- `VANI, owner summary dikhao`
+- `VANI, teacher summary dikhao`
 - `VANI, kya pending hai?`
-- `VANI, account manager kholo`
-- `VANI, marketplace kholo`
+- `VANI, attendance kholo`
+- `VANI, class notes kholo`
+- `VANI, live class kholo`
 
 Denied module must not open.
