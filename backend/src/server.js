@@ -30498,20 +30498,20 @@ app.get("/api/part110/demo", (req, res) => {
 
 // ================= END PART 52 =================
 
-app.use(notFound);
-app.use(errorHandler);
 
 
-
+// ================= NAXORA PAYMENT ROUTES — MUST STAY BEFORE 404 HANDLER =================
 // ================= PART 112 — RAZORPAY TEST MODE FOUNDATION =================
 const { registerPart112RazorpayFoundation } = await import("./part112-razorpay-foundation.js");
 registerPart112RazorpayFoundation({ app });
 
-
-
 // ================= PART 113 — NAXORA SUBSCRIPTION PLANS =================
 const { registerPart113SubscriptionPlans } = await import("./part113-subscription-plans.js");
 registerPart113SubscriptionPlans({ app });
+// ================= END NAXORA PAYMENT ROUTES =================
+
+app.use(notFound);
+app.use(errorHandler);
 
 const port = Number(process.env.PORT) || 5000;
 
