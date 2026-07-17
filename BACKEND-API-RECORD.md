@@ -1,40 +1,32 @@
-# Backend API Record — Part 117
+# Backend API Record — Part 118
 
 ## Public
-- `GET /api/part117/status`
-- `GET /api/part117/security-policy`
-- `GET /api/part117/demo`
+- `GET /api/part118/status`
+- `GET /api/part118/requirements`
+- `GET /api/part118/security-policy`
+- `GET /api/part118/demo`
 
 ## Owner-only
-- `GET /api/part117/subscriptions`
-- `GET /api/part117/target-plans`
-- `GET /api/part117/actions`
-- `POST /api/part117/action/preview`
-- `POST /api/part117/action/execute-confirmed`
-- `POST /api/part117/vani/command`
-
-## Required headers
-
-```http
-Authorization: Bearer <institute_owner_jwt>
-x-naxora-institute-id: <institute_id>
-```
-
-Confirmed sensitive execution also requires:
-
-```http
-x-naxora-owner-action-secret: <private verification value>
-```
+- `GET /api/part118/readiness`
+- `POST /api/part118/evidence`
+- `POST /api/part118/provider-probe`
+- `POST /api/part118/launch/preview`
+- `POST /api/part118/launch/approve-confirmed`
+- `POST /api/part118/rollback/preview`
+- `POST /api/part118/rollback/approve-confirmed`
+- `POST /api/part118/vani/command`
 
 ## Models
-- `Part117SubscriptionAction`
-- `Part117SubscriptionManagerAudit`
+- `Part118LiveReadinessEvidence`
+- `Part118ControlledLaunch`
+- `Part118LiveLaunchAudit`
 
-## Provider calls
-- Pause: `subscriptions.pause`
-- Resume: `subscriptions.resume`
-- Cancel: `subscriptions.cancel`
-- Plan change: `subscriptions.update`
+## Private confirmation
+Confirmed launch/rollback requires:
+- institute_owner JWT,
+- matching instituteId,
+- exact confirmation,
+- `x-naxora-owner-action-secret`.
 
-## Idempotency
-The preview fingerprint contains institute, local Subscription, action type, target plan, current status and reason. An accepted provider action is returned rather than repeated.
+## Provider probe
+Uses Live API credentials for a read-only Fetch Plans request. It does not create a payment, Plan or Subscription.

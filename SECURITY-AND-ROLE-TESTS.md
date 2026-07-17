@@ -1,20 +1,19 @@
-# Security and Role Tests — Part 117
+# Security and Role Tests — Part 118
 
 ## Mandatory
-- Parts 112–117 are before the 404 handler.
-- No JWT returns 401.
-- Teacher/student/parent/staff returns 403.
-- Institute mismatch returns 403.
-- Missing Owner Action Secret configuration returns 503.
-- Wrong private verification returns 403.
-- Wrong exact confirmation returns 400.
-- Live Mode returns 423.
-- Pause on non-active state is blocked.
-- Resume on non-paused state is blocked.
-- Plan change on created/pending/halted is blocked.
-- Same current/target plan is blocked.
-- Cancel-now preview contains irreversible warning.
-- Repeated accepted action does not call provider again.
-- Provider secrets and Owner Action Secret never appear in API responses.
-- Part 115 remains final status authority.
-- Part 116 access is not changed merely because a preview was created.
+- Parts 112–118 before 404 handler.
+- No JWT → 401.
+- Non-owner role → 403.
+- Institute mismatch → 403.
+- Missing Live Key Secret → readiness pending.
+- Test Key ID in Live field → readiness pending.
+- HTTP policy URL → rejected.
+- Missing adult approver → readiness pending.
+- KYC/bank documents are never accepted.
+- Provider probe is read-only.
+- Wrong exact confirmation → blocked.
+- Wrong Owner Action Secret → blocked.
+- Approval API does not edit Render.
+- Real-money flag remains false until manually configured.
+- Rollback requires its own exact confirmation and owner verification.
+- Provider secrets never appear in API responses.

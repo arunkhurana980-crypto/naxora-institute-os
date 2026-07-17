@@ -1,23 +1,22 @@
-# Frontend UI Record — Part 117
+# Frontend UI Record — Part 118
 
 ## Main page
-`/vani-subscription-manager`
+`/razorpay-live-readiness`
 
 Aliases:
-- `/subscription-manager`
-- `/part117`
+- `/controlled-payment-launch`
+- `/part118`
 
 ## UI
-1. Detect owner JWT.
-2. Enter private Owner Action Secret.
-3. Load current Subscriptions.
-4. Select action.
-5. Select target plan when required.
-6. Create safe preview.
-7. Review billing/access impact.
-8. Check exact confirmation.
-9. Execute Test action.
-10. Wait for webhook and access recalculation.
-11. Review action history.
+- Owner session.
+- Private owner verification input.
+- Blocking readiness summary.
+- Manual non-sensitive evidence.
+- Public HTTPS policy URLs.
+- Read-only Live provider probe.
+- Launch preview and exact confirmation.
+- Manual-switch instructions.
+- Rollback preview and approval.
+- VANI readiness assistant.
 
-The owner-verification field uses password input and is not stored in browser storage.
+No API Secret, webhook secret, KYC document or bank document is displayed or stored.

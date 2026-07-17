@@ -1,37 +1,23 @@
-# Feature Explanation — Part 117
+# Feature Explanation — Part 118
 
-## Supported Test actions
-- Pause now.
-- Resume now.
-- Cancel at cycle end.
-- Cancel now.
-- Change plan at cycle end.
-- Change plan now.
+## Readiness groups
+1. Adult legal merchant and legal entity.
+2. Razorpay account activation.
+3. Live website submission and verification.
+4. Public pricing, terms, privacy, contact, cancellation/refund and shipping-policy pages.
+5. Customer support email.
+6. Bank/settlement readiness.
+7. Part 112–117 Test E2E evidence.
+8. Live API credentials.
+9. Separate Live webhook secret and alert email.
+10. Read-only Live provider connectivity probe.
+11. Exact launch confirmation.
+12. Private owner verification.
+13. Supervised manual Render switch.
+14. Rollback plan.
 
-## Safe action flow
+## Why manual switch
+Render environment is an external production control. The application records approval but does not silently replace secrets or turn on real-money collection.
 
-```text
-Owner login
-→ instituteId check
-→ current verified status
-→ target plan check
-→ preview
-→ access-impact preview
-→ exact confirmation
-→ private owner verification
-→ Razorpay Test action
-→ Part 115 webhook sync
-→ Part 116 access recalculation
-```
-
-## Why final access does not change directly
-Part 117 does not declare the final subscription status by itself. The provider action is followed by a verified Part 115 webhook. Part 116 then evaluates the verified state.
-
-## Risk rules
-- Cancel-now is irreversible.
-- Pausing requires an active Subscription.
-- Resuming requires a paused Subscription.
-- Plan changes require an authenticated or active Subscription.
-- Immediate plan change can create a prorated charge or credit/refund adjustment.
-- Cycle-end change avoids an immediate plan switch.
-- Live Mode is blocked until Part 118.
+## Launch rule
+A preview cannot be created while a blocking check is pending. Approval still does not move money; the adult merchant owner must perform the documented switch and verify a controlled transaction.

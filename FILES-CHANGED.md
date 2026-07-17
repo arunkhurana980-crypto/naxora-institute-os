@@ -1,19 +1,19 @@
-# Files Changed — Part 117
+# Files Changed — Part 118
 
 ## Backend
-- `backend/src/part117-vani-subscription-manager.js`
-- `backend/.env.part117.example`
+- `backend/src/part118-razorpay-live-readiness.js`
+- `backend/.env.part118.example`
 
 ## Frontend
-- `frontend/vani-subscription-manager.html`
-- `frontend/vani-subscription-manager.css`
-- `frontend/vani-subscription-manager.js`
+- `frontend/razorpay-live-readiness.html`
+- `frontend/razorpay-live-readiness.css`
+- `frontend/razorpay-live-readiness.js`
 
 ## Installer/testing
-- `APPLY-PART117.js`
-- `APPLY-PART117.cmd`
-- `VERIFY-PART117.js`
-- `ROLLBACK-PART117.js`
-- `ROLLBACK-PART117.cmd`
+- `APPLY-PART118.js`
+- `APPLY-PART118.cmd`
+- `VERIFY-PART118.js`
+- `ROLLBACK-PART118.js`
+- `ROLLBACK-PART118.cmd`
 
-The installer registers Part 117 immediately before Express 404/notFound and verifies Parts 112–116 are also before it.
+The installer registers Part 118 before Express 404/notFound and verifies Parts 112–117 are also before it.

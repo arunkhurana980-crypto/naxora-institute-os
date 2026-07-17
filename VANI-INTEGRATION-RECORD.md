@@ -1,26 +1,18 @@
-# VANI Integration Record — Part 117
+# VANI Integration Record — Part 118
 
 ## Commands
-- `VANI, meri subscription status dikhao`
-- `VANI, subscription pause karo`
-- `VANI, subscription resume karo`
-- `VANI, cycle end par cancel karo`
-- `VANI, subscription abhi cancel karo`
-- `VANI, Business plan me upgrade karo`
-- `VANI, Professional plan me downgrade karo`
+- `VANI, live launch readiness dikhao`
+- `VANI, kya checks pending hain?`
+- `VANI, Razorpay Live connectivity check karo`
+- `VANI, live launch approve karo`
+- `VANI, payments rollback karo`
 
 ## Behaviour
 - Owner-only.
 - Role and instituteId checked.
-- Missing Subscription/target plan details asked.
-- VANI first creates a preview.
-- Exact confirmation is required.
-- Private owner verification is required.
-- VANI never asks the owner to speak the verification secret.
-- Sensitive details remain private-screen-first.
-- Live Mode requests are blocked.
-- Final state waits for verified webhook.
-- Access impact waits for Part 116 recalculation.
-
-## Important
-The customer may need to be notified about a plan change. Part 117 requests provider customer notification for plan updates.
+- VANI gives counts and safe summaries.
+- Sensitive merchant details stay private-screen-first.
+- VANI never asks for API Secret, Webhook Secret, OTP, PAN, Aadhaar or bank statement.
+- Launch request only guides to preview.
+- Exact confirmation and private owner verification remain mandatory.
+- VANI cannot edit Render environment.

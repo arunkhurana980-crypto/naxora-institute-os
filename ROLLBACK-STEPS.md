@@ -1,17 +1,20 @@
-# Rollback Steps — Part 117
+# Rollback Steps — Part 118
+
+## Application rollback
 
 ```powershell
-node .\ROLLBACK-PART117.js
+node .\ROLLBACK-PART118.js
 node --check .\backend\src\server.js
 ```
 
-Then optionally remove the Part 117 backend/frontend files.
+## Controlled payment rollback
+1. Create rollback preview.
+2. Enter exact rollback confirmation.
+3. Complete private owner verification.
+4. Adult merchant owner sets `NAXORA_RAZORPAY_LIVE_LAUNCHED=false`.
+5. Restore saved Test environment/deployment.
+6. Keep provider transaction records.
+7. Review payments/subscriptions/settlements in Razorpay Dashboard.
+8. Notify affected customers when required.
 
-After commit:
-
-```powershell
-git revert <part-117-commit-sha>
-git push
-```
-
-Rollback removes the NAXORA manager route. It does not reverse provider actions already accepted. A cancelled Subscription cannot be restarted. Manage historical Test records in the Razorpay Test Dashboard.
+An app rollback cannot erase or reverse real provider transactions.

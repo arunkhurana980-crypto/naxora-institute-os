@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NAXORA Part 118 — Razorpay Live Readiness</title>
+  <link rel="stylesheet" href="/razorpay-live-readiness.css" />
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">NAXORA Institute OS • Part 118</p>
+        <h1>Razorpay Live Readiness</h1>
+        <p class="lead">Real money tabhi ON hoga jab adult merchant onboarding, website approval, policies, Live credentials, webhook aur full Test E2E checks pass hon.</p>
+      </div>
+      <aside class="status-card">
+        <span id="modeBadge" class="badge">Checking…</span>
+        <strong id="statusHeadline">Loading controlled-launch gate</strong>
+        <small id="statusText">This page never edits Render environment automatically.</small>
+      </aside>
+    </section>
+
+    <section class="warning">
+      <strong>Do not upload here:</strong> PAN, Aadhaar, bank statement, cancelled cheque, OTP, API Secret or Webhook Secret. KYC/bank documents only Razorpay Dashboard me adult legal merchant owner handle karega.
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Owner Session</p>
+        <h2>Private launch controls</h2>
+        <label>Institute ID
+          <input id="instituteId" value="NX-DEMO-INST-001" autocomplete="off" />
+        </label>
+        <label>Owner JWT — private
+          <input id="jwtToken" type="password" placeholder="Existing institute_owner token" autocomplete="off" />
+        </label>
+        <label>Owner Action Secret — private
+          <input id="ownerActionSecret" type="password" placeholder="Never speak or screenshot this" autocomplete="new-password" />
+        </label>
+        <div class="buttons">
+          <button id="detectTokenBtn" class="secondary">Detect Token</button>
+          <button id="loadReadinessBtn">Load Readiness</button>
+        </div>
+        <pre id="sessionOutput">Waiting…</pre>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Readiness Summary</p>
+        <h2>Blocking checks</h2>
+        <div id="summaryCards" class="summary-grid"></div>
+        <div id="checkList" class="check-list"></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="eyebrow">Manual Evidence — No KYC Documents</p>
+      <h2>Adult merchant and business checks</h2>
+      <div id="evidenceChecks" class="evidence-grid"></div>
+      <div class="grid two inner">
+        <label>Adult legal merchant approver name
+          <input id="adultApproverName" autocomplete="off" />
+        </label>
+        <label>Customer support email
+          <input id="supportEmail" type="email" autocomplete="off" />
+        </label>
+      </div>
+      <div id="urlFields" class="grid two inner"></div>
+      <label>Non-sensitive review note
+        <input id="reviewNote" placeholder="No PAN/Aadhaar/bank details" />
+      </label>
+      <button id="saveEvidenceBtn">Save Readiness Evidence</button>
+      <pre id="evidenceOutput">Waiting…</pre>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Live Credentials</p>
+        <h2>Read-only provider probe</h2>
+        <p>Live Key Secret server par private rahega. Probe sirf authentication/read connectivity check karega; payment create nahi karega.</p>
+        <button id="probeBtn">Run Live Read-Only Probe</button>
+        <pre id="probeOutput">No probe yet.</pre>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Launch Approval</p>
+        <h2>Preview before environment switch</h2>
+        <button id="launchPreviewBtn">Create Launch Preview</button>
+        <pre id="launchOutput">No launch preview yet.</pre>
+        <label>Exact confirmation
+          <input id="confirmationText" autocomplete="off" />
+        </label>
+        <button id="approveLaunchBtn">Approve Controlled Launch</button>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel danger-panel">
+        <p class="eyebrow">Rollback</p>
+        <h2>Return to safe Test environment</h2>
+        <button id="rollbackPreviewBtn" class="secondary">Create Rollback Preview</button>
+        <pre id="rollbackOutput">No rollback preview.</pre>
+        <label>Exact rollback confirmation
+          <input id="rollbackConfirmationText" autocomplete="off" />
+        </label>
+        <button id="approveRollbackBtn" class="danger">Approve Rollback</button>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Global VANI • Owner Only</p>
+        <h2>Launch-readiness assistant</h2>
+        <label>Command
+          <input id="vaniCommand" value="VANI, live launch readiness dikhao" />
+        </label>
+        <button id="askVaniBtn">Ask VANI</button>
+        <pre id="vaniOutput">Waiting…</pre>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="eyebrow">Testing Links</p>
+      <div class="links">
+        <a href="/api/part118/status" target="_blank" rel="noreferrer">Status</a>
+        <a href="/api/part118/requirements" target="_blank" rel="noreferrer">Requirements</a>
+        <a href="/api/part118/security-policy" target="_blank" rel="noreferrer">Security Policy</a>
+        <a href="/api/part118/demo" target="_blank" rel="noreferrer">Demo Record</a>
+      </div>
+    </section>
+  </main>
+  <script src="/razorpay-live-readiness.js"></script>
+</body>
+</html>

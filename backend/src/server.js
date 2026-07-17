@@ -30534,6 +30534,12 @@ registerPart116SubscriptionAccess({ app });
 const { registerPart117VaniSubscriptionManager } = await import("./part117-vani-subscription-manager.js");
 registerPart117VaniSubscriptionManager({ app });
 
+
+
+// ================= PART 118 — RAZORPAY LIVE READINESS AND CONTROLLED LAUNCH =================
+const { registerPart118LiveReadiness } = await import("./part118-razorpay-live-readiness.js");
+registerPart118LiveReadiness({ app });
+
 app.use(notFound);
 app.use(errorHandler);
 
