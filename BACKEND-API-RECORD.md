@@ -1,31 +1,40 @@
-# Backend API Record — Part 115
+# Backend API Record — Part 116
 
-## Public APIs
-- `GET /api/part115/status`
-- `GET /api/part115/security-policy`
-- `GET /api/part115/demo`
-- `POST /api/part115/webhooks/razorpay`
+## Public
+- `GET /api/part116/status`
+- `GET /api/part116/catalog`
+- `GET /api/part116/security-policy`
+- `GET /api/part116/demo`
 
-The POST webhook endpoint is public because Razorpay calls it server-to-server. It requires a valid `X-Razorpay-Signature`.
+## Logged-in role
+- `GET /api/part116/access/me`
+- `GET /api/part116/navigation`
+- `POST /api/part116/access/check`
+- `GET /api/part116/gated/:featureKey`
+- `POST /api/part116/vani/command`
 
-## Owner-only APIs
-- `GET /api/part115/setup`
-- `GET /api/part115/events`
-- `GET /api/part115/sync-states`
-- `GET /api/part115/health`
-- `POST /api/part115/subscription/:id/reconcile`
-- `POST /api/part115/vani/command`
+## Owner-only
+- `GET /api/part116/institute-access`
+- `POST /api/part116/recalculate`
 
-## MongoDB models
-- `Part115RazorpayWebhookEvent`
-- `Part115SubscriptionSyncState`
-- `Part115WebhookAudit`
+## Future-module exports
+- `resolvePart116Access({ instituteId, role, userId })`
+- `createPart116FeatureGate(featureKey)`
 
-## Signature
-The server computes HMAC SHA-256 over the exact raw HTTP request body using `RAZORPAY_WEBHOOK_SECRET`, then timing-safe compares it with `X-Razorpay-Signature`.
+Example:
 
-## Idempotency
-`x-razorpay-event-id` is stored as a unique value. If unavailable, a SHA-256 digest of the exact raw body is used as a fallback ID.
+```js
+import { createPart116FeatureGate } from "./part116-subscription-access-control.js";
 
-## Event ordering
-Verified older events are stored but do not overwrite a newer `lastEventCreatedAt` state.
+app.get(
+  "/api/business/branches",
+  createPart116FeatureGate("branches.command_centre"),
+  async (req, res) => res.json({ success: true })
+);
+```
+
+## Models
+- `Part116AccessSnapshot`
+- `Part116AccessAudit`
+
+Part 116 reads `Part115SubscriptionSyncState`. Only matching evidence with status `active` unlocks paid entitlements.

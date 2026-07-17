@@ -1,19 +1,20 @@
-# Files Changed — Part 115
+# Files Changed — Part 116
 
 ## Backend
-- `backend/src/part115-razorpay-webhooks.js`
-- `backend/.env.part115.example`
+- `backend/src/part116-subscription-access-control.js`
+- `backend/.env.part116.example`
 
 ## Frontend
-- `frontend/razorpay-webhook-monitor.html`
-- `frontend/razorpay-webhook-monitor.css`
-- `frontend/razorpay-webhook-monitor.js`
+- `frontend/subscription-access-control.html`
+- `frontend/subscription-access-control.css`
+- `frontend/subscription-access-control.js`
+- `frontend/naxora-subscription-access-client.js`
 
 ## Installer/testing
-- `APPLY-PART115.js`
-- `APPLY-PART115.cmd`
-- `VERIFY-PART115.js`
-- `ROLLBACK-PART115.js`
-- `ROLLBACK-PART115.cmd`
+- `APPLY-PART116.js`
+- `APPLY-PART116.cmd`
+- `VERIFY-PART116.js`
+- `ROLLBACK-PART116.js`
+- `ROLLBACK-PART116.cmd`
 
-The installer registers Part 115 immediately before the Express 404/notFound handler and verifies Parts 112–114 are also before it.
+The installer registers Part 116 immediately before Express 404/notFound and verifies Parts 112–115 are also before it.

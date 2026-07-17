@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NAXORA Part 116 — Subscription Feature Access Control</title>
+  <link rel="stylesheet" href="/subscription-access-control.css" />
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">NAXORA Institute OS • Part 116</p>
+        <h1>Subscription Feature Access</h1>
+        <p class="lead">Verified active subscription + logged-in role decide karega ki kaunsa feature button aur backend API available hoga.</p>
+      </div>
+      <aside class="status-card">
+        <span id="modeBadge" class="badge">Checking…</span>
+        <strong id="statusHeadline">Loading access engine</strong>
+        <small id="statusText">Authenticated status alone features unlock nahi karega.</small>
+      </aside>
+    </section>
+
+    <section class="warning">
+      <strong>Security:</strong> Button hide karna security nahi hai. Part 116 backend feature gate bhi same role, instituteId aur active subscription check karta hai.
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Login Context</p>
+        <h2>Role-safe access</h2>
+        <label>Institute ID
+          <input id="instituteId" value="NX-DEMO-INST-001" autocomplete="off" />
+        </label>
+        <label>Existing login JWT — private
+          <input id="jwtToken" type="password" placeholder="Owner/teacher/student/parent token" autocomplete="off" />
+        </label>
+        <div class="buttons">
+          <button id="detectTokenBtn" class="secondary">Detect Token</button>
+          <button id="loadMyAccessBtn">Load My Access</button>
+        </div>
+        <pre id="accessOutput">Waiting…</pre>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Current Subscription</p>
+        <h2>Verified Part 115 evidence</h2>
+        <div id="summaryCards" class="summary-grid"></div>
+        <button id="recalculateBtn" class="secondary">Owner Recalculate</button>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Feature Check</p>
+        <h2>Backend permission test</h2>
+        <label>Feature
+          <select id="featureKey"></select>
+        </label>
+        <div class="buttons">
+          <button id="checkFeatureBtn">Check Access</button>
+          <button id="testGateBtn" class="secondary">Open Gated API</button>
+        </div>
+        <pre id="decisionOutput">No feature checked yet.</pre>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Role Navigation</p>
+        <h2>Only allowed buttons</h2>
+        <button id="loadNavigationBtn">Generate Navigation</button>
+        <div id="navigationCards" class="navigation-grid"></div>
+        <pre id="navigationOutput">Waiting…</pre>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="eyebrow">Plan and Role Matrix</p>
+      <h2>Feature catalogue</h2>
+      <div id="catalogTable" class="catalog"></div>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Global VANI</p>
+        <h2>Access assistant</h2>
+        <label>Command
+          <input id="vaniCommand" value="VANI, marketplace access check karo" />
+        </label>
+        <button id="askVaniBtn">Ask VANI</button>
+        <pre id="vaniOutput">Waiting…</pre>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Testing Links</p>
+        <div class="links">
+          <a href="/api/part116/status" target="_blank" rel="noreferrer">Status</a>
+          <a href="/api/part116/catalog" target="_blank" rel="noreferrer">Catalog</a>
+          <a href="/api/part116/security-policy" target="_blank" rel="noreferrer">Security Policy</a>
+          <a href="/api/part116/demo" target="_blank" rel="noreferrer">Demo Record</a>
+        </div>
+      </article>
+    </section>
+  </main>
+  <script src="/subscription-access-control.js"></script>
+</body>
+</html>

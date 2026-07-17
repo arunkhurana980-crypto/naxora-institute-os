@@ -1,20 +1,16 @@
-# VANI Integration Record — Part 115
+# VANI Integration Record — Part 116
 
 ## Commands
-- `VANI, webhook setup status dikhao`
-- `VANI, webhook failures dikhao`
-- `VANI, subscription sync status dikhao`
-- `VANI, is subscription ko reconcile karo`
+- `VANI, meri subscription access dikhao`
+- `VANI, marketplace access check karo`
+- `VANI, fees feature use kar sakta hoon?`
+- `VANI, owner AI access check karo`
+- `VANI, plan upgrade karo`
 
 ## Behaviour
-- Owner-only monitoring.
-- instituteId checked.
-- Secrets never spoken or returned.
-- Setup command shows URL and selected event names only.
-- Failures/events shown on private screen.
-- Reconcile requires local Part 114 Subscription ID.
-- Reconcile is a safe read-only provider refresh.
-- Live Mode requests are blocked.
-
-## Status language
-VANI can safely say counts and status names. Provider IDs, detailed event snapshots and error records remain private-screen-first.
+- Any logged-in role can ask about its own access.
+- VANI checks role, instituteId and verified active subscription.
+- VANI explains role, plan or V3 denial.
+- Provider IDs and payment details remain private-screen-first.
+- Upgrade command does not change billing in Part 116.
+- Upgrade/change moves to Part 117 with preview and confirmation.

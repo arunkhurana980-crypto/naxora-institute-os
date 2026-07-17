@@ -30522,6 +30522,12 @@ registerPart114CustomerCheckout({ app });
 const { registerPart115RazorpayWebhooks } = await import("./part115-razorpay-webhooks.js");
 registerPart115RazorpayWebhooks({ app });
 
+
+
+// ================= PART 116 — SUBSCRIPTION FEATURE ACCESS CONTROL =================
+const { registerPart116SubscriptionAccess } = await import("./part116-subscription-access-control.js");
+registerPart116SubscriptionAccess({ app });
+
 app.use(notFound);
 app.use(errorHandler);
 

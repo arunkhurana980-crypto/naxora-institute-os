@@ -3,26 +3,24 @@
 ## Previous
 - Part 112: Razorpay Test Mode Foundation.
 - Part 113: NAXORA Subscription Plans.
-- Part 114: Customer Checkout and Subscription Activation — Test Mode.
+- Part 114: Customer Checkout and Subscription Activation.
+- Part 115: Secure Webhooks and Subscription Status Sync.
 
 ## Current
-- Part 115: Secure Razorpay Webhooks and Subscription Status Sync.
+- Part 116: Subscription Feature Access Control.
 
-Part 115 complete only after:
+Complete only after:
 - route verifier passes,
-- deployment succeeds,
-- webhook secret is configured privately,
-- Razorpay Test webhook is created,
-- valid event signature passes,
-- invalid signature fails,
-- duplicate test passes,
-- event ledger stores safe records,
-- Part 114 Subscription status syncs,
-- out-of-order protection passes,
-- feature access remains locked.
+- deploy succeeds,
+- active-status unlock test passes,
+- authenticated/pending/halted denial tests pass,
+- role denial tests pass,
+- Business entitlement test passes,
+- separate V3 owner-only test passes,
+- backend gate denial test passes,
+- navigation includes only role and plan allowed features.
 
 ## Next
-- Part 116: Subscription Feature Access Control.
 - Part 117: VANI Subscription Manager.
 - Part 118: Razorpay Live Readiness and Controlled Launch.
 - Part 119–127: Unified single SaaS consolidation.

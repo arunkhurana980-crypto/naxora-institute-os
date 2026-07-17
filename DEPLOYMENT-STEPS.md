@@ -1,47 +1,35 @@
-# Deployment Steps — Part 115
-
-## Local
+# Deployment Steps — Part 116
 
 ```powershell
 node --check .\backend\src\server.js
-node .\APPLY-PART115.js
-node .\VERIFY-PART115.js
+node .\APPLY-PART116.js
+node .\VERIFY-PART116.js
 git status
 git add .
-git commit -m "Add Part 115 Secure Razorpay Webhooks and Status Sync"
+git commit -m "Add Part 116 Subscription Feature Access Control"
 git push
 ```
 
-## Render
-Keep existing build:
+Render build remains:
 
 ```bash
 cd backend && npm install --no-audit --no-fund --legacy-peer-deps
 ```
 
-Keep existing start:
+Render start remains:
 
 ```bash
 cd backend && node src/server.js
 ```
 
-Required private environment values:
-
-```env
-RAZORPAY_MODE=test
-RAZORPAY_KEY_ID=<test key id>
-RAZORPAY_KEY_SECRET=<test api key secret>
-RAZORPAY_WEBHOOK_SECRET=<separate webhook secret>
-NAXORA_PUBLIC_BASE_URL=https://naxora-institute-os.onrender.com
-```
-
 Render → Manual Deploy → Clear build cache & deploy.
 
-## After deploy
-1. Check `/api/part115/status`.
-2. Open `/webhook-monitor` as owner.
-3. Copy webhook URL.
-4. Configure Razorpay Dashboard Test Mode webhook.
-5. Select all Part 115 Subscription events.
-6. Complete a Part 114 Test Subscription/charge scenario.
-7. Check event ledger and sync states.
+## Smoke tests
+1. `/api/part116/status`
+2. `/api/part116/catalog`
+3. `/subscription-access-control`
+4. Load access as owner.
+5. Compare teacher/student/parent navigation.
+6. Check Starter, Business and V3 features.
+7. Confirm direct gated API denies unauthorized role/plan.
+8. Recalculate after Part 115 status changes.

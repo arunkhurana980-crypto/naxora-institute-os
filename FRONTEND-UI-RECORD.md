@@ -1,21 +1,36 @@
-# Frontend UI Record — Part 115
+# Frontend UI Record — Part 116
 
 ## Main page
-`/webhook-monitor`
+`/subscription-access-control`
 
 Aliases:
-- `/razorpay-webhook-monitor`
-- `/part115`
+- `/feature-access-control`
+- `/part116`
 
-## Owner UI
-- Detect owner JWT.
-- Show exact Test webhook URL.
-- Show events to select in Razorpay Dashboard.
-- Show 24-hour webhook health.
-- Show verified event ledger.
-- Show failed/unmatched records.
-- Show subscription sync states.
-- Run read-only provider reconcile.
-- Ask VANI for setup/status/help.
+## UI
+- Detect any logged-in role JWT.
+- Show current base plan.
+- Show separate V3 status.
+- Show role entitlement count.
+- Show authenticated plans waiting for active.
+- Check any feature.
+- Test backend gate.
+- Generate role-safe navigation.
+- Show plan/role catalogue.
+- Ask VANI about access.
 
-The page never displays the Webhook Secret or API Secret.
+## Reusable client
+`/naxora-subscription-access-client.js`
+
+```html
+<script src="/naxora-subscription-access-client.js"></script>
+<button data-naxora-feature="fees.manage">Fees</button>
+<script>
+  NaxoraSubscriptionAccess.configure({
+    token: existingJwt,
+    instituteId: currentInstituteId
+  }).apply();
+</script>
+```
+
+Protected backend APIs must also use the Part 116 middleware.

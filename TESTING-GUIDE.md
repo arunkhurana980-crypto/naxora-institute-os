@@ -1,30 +1,36 @@
-# Part 115 Testing Guide
+# Part 116 Testing Guide
 
-## Basic route test
-- `/api/part115/status`
-- `/api/part115/security-policy`
-- `/webhook-monitor`
+## No active subscription
+Expected:
+- base plan FREE,
+- dashboard/profile allowed,
+- paid and V3 features denied.
 
-## Real Test Mode event flow
-1. Configure the Test webhook in Razorpay Dashboard.
-2. Complete a Part 114 Test Subscription authorisation.
-3. Expected event: `subscription.authenticated`.
-4. Depending on timing, `subscription.activated` may follow.
-5. Open webhook monitor → Load Events.
-6. Open webhook monitor → Load Sync States.
-7. The matching Part 114 local Subscription should show the verified provider status.
+## Authenticated only
+Expected:
+- appears under `pendingAuthenticatedPlanCodes`,
+- paid features remain denied.
 
-## Charge testing
-Use Razorpay Test Subscription controls to simulate successful and failed recurring charges.
-- Successful charge should produce `subscription.charged`.
-- Failed charge can move the Subscription to `pending`.
-- Exhausted retries can move it to `halted`.
+## Active Starter
+Student, attendance, fees and reports become available to allowed roles.
 
-## Duplicate test
-Razorpay may retry the same event. The unique event ID should prevent double processing.
+## Active Professional
+Starter features plus VANI 2.0, live classes and AI support.
 
-## Manual reconcile
-Copy the local Part 114 Subscription MongoDB ID into the monitor and run Reconcile. This uses Razorpay Test API fetch as a safe fallback; it does not unlock features.
+## Active Business
+Professional features plus branches, franchise, marketing, marketplace and white-label.
 
-## Part boundary
-Even when status becomes active/authenticated, `featureAccessUnlocked` remains false until Part 116.
+## Separate V3
+- Active V3 + owner → V3 allowed.
+- Active V3 + teacher/student/parent → V3 denied.
+- Active V3 without Business → V3 allowed to owner, Business modules denied.
+
+## Direct backend test
+`GET /api/part116/gated/marketplace.manage`
+
+Expected:
+- Business owner: 200.
+- Starter owner: 402.
+- Teacher: 403.
+
+Part 116 uses Test Mode evidence until Part 118. Test access is not commercial payment proof.
