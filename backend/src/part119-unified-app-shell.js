@@ -402,6 +402,19 @@ const MODULES = Object.freeze([
     order: 315,
   },
   // PART 125 GLOBAL VANI ACTION MODULE END
+  // PART 126 INTEGRATION CENTRE MODULE START
+  {
+    key: "integration-centre",
+    label: "Integration & Notifications",
+    description: "Native adapters, action reconciliation, notifications and E2E health.",
+    category: "AI & VANI",
+    route: "/integration-centre",
+    icon: "manage",
+    roles: ALL_LOGGED_IN_ROLES,
+    alwaysAvailable: true,
+    order: 316,
+  },
+  // PART 126 INTEGRATION CENTRE MODULE END
 ]);
 
 const COMMAND_ALIASES = Object.freeze({
@@ -462,6 +475,13 @@ const COMMAND_ALIASES = Object.freeze({
   "message send": "vani-actions",
   "branch task": "vani-actions",
   // PART 125 GLOBAL VANI ACTION ALIASES END
+  // PART 126 INTEGRATION CENTRE ALIASES START
+  "integration centre": "integration-centre",
+  integrations: "integration-centre",
+  notifications: "integration-centre",
+  "native adapters": "integration-centre",
+  "e2e health": "integration-centre",
+  // PART 126 INTEGRATION CENTRE ALIASES END
 });
 
 function cleanText(value = "", max = 255) {

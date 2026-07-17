@@ -30525,6 +30525,10 @@ registerPart124RoleConsolidation({ app });
 const { registerPart125GlobalVaniActions } = await import("./part125-global-vani-actions.js");
 registerPart125GlobalVaniActions({ app });
 
+// ================= PART 126 — NATIVE ADAPTERS AND CROSS MODULE E2E =================
+const { registerPart126NativeE2E } = await import("./part126-native-e2e-integration.js");
+registerPart126NativeE2E({ app });
+
 // ================= PART 112 — RAZORPAY TEST MODE FOUNDATION =================
 const { registerPart112RazorpayFoundation } = await import("./part112-razorpay-foundation.js");
 registerPart112RazorpayFoundation({ app });

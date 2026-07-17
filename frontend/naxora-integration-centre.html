@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#071426" />
+  <title>Integration Centre — NAXORA</title>
+  <link rel="stylesheet" href="/naxora-integration-centre.css" />
+</head>
+<body>
+  <main class="integration-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">NAXORA Institute OS • Part 126</p>
+        <h1>Integration Centre</h1>
+        <p>Global VANI native adapters, pending-action reconciliation, in-app notifications, provider delivery aur cross-module E2E health—ek secure screen me.</p>
+      </div>
+      <aside class="hero-status">
+        <span id="actorName">NAXORA Account</span>
+        <strong id="adapterStatus">Loading adapters…</strong>
+        <small id="acceptanceStatus">Waiting for integration health</small>
+      </aside>
+    </section>
+
+    <section id="alertsPanel" class="alerts-panel" hidden></section>
+
+    <section id="summaryCards" class="summary-grid">
+      <article><span>Loading</span><strong>—</strong><small>Part 126 status</small></article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Native Adapters</p>
+            <h2>Part 125 → Part 126 mapping</h2>
+          </div>
+          <button id="refreshBtn" class="secondary">Refresh</button>
+        </div>
+        <div id="adapterGrid" class="adapter-grid">Loading…</div>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Delivery Providers</p>
+        <h2>Honest provider readiness</h2>
+        <div id="providerList" class="stack-list">Loading…</div>
+        <p class="precision-note">Email, SMS ya WhatsApp tabhi delivered mark hoga jab private provider webhook HTTP success return kare.</p>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Pending Actions</p>
+        <h2>Part 125 reconciliation</h2>
+        <div id="pendingList" class="record-list">Loading…</div>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Native Executions</p>
+        <h2>Adapter execution history</h2>
+        <div id="executionList" class="record-list">Loading…</div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Notifications</p>
+        <h2>My in-app inbox</h2>
+        <div id="notificationList" class="record-list">Loading…</div>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Delivery Attempts</p>
+        <h2>In-app and provider states</h2>
+        <div id="deliveryList" class="record-list">Loading…</div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="eyebrow">Cross-Module E2E</p>
+      <h2>Acceptance checks before Part 127</h2>
+      <div id="healthList" class="health-grid">Loading…</div>
+      <pre id="output">Waiting…</pre>
+    </section>
+  </main>
+
+  <dialog id="retryDialog">
+    <form method="dialog" class="dialog-card">
+      <p class="eyebrow">Retry Native Adapter</p>
+      <h2 id="retryTitle">Part 125 action</h2>
+      <p id="retryText"></p>
+      <label>Exact confirmation
+        <input id="retryConfirmation" autocomplete="off" />
+      </label>
+      <div class="dialog-actions">
+        <button value="cancel" class="secondary">Cancel</button>
+        <button id="retryConfirmBtn" value="default">Retry Confirmed</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/naxora-common-session.js"></script>
+  <script src="/naxora-integration-centre.js"></script>
+</body>
+</html>

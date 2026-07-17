@@ -1,30 +1,14 @@
-# Security and Role Tests — Part 125
+# Security and Role Tests — Part 126
 
-## Authentication
-- Missing JWT returns 401.
-- instituteId mismatch returns 403.
-- Unknown role returns 403.
-
-## Scope
-- Student targets only self.
-- Parent targets only Owner-linked children.
-- Branch-scoped roles require matching branchId.
-- Institute-wide scope must have been explicitly assigned in Part 124.
-- Teacher canonical request still requires Part 126 native adapter validation before native mutation.
-
-## Action safety
-- Unsupported action type blocked.
-- Role/action matrix enforced.
-- Missing fields return exact field list.
-- Preview expires after 30 minutes.
-- Exact confirmation required.
-- Execute before confirmation blocked.
-- Cancelled action cannot execute.
-- Duplicate action protected.
-- Execution is idempotent.
-
-## Content
-- Password, OTP, API secret, bank/card and KYC data blocked.
-- Direct money transfer/charge/refund commands blocked.
-- Destructive delete commands blocked.
-- No external delivery is claimed without adapter success.
+- Nine adapters must register.
+- Part 126 must load after Part 125.
+- Cross-institute references must fail.
+- Student cannot target another Student.
+- Parent cannot target an unlinked child.
+- Branch role cannot use another branch.
+- Client cannot provide an arbitrary model or provider URL.
+- Message recipients must match active Part 120 role identities.
+- Provider success is required before external delivery is claimed.
+- Direct charges, transfers and refunds remain disabled.
+- Retry requires original actor or Owner plus exact confirmation.
+- Notification read must reject another user.

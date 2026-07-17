@@ -1,27 +1,23 @@
-# Backend API Record — Part 125
+# Backend API Record — Part 126
 
 ## Public
-- `GET /api/part125/status`
-- `GET /api/part125/security-policy`
-- `GET /api/part125/catalog`
-- `GET /api/part125/demo`
+- `GET /api/part126/status`
+- `GET /api/part126/security-policy`
+- `GET /api/part126/catalog`
+- `GET /api/part126/demo`
 
-## Logged-in role
-- `GET /api/part125/my-actions`
-- `GET /api/part125/actions/:actionId`
-- `POST /api/part125/actions/preview`
-- `POST /api/part125/actions/:actionId/confirm`
-- `POST /api/part125/actions/:actionId/execute`
-- `POST /api/part125/actions/:actionId/cancel`
-- `POST /api/part125/vani/command`
+## Authenticated
+- `GET /api/part126/health`
+- `GET /api/part126/actions/pending`
+- `POST /api/part126/actions/:actionId/retry-preview`
+- `POST /api/part126/actions/:actionId/retry-confirmed`
+- `GET /api/part126/executions`
+- `GET /api/part126/notifications`
+- `POST /api/part126/notifications/:notificationId/read`
+- `GET /api/part126/deliveries`
 
-## Models
-- `Part125VaniAction`
-- `Part125CanonicalActionRecord`
-- `Part125ActionOutbox`
-- `Part125ActionAudit`
+## Owner-only
+- `GET /api/part126/e2e/acceptance`
 
-## Adapter export
-`registerPart125ActionAdapter(app, actionType, handler, name)`
-
-Part 126 uses this export to connect native Attendance, Fees, Admissions, Assignment and notification modules.
+## Export
+- `getPart126Acceptance({ app, instituteId })`

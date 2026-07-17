@@ -1,23 +1,18 @@
-# Frontend UI Record — Part 125
+# Frontend UI Record — Part 126
 
-## Page
-`/vani-actions`
+Main page:
 
-## Sections
-- Voice/text VANI command.
-- Structured action selector.
-- Dynamic required/optional fields.
-- Preview.
-- Exact confirmation.
-- Separate execution.
-- Cancellation before execution.
-- Personal action history.
-- Native-adapter status.
+```text
+/integration-centre
+```
 
-## Part 119 integration
-Installer adds:
-- Global VANI Actions sidebar module.
-- Action aliases.
-- `/naxora-part125-global-vani-bridge.js`.
+Sections:
+- nine-adapter matrix,
+- provider readiness,
+- pending Part 125 reconciliation,
+- native execution history,
+- in-app notifications,
+- delivery attempts,
+- E2E checks.
 
-The bridge intercepts action-like VANI commands and opens the Part 125 action page. Navigation-only commands remain handled by Part 119.
+Part 119 adds **Integration & Notifications** for all logged-in roles.

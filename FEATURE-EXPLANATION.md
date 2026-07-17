@@ -1,26 +1,27 @@
-# Feature Explanation — Part 125
+# Feature Explanation — Part 126
 
-## Why preview and confirmation
-VANI must not change institute data from one ambiguous sentence. Every action has:
-1. deterministic intent,
-2. structured payload,
-3. role permission,
-4. scope validation,
-5. stored preview,
-6. exact confirmation,
-7. separate execution,
-8. audit.
-
-## Canonical execution
-Execution always creates a Part 125 canonical record. Message/reminder/follow-up actions also create an outbox item.
-
-When Part 126 registers a native adapter, the same execution can update the existing module or notification provider. Without an adapter the result is:
+## Flow
 
 ```text
-executed_pending_adapter
+Part 125 preview
+→ exact confirmation
+→ execute
+→ Part 126 adapter
+→ institute/role/scope revalidation
+→ idempotent native record
+→ in-app notification
+→ optional private provider
+→ delivery and audit state
 ```
 
-This is not a failure and not a fake delivery. It means the request is safely stored for Part 126.
+## Scope checks
 
-## Global shell bridge
-Action-like commands entered in the Part 119 VANI panel are routed to Part 125. Normal “module kholo” commands still use Part 119 navigation.
+- Student: logged-in Student identity only.
+- Parent: Part 124 linked child only.
+- Branch-scoped roles: assigned branch or explicit institute-wide scope.
+- Message recipients: active Part 120 identities matching the requested role.
+- Assignment submission: existing Part 126 assignment required.
+
+## Idempotency
+
+Every adapter uses Part 125 `actionId`. A repeated call returns the saved result and does not create a duplicate native record.

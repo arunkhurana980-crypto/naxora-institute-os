@@ -1,34 +1,29 @@
-# Part 125 Testing Guide
+# Part 126 Testing Guide
 
-## Owner
-Create a Branch Task or role-safe message.
+Execute through Part 125:
+1. attendance mark,
+2. attendance correction request,
+3. fee reminder,
+4. fee assistance request,
+5. admission follow-up,
+6. assignment create,
+7. assignment submit,
+8. role-safe message,
+9. branch task.
 
-## Teacher
-Create an Assignment preview. A native Assignment module update remains pending until Part 126 adapter registration.
+Expected successful Part 125 status:
 
-## Student
-Submit an Assignment or create Fee Assistance Request. Student cannot target another Student.
+```text
+executed_native
+```
 
-## Parent
-Create Attendance Correction or Fee Assistance Request for an Owner-linked child only.
+For older `executed_pending_adapter` actions:
+1. open `/integration-centre`,
+2. Preview Retry,
+3. enter exact confirmation,
+4. Retry Confirmed.
 
-## Accountant
-Create Fee Reminder within assigned branch or explicit institute-wide scope.
-
-## Counsellor
-Create Admission Follow-up within assigned branch/institute scope.
-
-## Branch Manager
-Create Attendance command, Fee Reminder, Admission Follow-up or Branch Task for an assigned branch.
-
-## Staff
-Create allowed Attendance command within assigned branch scope.
-
-## State tests
-- Preview.
-- Wrong confirmation.
-- Exact confirmation.
-- Execute.
-- Execute again: idempotent replay.
-- Cancel a fresh preview.
-- Duplicate same payload within 10 minutes.
+Provider states:
+- no provider: `provider_not_configured`
+- HTTP success: `provider_delivered`
+- provider error: `provider_failed`

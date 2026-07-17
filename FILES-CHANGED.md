@@ -1,25 +1,18 @@
-# Files Changed — Part 125
+# Files Changed — Part 126
 
 ## Backend
-- `backend/src/part125-global-vani-actions.js`
-- `backend/.env.part125.example`
+- `backend/src/part126-native-e2e-integration.js`
+- `backend/.env.part126.example`
 
 ## Frontend
-- `frontend/naxora-vani-actions.html`
-- `frontend/naxora-vani-actions.css`
-- `frontend/naxora-vani-actions.js`
-- `frontend/naxora-part125-global-vani-bridge.js`
+- `frontend/naxora-integration-centre.html`
+- `frontend/naxora-integration-centre.css`
+- `frontend/naxora-integration-centre.js`
 
-## Part 119 integration
-Installer:
-- adds `vani-actions` module,
-- adds action aliases,
-- adds Global VANI bridge script,
-- updates action-mode text.
+## Installer
+- `APPLY-PART126.js`
+- `VERIFY-PART126.js`
+- `ROLLBACK-PART126.js`
+- CMD launchers
 
-## Installer/testing
-- `APPLY-PART125.js`
-- `APPLY-PART125.cmd`
-- `VERIFY-PART125.js`
-- `ROLLBACK-PART125.js`
-- `ROLLBACK-PART125.cmd`
+Installer also adds the Part 119 Integration & Notifications module and updates unified-app progress text.
