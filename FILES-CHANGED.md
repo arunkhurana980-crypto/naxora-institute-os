@@ -1,31 +1,18 @@
-# Files Changed — Part 112
+# Files Changed — Part 113
 
-## New backend
-- `backend/src/part112-razorpay-foundation.js`
-- `backend/.env.part112.example`
+## Backend
+- `backend/src/part113-subscription-plans.js`
 
-## New frontend
-- `frontend/razorpay-test-mode-foundation.html`
-- `frontend/razorpay-test-mode-foundation.css`
-- `frontend/razorpay-test-mode-foundation.js`
+## Frontend
+- `frontend/naxora-subscription-plans.html`
+- `frontend/naxora-subscription-plans.css`
+- `frontend/naxora-subscription-plans.js`
 
-## Safe installer
-- `APPLY-PART112.js`
-- `APPLY-PART112.cmd`
-- `ROLLBACK-PART112.js`
-- `ROLLBACK-PART112.cmd`
+## Installer/testing
+- `APPLY-PART113.js`
+- `APPLY-PART113.cmd`
+- `ROLLBACK-PART113.js`
+- `ROLLBACK-PART113.cmd`
+- `VERIFY-PART113.js`
 
-`APPLY-PART112.js` current `backend/src/server.js` me sirf one bootstrap block inject karta hai. Full server.js replace nahi hota, isliye Parts 1–111 preserve rehte hain.
-
-## Documentation
-- `START-HERE-PART-112.md`
-- `FEATURE-EXPLANATION.md`
-- `FILES-CHANGED.md`
-- `BACKEND-API-RECORD.md`
-- `FRONTEND-UI-RECORD.md`
-- `SECURITY-AND-ROLE-TESTS.md`
-- `VANI-INTEGRATION-RECORD.md`
-- `DEPLOYMENT-STEPS.md`
-- `ROLLBACK-STEPS.md`
-- `MASTER-PROGRESS-RECORD.md`
-- `RAZORPAY-DASHBOARD-SETUP.md`
+The installer adds one registration block to the existing `backend/src/server.js`. It does not replace the full server file.

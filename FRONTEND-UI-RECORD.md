@@ -1,22 +1,20 @@
-# Frontend UI Record — Part 112
+# Frontend UI Record — Part 113
 
-## Page
-`/razorpay-test-mode-foundation`
+## Main page
+`/subscription-plans`
 
 Aliases:
-- `/razorpay-settings`
-- `/part112`
+- `/naxora-subscription-plans`
+- `/part113`
 
-## UI sections
-- Public Test Mode status.
-- Owner JWT/institute context.
-- Environment readiness metrics.
-- VANI command box.
-- Read-only connection test.
-- Setup preview.
-- Exact confirmation text.
-- Render environment variable names.
-- Security checklist.
+## UI flow
+1. Owner login context.
+2. Select Starter/Professional/Business/V3 AI.
+3. Select monthly/yearly.
+4. Enter price.
+5. Create preview.
+6. Review exact details.
+7. Enter exact confirmation.
+8. Create Razorpay Test Plan.
 
-## Token handling
-The page attempts to detect common existing same-origin login token keys. A manually entered token is stored only in `sessionStorage` for the current browser session. The UI never displays Razorpay secrets.
+The UI also provides VANI commands, local plan list and Razorpay Test Plan list.

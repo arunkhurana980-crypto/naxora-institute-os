@@ -1,30 +1,29 @@
-# Part 112 Feature Explanation
+# Feature Explanation — Part 113
 
-## Problem solved
-NAXORA me Razorpay package installed tha, lekin safe provider foundation, environment readiness, owner-only controls, masked configuration record aur verified Test Mode connection flow ek jagah locked nahi tha.
+Part 113 adds NAXORA's Test Mode subscription-plan layer.
 
 ## Added
-- Razorpay Test Mode safety lock.
-- Environment variable readiness checker.
-- Test Key ID format check.
-- Read-only Razorpay API connection test.
-- Owner-only provider setup APIs.
-- MongoDB provider configuration model.
-- Future plan draft and subscription record foundation models.
-- Payment security audit model.
-- VANI Razorpay setup assistant.
-- Private-screen-first UI.
-- Setup preview and exact confirmation phrase.
-- No secrets returned, spoken or stored in MongoDB.
+- Starter, Professional, Business and V3 AI plan templates.
+- Owner-defined monthly/yearly prices.
+- Plan preview stored in MongoDB.
+- Duplicate fingerprint protection.
+- Exact confirmation before provider creation.
+- Razorpay Test Plan API integration.
+- Local-to-provider Plan ID mapping.
+- Provider and local plan lists.
+- Local archive only; provider plan remains unchanged.
+- VANI plan-detail conversation and preview.
+- Audit records.
 
-## Not added in Part 112
-- Customer checkout.
-- Real payment collection.
-- Razorpay Plan creation.
-- Customer Subscription creation.
+## Why preview matters
+A Razorpay Plan is a reusable billing template. NAXORA therefore confirms name, period and amount before creating it.
+
+## Not included
+- Customer subscription creation.
+- Checkout/mandate authorisation.
 - Signature verification.
-- Webhook event processing.
-- Refunds.
+- Webhook status sync.
 - Live Mode.
+- Refunds.
 
-These come in later verified parts.
+These remain locked for later parts.

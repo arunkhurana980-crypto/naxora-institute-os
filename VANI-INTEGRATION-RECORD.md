@@ -1,26 +1,22 @@
-# VANI Integration Record — Part 112
+# VANI Integration Record — Part 113
 
-## Commands
-- `VANI, Razorpay setup status dikhao`
-- `VANI, setup me kya pending hai?`
-- `VANI, Razorpay test connection check karo`
-- `VANI, setup confirm karo`
-- `VANI, live mode start karo`
+## Example commands
+- `VANI, Professional monthly plan price INR 2999 ka preview banao`
+- `VANI, Business yearly plan price ₹29999 ka preview banao`
+- `VANI, subscription plans dikhao`
 
-## Behaviour
-- Owner login required.
-- Valid instituteId required.
-- Provider secrets are private-screen-only.
-- Setup command produces status/preview.
-- Confirmation command does not silently save; exact confirmation is required through the confirmation endpoint/UI.
-- Connection test is read-only.
-- Live Mode request is blocked.
-- Sensitive secret request is blocked and audited.
-- VANI speaks only a safe summary.
+## Missing details behaviour
+If plan name, period or price is missing, VANI asks for it.
 
-## Action levels
-- Level 1: status/readiness/checklist.
-- Level 2: setup preview.
-- Level 3: exact owner confirmation saves only the Test Mode configuration record.
+## Safety
+- Owner-only.
+- instituteId checked.
+- Test Mode only.
+- Preview before creation.
+- Exact confirmation required.
+- Provider secrets not spoken.
+- Live Mode requests blocked.
+- Duplicate creation blocked.
 
-No real payment action exists in Part 112.
+## Current action boundary
+VANI prepares the plan preview. Provider creation is completed through the confirmed action using the exact preview confirmation. Customer subscription/checkout remains Part 114.

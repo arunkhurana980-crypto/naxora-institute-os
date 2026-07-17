@@ -30507,6 +30507,12 @@ app.use(errorHandler);
 const { registerPart112RazorpayFoundation } = await import("./part112-razorpay-foundation.js");
 registerPart112RazorpayFoundation({ app });
 
+
+
+// ================= PART 113 — NAXORA SUBSCRIPTION PLANS =================
+const { registerPart113SubscriptionPlans } = await import("./part113-subscription-plans.js");
+registerPart113SubscriptionPlans({ app });
+
 const port = Number(process.env.PORT) || 5000;
 
 await connectDB();

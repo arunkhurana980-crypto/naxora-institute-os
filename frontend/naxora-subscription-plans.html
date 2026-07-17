@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NAXORA Part 113 — Subscription Plans</title>
+  <link rel="stylesheet" href="/naxora-subscription-plans.css" />
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">NAXORA Institute OS • Part 113</p>
+        <h1>Subscription Plans</h1>
+        <p class="lead">Owner price enter karega, VANI preview banayegi, exact confirmation ke baad Razorpay Test Plan create hoga.</p>
+      </div>
+      <aside class="status-card">
+        <span id="modeBadge" class="badge">Checking…</span>
+        <strong id="statusHeadline">Loading status</strong>
+        <small id="statusText">Customer checkout Part 114 me aayega.</small>
+      </aside>
+    </section>
+
+    <section class="warning">
+      <strong>Important:</strong> Razorpay provider par plan create hone ke baad edit/delete nahi karna chahiye. Price, billing period aur plan name confirmation se pehle dobara check karo.
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Owner Session</p>
+        <h2>Protected plan controls</h2>
+        <label>Institute ID
+          <input id="instituteId" value="NX-DEMO-INST-001" autocomplete="off" />
+        </label>
+        <label>Existing owner JWT — private
+          <input id="jwtToken" type="password" placeholder="Auto-detect existing owner login token" autocomplete="off" />
+        </label>
+        <div class="buttons">
+          <button id="detectTokenBtn" class="secondary">Detect Token</button>
+          <button id="readinessBtn">Check Readiness</button>
+        </div>
+        <pre id="readinessOutput">Waiting…</pre>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Plan Templates</p>
+        <h2>Price owner decide karega</h2>
+        <div id="templateCards" class="template-grid"></div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Create Preview</p>
+        <h2>Test Plan details</h2>
+        <label>Template
+          <select id="planCode"></select>
+        </label>
+        <label>Plan name
+          <input id="planName" />
+        </label>
+        <label>Billing period
+          <select id="period"><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select>
+        </label>
+        <label>Price in rupees
+          <input id="amountRupees" inputmode="decimal" placeholder="Example: 2999" />
+        </label>
+        <label>Description
+          <textarea id="description" rows="4"></textarea>
+        </label>
+        <button id="previewBtn">Create Safe Preview</button>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Preview → Confirm</p>
+        <h2>Razorpay Test Plan</h2>
+        <pre id="previewOutput">No preview yet.</pre>
+        <label>Exact confirmation text
+          <input id="confirmationText" placeholder="Preview se exact text copy karo" autocomplete="off" />
+        </label>
+        <button id="createPlanBtn">Create Confirmed Test Plan</button>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Global VANI • Owner Only</p>
+        <h2>Plan assistant</h2>
+        <label>Command
+          <input id="vaniCommand" value="VANI, Professional monthly plan price INR 2999 ka preview banao" />
+        </label>
+        <button id="askVaniBtn">Ask VANI</button>
+        <pre id="vaniOutput">Waiting…</pre>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Plan Lists</p>
+        <h2>Local and Razorpay Test plans</h2>
+        <div class="buttons">
+          <button id="loadLocalBtn" class="secondary">Load Local Plans</button>
+          <button id="loadProviderBtn" class="secondary">Load Razorpay Plans</button>
+        </div>
+        <pre id="plansOutput">Waiting…</pre>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="eyebrow">Testing Links</p>
+      <div class="links">
+        <a href="/api/part113/status" target="_blank" rel="noreferrer">Status</a>
+        <a href="/api/part113/templates" target="_blank" rel="noreferrer">Templates</a>
+        <a href="/api/part113/security-policy" target="_blank" rel="noreferrer">Security Policy</a>
+        <a href="/api/part113/demo" target="_blank" rel="noreferrer">Demo Record</a>
+      </div>
+    </section>
+  </main>
+  <script src="/naxora-subscription-plans.js"></script>
+</body>
+</html>

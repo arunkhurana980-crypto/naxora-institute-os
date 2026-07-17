@@ -1,52 +1,40 @@
-# Deployment Steps — Part 112
+# Deployment Steps — Part 113
 
-## Local
-After copying files into the live project root:
+## Local commands
+Run one command at a time. Terminal prompt must start with `PS ...>` and not `>>`.
 
-```bash
-node APPLY-PART112.js
-node --check backend/src/server.js
+```powershell
+node --check .\backend\src\server.js
+node .\APPLY-PART113.js
+node .\VERIFY-PART113.js
 git status
 git add .
-git commit -m "Add Part 112 Razorpay Test Mode Foundation"
+git commit -m "Add Part 113 NAXORA Subscription Plans"
 git push
 ```
 
-## Render build
-Keep existing build command:
+## Render
+Build command remains:
 
 ```bash
 cd backend && npm install --no-audit --no-fund --legacy-peer-deps
 ```
 
-## Render start
-Keep existing start command:
+Start command remains:
 
 ```bash
 cd backend && node src/server.js
 ```
 
-## Render Environment
-Add private values inside Render only:
+Use the Part 112 Test environment variables. Do not add Live keys.
 
-```env
-RAZORPAY_MODE=test
-RAZORPAY_KEY_ID=<test key id>
-RAZORPAY_KEY_SECRET=<test key secret>
-RAZORPAY_WEBHOOK_SECRET=<private random secret>
-NAXORA_PUBLIC_BASE_URL=https://naxora-institute-os.onrender.com
-```
-
-## Deploy
 Render → Manual Deploy → Clear build cache & deploy.
 
-## Smoke test order
-1. `/api/part112/status`
-2. `/api/part112/security-policy`
-3. `/razorpay-test-mode-foundation`
-4. Owner readiness
-5. Test connection
-6. Setup preview
-7. Exact Test Mode confirmation
-
-Do not switch to Live Mode in Part 112.
+## Smoke tests
+1. Status API.
+2. Templates API.
+3. Owner readiness.
+4. Create a low-value Test Plan preview after deciding a test price.
+5. Confirm exact text.
+6. Verify Plan ID starts with `plan_`.
+7. Verify no payment/customer subscription was created.

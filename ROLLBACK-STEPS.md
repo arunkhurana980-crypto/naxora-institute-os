@@ -1,26 +1,21 @@
-# Rollback Steps — Part 112
+# Rollback Steps — Part 113
 
-## Automatic bootstrap rollback
-Project root terminal:
+Run:
 
-```bash
-node ROLLBACK-PART112.js
+```powershell
+node .\ROLLBACK-PART113.js
+node --check .\backend\src\server.js
 ```
 
-Then optionally delete Part 112 new files listed in `FILES-CHANGED.md`.
+Then remove Part 113 new files if required.
 
-## Git rollback before push
-```bash
-git restore backend/src/server.js
-git clean -fd
-```
+After commit, preferred rollback:
 
-Warning: `git clean -fd` deletes all untracked files, not only Part 112. Use only when you understand the result.
-
-## Git rollback after commit
-```bash
-git revert <part-112-commit-sha>
+```powershell
+git revert <part-113-commit-sha>
 git push
 ```
 
-Then Render → Manual Deploy → Clear build cache & deploy.
+Deploy the reverted commit through Render.
+
+Razorpay provider Plans already created cannot be removed by this code. Rollback removes NAXORA Part 113 app integration only.

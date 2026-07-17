@@ -1,36 +1,37 @@
-# Backend API Record — Part 112
+# Backend API Record — Part 113
 
-## Public safe APIs
-- `GET /api/part112/status`
-- `GET /api/part112/security-policy`
-- `GET /api/part112/checklist`
-- `GET /api/part112/demo`
-
-These APIs never return Key Secret or Webhook Secret.
+## Public APIs
+- `GET /api/part113/status`
+- `GET /api/part113/templates`
+- `GET /api/part113/security-policy`
+- `GET /api/part113/demo`
 
 ## Owner-only APIs
-- `GET /api/part112/config`
-- `GET /api/part112/readiness`
-- `POST /api/part112/setup/preview`
-- `POST /api/part112/setup/confirm`
-- `POST /api/part112/connection-test`
-- `POST /api/part112/vani/command`
+- `GET /api/part113/readiness`
+- `GET /api/part113/plans/local`
+- `GET /api/part113/plans/provider`
+- `POST /api/part113/plan/preview`
+- `POST /api/part113/plan/create-confirmed`
+- `POST /api/part113/plan/:id/archive-preview`
+- `POST /api/part113/plan/:id/archive-confirm`
+- `POST /api/part113/vani/command`
 
-Required headers:
+Required:
 
 ```http
 Authorization: Bearer <owner-jwt>
 x-naxora-institute-id: <institute-id>
 ```
 
-## Models
-- `Part112RazorpayProviderConfig`
-- `Part112SubscriptionPlanDraft`
-- `Part112SubscriptionRecord`
-- `Part112PaymentAudit`
+## Provider call
+Test Plan creation uses the Razorpay Plans resource with:
+- period
+- interval
+- item name
+- amount in paise
+- INR currency
+- description
+- safe NAXORA notes
 
-## Connection test
-It performs a read-only Razorpay Test Mode orders list request with maximum count 1. It creates no order, payment, plan or subscription.
-
-## Foundation limits
-Part 112 refuses Live Mode. Checkout and subscription mutation routes do not exist in this part.
+## Idempotency
+NAXORA creates a SHA-256 fingerprint from institute, plan code, period, amount, currency and name. Exact duplicates return the existing record instead of creating another provider Plan.
