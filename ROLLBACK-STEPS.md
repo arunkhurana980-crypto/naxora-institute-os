@@ -1,17 +1,17 @@
-# Rollback Steps — Part 119
+# Rollback Steps — Part 120
 
 ```powershell
-node .\ROLLBACK-PART119.js
+node .\ROLLBACK-PART120.js
 node --check .\backend\src\server.js
 ```
 
-Then optionally remove Part 119 backend/frontend files.
+This removes Part 120 route registration and the Part 119 common-session script.
+
+It does not delete existing `Part120UnifiedIdentity` or auth audit records. Existing old role logins remain available.
 
 After commit:
 
 ```powershell
-git revert <part-119-commit-sha>
+git revert <part-120-commit-sha>
 git push
 ```
-
-Deploy the reverted commit. Existing legacy module routes remain unchanged.

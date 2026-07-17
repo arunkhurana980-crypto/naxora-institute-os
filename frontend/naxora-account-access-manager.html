@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Account Access Manager — NAXORA</title>
+  <link rel="stylesheet" href="/naxora-common-auth.css" />
+</head>
+<body>
+  <main class="manager-shell">
+    <header class="manager-header">
+      <div class="brand-lockup compact"><span class="brand-mark">N</span><div><strong>NAXORA</strong><small>Account Access Manager</small></div></div>
+      <div class="header-actions">
+        <a class="secondary button-link" href="/app">Back to App</a>
+        <button id="loadAccountsBtn" class="primary">Refresh Accounts</button>
+      </div>
+    </header>
+
+    <section class="warning-box">
+      Owner Action Secret ko chat, VANI, GitHub ya screenshot me mat dikhana. Temporary password user ko private way me share karein.
+    </section>
+
+    <section class="manager-grid">
+      <article class="form-card">
+        <p class="eyebrow">Create role account</p>
+        <h2>New unified login</h2>
+        <label>Login ID / Email / Phone
+          <input id="newIdentifier" autocomplete="off" />
+        </label>
+        <label>Display name
+          <input id="newDisplayName" autocomplete="off" />
+        </label>
+        <label>Role
+          <select id="newRole">
+            <option value="teacher">Teacher</option>
+            <option value="student">Student</option>
+            <option value="parent">Parent</option>
+            <option value="branch_manager">Branch Manager</option>
+            <option value="accountant">Accountant</option>
+            <option value="counsellor">Counsellor</option>
+            <option value="staff">Staff</option>
+            <option value="institute_owner">Institute Owner</option>
+          </select>
+        </label>
+        <label>Temporary password
+          <input id="temporaryPassword" type="password" autocomplete="new-password" />
+        </label>
+        <label>Owner Action Secret — private
+          <input id="ownerActionSecret" type="password" autocomplete="new-password" />
+        </label>
+        <button id="previewCreateBtn" class="primary full">Preview Account</button>
+        <pre id="createOutput">Waiting…</pre>
+        <label>Exact confirmation
+          <input id="createConfirmation" autocomplete="off" />
+        </label>
+        <button id="createAccountBtn" class="primary full">Create Confirmed Account</button>
+      </article>
+
+      <article class="form-card account-list-card">
+        <p class="eyebrow">Institute accounts</p>
+        <h2>Roles and access status</h2>
+        <div id="accountsList" class="accounts-list">Loading…</div>
+        <pre id="actionOutput">Waiting…</pre>
+      </article>
+    </section>
+  </main>
+
+  <dialog id="actionDialog">
+    <form method="dialog" class="dialog-card">
+      <h3 id="dialogTitle">Account action</h3>
+      <p id="dialogText"></p>
+      <label id="dialogPasswordWrap">Temporary password
+        <input id="dialogPassword" type="password" autocomplete="new-password" />
+      </label>
+      <label>Exact confirmation
+        <input id="dialogConfirmation" autocomplete="off" />
+      </label>
+      <label>Owner Action Secret
+        <input id="dialogOwnerSecret" type="password" autocomplete="new-password" />
+      </label>
+      <div class="dialog-actions">
+        <button value="cancel" class="secondary">Cancel</button>
+        <button id="dialogConfirmBtn" value="default" class="primary">Confirm</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/naxora-account-access-manager.js"></script>
+</body>
+</html>

@@ -1,32 +1,34 @@
-# Feature Explanation — Part 119
+# Feature Explanation — Part 120
 
-## Single-app behaviour
+## Unified login flow
 
 ```text
-Existing role login
-→ open /app
-→ server verifies JWT and instituteId
-→ role modules filtered
-→ Part 116 plan/V3 entitlements filtered
-→ selected old module opens inside central pane
-→ URL remains /app#/module/<key>
+/login
+→ institute ID
+→ email/phone/login ID
+→ password verification
+→ signed JWT with role + instituteId
+→ temporary-password check
+→ automatic /app redirect
+→ Part 119 role/subscription navigation
 ```
 
-## Global VANI in Part 119
-Safe examples:
-- `VANI, fees kholo`
-- `VANI, marketplace dikhao`
-- `VANI, webhook monitor kholo`
-- `VANI, teacher app kholo`
+## Existing-user migration
+A valid legacy JWT proves the current role and institute. The user sets a fresh common-login password. Old password hashes are not copied or exposed.
 
-Part 119 VANI performs only safe navigation. It does not bypass module security or execute finance/student actions.
+## New accounts
+Only institute_owner can provision accounts. Account creation requires:
+- owner JWT,
+- matching institute,
+- exact confirmation,
+- private Owner Action Secret,
+- temporary password meeting the password policy.
 
-## Server allowlist
-The browser cannot submit an arbitrary URL. It submits a module key. The backend returns a route only when:
-- module key exists,
-- role is allowed,
-- instituteId matches,
-- Part 116 entitlement allows the module.
+The user must change a temporary password at first login.
 
-## Legacy route embedding
-Existing feature pages remain available, but users reach them through the central shell. Parts 121–126 will progressively replace legacy-page differences with shared shell components and global action integration.
+## Session safety
+- Default token session: 12 hours in sessionStorage.
+- Remember me: 7 days in localStorage.
+- Five failed account logins trigger a temporary lock.
+- IP/identifier rate limiting is enabled.
+- Token version allows all unified sessions to be revoked.

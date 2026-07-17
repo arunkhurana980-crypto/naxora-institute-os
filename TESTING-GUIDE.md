@@ -1,40 +1,35 @@
-# Part 119 Testing Guide
+# Part 120 Testing Guide
 
-## Public tests
-- `/api/part119/status`
-- `/api/part119/catalog`
-- `/app`
+## First owner migration
+1. Login from the existing owner login.
+2. Open `/login`.
+3. Expand “existing session” migration.
+4. Use institute ID, owner Login ID, display name and new common password.
+5. Submit.
+6. Confirm `/app` opens.
 
-## Existing-session test
-1. Login through an existing owner/teacher/student/parent route.
-2. Open `/app`.
-3. Press Connect Existing Login if auto-detection does not run.
-4. Confirm role badge and module list.
+## Common login
+1. Logout.
+2. Open `/login`.
+3. Enter the same institute ID, Login ID and password.
+4. Confirm role-safe `/app`.
 
-## Owner tests
-- Billing controls visible.
-- Business modules depend on Part 116 entitlement.
-- V3 modules depend on active V3 subscription.
+## Create Teacher
+1. Owner opens `/account-access-manager`.
+2. Fill Teacher details and temporary password.
+3. Preview.
+4. Enter exact confirmation and private owner verification.
+5. Create.
+6. Login as Teacher.
+7. Change temporary password.
+8. Confirm Owner/Billing modules are hidden.
 
-## Teacher tests
-- Teacher app, attendance, reports, live classes and allowed AI modules.
-- Owner billing and owner AI hidden/blocked.
-
-## Student tests
-- Student app, live classes and allowed student AI modules.
-- Fees management and owner controls blocked.
-
-## Parent tests
-- Parent app only from current catalogue.
-- Owner/teacher/business controls blocked.
-
-## VANI tests
-- Allowed module opens.
-- Denied module stays closed.
-- Unknown module gets safe reply.
-- Sensitive credential request is blocked.
-
-## Route tests
-- Hash changes to `#/module/<key>`.
-- Refresh preserves selected module.
-- Back button returns to previous shell state.
+## Negative tests
+- Wrong institute ID.
+- Wrong password.
+- Repeated login failures.
+- Disabled account.
+- Wrong confirmation.
+- Wrong owner secret.
+- Student token on Account Access Manager.
+- Expired/revoked token.

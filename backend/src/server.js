@@ -30501,6 +30501,10 @@ app.get("/api/part110/demo", (req, res) => {
 
 
 // ================= NAXORA PAYMENT ROUTES — MUST STAY BEFORE 404 HANDLER =================
+// ================= PART 120 — COMMON LOGIN JWT AND ROLE ROUTING =================
+const { registerPart120CommonLogin } = await import("./part120-common-login.js");
+registerPart120CommonLogin({ app });
+
 // ================= PART 112 — RAZORPAY TEST MODE FOUNDATION =================
 const { registerPart112RazorpayFoundation } = await import("./part112-razorpay-foundation.js");
 registerPart112RazorpayFoundation({ app });

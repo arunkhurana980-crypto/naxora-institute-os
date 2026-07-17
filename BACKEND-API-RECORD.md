@@ -1,23 +1,26 @@
-# Backend API Record — Part 119
+# Backend API Record — Part 120
 
 ## Public
-- `GET /api/part119/status`
-- `GET /api/part119/catalog`
-- `GET /api/part119/security-policy`
-- `GET /api/part119/health`
-- `GET /api/part119/demo`
+- `GET /api/part120/status`
+- `GET /api/part120/security-policy`
+- `POST /api/part120/auth/login`
+- `GET /api/part120/demo`
 
-## Logged-in roles
-- `GET /api/part119/session`
-- `GET /api/part119/navigation`
-- `POST /api/part119/module/open`
-- `POST /api/part119/vani/command`
+## Valid session
+- `GET /api/part120/auth/session`
+- `POST /api/part120/auth/adopt-session`
+- `POST /api/part120/auth/change-password`
+- `POST /api/part120/auth/logout-all`
 
-## Security
-- JWT is verified server-side.
-- instituteId from JWT/request must match.
-- Module routes come from a server allowlist.
-- Role is checked server-side.
-- Paid and V3 modules use Part 116 entitlements.
-- Billing controls remain institute_owner-only.
-- VANI cannot provide arbitrary URLs.
+## Owner-only
+- `GET /api/part120/admin/accounts`
+- `POST /api/part120/admin/accounts/create-preview`
+- `POST /api/part120/admin/accounts/create-confirmed`
+- `POST /api/part120/admin/accounts/status-confirmed`
+- `POST /api/part120/admin/accounts/reset-password-confirmed`
+
+## Models
+- `Part120UnifiedIdentity`
+- `Part120AuthAudit`
+
+Passwords are stored as scrypt hashes with unique random salts. Passwords and hashes are never returned by APIs.

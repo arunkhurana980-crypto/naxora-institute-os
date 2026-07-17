@@ -1,26 +1,18 @@
-# VANI Integration Record — Part 119
+# VANI Integration Record — Part 120
 
-## Mode
-Global navigation mode.
+Part 120 does not let VANI collect or speak passwords.
 
-## Commands
-- `VANI, fees kholo`
-- `VANI, attendance dikhao`
-- `VANI, live classes kholo`
-- `VANI, subscription manager kholo`
-- `VANI, marketplace kholo`
-- `VANI, kya features available hain?`
+Allowed VANI authentication help:
+- explain where the common login is,
+- explain which Institute ID/Login ID fields are required,
+- explain that temporary password must be changed,
+- open Account Access Manager for an authorized owner in later orchestration.
 
-## Checks
-Before opening a module:
-- login,
-- role,
-- instituteId,
-- Part 116 plan entitlement,
-- V3 entitlement when required,
-- server module allowlist.
+Not allowed:
+- ask for a password,
+- read a password aloud,
+- reset an account without owner verification,
+- reveal whether a specific Login ID exists,
+- bypass account lockout.
 
-## Boundaries
-Part 119 does not execute admission, fee, attendance, messaging, deletion, refund or payment actions.
-
-Global multi-step VANI orchestration is Part 125. Existing module VANI assistants continue to enforce their own preview and confirmation rules.
+Part 125 will connect safe account-navigation commands, not secret handling.

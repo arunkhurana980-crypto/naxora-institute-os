@@ -1,18 +1,18 @@
-# Security and Role Tests — Part 119
+# Security and Role Tests — Part 120
 
 ## Mandatory
-- Parts 112–119 appear before the Express 404 handler.
-- `/app` loads without JavaScript syntax errors.
-- Private navigation without JWT returns 401.
-- instituteId mismatch returns 403.
-- Teacher cannot open owner billing modules.
-- Student cannot open fee-management module.
-- Parent cannot open branch command centre.
-- Owner without Business entitlement cannot open Marketplace.
-- Owner without V3 cannot open owner AI.
-- Arbitrary module key returns 404.
-- Browser cannot send an arbitrary external URL.
-- VANI refuses sensitive credential requests.
-- VANI denied module does not open.
-- Mobile sidebar opens/closes.
-- Browser back/forward updates shell module state.
+- Part 120 registers before Parts 112–119.
+- No JWT on private session endpoint returns 401.
+- Wrong password gets a generic credential error.
+- Login ID enumeration is not exposed.
+- Five failed account attempts produce temporary lock.
+- Login rate limiter produces 429 after repeated attempts.
+- Disabled account cannot login.
+- Old token fails after tokenVersion increment.
+- Teacher/student/parent cannot access account manager.
+- Owner cannot manage another institute.
+- Account creation requires exact confirmation and Owner Action Secret.
+- Password reset requires exact confirmation and Owner Action Secret.
+- Temporary password requires first-login change.
+- Password and hash never appear in API output.
+- `/app` redirects to common login without a valid session.

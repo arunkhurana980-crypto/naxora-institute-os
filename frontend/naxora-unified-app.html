@@ -42,7 +42,7 @@
         </div>
         <div class="topbar-actions">
           <span id="roleBadge" class="pill">Not connected</span>
-          <button id="connectSessionBtn" class="secondary">Connect Existing Login</button>
+          <button id="connectSessionBtn" class="secondary">Account Session</button>
           <button id="openVaniBtn" class="vani-button"><span class="pulse"></span> VANI</button>
         </div>
       </header>
@@ -52,7 +52,7 @@
           <div class="welcome-card">
             <p class="eyebrow">Part 119 • Unified Single App Shell</p>
             <h1>One NAXORA app. Role-safe modules. Global VANI.</h1>
-            <p>Ab purane feature URLs ko manually yaad karne ke bajay central shell ke andar module open honge. Common login Part 120 me isi screen ke saath connect hoga.</p>
+            <p>Ab purane feature URLs ko manually yaad karne ke bajay central shell ke andar module open honge. Common login active hai; sign in ke baad role-safe modules automatically load honge.</p>
             <div class="welcome-actions">
               <button id="welcomeConnectBtn">Connect Existing Login</button>
               <a href="/api/part119/status" target="_blank" rel="noreferrer" class="secondary link-button">Check Status</a>
@@ -121,6 +121,7 @@
     <p class="private-note">Secrets, OTP, CVV, UPI PIN ya KYC details VANI ko mat boliye.</p>
   </section>
 
+  <script src="/naxora-common-session.js"></script>
   <script src="/naxora-unified-app.js"></script>
 </body>
 </html>

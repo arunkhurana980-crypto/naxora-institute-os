@@ -613,8 +613,8 @@ export function registerPart119UnifiedAppShell({ app } = {}) {
       name: PART_NAME,
       status: "unified_shell_active",
       mainAppUrl: "/app",
-      commonLoginIntegrated: false,
-      commonLoginTargetPart: 120,
+      commonLoginIntegrated: true,
+      commonLoginTargetPart: null,
       serverApprovedModuleCatalog: true,
       roleAwareNavigation: true,
       part116EntitlementFiltering: true,
@@ -663,7 +663,7 @@ export function registerPart119UnifiedAppShell({ app } = {}) {
       vaniPart119NavigationOnly: true,
       riskyActionsRequireExistingModuleSecurity: true,
       ownerV3ControlsRemainOwnerOnly: true,
-      commonLoginPendingPart120: true,
+      commonLoginPendingPart120: false,
       fullVaniOrchestrationPendingPart125: true,
     });
   });
@@ -797,7 +797,7 @@ export function registerPart119UnifiedAppShell({ app } = {}) {
       moduleCount: MODULES.length,
       part116ModelReady,
       databaseConnected: mongoose.connection?.readyState === 1,
-      commonLoginReady: false,
+      commonLoginReady: true,
       unifiedShellReady: true,
     });
   });
