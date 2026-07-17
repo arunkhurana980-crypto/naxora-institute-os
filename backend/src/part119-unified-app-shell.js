@@ -415,6 +415,19 @@ const MODULES = Object.freeze([
     order: 316,
   },
   // PART 126 INTEGRATION CENTRE MODULE END
+  // PART 127 FINAL ACCEPTANCE MODULE START
+  {
+    key: "final-acceptance",
+    label: "Final Demo & Freeze",
+    description: "Linked demo-data import, final acceptance, release manifest and project freeze.",
+    category: "Owner Core",
+    route: "/final-acceptance",
+    icon: "shield",
+    roles: OWNER_ONLY_ROLES,
+    alwaysAvailable: true,
+    order: 317,
+  },
+  // PART 127 FINAL ACCEPTANCE MODULE END
 ]);
 
 const COMMAND_ALIASES = Object.freeze({
@@ -482,6 +495,13 @@ const COMMAND_ALIASES = Object.freeze({
   "native adapters": "integration-centre",
   "e2e health": "integration-centre",
   // PART 126 INTEGRATION CENTRE ALIASES END
+  // PART 127 FINAL ACCEPTANCE ALIASES START
+  "final acceptance": "final-acceptance",
+  "demo data": "final-acceptance",
+  "demo importer": "final-acceptance",
+  "project freeze": "final-acceptance",
+  "part 127": "final-acceptance",
+  // PART 127 FINAL ACCEPTANCE ALIASES END
 });
 
 function cleanText(value = "", max = 255) {

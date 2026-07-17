@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#071426" />
+  <title>Final Acceptance — NAXORA</title>
+  <link rel="stylesheet" href="/naxora-final-acceptance.css" />
+</head>
+<body>
+  <main class="final-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">NAXORA Institute OS • Part 127</p>
+        <h1>Final Demo Acceptance</h1>
+        <p>Linked demo-data import, all-role account map, final integration checks, release manifest aur agreed project freeze—ek Owner-only closing screen me.</p>
+      </div>
+      <aside class="hero-status">
+        <span id="ownerName">Institute Owner</span>
+        <strong id="releaseStatus">Loading final status…</strong>
+        <small>NAXORA OS 2.0 • Demo/Beta classification</small>
+      </aside>
+    </section>
+
+    <section class="boundary">
+      <strong>Final honest boundary:</strong>
+      Unified demo app, role workspaces, linked demo data aur 9 native VANI actions included hain. Har historical feature ka VANI automation included nahi hai; production certification claim nahi kiya jayega.
+    </section>
+
+    <section id="summaryCards" class="summary-grid">
+      <article><span>Loading</span><strong>—</strong><small>Final acceptance</small></article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Universal Demo Importer</p>
+            <h2>Upload or use final JSON template</h2>
+          </div>
+          <button id="downloadTemplateBtn" class="secondary">Download Template</button>
+        </div>
+
+        <label>Demo template file — optional
+          <input id="templateFile" type="file" accept=".json,application/json" />
+        </label>
+
+        <textarea id="templateEditor" rows="15" spellcheck="false"></textarea>
+
+        <div class="button-row">
+          <button id="loadDefaultBtn" class="secondary">Load Default</button>
+          <button id="previewImportBtn">Create Import Preview</button>
+        </div>
+        <pre id="previewOutput">Waiting…</pre>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Confirmed Import</p>
+        <h2>Create linked role accounts and records</h2>
+
+        <label>Exact confirmation
+          <input id="importConfirmation" autocomplete="off" />
+        </label>
+
+        <label>Shared demo password — private, minimum 10 characters
+          <input id="demoPassword" type="password" autocomplete="new-password" />
+        </label>
+
+        <label>Owner Action Secret — private
+          <input id="ownerActionSecret" type="password" autocomplete="new-password" />
+        </label>
+
+        <label class="check-row">
+          <input id="replaceExisting" type="checkbox" />
+          <span>Replace existing Part 127 demo dataset only</span>
+        </label>
+
+        <button id="confirmImportBtn" class="full">Import Confirmed Demo Data</button>
+        <pre id="importOutput">Waiting…</pre>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Demo Accounts</p>
+            <h2>Generated login map</h2>
+          </div>
+          <button id="downloadAccountsBtn" class="secondary">Download Account Map</button>
+        </div>
+        <p class="muted">Password list me return nahi hota. Import ke waqt privately entered shared password use karo.</p>
+        <div id="accountList" class="record-list">No demo dataset loaded.</div>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Demo Records</p>
+        <h2>Linked data counts</h2>
+        <div id="recordCounts" class="count-grid">No demo dataset loaded.</div>
+        <div class="button-row">
+          <a href="/login" class="secondary link-button">Open Login</a>
+          <a href="/app" class="secondary link-button">Open Unified App</a>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Acceptance</p>
+            <h2>Final Demo/Beta checklist</h2>
+          </div>
+          <button id="runAcceptanceBtn" class="secondary">Run Checks</button>
+        </div>
+        <div id="acceptanceList" class="check-grid">Loading…</div>
+        <pre id="acceptanceOutput">Waiting…</pre>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Project Freeze</p>
+        <h2>Close the agreed roadmap</h2>
+        <p class="muted">Freeze release manifest banata hai aur Part 127 closure record karta hai. Ye future Git commits ko technically block nahi karta.</p>
+
+        <button id="freezePreviewBtn" class="full secondary">Create Freeze Preview</button>
+
+        <label>Release code
+          <input id="releaseCode" readonly />
+        </label>
+
+        <label>Exact confirmation
+          <input id="freezeConfirmation" autocomplete="off" />
+        </label>
+
+        <label>Owner Action Secret — private
+          <input id="freezeOwnerSecret" type="password" autocomplete="new-password" />
+        </label>
+
+        <button id="freezeConfirmBtn" class="full">Freeze Final Demo/Beta</button>
+        <div class="button-row">
+          <button id="downloadManifestBtn" class="secondary">Download Manifest</button>
+          <button id="resetPreviewBtn" class="danger">Reset Demo Preview</button>
+        </div>
+        <pre id="freezeOutput">Waiting…</pre>
+      </article>
+    </section>
+
+    <dialog id="resetDialog">
+      <form method="dialog" class="dialog-card">
+        <p class="eyebrow">Safe Demo Reset</p>
+        <h2>Remove Part 127 demo data only</h2>
+        <p id="resetText"></p>
+        <label>Exact confirmation
+          <input id="resetConfirmation" />
+        </label>
+        <label>Owner Action Secret — private
+          <input id="resetOwnerSecret" type="password" autocomplete="new-password" />
+        </label>
+        <div class="dialog-actions">
+          <button value="cancel" class="secondary">Cancel</button>
+          <button id="resetConfirmBtn" value="default" class="danger">Reset Confirmed</button>
+        </div>
+      </form>
+    </dialog>
+  </main>
+
+  <script src="/naxora-common-session.js"></script>
+  <script src="/naxora-final-acceptance.js"></script>
+</body>
+</html>

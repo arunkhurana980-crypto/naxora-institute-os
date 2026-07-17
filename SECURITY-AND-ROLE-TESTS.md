@@ -1,14 +1,20 @@
-# Security and Role Tests — Part 126
+# Security and Role Tests — Part 127
 
-- Nine adapters must register.
-- Part 126 must load after Part 125.
-- Cross-institute references must fail.
-- Student cannot target another Student.
-- Parent cannot target an unlinked child.
-- Branch role cannot use another branch.
-- Client cannot provide an arbitrary model or provider URL.
-- Message recipients must match active Part 120 role identities.
-- Provider success is required before external delivery is claimed.
-- Direct charges, transfers and refunds remain disabled.
-- Retry requires original actor or Owner plus exact confirmation.
-- Notification read must reject another user.
+- Import/reset/freeze require Owner JWT.
+- instituteId mismatch returns 403.
+- Exact confirmation is required.
+- Owner Action Secret is required.
+- Demo password must meet Part 120 policy.
+- Password is scrypt-hashed.
+- Password is never returned.
+- Non-demo account identifier collision is rejected.
+- Reset deletes only accounts created by `part127_demo_import:<datasetCode>`.
+- Reset deletes only Part 127 demo models and Part 127-created scopes.
+- Owner account is preserved.
+- Parent-child scope is created server-side.
+- Branch role scopes are created server-side.
+- Arbitrary model names cannot be uploaded.
+- Template counts have strict maximums.
+- Direct money actions remain disabled.
+- Freeze does not claim code immutability.
+- Final status does not claim all-feature VANI.

@@ -1,18 +1,28 @@
-# Files Changed — Part 126
+# Files Changed — Part 127
 
 ## Backend
-- `backend/src/part126-native-e2e-integration.js`
-- `backend/.env.part126.example`
+
+- `backend/src/part127-final-acceptance-freeze.js`
 
 ## Frontend
-- `frontend/naxora-integration-centre.html`
-- `frontend/naxora-integration-centre.css`
-- `frontend/naxora-integration-centre.js`
 
-## Installer
-- `APPLY-PART126.js`
-- `VERIFY-PART126.js`
-- `ROLLBACK-PART126.js`
-- CMD launchers
+- `frontend/naxora-final-acceptance.html`
+- `frontend/naxora-final-acceptance.css`
+- `frontend/naxora-final-acceptance.js`
+- `frontend/naxora-final-demo-template.json`
 
-Installer also adds the Part 119 Integration & Notifications module and updates unified-app progress text.
+## Part 119 integration
+
+Installer:
+- adds Final Demo & Freeze module,
+- adds demo/freeze aliases,
+- updates Part 127 progress,
+- updates the honest final VANI mode label.
+
+## Installer/testing
+
+- `APPLY-PART127.js`
+- `APPLY-PART127.cmd`
+- `VERIFY-PART127.js`
+- `ROLLBACK-PART127.js`
+- `ROLLBACK-PART127.cmd`

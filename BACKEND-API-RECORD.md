@@ -1,23 +1,33 @@
-# Backend API Record — Part 126
+# Backend API Record — Part 127
 
 ## Public
-- `GET /api/part126/status`
-- `GET /api/part126/security-policy`
-- `GET /api/part126/catalog`
-- `GET /api/part126/demo`
 
-## Authenticated
-- `GET /api/part126/health`
-- `GET /api/part126/actions/pending`
-- `POST /api/part126/actions/:actionId/retry-preview`
-- `POST /api/part126/actions/:actionId/retry-confirmed`
-- `GET /api/part126/executions`
-- `GET /api/part126/notifications`
-- `POST /api/part126/notifications/:notificationId/read`
-- `GET /api/part126/deliveries`
+- `GET /api/part127/status`
+- `GET /api/part127/security-policy`
+- `GET /api/part127/demo-template`
+- `GET /api/part127/demo`
 
 ## Owner-only
-- `GET /api/part126/e2e/acceptance`
+
+- `GET /api/part127/demo-status`
+- `POST /api/part127/demo-import/preview`
+- `POST /api/part127/demo-import/confirmed`
+- `POST /api/part127/demo-reset/preview`
+- `POST /api/part127/demo-reset/confirmed`
+- `GET /api/part127/acceptance`
+- `POST /api/part127/freeze/preview`
+- `POST /api/part127/freeze/confirmed`
+- `GET /api/part127/release`
+- `GET /api/part127/release-manifest.json`
 
 ## Export
-- `getPart126Acceptance({ app, instituteId })`
+
+- `getPart127FinalAcceptance(...)`
+
+## Important models
+
+- `Part127DemoDataset`
+- `Part127DemoImportPreview`
+- `Part127ReleaseFreeze`
+- `Part127FinalAudit`
+- linked `Part127Demo*` operational models.

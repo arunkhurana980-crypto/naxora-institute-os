@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "datasetLabel": "NAXORA Final Demo",
+  "instituteName": "NAXORA Demo Institute",
+  "counts": {
+    "branchCount": 1,
+    "teachersPerBranch": 2,
+    "studentsPerTeacher": 3,
+    "attendanceDays": 5,
+    "resultsPerStudent": 2,
+    "leadsPerBranch": 3
+  },
+  "createRoleScopes": true,
+  "createNativeVaniExamples": true
+}

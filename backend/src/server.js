@@ -30529,6 +30529,10 @@ registerPart125GlobalVaniActions({ app });
 const { registerPart126NativeE2E } = await import("./part126-native-e2e-integration.js");
 registerPart126NativeE2E({ app });
 
+// ================= PART 127 — FINAL DEMO ACCEPTANCE AND PROJECT FREEZE =================
+const { registerPart127FinalAcceptance } = await import("./part127-final-acceptance-freeze.js");
+registerPart127FinalAcceptance({ app });
+
 // ================= PART 112 — RAZORPAY TEST MODE FOUNDATION =================
 const { registerPart112RazorpayFoundation } = await import("./part112-razorpay-foundation.js");
 registerPart112RazorpayFoundation({ app });
