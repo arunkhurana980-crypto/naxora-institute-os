@@ -1,26 +1,23 @@
-# Backend API Record — Part 120
+# Backend API Record — Part 121
 
 ## Public
-- `GET /api/part120/status`
-- `GET /api/part120/security-policy`
-- `POST /api/part120/auth/login`
-- `GET /api/part120/demo`
-
-## Valid session
-- `GET /api/part120/auth/session`
-- `POST /api/part120/auth/adopt-session`
-- `POST /api/part120/auth/change-password`
-- `POST /api/part120/auth/logout-all`
+- `GET /api/part121/status`
+- `GET /api/part121/security-policy`
+- `GET /api/part121/catalog`
+- `GET /api/part121/demo`
 
 ## Owner-only
-- `GET /api/part120/admin/accounts`
-- `POST /api/part120/admin/accounts/create-preview`
-- `POST /api/part120/admin/accounts/create-confirmed`
-- `POST /api/part120/admin/accounts/status-confirmed`
-- `POST /api/part120/admin/accounts/reset-password-confirmed`
+- `GET /api/part121/overview`
+- `GET /api/part121/modules`
+- `GET /api/part121/activity`
+- `GET /api/part121/health`
+- `POST /api/part121/module/open`
+- `POST /api/part121/vani/command`
 
-## Models
-- `Part120UnifiedIdentity`
-- `Part120AuthAudit`
+## Export
+- `getPart121OwnerOverview(...)`
 
-Passwords are stored as scrypt hashes with unique random salts. Passwords and hashes are never returned by APIs.
+This export is reserved for Part 125 Global VANI orchestration.
+
+## Model
+- `Part121OwnerWorkspaceAudit`

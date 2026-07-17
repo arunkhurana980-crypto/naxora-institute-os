@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#071426" />
+  <title>Owner Workspace — NAXORA</title>
+  <link rel="stylesheet" href="/naxora-owner-workspace.css" />
+</head>
+<body>
+  <main class="owner-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">NAXORA Institute OS • Part 121</p>
+        <h1>Owner Workspace</h1>
+        <p>Institute operations, team access, business modules, subscription controls aur VANI—ek consolidated owner screen me.</p>
+      </div>
+      <aside class="hero-status">
+        <span id="ownerName">Institute Owner</span>
+        <strong id="planStatus">Loading plan…</strong>
+        <small id="generatedAt">Waiting for owner session</small>
+      </aside>
+    </section>
+
+    <section id="alertsPanel" class="alerts-panel" hidden></section>
+
+    <section id="summaryCards" class="summary-grid">
+      <article><span>Loading</span><strong>—</strong><small>Owner summary</small></article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Owner Quick Actions</p>
+            <h2>Open an allowed module</h2>
+          </div>
+          <input id="moduleSearch" type="search" placeholder="Search owner modules…" />
+        </div>
+        <div id="moduleGrid" class="module-grid">Loading modules…</div>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Institute Operations</p>
+        <h2>Detected institute records</h2>
+        <div id="metricGrid" class="metric-grid"></div>
+        <p class="precision-note">Only institute-scoped models are counted. Missing model mapping will show “Not detected” instead of guessing another institute’s data.</p>
+      </article>
+    </section>
+
+    <section class="grid three">
+      <article class="panel">
+        <p class="eyebrow">Team Access</p>
+        <h2>Unified role accounts</h2>
+        <div id="identitySummary" class="stack-list">Loading…</div>
+        <button class="secondary module-button" data-module-key="account-access">Manage Accounts</button>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Subscription</p>
+        <h2>Plan and feature access</h2>
+        <div id="subscriptionSummary" class="stack-list">Loading…</div>
+        <button class="secondary module-button" data-module-key="subscription-access">Open Feature Access</button>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Billing Safety</p>
+        <h2>Provider and launch states</h2>
+        <div id="billingSummary" class="stack-list">Loading…</div>
+        <button class="secondary module-button" data-module-key="webhook-monitor">Open Webhook Monitor</button>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">System Readiness</p>
+        <h2>Owner module health</h2>
+        <div id="healthList" class="health-list">Loading…</div>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Recent Activity</p>
+        <h2>Authentication and subscription events</h2>
+        <div id="activityList" class="activity-list">Loading…</div>
+      </article>
+    </section>
+
+    <section class="panel vani-panel">
+      <div>
+        <p class="eyebrow">Global VANI • Owner</p>
+        <h2>Ask for summary or open a module</h2>
+        <p>Examples: “VANI, owner summary dikhao”, “accounts kholo”, “marketplace kholo”, “kya pending hai?”</p>
+      </div>
+      <form id="vaniForm">
+        <input id="vaniCommand" autocomplete="off" value="VANI, owner summary dikhao" />
+        <button id="voiceBtn" type="button" class="secondary">🎙</button>
+        <button type="submit">Ask VANI</button>
+      </form>
+      <pre id="vaniOutput">Waiting…</pre>
+    </section>
+  </main>
+
+  <script src="/naxora-common-session.js"></script>
+  <script src="/naxora-shell-bridge.js"></script>
+  <script src="/naxora-owner-workspace.js"></script>
+</body>
+</html>

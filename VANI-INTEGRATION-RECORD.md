@@ -1,18 +1,20 @@
-# VANI Integration Record — Part 120
+# VANI Integration Record — Part 121
 
-Part 120 does not let VANI collect or speak passwords.
+## Owner commands
+- `VANI, owner summary dikhao`
+- `VANI, aaj kya pending hai?`
+- `VANI, account manager kholo`
+- `VANI, fees kholo`
+- `VANI, subscription manager kholo`
+- `VANI, marketplace kholo`
+- `VANI, VANI 3 kholo`
 
-Allowed VANI authentication help:
-- explain where the common login is,
-- explain which Institute ID/Login ID fields are required,
-- explain that temporary password must be changed,
-- open Account Access Manager for an authorized owner in later orchestration.
+## Security
+- Owner JWT required.
+- instituteId must match.
+- Part 116 entitlement checked.
+- Sensitive credential requests are blocked.
+- Module routes come from a server allowlist.
+- Part 121 VANI performs summary and navigation only.
 
-Not allowed:
-- ask for a password,
-- read a password aloud,
-- reset an account without owner verification,
-- reveal whether a specific Login ID exists,
-- bypass account lockout.
-
-Part 125 will connect safe account-navigation commands, not secret handling.
+Part 125 will use `getPart121OwnerOverview` for cross-module multi-step VANI actions.

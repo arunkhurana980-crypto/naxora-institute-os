@@ -1,35 +1,35 @@
-# Part 120 Testing Guide
+# Part 121 Testing Guide
 
-## First owner migration
-1. Login from the existing owner login.
-2. Open `/login`.
-3. Expand “existing session” migration.
-4. Use institute ID, owner Login ID, display name and new common password.
-5. Submit.
-6. Confirm `/app` opens.
+## Owner
+1. Login from `/login`.
+2. Open `/app`.
+3. Select Owner Workspace.
+4. Confirm Owner name, plan and V3 state.
+5. Confirm unified role-account counts.
+6. Confirm subscription and Live-launch states.
+7. Open Account Access.
+8. Open three allowed modules.
 
-## Common login
-1. Logout.
-2. Open `/login`.
-3. Enter the same institute ID, Login ID and password.
-4. Confirm role-safe `/app`.
+## Plan access
+- FREE owner: always-available and billing-control modules remain visible.
+- Starter/Professional/Business: matching Part 116 modules unlock.
+- V3 modules unlock only with active V3_AI entitlement.
 
-## Create Teacher
-1. Owner opens `/account-access-manager`.
-2. Fill Teacher details and temporary password.
-3. Preview.
-4. Enter exact confirmation and private owner verification.
-5. Create.
-6. Login as Teacher.
-7. Change temporary password.
-8. Confirm Owner/Billing modules are hidden.
+## Negative roles
+Try direct `/api/part121/overview` with:
+- Teacher token.
+- Student token.
+- Parent token.
 
-## Negative tests
-- Wrong institute ID.
-- Wrong password.
-- Repeated login failures.
-- Disabled account.
-- Wrong confirmation.
-- Wrong owner secret.
-- Student token on Account Access Manager.
-- Expired/revoked token.
+Expected: `403 OWNER_ONLY`.
+
+## Model discovery
+When a Student/Fee/Attendance model is not institute-scoped, its count must not be included.
+
+## VANI
+- `VANI, owner summary dikhao`
+- `VANI, kya pending hai?`
+- `VANI, account manager kholo`
+- `VANI, marketplace kholo`
+
+Denied module must not open.

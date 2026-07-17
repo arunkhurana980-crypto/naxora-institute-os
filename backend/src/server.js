@@ -30505,6 +30505,10 @@ app.get("/api/part110/demo", (req, res) => {
 const { registerPart120CommonLogin } = await import("./part120-common-login.js");
 registerPart120CommonLogin({ app });
 
+// ================= PART 121 — OWNER MODULE CONSOLIDATION =================
+const { registerPart121OwnerConsolidation } = await import("./part121-owner-consolidation.js");
+registerPart121OwnerConsolidation({ app });
+
 // ================= PART 112 — RAZORPAY TEST MODE FOUNDATION =================
 const { registerPart112RazorpayFoundation } = await import("./part112-razorpay-foundation.js");
 registerPart112RazorpayFoundation({ app });

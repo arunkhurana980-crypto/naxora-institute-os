@@ -1,29 +1,23 @@
-# Frontend UI Record — Part 120
+# Frontend UI Record — Part 121
 
-## Common login
-`/login`
+## Main page
+`/owner-workspace`
 
-Fields:
-- Institute ID / Code.
-- Email, Phone or Login ID.
-- Password.
-- Remember me.
+Alias:
+- `/owner-command-centre`
+- `/part121`
 
-## First password change
-`/change-password`
+## UI sections
+- Owner identity and plan badge.
+- Consolidated alerts.
+- Summary cards.
+- Searchable owner module launcher.
+- Institute operational record counts.
+- Unified account status.
+- Plan and V3 access.
+- Billing/provider state.
+- Dependency health.
+- Recent activity.
+- Owner VANI.
 
-Temporary-password users must replace it before using `/app`.
-
-## Account Access Manager
-`/account-access-manager`
-
-Owner can:
-- list institute accounts,
-- create role accounts,
-- disable/enable accounts,
-- reset temporary passwords.
-
-Sensitive actions require exact confirmation and private Owner Action Secret.
-
-## Unified app integration
-Part 120 inserts `/naxora-common-session.js` into the Part 119 shell. `/app` redirects to `/login` when the session is missing/invalid and redirects to `/change-password` when required.
+When opened inside Part 119, module buttons use `NaxoraShellBridge` so the selected module replaces the current content pane without leaving the unified app.

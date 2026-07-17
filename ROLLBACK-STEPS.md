@@ -1,17 +1,14 @@
-# Rollback Steps — Part 120
+# Rollback Steps — Part 121
 
 ```powershell
-node .\ROLLBACK-PART120.js
+node .\ROLLBACK-PART121.js
 node --check .\backend\src\server.js
 ```
 
-This removes Part 120 route registration and the Part 119 common-session script.
+Rollback:
+- removes Part 121 registration,
+- changes Part 119 owner route back to `/institute-owner-app`,
+- removes Account Access from Part 119 module catalogue,
+- removes the Part 119 VANI account-manager alias.
 
-It does not delete existing `Part120UnifiedIdentity` or auth audit records. Existing old role logins remain available.
-
-After commit:
-
-```powershell
-git revert <part-120-commit-sha>
-git push
-```
+Part 121 audit records are not deleted.

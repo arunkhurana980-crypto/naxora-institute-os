@@ -1,34 +1,31 @@
-# Feature Explanation — Part 120
+# Feature Explanation — Part 121
 
-## Unified login flow
+## Owner consolidation flow
 
 ```text
-/login
-→ institute ID
-→ email/phone/login ID
-→ password verification
-→ signed JWT with role + instituteId
-→ temporary-password check
-→ automatic /app redirect
-→ Part 119 role/subscription navigation
+Part 120 common owner login
+→ Part 119 unified app
+→ Owner Workspace
+→ institute-scoped overview
+→ allowed owner modules
+→ module opens inside the same shell
 ```
 
-## Existing-user migration
-A valid legacy JWT proves the current role and institute. The user sets a fresh common-login password. Old password hashes are not copied or exposed.
+## Owner Workspace data
+- Part 116 supplies base plan, V3 and entitlements.
+- Part 120 supplies account status and role counts.
+- Part 115 supplies verified Subscription states.
+- Part 117 supplies Subscription Manager action state.
+- Part 118 supplies controlled Live-launch state.
+- Existing institute-scoped models supply detected operational counts.
 
-## New accounts
-Only institute_owner can provision accounts. Account creation requires:
-- owner JWT,
-- matching institute,
-- exact confirmation,
-- private Owner Action Secret,
-- temporary password meeting the password policy.
+## Model discovery safety
+Part 121 does not count an unscoped MongoDB model. A model must contain an institute/tenant field before it is included. Missing model mapping shows “Not detected” instead of showing another institute’s data.
 
-The user must change a temporary password at first login.
+## VANI boundary
+Part 121 VANI:
+- explains owner summary,
+- shows alerts,
+- opens allowed owner modules.
 
-## Session safety
-- Default token session: 12 hours in sessionStorage.
-- Remember me: 7 days in localStorage.
-- Five failed account logins trigger a temporary lock.
-- IP/identifier rate limiting is enabled.
-- Token version allows all unified sessions to be revoked.
+It does not yet execute admission, fee, messaging or other multi-step changes. That is Part 125.

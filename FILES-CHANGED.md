@@ -1,27 +1,22 @@
-# Files Changed — Part 120
+# Files Changed — Part 121
 
 ## Backend
-- `backend/src/part120-common-login.js`
-- `backend/.env.part120.example`
+- `backend/src/part121-owner-consolidation.js`
 
 ## Frontend
-- `frontend/naxora-common-login.html`
-- `frontend/naxora-change-password.html`
-- `frontend/naxora-account-access-manager.html`
-- `frontend/naxora-common-auth.css`
-- `frontend/naxora-common-login.js`
-- `frontend/naxora-change-password.js`
-- `frontend/naxora-common-session.js`
-- `frontend/naxora-account-access-manager.js`
+- `frontend/naxora-owner-workspace.html`
+- `frontend/naxora-owner-workspace.css`
+- `frontend/naxora-owner-workspace.js`
 
 ## Part 119 integration
-Installer patches:
-- Part 119 status/health common-login flags.
-- Unified app HTML session guard.
+Installer updates:
+- Owner module label/description/route.
+- Adds Account Access module.
+- Adds VANI aliases for Account Access.
 
 ## Installer/testing
-- `APPLY-PART120.js`
-- `APPLY-PART120.cmd`
-- `VERIFY-PART120.js`
-- `ROLLBACK-PART120.js`
-- `ROLLBACK-PART120.cmd`
+- `APPLY-PART121.js`
+- `APPLY-PART121.cmd`
+- `VERIFY-PART121.js`
+- `ROLLBACK-PART121.js`
+- `ROLLBACK-PART121.cmd`
