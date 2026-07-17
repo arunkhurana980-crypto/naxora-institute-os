@@ -1,33 +1,34 @@
-# Feature Explanation — Part 122
+# Feature Explanation — Part 123
 
-## Teacher flow
+## Student flow
 
 ```text
-Part 120 common Teacher login
+Part 120 common Student login
 → Part 119 unified app
-→ Teacher Workspace
-→ strict institute + teacher record scope
+→ Student Workspace
+→ strict institute + Student record scope
 → Part 116 role/plan entitlements
-→ allowed classroom modules
+→ allowed learning modules
 → module opens inside the same app shell
 ```
 
-## Teacher metrics
+## Student metrics
 The workspace safely detects:
-- Classes/Batches/Courses.
-- Assigned Students/Enrolments.
-- Assignments/Homework/Tasks.
+- Classes, Batches, Courses and Enrolments.
+- Assignments, Homework and Tasks.
 - Attendance records.
+- Fee, Invoice, Receipt and Payment records.
 - Live sessions.
-- Class notes/summaries.
+- Class notes and summaries.
+- Results, Exams, Tests and Grades.
 
 ## Owner supervisor mode
-Institute Owner can open Teacher Workspace because Part 119 already allows Owner access to Teacher App. Owner sees institute-scoped teaching aggregates and the UI clearly labels Supervisor Mode.
+Institute Owner can open Student Workspace because Part 119 allows Owner access to Student App. Owner sees institute-level Student aggregates and the UI clearly labels Supervisor Mode.
 
 ## VANI boundary
-Part 122 VANI:
-- explains the teaching summary,
-- shows alerts,
-- opens allowed Teacher modules.
+Part 123 VANI:
+- explains Student progress summary,
+- shows consolidated alerts,
+- opens allowed Student modules.
 
-Attendance marking, assignment creation, notes publishing and student messaging are connected in Part 125.
+Assignment submission, attendance correction, fee action and teacher messaging are Part 125.

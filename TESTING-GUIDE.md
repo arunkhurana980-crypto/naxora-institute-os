@@ -1,30 +1,31 @@
-# Part 122 Testing Guide
+# Part 123 Testing Guide
 
-## Teacher
-1. Login from `/login` as Teacher.
+## Student
+1. Login from `/login` as Student.
 2. Open `/app`.
-3. Select Teacher Workspace.
-4. Confirm strict Teacher-linked mode.
-5. Review classes, students, assignments, attendance and sessions.
-6. `Not linked` is acceptable when safe teacher field mapping does not exist.
-7. Open Attendance, Reports and Live Classes.
-8. Open AI Class Notes when entitlement permits.
+3. Select Student Workspace.
+4. Confirm strict Student-linked mode.
+5. Review classes, assignments, attendance, fees and results.
+6. `Not linked` is expected when no safe Student-field mapping exists.
+7. Open Live Classes.
+8. Open AI Class Notes when allowed.
 
 ## Owner
 1. Login as Owner.
-2. Open Teacher Workspace.
+2. Open Student Workspace.
 3. Confirm Owner supervisor mode.
-4. Metrics may use institute-scoped aggregates.
+4. Metrics may use institute-level aggregates.
 
 ## Negative roles
-Student, Parent, Accountant, Counsellor and Staff should receive:
-`403 TEACHER_OR_OWNER_ONLY`.
+Teacher, Parent, Accountant, Counsellor and Staff should receive:
+`403 STUDENT_OR_OWNER_ONLY`.
+
+## Cross-Student safety
+Use two Student accounts. Student A must never receive Student B’s records.
 
 ## VANI
-- `VANI, teacher summary dikhao`
+- `VANI, meri progress dikhao`
 - `VANI, kya pending hai?`
-- `VANI, attendance kholo`
-- `VANI, class notes kholo`
 - `VANI, live class kholo`
-
-Denied module must not open.
+- `VANI, class notes kholo`
+- `VANI, Student VANI kholo`

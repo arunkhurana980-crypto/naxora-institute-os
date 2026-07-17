@@ -1,14 +1,14 @@
-# Rollback Steps — Part 122
+# Rollback Steps — Part 123
 
 ```powershell
-node .\ROLLBACK-PART122.js
+node .\ROLLBACK-PART123.js
 node --check .\backend\src\server.js
 ```
 
 Rollback:
-- removes Part 122 registration,
-- changes Part 119 Teacher route back to `/teacher-app`,
-- restores the old Teacher App label/description,
-- removes the Part 119 Teacher Workspace VANI alias.
+- removes Part 123 registration,
+- changes Part 119 Student route back to `/student-app`,
+- restores the old Student App label/description,
+- removes the Student Workspace VANI alias.
 
-Part 122 audit records are not deleted.
+Part 123 audit records are not deleted.

@@ -30513,6 +30513,10 @@ registerPart121OwnerConsolidation({ app });
 const { registerPart122TeacherConsolidation } = await import("./part122-teacher-consolidation.js");
 registerPart122TeacherConsolidation({ app });
 
+// ================= PART 123 — STUDENT MODULE CONSOLIDATION =================
+const { registerPart123StudentConsolidation } = await import("./part123-student-consolidation.js");
+registerPart123StudentConsolidation({ app });
+
 // ================= PART 112 — RAZORPAY TEST MODE FOUNDATION =================
 const { registerPart112RazorpayFoundation } = await import("./part112-razorpay-foundation.js");
 registerPart112RazorpayFoundation({ app });

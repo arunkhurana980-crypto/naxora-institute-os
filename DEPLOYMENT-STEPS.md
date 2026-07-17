@@ -1,12 +1,12 @@
-# Deployment Steps — Part 122
+# Deployment Steps — Part 123
 
 ```powershell
 node --check .\backend\src\server.js
-node .\APPLY-PART122.js
-node .\VERIFY-PART122.js
+node .\APPLY-PART123.js
+node .\VERIFY-PART123.js
 git status
 git add .
-git commit -m "Add Part 122 Teacher Module Consolidation"
+git commit -m "Add Part 123 Student Module Consolidation"
 git push
 ```
 
@@ -15,13 +15,13 @@ Render build and start commands remain unchanged.
 Render → Manual Deploy → Clear build cache & deploy.
 
 ## Smoke tests
-1. `/api/part122/status`
-2. Login from `/login` as Teacher.
+1. `/api/part123/status`
+2. Login from `/login` as Student.
 3. Open `/app`.
-4. Open Teacher Workspace.
-5. Confirm strict Teacher mode.
+4. Open Student Workspace.
+5. Confirm strict Student-linked mode.
 6. Check linked/Not linked metrics.
-7. Open Attendance.
-8. Open Live Classes.
-9. Try an unavailable paid module.
-10. Ask Teacher VANI for summary and module navigation.
+7. Open Live Classes.
+8. Open AI Class Notes when allowed.
+9. Ask Student VANI for progress summary.
+10. Try a denied or unknown module.

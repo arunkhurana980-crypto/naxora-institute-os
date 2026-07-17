@@ -1,23 +1,23 @@
-# Files Changed — Part 122
+# Files Changed — Part 123
 
 ## Backend
-- `backend/src/part122-teacher-consolidation.js`
+- `backend/src/part123-student-consolidation.js`
 
 ## Frontend
-- `frontend/naxora-teacher-workspace.html`
-- `frontend/naxora-teacher-workspace.css`
-- `frontend/naxora-teacher-workspace.js`
+- `frontend/naxora-student-workspace.html`
+- `frontend/naxora-student-workspace.css`
+- `frontend/naxora-student-workspace.js`
 
 ## Part 119 integration
 Installer updates:
-- Teacher module label.
-- Teacher module description.
-- Teacher route to `/teacher-workspace`.
-- Teacher Workspace VANI alias.
+- Student module label.
+- Student module description.
+- Student route to `/student-workspace`.
+- Student Workspace VANI alias.
 
 ## Installer/testing
-- `APPLY-PART122.js`
-- `APPLY-PART122.cmd`
-- `VERIFY-PART122.js`
-- `ROLLBACK-PART122.js`
-- `ROLLBACK-PART122.cmd`
+- `APPLY-PART123.js`
+- `APPLY-PART123.cmd`
+- `VERIFY-PART123.js`
+- `ROLLBACK-PART123.js`
+- `ROLLBACK-PART123.cmd`

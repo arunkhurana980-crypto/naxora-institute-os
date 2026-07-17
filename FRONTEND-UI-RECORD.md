@@ -1,23 +1,23 @@
-# Frontend UI Record — Part 122
+# Frontend UI Record — Part 123
 
 ## Main page
-`/teacher-workspace`
+`/student-workspace`
 
 Aliases:
-- `/teacher-command-centre`
-- `/part122`
+- `/student-learning-centre`
+- `/part123`
 
 ## UI sections
-- Teacher identity and access state.
-- Strict teacher-linked/supervisor mode badge.
+- Student identity and access state.
+- Strict Student-linked/supervisor mode.
 - Consolidated alerts.
-- Teaching summary cards.
-- Searchable Teacher module launcher.
-- Safely linked teaching metrics.
-- Part 116 plan entitlements.
-- AI notes/support/VANI availability.
+- Learning summary cards.
+- Searchable Student module launcher.
+- Safely linked classes, assignments, attendance, fees, notes and results.
+- Part 116 entitlement summary.
+- AI Notes, Student VANI and V3 status.
 - Workspace health.
-- Recent Teacher Workspace activity.
-- Teacher VANI.
+- Recent Student Workspace activity.
+- Student VANI.
 
-When opened inside Part 119, module buttons use Naxora Shell Bridge and remain inside the unified app.
+When inside Part 119, buttons use Naxora Shell Bridge and stay within the unified app.
