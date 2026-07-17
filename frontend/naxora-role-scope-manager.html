@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Role Scope Manager — NAXORA</title>
+  <link rel="stylesheet" href="/naxora-role-workspace.css" />
+</head>
+<body>
+  <main class="scope-manager-shell">
+    <header class="scope-header panel">
+      <div>
+        <p class="eyebrow">Part 124 • Owner Only</p>
+        <h1>Role Scope Manager</h1>
+        <p>Parent-child links, branch access aur explicit institute-wide permissions safely assign karein.</p>
+      </div>
+      <div class="header-actions">
+        <a href="/app" class="secondary link-button">Back to App</a>
+        <button id="refreshBtn">Refresh Accounts</button>
+      </div>
+    </header>
+
+    <section class="warning-box">
+      Owner Action Secret, passwords aur private credentials ko chat, VANI, GitHub ya screenshot me mat dikhana.
+    </section>
+
+    <section class="scope-grid">
+      <article class="panel">
+        <p class="eyebrow">Select Account</p>
+        <h2>Parent, Branch or Staff role</h2>
+        <label>Role Account
+          <select id="accountSelect"></select>
+        </label>
+        <div id="accountInfo" class="stack-list"></div>
+
+        <label>Branch IDs — comma or new line separated
+          <textarea id="branchIds" rows="5" placeholder="branch_001&#10;branch_002"></textarea>
+        </label>
+
+        <label>Child Student IDs — Parent only
+          <textarea id="childStudentIds" rows="5" placeholder="student_001&#10;student_002"></textarea>
+        </label>
+
+        <label class="check-row">
+          <input id="instituteWide" type="checkbox" />
+          <span>Explicit institute-wide access — Accountant, Counsellor or Staff only</span>
+        </label>
+
+        <label>Status
+          <select id="scopeStatus">
+            <option value="active">Active</option>
+            <option value="disabled">Disabled</option>
+          </select>
+        </label>
+
+        <button id="previewBtn" class="full">Preview Scope</button>
+        <pre id="previewOutput">Waiting…</pre>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Confirm Scope</p>
+        <h2>Owner verified save</h2>
+
+        <label>Exact confirmation
+          <input id="confirmationText" autocomplete="off" />
+        </label>
+
+        <label>Owner Action Secret — private
+          <input id="ownerActionSecret" type="password" autocomplete="new-password" />
+        </label>
+
+        <button id="saveBtn" class="full">Save Confirmed Scope</button>
+        <pre id="saveOutput">Waiting…</pre>
+
+        <div class="scope-rules">
+          <h3>Rules</h3>
+          <p><strong>Parent:</strong> at least one child Student ID.</p>
+          <p><strong>Branch Manager:</strong> at least one Branch ID.</p>
+          <p><strong>Accountant/Counsellor/Staff:</strong> Branch IDs or explicit institute-wide permission.</p>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script src="/naxora-common-session.js"></script>
+  <script src="/naxora-role-scope-manager.js"></script>
+</body>
+</html>

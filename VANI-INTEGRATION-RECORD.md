@@ -1,19 +1,22 @@
-# VANI Integration Record — Part 123
+# VANI Integration Record — Part 124
 
-## Commands
-- `VANI, meri progress dikhao`
-- `VANI, aaj kya pending hai?`
-- `VANI, live class kholo`
-- `VANI, class notes kholo`
-- `VANI, Student Workspace kholo`
-- `VANI, Student VANI kholo`
+## Role-safe commands
+- `VANI, child summary dikhao`
+- `VANI, branch summary dikhao`
+- `VANI, fees summary dikhao`
+- `VANI, leads summary dikhao`
+- `VANI, staff summary dikhao`
+- `VANI, attendance kholo`
+- `VANI, reports kholo`
+- `VANI, marketing kholo`
 
 ## Checks
-- Student or Owner JWT.
+- Valid Part 120 JWT.
 - Matching instituteId.
-- Strict Student record scope for summaries.
-- Part 116 role/plan entitlement.
+- Workspace role matches login role.
+- Owner-assigned data scope.
+- Part 116 module entitlement.
 - Server module allowlist.
 - Sensitive credential blocking.
 
-Part 123 performs summary and safe navigation only. Part 125 adds preview/confirmation-based multi-step Student actions.
+Part 124 VANI provides summary and navigation only. Part 125 adds preview/confirmation-based multi-step actions.

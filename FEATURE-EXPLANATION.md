@@ -1,34 +1,39 @@
-# Feature Explanation — Part 123
+# Feature Explanation — Part 124
 
-## Student flow
+## Common flow
 
 ```text
-Part 120 common Student login
+Part 120 login
 → Part 119 unified app
-→ Student Workspace
-→ strict institute + Student record scope
-→ Part 116 role/plan entitlements
-→ allowed learning modules
-→ module opens inside the same app shell
+→ role-specific Part 124 workspace
+→ Owner-assigned role scope
+→ institute/child/branch filtering
+→ Part 116 entitlement filtering
+→ approved module opens inside the shell
 ```
 
-## Student metrics
-The workspace safely detects:
-- Classes, Batches, Courses and Enrolments.
-- Assignments, Homework and Tasks.
-- Attendance records.
-- Fee, Invoice, Receipt and Payment records.
-- Live sessions.
-- Class notes and summaries.
-- Results, Exams, Tests and Grades.
+## Parent
+- Child-linked Student records.
+- Attendance context.
+- Fee/receipt context.
+- Assignments, results and notices.
+- Parent VANI.
 
-## Owner supervisor mode
-Institute Owner can open Student Workspace because Part 119 allows Owner access to Student App. Owner sees institute-level Student aggregates and the UI clearly labels Supervisor Mode.
+## Branch Manager
+- Branch-linked Students, Teachers, Attendance, Fees, Leads and Batches.
+- Students, Attendance, Reports and Branch Command Centre modules.
 
-## VANI boundary
-Part 123 VANI:
-- explains Student progress summary,
-- shows consolidated alerts,
-- opens allowed Student modules.
+## Accountant
+- Explicit branch or institute-wide finance scope.
+- Fees, invoices, receipts, payments and reports.
 
-Assignment submission, attendance correction, fee action and teacher messaging are Part 125.
+## Counsellor
+- Explicit branch or institute-wide counselling scope.
+- Leads, enquiries, admissions, follow-ups and marketing.
+
+## Staff
+- Explicit branch or institute-wide operations scope.
+- Students, Attendance, Batches, Notices, Tasks and Leads.
+
+## Owner
+Owner may open any workspace in clearly labelled Supervisor Mode.

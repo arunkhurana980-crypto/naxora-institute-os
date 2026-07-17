@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#071426" />
+  <title>Role Workspace — NAXORA</title>
+  <link rel="stylesheet" href="/naxora-role-workspace.css" />
+</head>
+<body>
+  <main class="role-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">NAXORA Institute OS • Part 124</p>
+        <h1 id="workspaceTitle">Role Workspace</h1>
+        <p id="workspaceSubtitle">Loading role-safe workspace…</p>
+      </div>
+      <aside class="hero-status">
+        <span id="userName">User</span>
+        <strong id="planStatus">Loading access…</strong>
+        <small id="workspaceMode">Waiting for session</small>
+      </aside>
+    </section>
+
+    <section id="alertsPanel" class="alerts-panel" hidden></section>
+
+    <section id="summaryCards" class="summary-grid">
+      <article><span>Loading</span><strong>—</strong><small>Role overview</small></article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Quick Actions</p>
+            <h2>Open an allowed module</h2>
+          </div>
+          <input id="moduleSearch" type="search" placeholder="Search modules…" />
+        </div>
+        <div id="moduleGrid" class="module-grid">Loading modules…</div>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Role-Safe Records</p>
+        <h2 id="recordsTitle">Safely linked data</h2>
+        <div id="metricGrid" class="metric-grid"></div>
+        <p id="precisionNote" class="precision-note">Scope is loading.</p>
+      </article>
+    </section>
+
+    <section class="grid three">
+      <article class="panel">
+        <p class="eyebrow">Access</p>
+        <h2>Plan and role</h2>
+        <div id="accessSummary" class="stack-list">Loading…</div>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Data Scope</p>
+        <h2>Owner-assigned boundaries</h2>
+        <div id="scopeSummary" class="stack-list">Loading…</div>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Workspace Health</p>
+        <h2>Integration checks</h2>
+        <div id="healthList" class="health-list">Loading…</div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Recent Activity</p>
+        <h2>Workspace events</h2>
+        <div id="activityList" class="activity-list">Loading…</div>
+      </article>
+
+      <article class="panel vani-panel">
+        <div>
+          <p class="eyebrow">Global VANI • Role-Safe</p>
+          <h2>Ask for summary or open a module</h2>
+          <p id="vaniExamples">Ask VANI for your role summary.</p>
+        </div>
+        <form id="vaniForm">
+          <input id="vaniCommand" autocomplete="off" value="VANI, summary dikhao" />
+          <button id="voiceBtn" type="button" class="secondary">🎙</button>
+          <button type="submit">Ask VANI</button>
+        </form>
+        <pre id="vaniOutput">Waiting…</pre>
+      </article>
+    </section>
+  </main>
+
+  <script src="/naxora-common-session.js"></script>
+  <script src="/naxora-shell-bridge.js"></script>
+  <script src="/naxora-role-workspace.js"></script>
+</body>
+</html>

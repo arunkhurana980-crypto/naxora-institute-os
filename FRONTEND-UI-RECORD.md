@@ -1,23 +1,36 @@
-# Frontend UI Record — Part 123
+# Frontend UI Record — Part 124
 
-## Main page
-`/student-workspace`
+## Shared Role Workspace
+One shared secure frontend is served at:
+- `/parent-workspace`
+- `/branch-workspace`
+- `/accountant-workspace`
+- `/counsellor-workspace`
+- `/staff-workspace`
 
-Aliases:
-- `/student-learning-centre`
-- `/part123`
+The page detects its pathname and requests the matching role workspace from the backend.
 
-## UI sections
-- Student identity and access state.
-- Strict Student-linked/supervisor mode.
-- Consolidated alerts.
-- Learning summary cards.
-- Searchable Student module launcher.
-- Safely linked classes, assignments, attendance, fees, notes and results.
-- Part 116 entitlement summary.
-- AI Notes, Student VANI and V3 status.
-- Workspace health.
-- Recent Student Workspace activity.
-- Student VANI.
+## Sections
+- Role identity and plan state.
+- Scope mode.
+- Alerts.
+- Summary cards.
+- Searchable role module launcher.
+- Safely scoped metrics.
+- Plan entitlements.
+- Scope status.
+- Integration health.
+- Recent activity.
+- Role VANI.
 
-When inside Part 119, buttons use Naxora Shell Bridge and stay within the unified app.
+## Scope Manager
+`/role-scope-manager`
+
+Owner can:
+- select a Part 120 role account,
+- enter child Student IDs or Branch IDs,
+- select explicit institute-wide access where allowed,
+- preview,
+- enter exact confirmation,
+- privately verify with Owner Action Secret,
+- save the role scope.

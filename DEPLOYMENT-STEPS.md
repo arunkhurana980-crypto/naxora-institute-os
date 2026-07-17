@@ -1,12 +1,12 @@
-# Deployment Steps — Part 123
+# Deployment Steps — Part 124
 
 ```powershell
 node --check .\backend\src\server.js
-node .\APPLY-PART123.js
-node .\VERIFY-PART123.js
+node .\APPLY-PART124.js
+node .\VERIFY-PART124.js
 git status
 git add .
-git commit -m "Add Part 123 Student Module Consolidation"
+git commit -m "Add Part 124 Parent Staff and Branch Role Consolidation"
 git push
 ```
 
@@ -14,14 +14,10 @@ Render build and start commands remain unchanged.
 
 Render → Manual Deploy → Clear build cache & deploy.
 
-## Smoke tests
-1. `/api/part123/status`
-2. Login from `/login` as Student.
-3. Open `/app`.
-4. Open Student Workspace.
-5. Confirm strict Student-linked mode.
-6. Check linked/Not linked metrics.
-7. Open Live Classes.
-8. Open AI Class Notes when allowed.
-9. Ask Student VANI for progress summary.
-10. Try a denied or unknown module.
+## First setup
+1. Login as Owner.
+2. Open `/role-scope-manager`.
+3. Assign child scope to Parent accounts.
+4. Assign branch scope to Branch Managers.
+5. Assign branch or explicit institute-wide scope to Accountant/Counsellor/Staff.
+6. Login with each role and test `/app`.

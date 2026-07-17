@@ -1,31 +1,40 @@
-# Part 123 Testing Guide
+# Part 124 Testing Guide
 
-## Student
-1. Login from `/login` as Student.
-2. Open `/app`.
-3. Select Student Workspace.
-4. Confirm strict Student-linked mode.
-5. Review classes, assignments, attendance, fees and results.
-6. `Not linked` is expected when no safe Student-field mapping exists.
-7. Open Live Classes.
-8. Open AI Class Notes when allowed.
-
-## Owner
+## Owner setup
 1. Login as Owner.
-2. Open Student Workspace.
-3. Confirm Owner supervisor mode.
-4. Metrics may use institute-level aggregates.
+2. Open Role Scope Manager.
+3. Assign Parent child IDs.
+4. Assign Branch Manager branch IDs.
+5. Assign Accountant branch IDs or institute-wide access.
+6. Assign Counsellor branch IDs or institute-wide access.
+7. Assign Staff branch IDs or institute-wide access.
 
-## Negative roles
-Teacher, Parent, Accountant, Counsellor and Staff should receive:
-`403 STUDENT_OR_OWNER_ONLY`.
+## Parent
+- Open Parent Workspace.
+- Confirm Child scope mode.
+- Check attendance, fee, assignment and result counts.
+- Cross-parent data must remain isolated.
 
-## Cross-Student safety
-Use two Student accounts. Student A must never receive Student B’s records.
+## Branch Manager
+- Confirm Branch scope mode.
+- Check Students, Teachers, Attendance, Fees, Leads and Batches.
+- Another branch must not appear.
+
+## Accountant
+- Open Fees and Reports.
+- Verify scope mode is branch or explicit institute.
+
+## Counsellor
+- Open Students and Marketing.
+- Verify Leads, Enquiries, Admissions and Follow-ups.
+
+## Staff
+- Open Students and Attendance.
+- Verify assigned operational scope.
 
 ## VANI
-- `VANI, meri progress dikhao`
-- `VANI, kya pending hai?`
-- `VANI, live class kholo`
-- `VANI, class notes kholo`
-- `VANI, Student VANI kholo`
+- Parent: `VANI, child summary dikhao`
+- Branch: `VANI, branch summary dikhao`
+- Accountant: `VANI, fees summary dikhao`
+- Counsellor: `VANI, leads summary dikhao`
+- Staff: `VANI, staff summary dikhao`
