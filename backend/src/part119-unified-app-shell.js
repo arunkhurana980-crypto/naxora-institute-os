@@ -389,6 +389,19 @@ const MODULES = Object.freeze([
     upcomingIntegration: true,
     order: 620,
   },
+  // PART 125 GLOBAL VANI ACTION MODULE START
+  {
+    key: "vani-actions",
+    label: "Global VANI Actions",
+    description: "Preview, confirm and execute role-safe multi-step actions.",
+    category: "AI & VANI",
+    route: "/vani-actions",
+    icon: "spark",
+    roles: ALL_LOGGED_IN_ROLES,
+    alwaysAvailable: true,
+    order: 315,
+  },
+  // PART 125 GLOBAL VANI ACTION MODULE END
 ]);
 
 const COMMAND_ALIASES = Object.freeze({
@@ -438,6 +451,17 @@ const COMMAND_ALIASES = Object.freeze({
   "owner ai": "owner-ai",
   "vani 3": "vani-v3",
   "business growth": "business-growth-ai",
+  // PART 125 GLOBAL VANI ACTION ALIASES START
+  "vani actions": "vani-actions",
+  "global vani": "vani-actions",
+  "attendance mark": "vani-actions",
+  "fee reminder": "vani-actions",
+  "admission follow up": "vani-actions",
+  "assignment create": "vani-actions",
+  "assignment submit": "vani-actions",
+  "message send": "vani-actions",
+  "branch task": "vani-actions",
+  // PART 125 GLOBAL VANI ACTION ALIASES END
 });
 
 function cleanText(value = "", max = 255) {

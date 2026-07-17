@@ -1,36 +1,30 @@
-# Security and Role Tests — Part 124
+# Security and Role Tests — Part 125
 
-## Route and role
-- Part 120 → 121 → 122 → 123 → 124 → Parts 112–119 order passes.
-- No JWT returns 401.
-- Parent cannot request Branch workspace.
-- Branch Manager cannot request Accountant workspace.
+## Authentication
+- Missing JWT returns 401.
 - instituteId mismatch returns 403.
-- Owner can use Supervisor Mode.
+- Unknown role returns 403.
 
-## Parent
-- No assigned child IDs means Scope Pending.
-- Parent A cannot see Parent B’s child records.
-- Direct Parent ID model fields may match only the logged-in Parent identity.
-- Student-linked models use only Owner-assigned child IDs.
+## Scope
+- Student targets only self.
+- Parent targets only Owner-linked children.
+- Branch-scoped roles require matching branchId.
+- Institute-wide scope must have been explicitly assigned in Part 124.
+- Teacher canonical request still requires Part 126 native adapter validation before native mutation.
 
-## Branch
-- No Branch ID means Scope Pending.
-- Branch A role cannot see Branch B records.
-- Models without branch fields are not counted in branch mode.
-
-## Institute-wide roles
-- Accountant/Counsellor/Staff require explicit Owner grant or Branch IDs.
-- Client cannot self-enable institute-wide access.
-
-## Scope changes
-- Owner only.
+## Action safety
+- Unsupported action type blocked.
+- Role/action matrix enforced.
+- Missing fields return exact field list.
+- Preview expires after 30 minutes.
 - Exact confirmation required.
-- Owner Action Secret required.
-- Account role and institute are checked server-side.
+- Execute before confirmation blocked.
+- Cancelled action cannot execute.
+- Duplicate action protected.
+- Execution is idempotent.
 
-## Modules
-- Unknown module returns 404.
-- Plan-blocked module remains blocked.
-- Arbitrary URL is not accepted.
-- Sensitive VANI requests are blocked.
+## Content
+- Password, OTP, API secret, bank/card and KYC data blocked.
+- Direct money transfer/charge/refund commands blocked.
+- Destructive delete commands blocked.
+- No external delivery is claimed without adapter success.

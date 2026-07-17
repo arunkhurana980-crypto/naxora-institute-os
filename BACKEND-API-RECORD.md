@@ -1,33 +1,27 @@
-# Backend API Record — Part 124
+# Backend API Record — Part 125
 
 ## Public
-- `GET /api/part124/status`
-- `GET /api/part124/security-policy`
-- `GET /api/part124/catalog`
-- `GET /api/part124/demo`
+- `GET /api/part125/status`
+- `GET /api/part125/security-policy`
+- `GET /api/part125/catalog`
+- `GET /api/part125/demo`
 
-## Supported role or Owner
-- `GET /api/part124/overview`
-- `GET /api/part124/modules`
-- `GET /api/part124/activity`
-- `GET /api/part124/health`
-- `POST /api/part124/module/open`
-- `POST /api/part124/vani/command`
-
-Pass workspace role through:
-- `x-naxora-workspace-role`, or
-- `workspaceRole` query/body.
-
-Non-owner workspace role must match login role.
-
-## Owner-only scope management
-- `GET /api/part124/admin/scope-accounts`
-- `POST /api/part124/admin/scope-preview`
-- `POST /api/part124/admin/scope-confirmed`
+## Logged-in role
+- `GET /api/part125/my-actions`
+- `GET /api/part125/actions/:actionId`
+- `POST /api/part125/actions/preview`
+- `POST /api/part125/actions/:actionId/confirm`
+- `POST /api/part125/actions/:actionId/execute`
+- `POST /api/part125/actions/:actionId/cancel`
+- `POST /api/part125/vani/command`
 
 ## Models
-- `Part124RoleScopeAssignment`
-- `Part124RoleWorkspaceAudit`
+- `Part125VaniAction`
+- `Part125CanonicalActionRecord`
+- `Part125ActionOutbox`
+- `Part125ActionAudit`
 
-## Export
-- `getPart124RoleOverview(...)`
+## Adapter export
+`registerPart125ActionAdapter(app, actionType, handler, name)`
+
+Part 126 uses this export to connect native Attendance, Fees, Admissions, Assignment and notification modules.

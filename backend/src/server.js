@@ -30521,6 +30521,10 @@ registerPart123StudentConsolidation({ app });
 const { registerPart124RoleConsolidation } = await import("./part124-role-consolidation.js");
 registerPart124RoleConsolidation({ app });
 
+// ================= PART 125 — GLOBAL VANI MULTI STEP ACTIONS =================
+const { registerPart125GlobalVaniActions } = await import("./part125-global-vani-actions.js");
+registerPart125GlobalVaniActions({ app });
+
 // ================= PART 112 — RAZORPAY TEST MODE FOUNDATION =================
 const { registerPart112RazorpayFoundation } = await import("./part112-razorpay-foundation.js");
 registerPart112RazorpayFoundation({ app });

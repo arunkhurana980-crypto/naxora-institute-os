@@ -1,23 +1,38 @@
-# Deployment Steps — Part 124
+# Deployment Steps — Part 125
+
+First verify corrected Part 124:
+
+```powershell
+node .\VERIFY-PART124.js
+```
+
+Then:
 
 ```powershell
 node --check .\backend\src\server.js
-node .\APPLY-PART124.js
-node .\VERIFY-PART124.js
+node .\APPLY-PART125.js
+node .\VERIFY-PART125.js
 git status
 git add .
-git commit -m "Add Part 124 Parent Staff and Branch Role Consolidation"
+git commit -m "Add Part 125 Global VANI Multi Step Actions"
 git push
 ```
 
-Render build and start commands remain unchanged.
+Render build/start commands stay unchanged.
 
-Render → Manual Deploy → Clear build cache & deploy.
+```text
+Manual Deploy
+→ Clear build cache & deploy
+```
 
-## First setup
-1. Login as Owner.
-2. Open `/role-scope-manager`.
-3. Assign child scope to Parent accounts.
-4. Assign branch scope to Branch Managers.
-5. Assign branch or explicit institute-wide scope to Accountant/Counsellor/Staff.
-6. Login with each role and test `/app`.
+## Smoke tests
+1. `/api/part125/status`
+2. `/api/part125/catalog`
+3. Login through `/login`.
+4. Open `/app`.
+5. Open Global VANI Actions.
+6. Create an allowed preview.
+7. Enter a wrong confirmation.
+8. Enter exact confirmation.
+9. Execute.
+10. Confirm `executed_pending_adapter` until Part 126 is installed.

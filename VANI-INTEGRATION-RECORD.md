@@ -1,22 +1,29 @@
-# VANI Integration Record — Part 124
+# VANI Integration Record — Part 125
 
-## Role-safe commands
-- `VANI, child summary dikhao`
-- `VANI, branch summary dikhao`
-- `VANI, fees summary dikhao`
-- `VANI, leads summary dikhao`
-- `VANI, staff summary dikhao`
-- `VANI, attendance kholo`
-- `VANI, reports kholo`
-- `VANI, marketing kholo`
+## Command examples
 
-## Checks
-- Valid Part 120 JWT.
-- Matching instituteId.
-- Workspace role matches login role.
-- Owner-assigned data scope.
-- Part 116 module entitlement.
-- Server module allowlist.
-- Sensitive credential blocking.
+```text
+attendance mark student STU001 date 2026-07-18 present class BATCH10
+```
 
-Part 124 VANI provides summary and navigation only. Part 125 adds preview/confirmation-based multi-step actions.
+```text
+fee reminder student STU001 branch BR01 message="Please review fee details"
+```
+
+```text
+admission lead LEAD10 follow-up 2026-07-19 message="Call requested"
+```
+
+```text
+assignment create class BATCH10 title="Algebra practice" due 2026-07-20 instructions="Solve questions 1 to 10"
+```
+
+```text
+assignment submit assignment HW10 submission="My answer"
+```
+
+```text
+message send to teacher recipientIds=T01 message="Please review my request"
+```
+
+VANI never executes from the first sentence. It creates a preview and requires exact confirmation plus a separate execute step.

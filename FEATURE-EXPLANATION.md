@@ -1,39 +1,26 @@
-# Feature Explanation — Part 124
+# Feature Explanation — Part 125
 
-## Common flow
+## Why preview and confirmation
+VANI must not change institute data from one ambiguous sentence. Every action has:
+1. deterministic intent,
+2. structured payload,
+3. role permission,
+4. scope validation,
+5. stored preview,
+6. exact confirmation,
+7. separate execution,
+8. audit.
+
+## Canonical execution
+Execution always creates a Part 125 canonical record. Message/reminder/follow-up actions also create an outbox item.
+
+When Part 126 registers a native adapter, the same execution can update the existing module or notification provider. Without an adapter the result is:
 
 ```text
-Part 120 login
-→ Part 119 unified app
-→ role-specific Part 124 workspace
-→ Owner-assigned role scope
-→ institute/child/branch filtering
-→ Part 116 entitlement filtering
-→ approved module opens inside the shell
+executed_pending_adapter
 ```
 
-## Parent
-- Child-linked Student records.
-- Attendance context.
-- Fee/receipt context.
-- Assignments, results and notices.
-- Parent VANI.
+This is not a failure and not a fake delivery. It means the request is safely stored for Part 126.
 
-## Branch Manager
-- Branch-linked Students, Teachers, Attendance, Fees, Leads and Batches.
-- Students, Attendance, Reports and Branch Command Centre modules.
-
-## Accountant
-- Explicit branch or institute-wide finance scope.
-- Fees, invoices, receipts, payments and reports.
-
-## Counsellor
-- Explicit branch or institute-wide counselling scope.
-- Leads, enquiries, admissions, follow-ups and marketing.
-
-## Staff
-- Explicit branch or institute-wide operations scope.
-- Students, Attendance, Batches, Notices, Tasks and Leads.
-
-## Owner
-Owner may open any workspace in clearly labelled Supervisor Mode.
+## Global shell bridge
+Action-like commands entered in the Part 119 VANI panel are routed to Part 125. Normal “module kholo” commands still use Part 119 navigation.

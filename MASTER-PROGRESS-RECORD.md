@@ -1,25 +1,24 @@
 # NAXORA Master Progress Record
 
-## Completed
-- Part 119: Unified Single App Shell.
-- Part 120: Common Login, JWT and Role Routing.
+## Completed foundation
+- Part 119: Unified app shell.
+- Part 120: Common login.
 - Part 121: Owner Workspace.
 - Part 122: Teacher Workspace.
 - Part 123: Student Workspace.
-- Part 124: Parent, Branch Manager, Accountant, Counsellor and Staff Workspaces.
+- Part 124: Parent, Branch, Accountant, Counsellor and Staff Workspaces.
+- Part 125: Global VANI multi-step action engine.
 
-Part 124 complete only after:
-- route verifier passes,
-- all five workspace routes load,
-- Role Scope Manager works,
-- Parent-child isolation passes,
-- Branch isolation passes,
-- explicit institute-wide grant checks pass,
-- Part 116 module filtering works,
-- role VANI summary/navigation works,
-- mobile/desktop layout passes.
+Part 125 complete only after:
+- verifier passes,
+- shell bridge works,
+- all action roles are tested,
+- preview/confirmation/execute works,
+- scope isolation passes,
+- duplicate/idempotency passes,
+- canonical records and outbox are stored,
+- no false native delivery is shown.
 
 ## Next
-- Part 125: Global VANI Multi-Step Actions.
-- Part 126: Cross-Module E2E Integration.
+- Part 126: Cross-Module E2E Integration and Native Adapters.
 - Part 127: Unified SaaS Production Launch.

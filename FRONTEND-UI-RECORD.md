@@ -1,36 +1,23 @@
-# Frontend UI Record — Part 124
+# Frontend UI Record — Part 125
 
-## Shared Role Workspace
-One shared secure frontend is served at:
-- `/parent-workspace`
-- `/branch-workspace`
-- `/accountant-workspace`
-- `/counsellor-workspace`
-- `/staff-workspace`
-
-The page detects its pathname and requests the matching role workspace from the backend.
+## Page
+`/vani-actions`
 
 ## Sections
-- Role identity and plan state.
-- Scope mode.
-- Alerts.
-- Summary cards.
-- Searchable role module launcher.
-- Safely scoped metrics.
-- Plan entitlements.
-- Scope status.
-- Integration health.
-- Recent activity.
-- Role VANI.
+- Voice/text VANI command.
+- Structured action selector.
+- Dynamic required/optional fields.
+- Preview.
+- Exact confirmation.
+- Separate execution.
+- Cancellation before execution.
+- Personal action history.
+- Native-adapter status.
 
-## Scope Manager
-`/role-scope-manager`
+## Part 119 integration
+Installer adds:
+- Global VANI Actions sidebar module.
+- Action aliases.
+- `/naxora-part125-global-vani-bridge.js`.
 
-Owner can:
-- select a Part 120 role account,
-- enter child Student IDs or Branch IDs,
-- select explicit institute-wide access where allowed,
-- preview,
-- enter exact confirmation,
-- privately verify with Owner Action Secret,
-- save the role scope.
+The bridge intercepts action-like VANI commands and opens the Part 125 action page. Navigation-only commands remain handled by Part 119.

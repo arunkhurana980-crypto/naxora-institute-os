@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#071426" />
+  <title>Global VANI Actions — NAXORA</title>
+  <link rel="stylesheet" href="/naxora-vani-actions.css" />
+</head>
+<body>
+  <main class="action-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">NAXORA Institute OS • Part 125</p>
+        <h1>Global VANI Actions</h1>
+        <p>VANI action ko pehle samjhegi, role aur scope check karegi, preview banayegi, exact confirmation legi aur uske baad hi execute karegi.</p>
+      </div>
+      <aside class="hero-status">
+        <span id="roleName">Role session</span>
+        <strong id="engineStatus">Loading engine…</strong>
+        <small id="adapterStatus">Checking native adapters</small>
+      </aside>
+    </section>
+
+    <section id="noticePanel" class="notice warning">
+      Part 125 canonical action real MongoDB record banata hai. Native module update ya email/SMS/WhatsApp delivery tabhi hogi jab Part 126 adapter registered ho.
+    </section>
+
+    <section class="grid two">
+      <article class="panel vani-card">
+        <p class="eyebrow">Speak or type</p>
+        <h2>Tell VANI what to do</h2>
+        <p class="muted">Example: <code>attendance mark student STU001 date 2026-07-18 present class BATCH10</code></p>
+        <form id="commandForm">
+          <textarea id="commandText" rows="5" placeholder="VANI command…"></textarea>
+          <div class="button-row">
+            <button id="voiceBtn" type="button" class="secondary">🎙 Voice</button>
+            <button type="submit">Interpret Command</button>
+          </div>
+        </form>
+        <pre id="commandOutput">Waiting…</pre>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Structured action</p>
+        <h2>Action details</h2>
+        <label>Action type
+          <select id="actionType"></select>
+        </label>
+
+        <div id="dynamicFields" class="fields-grid"></div>
+
+        <div class="button-row">
+          <button id="previewBtn" type="button">Create Preview</button>
+          <button id="clearBtn" type="button" class="secondary">Clear</button>
+        </div>
+        <pre id="previewOutput">No preview yet.</pre>
+      </article>
+    </section>
+
+    <section class="grid three">
+      <article class="panel">
+        <p class="eyebrow">Step 1</p>
+        <h2>Preview</h2>
+        <div id="previewSummary" class="stack-list">
+          <div class="stack-row"><span>Status</span><strong>Not ready</strong></div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Step 2</p>
+        <h2>Exact confirmation</h2>
+        <label>Type the exact text
+          <input id="confirmationText" autocomplete="off" />
+        </label>
+        <button id="copyConfirmationBtn" class="secondary full" type="button">Copy Required Text</button>
+        <button id="confirmBtn" class="full" type="button">Confirm Action</button>
+        <pre id="confirmOutput">Waiting…</pre>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Step 3</p>
+        <h2>Execute</h2>
+        <p class="muted">Confirmation aur execution alag steps hain. Double-click duplicate action create nahi karega.</p>
+        <button id="executeBtn" class="full danger-safe" type="button">Execute Confirmed Action</button>
+        <button id="cancelBtn" class="secondary full" type="button">Cancel Before Execution</button>
+        <pre id="executeOutput">Waiting…</pre>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">My action history</p>
+          <h2>Preview, confirmed and executed actions</h2>
+        </div>
+        <button id="refreshHistoryBtn" class="secondary">Refresh</button>
+      </div>
+      <div id="historyList" class="history-list">Loading…</div>
+    </section>
+  </main>
+
+  <script src="/naxora-common-session.js"></script>
+  <script src="/naxora-vani-actions.js"></script>
+</body>
+</html>
