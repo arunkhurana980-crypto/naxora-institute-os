@@ -30516,6 +30516,12 @@ registerPart113SubscriptionPlans({ app });
 const { registerPart114CustomerCheckout } = await import("./part114-customer-checkout-subscription.js");
 registerPart114CustomerCheckout({ app });
 
+
+
+// ================= PART 115 — SECURE RAZORPAY WEBHOOKS AND STATUS SYNC =================
+const { registerPart115RazorpayWebhooks } = await import("./part115-razorpay-webhooks.js");
+registerPart115RazorpayWebhooks({ app });
+
 app.use(notFound);
 app.use(errorHandler);
 

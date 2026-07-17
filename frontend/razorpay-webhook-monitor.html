@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NAXORA Part 115 — Razorpay Webhook Monitor</title>
+  <link rel="stylesheet" href="/razorpay-webhook-monitor.css" />
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">NAXORA Institute OS • Part 115</p>
+        <h1>Secure Webhook Monitor</h1>
+        <p class="lead">Razorpay Test events verify, deduplicate aur subscription status ke saath safely sync honge.</p>
+      </div>
+      <aside class="status-card">
+        <span id="modeBadge" class="badge">Checking…</span>
+        <strong id="statusHeadline">Loading webhook status</strong>
+        <small id="statusText">Paid feature access Part 116 tak locked hai.</small>
+      </aside>
+    </section>
+
+    <section class="warning">
+      <strong>Secret rule:</strong> Webhook Secret chat, VANI, screenshot ya GitHub me mat daalna. Same secret sirf Render Environment aur Razorpay Dashboard Test Webhook me use karo.
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Owner Session</p>
+        <h2>Private monitoring access</h2>
+        <label>Institute ID
+          <input id="instituteId" value="NX-DEMO-INST-001" autocomplete="off" />
+        </label>
+        <label>Owner JWT — private
+          <input id="jwtToken" type="password" placeholder="Existing owner login token auto-detect hoga" autocomplete="off" />
+        </label>
+        <div class="buttons">
+          <button id="detectTokenBtn" class="secondary">Detect Token</button>
+          <button id="loadSetupBtn">Load Webhook Setup</button>
+        </div>
+        <pre id="sessionOutput">Waiting…</pre>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Razorpay Dashboard Setup</p>
+        <h2>Test Mode endpoint</h2>
+        <label>Webhook URL
+          <input id="webhookUrl" readonly value="Load owner setup first" />
+        </label>
+        <button id="copyUrlBtn" class="secondary">Copy URL</button>
+        <div id="eventList" class="event-list"></div>
+        <p class="hint">Secret value UI/API me display nahi hogi.</p>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Webhook Health</p>
+        <h2>Last 24 hours</h2>
+        <button id="loadHealthBtn">Load Health</button>
+        <pre id="healthOutput">Waiting…</pre>
+      </article>
+      <article class="panel">
+        <p class="eyebrow">Recent Events</p>
+        <h2>Verified event ledger</h2>
+        <div class="buttons">
+          <button id="loadEventsBtn" class="secondary">Load Events</button>
+          <button id="loadFailuresBtn" class="secondary">Load Failures</button>
+        </div>
+        <pre id="eventsOutput">Waiting…</pre>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Subscription Sync</p>
+        <h2>Authoritative status candidates</h2>
+        <button id="loadSyncBtn">Load Sync States</button>
+        <pre id="syncOutput">Waiting…</pre>
+      </article>
+      <article class="panel">
+        <p class="eyebrow">Safe Reconcile</p>
+        <h2>Provider API refresh</h2>
+        <label>Local Part 114 Subscription ID
+          <input id="localSubscriptionId" placeholder="MongoDB local ID" autocomplete="off" />
+        </label>
+        <button id="reconcileBtn">Reconcile Test Subscription</button>
+        <pre id="reconcileOutput">No reconcile yet.</pre>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Global VANI • Owner Only</p>
+        <h2>Webhook assistant</h2>
+        <label>Command
+          <input id="vaniCommand" value="VANI, webhook setup status dikhao" />
+        </label>
+        <button id="askVaniBtn">Ask VANI</button>
+        <pre id="vaniOutput">Waiting…</pre>
+      </article>
+      <article class="panel">
+        <p class="eyebrow">Testing Links</p>
+        <div class="links">
+          <a href="/api/part115/status" target="_blank" rel="noreferrer">Status</a>
+          <a href="/api/part115/security-policy" target="_blank" rel="noreferrer">Security Policy</a>
+          <a href="/api/part115/demo" target="_blank" rel="noreferrer">Demo Record</a>
+        </div>
+      </article>
+    </section>
+  </main>
+  <script src="/razorpay-webhook-monitor.js"></script>
+</body>
+</html>

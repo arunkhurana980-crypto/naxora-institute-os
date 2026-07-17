@@ -1,15 +1,14 @@
-# Deployment Steps — Part 114
+# Deployment Steps — Part 115
 
 ## Local
-Run one command at a time:
 
 ```powershell
 node --check .\backend\src\server.js
-node .\APPLY-PART114.js
-node .\VERIFY-PART114.js
+node .\APPLY-PART115.js
+node .\VERIFY-PART115.js
 git status
 git add .
-git commit -m "Add Part 114 Customer Checkout and Subscription Activation"
+git commit -m "Add Part 115 Secure Razorpay Webhooks and Status Sync"
 git push
 ```
 
@@ -26,20 +25,23 @@ Keep existing start:
 cd backend && node src/server.js
 ```
 
-Keep Test Mode environment variables from Part 112.
+Required private environment values:
+
+```env
+RAZORPAY_MODE=test
+RAZORPAY_KEY_ID=<test key id>
+RAZORPAY_KEY_SECRET=<test api key secret>
+RAZORPAY_WEBHOOK_SECRET=<separate webhook secret>
+NAXORA_PUBLIC_BASE_URL=https://naxora-institute-os.onrender.com
+```
 
 Render → Manual Deploy → Clear build cache & deploy.
 
-## Smoke-test order
-1. `/api/part112/status`
-2. `/api/part113/status`
-3. `/api/part114/status`
-4. `/subscription-checkout`
-5. Load a confirmed Part 113 Test Plan.
-6. Create preview.
-7. Create Test Subscription.
-8. Open Test Checkout.
-9. Complete test authorisation.
-10. Verify server response.
-
-Do not switch to Live Mode.
+## After deploy
+1. Check `/api/part115/status`.
+2. Open `/webhook-monitor` as owner.
+3. Copy webhook URL.
+4. Configure Razorpay Dashboard Test Mode webhook.
+5. Select all Part 115 Subscription events.
+6. Complete a Part 114 Test Subscription/charge scenario.
+7. Check event ledger and sync states.

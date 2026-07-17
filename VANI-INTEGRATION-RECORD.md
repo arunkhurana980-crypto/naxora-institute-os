@@ -1,22 +1,20 @@
-# VANI Integration Record — Part 114
+# VANI Integration Record — Part 115
 
 ## Commands
-- `VANI, Professional subscription checkout ready karo`
-- `VANI, Test subscriptions dikhao`
-- `VANI, subscription status dikhao`
+- `VANI, webhook setup status dikhao`
+- `VANI, webhook failures dikhao`
+- `VANI, subscription sync status dikhao`
+- `VANI, is subscription ko reconcile karo`
 
 ## Behaviour
-- Owner-only.
+- Owner-only monitoring.
 - instituteId checked.
-- VANI asks for plan, billing cycles, test customer details and customer consent.
-- VANI can guide and prepare the flow.
-- VANI cannot authorise the mandate for the customer.
-- Customer must interact with Razorpay Checkout.
-- VANI never asks for CVV, OTP, UPI PIN, card number or bank credentials.
+- Secrets never spoken or returned.
+- Setup command shows URL and selected event names only.
+- Failures/events shown on private screen.
+- Reconcile requires local Part 114 Subscription ID.
+- Reconcile is a safe read-only provider refresh.
 - Live Mode requests are blocked.
 
-## Action levels
-- Level 1: list/status/readiness.
-- Level 2: checkout preview guidance.
-- Level 3: exact owner confirmation creates Test Subscription.
-- Separate customer action: Razorpay Checkout authorisation.
+## Status language
+VANI can safely say counts and status names. Provider IDs, detailed event snapshots and error records remain private-screen-first.

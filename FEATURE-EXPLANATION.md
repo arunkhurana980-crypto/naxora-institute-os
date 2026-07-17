@@ -1,17 +1,30 @@
-# Feature Explanation — Part 114
+# Feature Explanation — Part 115
 
-## Flow
-1. Owner selects a confirmed Part 113 Razorpay Test Plan.
-2. Owner enters test customer details and billing-cycle count.
-3. NAXORA creates a preview and exact confirmation phrase.
-4. Confirmed action creates a Razorpay Test Subscription.
-5. Customer opens Razorpay Standard Checkout and authorises recurring billing.
-6. Razorpay returns payment ID, subscription ID and signature.
-7. NAXORA verifies the signature on the server using the server-created Subscription ID.
-8. NAXORA fetches and records the current provider Subscription status.
+## Added
+- Public Razorpay Test webhook endpoint.
+- HMAC SHA-256 signature verification using the raw request body.
+- `x-razorpay-event-id` duplicate protection.
+- Payload-digest fallback when event ID is unavailable.
+- At-least-once delivery-safe event ledger.
+- Out-of-order event protection.
+- Part 114 Subscription status sync.
+- Compact safe snapshots instead of full webhook payload storage.
+- Subscription sync-state model.
+- Owner-only event monitor and health report.
+- Safe provider API reconcile.
+- VANI webhook assistant.
 
-## Why customer interaction remains mandatory
-Recurring billing requires customer authentication/authorisation. VANI cannot enter OTP, CVV, card number or UPI PIN and cannot bypass customer consent.
+## Supported Subscription events
+- authenticated
+- activated
+- charged
+- completed
+- updated
+- pending
+- halted
+- cancelled
+- paused
+- resumed
 
-## Authority boundary
-A valid Checkout signature proves the immediate response is authentic. Part 115 webhooks become the authoritative asynchronous source for ongoing subscription events.
+## Important boundary
+Part 115 records verified subscription states but does not unlock product features. Part 116 applies subscription access control.

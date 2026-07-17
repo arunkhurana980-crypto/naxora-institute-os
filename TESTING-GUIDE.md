@@ -1,21 +1,30 @@
-# Part 114 Testing Guide
+# Part 115 Testing Guide
 
-## Prerequisites
-- Razorpay Dashboard is in Test Mode.
-- Test API keys are configured in Render.
-- Part 113 has at least one provider-created Test Plan.
-- Use test customer contact details, not sensitive real customer data.
+## Basic route test
+- `/api/part115/status`
+- `/api/part115/security-policy`
+- `/webhook-monitor`
 
-## Expected stages
-1. Local preview status: `preview_ready`.
-2. Provider creation returns `sub_...` ID.
-3. Checkout opens with `subscription_id`.
-4. Customer completes the Razorpay test authorisation screen.
-5. Server verifies HMAC signature.
-6. Provider status is typically `authenticated` or `active`, depending on start timing and provider behaviour.
-7. Feature access remains locked until Part 116.
+## Real Test Mode event flow
+1. Configure the Test webhook in Razorpay Dashboard.
+2. Complete a Part 114 Test Subscription authorisation.
+3. Expected event: `subscription.authenticated`.
+4. Depending on timing, `subscription.activated` may follow.
+5. Open webhook monitor → Load Events.
+6. Open webhook monitor → Load Sync States.
+7. The matching Part 114 local Subscription should show the verified provider status.
 
-## Important
-Browser success by itself is not accepted. Only a successful server signature check is recorded.
+## Charge testing
+Use Razorpay Test Subscription controls to simulate successful and failed recurring charges.
+- Successful charge should produce `subscription.charged`.
+- Failed charge can move the Subscription to `pending`.
+- Exhausted retries can move it to `halted`.
 
-Ongoing events such as activated, charged, pending, halted, completed or cancelled become authoritative through Part 115 webhooks.
+## Duplicate test
+Razorpay may retry the same event. The unique event ID should prevent double processing.
+
+## Manual reconcile
+Copy the local Part 114 Subscription MongoDB ID into the monitor and run Reconcile. This uses Razorpay Test API fetch as a safe fallback; it does not unlock features.
+
+## Part boundary
+Even when status becomes active/authenticated, `featureAccessUnlocked` remains false until Part 116.

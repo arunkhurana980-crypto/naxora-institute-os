@@ -1,43 +1,38 @@
-# Security and Role Tests — Part 114
+# Security and Role Tests — Part 115
 
 ## Mandatory
 
 ### Route order
-`VERIFY-PART114.js` must show Parts 112, 113 and 114 before the 404 handler.
+`VERIFY-PART115.js` must show Parts 112–115 before the 404 handler.
 
 ### Public status
 Expected:
-- testModeLocked true
-- liveModeEnabled false
-- realMoneyCollectionEnabled false
-- webhookAuthorityEnabled false
+- signatureVerificationEnabled true
+- duplicateEventProtectionEnabled true
+- outOfOrderProtectionEnabled true
 - featureAccessUnlockEnabled false
+- liveModeEnabled false
 
-### Role checks
-- no JWT → 401
-- teacher/student/parent JWT → 403
-- institute mismatch → 403
+### Signature
+- no signature → 400
+- wrong signature → 400
+- parsed/reconstructed body instead of original raw body → signature must fail
+- correct signature over exact raw body → accepted
 
-### Dependency check
-No Part 113 provider-created plan → checkout plan list empty; provider subscription cannot be created.
+### Duplicate
+Send the same valid event ID twice. Second response must be HTTP 200 with `duplicate: true`; status update must not repeat.
 
-### Consent
-Preview must fail unless both Test Mode/test-data confirmation and customer authorisation acknowledgement are true.
+### Out-of-order
+Send a newer valid event, then an older valid event for the same Subscription. Older event must be stored as `out_of_order_ignored` and must not regress state.
 
-### Duplicate protection
-Same institute + plan + cycles + email + contact returns the existing local preview/provider Subscription.
+### Tenant monitoring
+Owner can only list events/sync states for the institute in the JWT/request context.
 
-### Exact confirmation
-Wrong phrase must fail.
+### Unknown Subscription
+A valid event for an unknown `sub_...` ID is stored as `unmatched`, not silently mapped to another institute.
 
-### Signature security
-- missing fields → fail
-- returned subscription ID mismatch → fail
-- wrong signature → fail
-- correct signature → provider status refresh
+### Payload privacy
+Full raw webhook body is not stored. Only payload digest and compact safe snapshot are stored.
 
-### Secret protection
-No API response returns Key Secret. Public checkout options may return only the Test Key ID.
-
-### Sensitive data
-Never enter or speak CVV, OTP, UPI PIN, card number or bank password in NAXORA/VANI.
+### Access boundary
+Part 115 may set `accessCandidate`, but `accessUnlockApplied` must remain false.

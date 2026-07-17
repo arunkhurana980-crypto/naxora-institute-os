@@ -1,22 +1,21 @@
-# Frontend UI Record — Part 114
+# Frontend UI Record — Part 115
 
 ## Main page
-`/subscription-checkout`
+`/webhook-monitor`
 
 Aliases:
-- `/customer-subscription-checkout`
-- `/part114`
+- `/razorpay-webhook-monitor`
+- `/part115`
 
-## UI steps
-1. Detect owner login token.
-2. Load provider-created Part 113 plans.
-3. Enter Test customer details and total billing cycles.
-4. Confirm Test Mode and customer-consent acknowledgement.
-5. Create preview.
-6. Enter exact confirmation.
-7. Create Razorpay Test Subscription.
-8. Open Razorpay Checkout.
-9. Server verifies signature.
-10. Refresh provider status.
+## Owner UI
+- Detect owner JWT.
+- Show exact Test webhook URL.
+- Show events to select in Razorpay Dashboard.
+- Show 24-hour webhook health.
+- Show verified event ledger.
+- Show failed/unmatched records.
+- Show subscription sync states.
+- Run read-only provider reconcile.
+- Ask VANI for setup/status/help.
 
-The page loads the official Razorpay Checkout script from `checkout.razorpay.com`.
+The page never displays the Webhook Secret or API Secret.

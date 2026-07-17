@@ -1,32 +1,31 @@
-# Backend API Record — Part 114
+# Backend API Record — Part 115
 
 ## Public APIs
-- `GET /api/part114/status`
-- `GET /api/part114/security-policy`
-- `GET /api/part114/demo`
+- `GET /api/part115/status`
+- `GET /api/part115/security-policy`
+- `GET /api/part115/demo`
+- `POST /api/part115/webhooks/razorpay`
+
+The POST webhook endpoint is public because Razorpay calls it server-to-server. It requires a valid `X-Razorpay-Signature`.
 
 ## Owner-only APIs
-- `GET /api/part114/plans`
-- `GET /api/part114/subscriptions/local`
-- `POST /api/part114/subscription/preview`
-- `POST /api/part114/subscription/create-confirmed`
-- `GET /api/part114/checkout/options/:id`
-- `POST /api/part114/checkout/verify`
-- `POST /api/part114/subscription/:id/refresh`
-- `POST /api/part114/vani/command`
-
-## Signature verification
-Server computes HMAC SHA-256 from:
-
-```text
-razorpay_payment_id + "|" + server-created razorpay_subscription_id
-```
-
-The returned subscription ID must match the ID stored on the server. The Razorpay Key Secret is used only on the backend and is never returned.
+- `GET /api/part115/setup`
+- `GET /api/part115/events`
+- `GET /api/part115/sync-states`
+- `GET /api/part115/health`
+- `POST /api/part115/subscription/:id/reconcile`
+- `POST /api/part115/vani/command`
 
 ## MongoDB models
-- `Part114CheckoutSubscription`
-- `Part114CheckoutAudit`
+- `Part115RazorpayWebhookEvent`
+- `Part115SubscriptionSyncState`
+- `Part115WebhookAudit`
 
-## No payment credential storage
-NAXORA never receives/stores card number, CVV, OTP, UPI PIN or bank credentials. Razorpay Checkout handles those fields.
+## Signature
+The server computes HMAC SHA-256 over the exact raw HTTP request body using `RAZORPAY_WEBHOOK_SECRET`, then timing-safe compares it with `X-Razorpay-Signature`.
+
+## Idempotency
+`x-razorpay-event-id` is stored as a unique value. If unavailable, a SHA-256 digest of the exact raw body is used as a fallback ID.
+
+## Event ordering
+Verified older events are stored but do not overwrite a newer `lastEventCreatedAt` state.
