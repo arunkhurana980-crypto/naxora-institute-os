@@ -1,18 +1,26 @@
-# VANI Integration Record — Part 118
+# VANI Integration Record — Part 119
+
+## Mode
+Global navigation mode.
 
 ## Commands
-- `VANI, live launch readiness dikhao`
-- `VANI, kya checks pending hain?`
-- `VANI, Razorpay Live connectivity check karo`
-- `VANI, live launch approve karo`
-- `VANI, payments rollback karo`
+- `VANI, fees kholo`
+- `VANI, attendance dikhao`
+- `VANI, live classes kholo`
+- `VANI, subscription manager kholo`
+- `VANI, marketplace kholo`
+- `VANI, kya features available hain?`
 
-## Behaviour
-- Owner-only.
-- Role and instituteId checked.
-- VANI gives counts and safe summaries.
-- Sensitive merchant details stay private-screen-first.
-- VANI never asks for API Secret, Webhook Secret, OTP, PAN, Aadhaar or bank statement.
-- Launch request only guides to preview.
-- Exact confirmation and private owner verification remain mandatory.
-- VANI cannot edit Render environment.
+## Checks
+Before opening a module:
+- login,
+- role,
+- instituteId,
+- Part 116 plan entitlement,
+- V3 entitlement when required,
+- server module allowlist.
+
+## Boundaries
+Part 119 does not execute admission, fee, attendance, messaging, deletion, refund or payment actions.
+
+Global multi-step VANI orchestration is Part 125. Existing module VANI assistants continue to enforce their own preview and confirmation rules.

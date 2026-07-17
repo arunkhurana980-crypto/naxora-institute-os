@@ -30540,6 +30540,12 @@ registerPart117VaniSubscriptionManager({ app });
 const { registerPart118LiveReadiness } = await import("./part118-razorpay-live-readiness.js");
 registerPart118LiveReadiness({ app });
 
+
+
+// ================= PART 119 — UNIFIED SINGLE APP SHELL =================
+const { registerPart119UnifiedAppShell } = await import("./part119-unified-app-shell.js");
+registerPart119UnifiedAppShell({ app });
+
 app.use(notFound);
 app.use(errorHandler);
 

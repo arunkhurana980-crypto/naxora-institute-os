@@ -1,32 +1,23 @@
-# Backend API Record — Part 118
+# Backend API Record — Part 119
 
 ## Public
-- `GET /api/part118/status`
-- `GET /api/part118/requirements`
-- `GET /api/part118/security-policy`
-- `GET /api/part118/demo`
+- `GET /api/part119/status`
+- `GET /api/part119/catalog`
+- `GET /api/part119/security-policy`
+- `GET /api/part119/health`
+- `GET /api/part119/demo`
 
-## Owner-only
-- `GET /api/part118/readiness`
-- `POST /api/part118/evidence`
-- `POST /api/part118/provider-probe`
-- `POST /api/part118/launch/preview`
-- `POST /api/part118/launch/approve-confirmed`
-- `POST /api/part118/rollback/preview`
-- `POST /api/part118/rollback/approve-confirmed`
-- `POST /api/part118/vani/command`
+## Logged-in roles
+- `GET /api/part119/session`
+- `GET /api/part119/navigation`
+- `POST /api/part119/module/open`
+- `POST /api/part119/vani/command`
 
-## Models
-- `Part118LiveReadinessEvidence`
-- `Part118ControlledLaunch`
-- `Part118LiveLaunchAudit`
-
-## Private confirmation
-Confirmed launch/rollback requires:
-- institute_owner JWT,
-- matching instituteId,
-- exact confirmation,
-- `x-naxora-owner-action-secret`.
-
-## Provider probe
-Uses Live API credentials for a read-only Fetch Plans request. It does not create a payment, Plan or Subscription.
+## Security
+- JWT is verified server-side.
+- instituteId from JWT/request must match.
+- Module routes come from a server allowlist.
+- Role is checked server-side.
+- Paid and V3 modules use Part 116 entitlements.
+- Billing controls remain institute_owner-only.
+- VANI cannot provide arbitrary URLs.

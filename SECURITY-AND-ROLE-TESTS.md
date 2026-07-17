@@ -1,19 +1,18 @@
-# Security and Role Tests — Part 118
+# Security and Role Tests — Part 119
 
 ## Mandatory
-- Parts 112–118 before 404 handler.
-- No JWT → 401.
-- Non-owner role → 403.
-- Institute mismatch → 403.
-- Missing Live Key Secret → readiness pending.
-- Test Key ID in Live field → readiness pending.
-- HTTP policy URL → rejected.
-- Missing adult approver → readiness pending.
-- KYC/bank documents are never accepted.
-- Provider probe is read-only.
-- Wrong exact confirmation → blocked.
-- Wrong Owner Action Secret → blocked.
-- Approval API does not edit Render.
-- Real-money flag remains false until manually configured.
-- Rollback requires its own exact confirmation and owner verification.
-- Provider secrets never appear in API responses.
+- Parts 112–119 appear before the Express 404 handler.
+- `/app` loads without JavaScript syntax errors.
+- Private navigation without JWT returns 401.
+- instituteId mismatch returns 403.
+- Teacher cannot open owner billing modules.
+- Student cannot open fee-management module.
+- Parent cannot open branch command centre.
+- Owner without Business entitlement cannot open Marketplace.
+- Owner without V3 cannot open owner AI.
+- Arbitrary module key returns 404.
+- Browser cannot send an arbitrary external URL.
+- VANI refuses sensitive credential requests.
+- VANI denied module does not open.
+- Mobile sidebar opens/closes.
+- Browser back/forward updates shell module state.

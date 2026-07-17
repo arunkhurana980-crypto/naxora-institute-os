@@ -1,23 +1,32 @@
-# Feature Explanation — Part 118
+# Feature Explanation — Part 119
 
-## Readiness groups
-1. Adult legal merchant and legal entity.
-2. Razorpay account activation.
-3. Live website submission and verification.
-4. Public pricing, terms, privacy, contact, cancellation/refund and shipping-policy pages.
-5. Customer support email.
-6. Bank/settlement readiness.
-7. Part 112–117 Test E2E evidence.
-8. Live API credentials.
-9. Separate Live webhook secret and alert email.
-10. Read-only Live provider connectivity probe.
-11. Exact launch confirmation.
-12. Private owner verification.
-13. Supervised manual Render switch.
-14. Rollback plan.
+## Single-app behaviour
 
-## Why manual switch
-Render environment is an external production control. The application records approval but does not silently replace secrets or turn on real-money collection.
+```text
+Existing role login
+→ open /app
+→ server verifies JWT and instituteId
+→ role modules filtered
+→ Part 116 plan/V3 entitlements filtered
+→ selected old module opens inside central pane
+→ URL remains /app#/module/<key>
+```
 
-## Launch rule
-A preview cannot be created while a blocking check is pending. Approval still does not move money; the adult merchant owner must perform the documented switch and verify a controlled transaction.
+## Global VANI in Part 119
+Safe examples:
+- `VANI, fees kholo`
+- `VANI, marketplace dikhao`
+- `VANI, webhook monitor kholo`
+- `VANI, teacher app kholo`
+
+Part 119 VANI performs only safe navigation. It does not bypass module security or execute finance/student actions.
+
+## Server allowlist
+The browser cannot submit an arbitrary URL. It submits a module key. The backend returns a route only when:
+- module key exists,
+- role is allowed,
+- instituteId matches,
+- Part 116 entitlement allows the module.
+
+## Legacy route embedding
+Existing feature pages remain available, but users reach them through the central shell. Parts 121–126 will progressively replace legacy-page differences with shared shell components and global action integration.

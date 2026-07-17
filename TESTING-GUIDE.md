@@ -1,34 +1,40 @@
-# Part 118 Testing Guide
+# Part 119 Testing Guide
 
-## Safe testing first
-Keep:
-- `RAZORPAY_MODE=test`
-- `NAXORA_RAZORPAY_LIVE_LAUNCHED=false`
+## Public tests
+- `/api/part119/status`
+- `/api/part119/catalog`
+- `/app`
 
-## Evidence test
-Save all booleans false, then confirm launch preview is blocked.
+## Existing-session test
+1. Login through an existing owner/teacher/student/parent route.
+2. Open `/app`.
+3. Press Connect Existing Login if auto-detection does not run.
+4. Confirm role badge and module list.
 
-## URL test
-- HTTPS URL passes.
-- HTTP/malformed URL is not saved as valid.
+## Owner tests
+- Billing controls visible.
+- Business modules depend on Part 116 entitlement.
+- V3 modules depend on active V3 subscription.
 
-## Role test
-- Owner works.
-- Teacher/student/parent/staff denied.
+## Teacher tests
+- Teacher app, attendance, reports, live classes and allowed AI modules.
+- Owner billing and owner AI hidden/blocked.
 
-## Credential test
-- Missing Live Key Secret blocks provider probe.
-- `rzp_test_` in Live Key ID field blocks readiness.
-- Correct Live credentials allow read-only probe.
+## Student tests
+- Student app, live classes and allowed student AI modules.
+- Fees management and owner controls blocked.
 
-## Approval test
-- Pending check blocks preview.
-- Wrong exact text blocks approval.
-- Wrong Owner Action Secret blocks approval.
-- Correct approval returns `approved_pending_environment_switch`.
-- Real-money flag remains false.
+## Parent tests
+- Parent app only from current catalogue.
+- Owner/teacher/business controls blocked.
 
-## Rollback test
-- Rollback preview produces separate exact text.
-- Wrong text or owner secret is blocked.
-- Approval returns manual rollback instructions.
+## VANI tests
+- Allowed module opens.
+- Denied module stays closed.
+- Unknown module gets safe reply.
+- Sensitive credential request is blocked.
+
+## Route tests
+- Hash changes to `#/module/<key>`.
+- Refresh preserves selected module.
+- Back button returns to previous shell state.

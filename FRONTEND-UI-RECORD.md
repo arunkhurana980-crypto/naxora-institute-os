@@ -1,22 +1,28 @@
-# Frontend UI Record — Part 118
+# Frontend UI Record — Part 119
 
-## Main page
-`/razorpay-live-readiness`
+## Main URL
+`/app`
 
 Aliases:
-- `/controlled-payment-launch`
-- `/part118`
+- `/naxora-app`
+- `/unified-app`
+- `/part119`
 
-## UI
-- Owner session.
-- Private owner verification input.
-- Blocking readiness summary.
-- Manual non-sensitive evidence.
-- Public HTTPS policy URLs.
-- Read-only Live provider probe.
-- Launch preview and exact confirmation.
-- Manual-switch instructions.
-- Rollback preview and approval.
-- VANI readiness assistant.
+## UI components
+- Responsive sidebar.
+- Module search.
+- Category grouping.
+- Role badge.
+- Base-plan and V3 badges.
+- Central module iframe.
+- Refresh, direct-open and home controls.
+- Hash-based state.
+- Global VANI panel.
+- Browser speech input when supported.
+- Browser SpeechSynthesis safe summaries.
+- Mobile sidebar and backdrop.
 
-No API Secret, webhook secret, KYC document or bank document is displayed or stored.
+## Existing login detection
+The shell looks for the existing JWT storage keys already used by the project. It does not store the token in source code.
+
+Part 120 replaces this compatibility step with the official common login.
