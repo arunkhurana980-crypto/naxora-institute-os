@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NAXORA Part 112 — Razorpay Test Mode Foundation</title>
+  <link rel="stylesheet" href="/razorpay-test-mode-foundation.css" />
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">NAXORA Institute OS • Part 112</p>
+        <h1>Razorpay Test Mode Foundation</h1>
+        <p class="lead">Owner-only, private-screen-first setup. Part 112 real money collect nahi karta.</p>
+      </div>
+      <div class="status-card">
+        <span id="modeBadge" class="badge">Checking…</span>
+        <strong id="headline">Loading foundation status</strong>
+        <small id="subline">Secrets browser me display nahi honge.</small>
+      </div>
+    </section>
+
+    <section class="warning">
+      <strong>Safety lock:</strong> Test Mode only. Checkout, live payment, subscription creation, refund aur webhook processing abhi blocked hain.
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Owner Session</p>
+        <h2>Protected APIs ke liye login token</h2>
+        <label>Institute ID
+          <input id="instituteId" value="NX-DEMO-INST-001" autocomplete="off" />
+        </label>
+        <label>JWT token — private screen only
+          <input id="jwtToken" type="password" placeholder="Existing owner login token auto-detect hoga" autocomplete="off" />
+        </label>
+        <div class="buttons">
+          <button id="detectTokenBtn" class="secondary">Detect Existing Token</button>
+          <button id="loadReadinessBtn">Load Owner Readiness</button>
+        </div>
+        <p class="hint">Token sessionStorage me temporary rakha ja sakta hai. Token ya API secret screenshot/chat me share mat karein.</p>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Public Foundation Status</p>
+        <h2>Environment readiness</h2>
+        <div id="metrics" class="metrics"></div>
+        <button id="refreshStatusBtn" class="secondary">Refresh Status</button>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Global VANI • Owner Only</p>
+        <h2>Speak/type setup command</h2>
+        <label>Command
+          <input id="vaniCommand" value="VANI, Razorpay setup status dikhao" />
+        </label>
+        <div class="buttons">
+          <button id="askVaniBtn">Ask VANI</button>
+          <button id="testConnectionBtn" class="secondary">Test Connection</button>
+        </div>
+        <pre id="vaniOutput">Waiting…</pre>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Preview → Confirmation</p>
+        <h2>Test Mode setup confirmation</h2>
+        <button id="previewBtn" class="secondary">Create Setup Preview</button>
+        <label>Exact confirmation text
+          <input id="confirmationText" placeholder="CONFIRM RAZORPAY TEST MODE" />
+        </label>
+        <button id="confirmBtn">Confirm Test Mode Foundation</button>
+        <pre id="previewOutput">No preview yet.</pre>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="eyebrow">Render Environment</p>
+      <h2>Exact variable names</h2>
+      <div class="env-list">
+        <code>RAZORPAY_MODE=test</code>
+        <code>RAZORPAY_KEY_ID=rzp_test_...</code>
+        <code>RAZORPAY_KEY_SECRET=add_only_in_render</code>
+        <code>RAZORPAY_WEBHOOK_SECRET=create_a_long_private_value</code>
+        <code>NAXORA_PUBLIC_BASE_URL=https://naxora-institute-os.onrender.com</code>
+      </div>
+      <p class="hint">ZIP/GitHub me real values kabhi mat daalna. Adult legal account holder hi Razorpay KYC/bank setup complete kare.</p>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Checklist</p>
+        <div id="checklist" class="list"></div>
+      </article>
+      <article class="panel">
+        <p class="eyebrow">Testing Links</p>
+        <div class="links">
+          <a href="/api/part112/status" target="_blank" rel="noreferrer">Public Status API</a>
+          <a href="/api/part112/security-policy" target="_blank" rel="noreferrer">Security Policy</a>
+          <a href="/api/part112/checklist" target="_blank" rel="noreferrer">Checklist API</a>
+          <a href="/api/part112/demo" target="_blank" rel="noreferrer">Demo Record</a>
+        </div>
+      </article>
+    </section>
+  </main>
+  <script src="/razorpay-test-mode-foundation.js"></script>
+</body>
+</html>

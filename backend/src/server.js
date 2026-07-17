@@ -30496,11 +30496,16 @@ app.get("/api/part110/demo", (req, res) => {
 
 
 
-
 // ================= END PART 52 =================
 
 app.use(notFound);
 app.use(errorHandler);
+
+
+
+// ================= PART 112 — RAZORPAY TEST MODE FOUNDATION =================
+const { registerPart112RazorpayFoundation } = await import("./part112-razorpay-foundation.js");
+registerPart112RazorpayFoundation({ app });
 
 const port = Number(process.env.PORT) || 5000;
 
