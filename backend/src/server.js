@@ -94,7 +94,6 @@ app.get("/api/part1365/status", (req, res) => {
   });
 });
 // PART 136.5 OWNER APP EARLY ROUTE END
-
 // PART 136.1 COMMON LOGIN ROUTE FIX START
 app.get("/login", (req, res, next) => {
   if (String(req.query?.legacy || "") === "1") return next();

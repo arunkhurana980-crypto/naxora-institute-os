@@ -1,38 +1,30 @@
-# Final Demo/Beta Acceptance Checklist
+# Final Acceptance Checklist
 
-## Core
+## Owner access
 
-- MongoDB connected.
-- JWT configured.
-- Owner Action Secret configured.
-- Part 120 identity model ready.
-- Part 124 role-scope model ready.
-- Part 125 action model ready.
-- Nine Part 126 native adapters registered.
+- `/create-institute` shows Create Institute Account.
+- Institute ID is generated automatically.
+- New Owner is auto-logged-in.
+- `/owner-login` asks only Login ID and password.
+- Owner login does not ask Institute ID.
+- Successful login opens `/app`.
 
-## Demo data
+## Unified app
 
-- Active Part 127 dataset.
-- Owner, Branch Manager, Teacher, Student, Parent, Accountant, Counsellor and Staff accounts.
-- Linked Branch, Teacher, Student, Enrolment, Attendance, Fee, Assignment, Result, Lead and Task records.
+- `/app` and `/app/` show the NAXORA sidebar.
+- Old `Login / Create account` public page does not appear.
+- Role badge shows Institute Owner.
+- Owner Workspace is visible.
+- Global VANI button is visible.
+- VANI Parts 128–136 modules appear according to role/subscription.
 
-## Safety
+## Honest sale status
 
-- Razorpay remains test/demo safe.
-- Direct money actions remain disabled.
-- External provider delivery claims remain honest.
-- Non-demo accounts are excluded from demo reset.
+The product may be called `VANI-enabled within approved safe scope` only after the required `/vani-acceptance` runtime gates pass.
 
-## VANI
+Do not claim:
 
-- Role-safe navigation and summaries.
-- Nine native actions.
-- No all-feature automation claim.
-
-## Release
-
-When checks pass:
-- create freeze preview,
-- exact-confirm,
-- save release manifest,
-- download manifest.
+- unrestricted autonomous AI,
+- password/OTP handling,
+- direct money transfer or refund,
+- every workflow passed before evidence exists.
