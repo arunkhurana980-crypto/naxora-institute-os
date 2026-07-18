@@ -1,0 +1,2 @@
+branchRef,courseRef,batchCode,title,teacherRef,schedule,startDate,endDate,capacity,status
+NORTH,JEEF,JEE-A,JEE Morning Batch,teacher01,Mon-Fri 07:00,2026-07-20,2027-07-19,40,active

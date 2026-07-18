@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#071426" />
+  <title>VANI Bulk Import — NAXORA</title>
+  <link rel="stylesheet" href="/naxora-bulk-import-vani.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">NAXORA • Part 129</p>
+        <h1>VANI Bulk CSV & JSON Import</h1>
+        <p>CSV column mapping, linked JSON packages, duplicate detection, validation preview, exact confirmation, chunked MongoDB execution aur all-or-nothing rollback.</p>
+      </div>
+      <aside>
+        <span id="ownerName">Institute Owner</span>
+        <strong id="engineStatus">Loading…</strong>
+        <small>Browser security ke kaaran file Owner manually select karega. VANI file ko secretly access nahi karti.</small>
+      </aside>
+    </header>
+
+    <section class="boundary">
+      <strong>Safe import boundary:</strong> Create-only import. Password, Owner Secret, OTP, payment details ya API keys CSV/JSON me nahi hone chahiye. Account password sirf private confirmation screen par enter hoga.
+    </section>
+
+    <section class="steps" aria-label="Import flow">
+      <article><strong>1</strong><span>Select file</span></article>
+      <article><strong>2</strong><span>Map columns</span></article>
+      <article><strong>3</strong><span>Validate preview</span></article>
+      <article><strong>4</strong><span>Exact confirm</span></article>
+      <article><strong>5</strong><span>Import / rollback</span></article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">File and Dataset</p>
+        <h2>Select CSV or JSON</h2>
+        <label>Dataset type
+          <select id="datasetType"></select>
+        </label>
+        <label>Dataset label
+          <input id="datasetLabel" placeholder="July 2026 Student Import" />
+        </label>
+        <label class="file-picker">CSV or JSON file
+          <input id="fileInput" type="file" accept=".csv,.json,text/csv,application/json" />
+        </label>
+        <div class="row">
+          <button id="downloadCsvBtn" class="secondary">Download CSV Template</button>
+          <button id="downloadJsonBtn" class="secondary">Download JSON Template</button>
+        </div>
+        <pre id="fileOutput">No file selected.</pre>
+      </article>
+
+      <article class="panel">
+        <div class="heading">
+          <div>
+            <p class="eyebrow">Column Mapping</p>
+            <h2>Match file columns</h2>
+          </div>
+          <button id="autoMapBtn" class="secondary">Auto-map</button>
+        </div>
+        <div id="mappingGrid" class="mapping-grid">
+          <p class="muted">File select karne ke baad mapping fields aayengi.</p>
+        </div>
+        <label>Duplicate policy
+          <select id="duplicatePolicy">
+            <option value="error">Block import when duplicate exists</option>
+            <option value="skip">Skip duplicate rows with warning</option>
+          </select>
+        </label>
+        <label>Chunk size
+          <select id="chunkSize">
+            <option value="10">10 rows</option>
+            <option value="25" selected>25 rows</option>
+            <option value="50">50 rows</option>
+          </select>
+        </label>
+        <button id="previewBtn" class="full">Validate & Create Preview</button>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <div class="heading">
+          <div>
+            <p class="eyebrow">Validation Preview</p>
+            <h2>Errors, warnings and rows</h2>
+          </div>
+          <span id="previewBadge" class="badge">Not ready</span>
+        </div>
+        <div id="previewMetrics" class="metrics"></div>
+        <div class="tabs" id="previewTabs">
+          <button type="button" data-view="summary" class="active">Summary</button>
+          <button type="button" data-view="errors">Errors</button>
+          <button type="button" data-view="warnings">Warnings</button>
+          <button type="button" data-view="data">Normalized data</button>
+        </div>
+        <pre id="previewOutput">Waiting for preview…</pre>
+      </article>
+
+      <article class="panel private-panel">
+        <p class="eyebrow">Private Confirmation</p>
+        <h2>Execute confirmed import</h2>
+        <label>Import ID
+          <input id="importId" readonly />
+        </label>
+        <label>Exact confirmation
+          <input id="confirmationText" autocomplete="off" />
+        </label>
+        <label>Temporary password for new accounts
+          <input id="temporaryPassword" type="password" autocomplete="new-password" />
+          <small>Only Teacher, Student, Parent and Staff account rows. Minimum 10 characters, one letter and one number.</small>
+        </label>
+        <label>Owner Action Secret
+          <input id="ownerSecret" type="password" autocomplete="new-password" />
+        </label>
+        <div class="row">
+          <button id="cancelBtn" class="secondary">Cancel Preview</button>
+          <button id="confirmBtn">Confirm & Import</button>
+        </div>
+        <pre id="executeOutput">Waiting…</pre>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="heading">
+        <div>
+          <p class="eyebrow">Import History</p>
+          <h2>Preview, execution and rollback records</h2>
+        </div>
+        <button id="refreshHistoryBtn" class="secondary">Refresh</button>
+      </div>
+      <div id="historyList" class="history">Loading…</div>
+    </section>
+  </main>
+
+  <script src="/naxora-common-session.js"></script>
+  <script src="/naxora-bulk-import-vani.js"></script>
+</body>
+</html>

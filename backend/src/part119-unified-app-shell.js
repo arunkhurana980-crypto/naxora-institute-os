@@ -431,6 +431,9 @@ const MODULES = Object.freeze([
   // PART 128 VANI MASTER DATA MODULE START
   { key: "master-data-vani", label: "VANI Master Data", description: "Branch, course, class, Teacher, Student, Parent and Staff master-data actions.", category: "AI & VANI", route: "/master-data-vani", icon: "spark", roles: OWNER_ONLY_ROLES, alwaysAvailable: true, order: 318 },
   // PART 128 VANI MASTER DATA MODULE END
+  // PART 129 VANI BULK IMPORT MODULE START
+  { key: "bulk-import-vani", label: "VANI Bulk Import", description: "CSV/JSON mapping, duplicate validation, confirmed import and rollback.", category: "AI & VANI", route: "/bulk-import-vani", icon: "manage", roles: OWNER_ONLY_ROLES, alwaysAvailable: true, order: 319 },
+  // PART 129 VANI BULK IMPORT MODULE END
 ]);
 
 const COMMAND_ALIASES = Object.freeze({
@@ -517,6 +520,16 @@ const COMMAND_ALIASES = Object.freeze({
   "staff scope": "master-data-vani",
   "part 128": "master-data-vani",
   // PART 128 VANI MASTER DATA ALIASES END
+  // PART 129 VANI BULK IMPORT ALIASES START
+  "bulk import": "bulk-import-vani",
+  "csv import": "bulk-import-vani",
+  "json import": "bulk-import-vani",
+  "excel import": "bulk-import-vani",
+  "upload data": "bulk-import-vani",
+  "import students": "bulk-import-vani",
+  "import teachers": "bulk-import-vani",
+  "part 129": "bulk-import-vani",
+  // PART 129 VANI BULK IMPORT ALIASES END
 });
 
 function cleanText(value = "", max = 255) {

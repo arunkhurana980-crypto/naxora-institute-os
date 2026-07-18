@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "datasetLabel": "NAXORA Linked Import Example",
+  "branches": [
+    { "branchName": "North Branch", "branchCode": "NORTH", "city": "Delhi", "status": "active" }
+  ],
+  "courses": [
+    { "courseName": "JEE Foundation", "courseCode": "JEEF", "durationMonths": 12, "feeAmount": 25000, "status": "active" }
+  ],
+  "teachers": [
+    { "identifier": "teacher01", "displayName": "Demo Teacher", "branchRefs": ["NORTH"], "subjects": ["Mathematics", "Physics"], "employeeCode": "T001", "status": "active" }
+  ],
+  "classes": [
+    { "branchRef": "NORTH", "courseRef": "JEEF", "batchCode": "JEE-A", "title": "JEE Morning Batch", "teacherRef": "teacher01", "schedule": "Mon-Fri 07:00", "startDate": "2026-07-20", "endDate": "2027-07-19", "capacity": 40, "status": "active" }
+  ],
+  "students": [
+    { "identifier": "student01", "displayName": "Demo Student", "branchRef": "NORTH", "classRef": "JEE-A", "courseRef": "JEEF", "rollNumber": "R101", "admissionNumber": "ADM101", "status": "active" }
+  ],
+  "parents": [
+    { "identifier": "parent01", "displayName": "Demo Parent", "studentRef": "student01", "relationship": "mother", "status": "active" }
+  ],
+  "staff": [
+    { "identifier": "accounts01", "displayName": "Demo Accountant", "accountRole": "accountant", "branchRefs": [], "instituteWide": true, "employeeCode": "A001", "status": "active" }
+  ]
+}

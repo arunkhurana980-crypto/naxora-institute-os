@@ -1,0 +1,2 @@
+identifier,displayName,branchRef,classRef,courseRef,rollNumber,admissionNumber,phone,status
+student01,Demo Student,NORTH,JEE-A,JEEF,R101,ADM101,,active
