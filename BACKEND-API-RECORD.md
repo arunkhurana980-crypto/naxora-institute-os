@@ -1,19 +1,28 @@
-# Backend APIs
+# Part 136 API Record
 
-Public:
-- `/api/part135/status`
-- `/api/part135/security-policy`
-- `/api/part135/catalog`
+## Public
 
-Authenticated:
-- `/api/part135/native-catalog`
-- `POST /api/part135/conversations`
-- `GET /api/part135/conversations`
-- `GET /api/part135/conversations/:conversationId`
-- `POST /api/part135/conversations/:conversationId/messages`
-- `POST /api/part135/conversations/:conversationId/steps/:stepId/preview`
-- `POST /api/part135/conversations/:conversationId/steps/:stepId/confirm`
-- `POST /api/part135/conversations/:conversationId/steps/:stepId/handoff`
-- `POST /api/part135/conversations/:conversationId/cancel-pending-previews`
+- `GET /api/part136/status`
+- `GET /api/part136/security-policy`
+- `GET /api/part136/acceptance-matrix`
 
-Models: `Part135WorkflowConversation`, `Part135WorkflowAudit`.
+## Authenticated
+
+- `GET /api/part136/runs`
+- `GET /api/part136/runs/:runId`
+- `POST /api/part136/runs/:runId/role-self-test`
+- `POST /api/part136/runs/:runId/workflow-evidence`
+- `POST /api/part136/runs/:runId/button-coverage`
+- `GET /api/part136/runs/:runId/certificate`
+
+## Owner-only
+
+- `POST /api/part136/runs`
+- `POST /api/part136/runs/:runId/baseline`
+- `POST /api/part136/runs/:runId/security-probes`
+- `POST /api/part136/runs/:runId/finalize`
+
+## Models
+
+- `Part136AcceptanceRun`
+- `Part136AcceptanceAudit`

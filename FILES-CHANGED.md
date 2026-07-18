@@ -1,7 +1,21 @@
-# Files Changed
+# Files Changed — Part 136
 
-Backend: Part 135 engine and `.env.part135.example`.
+## Backend
 
-Frontend: Workflow page, CSS, JavaScript and global bridge.
+- `backend/src/part136-final-all-role-vani-acceptance.js`
+- `backend/.env.part136.example`
 
-Installer: registers after Part 134, adds shell module/aliases, loads bridge before Part 134 and updates unified-app progress.
+## Frontend
+
+- `frontend/naxora-vani-acceptance.html`
+- `frontend/naxora-vani-acceptance.css`
+- `frontend/naxora-vani-acceptance.js`
+- `frontend/naxora-part136-vani-button-coverage.js`
+
+## Installer
+
+- Registers Part 136 after Part 135.
+- Adds Final VANI Acceptance module.
+- Adds Part 136 aliases.
+- Loads VANI-button coverage bridge before Part 135.
+- Updates final roadmap progress.

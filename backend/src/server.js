@@ -30565,6 +30565,10 @@ registerPart134VaniReportsExports({ app });
 const { registerPart135VaniConversationalWorkflowEngine } = await import("./part135-vani-conversational-workflow-engine.js");
 registerPart135VaniConversationalWorkflowEngine({ app });
 
+// ================= PART 136 — FINAL ALL ROLE VANI ACCEPTANCE =================
+const { registerPart136FinalAllRoleVaniAcceptance } = await import("./part136-final-all-role-vani-acceptance.js");
+registerPart136FinalAllRoleVaniAcceptance({ app });
+
 // ================= PART 112 — RAZORPAY TEST MODE FOUNDATION =================
 const { registerPart112RazorpayFoundation } = await import("./part112-razorpay-foundation.js");
 registerPart112RazorpayFoundation({ app });

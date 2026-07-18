@@ -1,11 +1,28 @@
 # Testing Guide
 
-1. Start `assignment workflow` without fields.
-2. Answer each VANI question.
-3. Preview Step 1 and use exact confirmation.
-4. Verify Assignment in Part 130.
-5. Preview and confirm notification in Part 133.
-6. Test invalid Class ID, correction and `retry`.
-7. Test `pause`, blocked preview, then `resume`.
-8. Complete one step, then `cancel`; completed native action must remain.
-9. Open `/api/part135/native-catalog`; target is 60 active actions.
+## Package verification
+
+```powershell
+node .\VERIFY-PART136.js
+```
+
+## Runtime acceptance
+
+1. Deploy Part 136.
+2. Owner creates a run.
+3. Owner runs Baseline.
+4. Owner runs Security Probes.
+5. Each of eight roles logs in and completes its role self-test.
+6. Complete the four required Part 135 workflows.
+7. Verify their conversation IDs.
+8. Record desktop coverage.
+9. Record mobile coverage.
+10. Check readiness reaches 100%.
+11. Owner finalizes with exact confirmation.
+12. Read certificate endpoint.
+
+## Failure rule
+
+Never finalize by editing MongoDB manually.
+
+Fix the real failure, redeploy, and rerun the affected test.

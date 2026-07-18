@@ -452,6 +452,9 @@ const MODULES = Object.freeze([
   // PART 135 VANI WORKFLOW ENGINE MODULE START
   { key: "workflow-vani", label: "VANI Workflow Engine", description: "Multi-turn clarification, dependency-aware native workflows, per-step preview and exact confirmation.", category: "AI & VANI", route: "/workflow-vani", icon: "automation", roles: ["institute_owner", "branch_manager", "teacher", "student", "parent", "accountant", "counsellor", "staff"], alwaysAvailable: true, order: 325 },
   // PART 135 VANI WORKFLOW ENGINE MODULE END
+  // PART 136 FINAL VANI ACCEPTANCE MODULE START
+  { key: "vani-acceptance", label: "VANI Final Acceptance", description: "All-role runtime evidence, scope-denial proof, completed workflows, feature-button coverage and safe-scope sale-ready gate.", category: "AI & VANI", route: "/vani-acceptance", icon: "verified", roles: ["institute_owner", "branch_manager", "teacher", "student", "parent", "accountant", "counsellor", "staff"], alwaysAvailable: true, order: 326 },
+  // PART 136 FINAL VANI ACCEPTANCE MODULE END
 ]);
 
 const COMMAND_ALIASES = Object.freeze({
@@ -621,6 +624,14 @@ const COMMAND_ALIASES = Object.freeze({
   onboarding: "workflow-vani",
   "part 135": "workflow-vani",
   // PART 135 VANI WORKFLOW ENGINE ALIASES END
+  // PART 136 FINAL VANI ACCEPTANCE ALIASES START
+  "vani acceptance": "vani-acceptance",
+  "final vani acceptance": "vani-acceptance",
+  "sale ready gate": "vani-acceptance",
+  "vani certification": "vani-acceptance",
+  "all role test": "vani-acceptance",
+  "part 136": "vani-acceptance",
+  // PART 136 FINAL VANI ACCEPTANCE ALIASES END
 });
 
 function cleanText(value = "", max = 255) {

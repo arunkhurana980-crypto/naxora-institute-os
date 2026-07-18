@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#071426" />
+  <title>Final VANI Acceptance — NAXORA</title>
+  <link rel="stylesheet" href="/naxora-vani-acceptance.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">NAXORA • Part 136 • Final Planned Part</p>
+        <h1>VANI Final All-Role Acceptance</h1>
+        <p>Runtime proof ke bina koi sale-ready badge nahi. Baseline, 60 actions, eight roles, scope denial, completed workflows, desktop/mobile VANI-button coverage aur security probes sab PASS hone chahiye.</p>
+      </div>
+      <aside>
+        <strong id="statusText">Loading…</strong>
+        <span id="roleText">Role checking…</span>
+        <small id="classificationText">Classification: ACCEPTANCE_PENDING</small>
+      </aside>
+    </header>
+
+    <section class="boundary">
+      <strong>Final sales boundary:</strong>
+      Finalization ke baad product ko “VANI-enabled and sale-ready within approved safe scope” bola ja sakta hai.
+      Password/OTP/Owner-secret handling, direct payment/refund/transfer, unsafe deletion aur unrestricted autonomous AI ka claim nahi hoga.
+    </section>
+
+    <section class="toolbar panel">
+      <div>
+        <p class="eyebrow">Acceptance Run</p>
+        <h2 id="runTitle">No active run selected</h2>
+      </div>
+      <div class="button-row">
+        <button id="createRunBtn">Create / Open Run</button>
+        <button id="refreshRunBtn" class="secondary">Refresh</button>
+      </div>
+    </section>
+
+    <section id="metrics" class="metrics"></section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Owner Automated Gates</p>
+        <h2>Baseline and security</h2>
+        <div class="button-row">
+          <button id="runBaselineBtn">Run Baseline</button>
+          <button id="runSecurityBtn">Run Security Probes</button>
+        </div>
+        <p class="hint">Owner login required. These checks use current server and current Owner session.</p>
+        <div id="baselineList" class="check-list">No run selected.</div>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Current Role Self-Test</p>
+        <h2 id="roleTestTitle">Role fixture</h2>
+        <p id="roleFixtureHelp" class="hint">Login role detect ho raha hai…</p>
+        <textarea id="roleFixtureInput" rows="9" spellcheck="false">{}</textarea>
+        <button id="runRoleTestBtn" class="full">Run Current Role Test</button>
+        <pre id="roleTestOutput">Waiting…</pre>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Completed Part 135 Workflows</p>
+        <h2>Native completion evidence</h2>
+        <label>Workflow key
+          <select id="workflowKeySelect"></select>
+        </label>
+        <label>Part 135 conversation ID
+          <input id="conversationIdInput" placeholder="workflow_..." />
+        </label>
+        <button id="verifyWorkflowBtn" class="full">Verify Completed Workflow</button>
+        <div id="workflowList" class="check-list">No run selected.</div>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Every Feature VANI Button</p>
+        <h2>Desktop and mobile coverage</h2>
+        <p class="hint">Coverage bridge dynamically discovered modules/features par contextual VANI button inject karta hai. Desktop aur ≤600px mobile snapshot dono 100% required hain.</p>
+        <button id="recordCoverageBtn" class="full">Record Current View Coverage</button>
+        <pre id="coverageOutput">Waiting…</pre>
+        <div id="coverageList" class="check-list"></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <p class="eyebrow">Eight-Role Matrix</p>
+      <h2>Positive access + outside-scope denial</h2>
+      <div id="roleMatrix" class="role-grid">No run selected.</div>
+    </section>
+
+    <section class="panel final-panel">
+      <p class="eyebrow">Final Gate</p>
+      <h2>Owner finalization</h2>
+      <p id="gateSummaryText" class="hint">All required gates must pass.</p>
+      <label>Exact final confirmation
+        <input id="finalConfirmationInput" value="FINALIZE VANI SAFE SCOPE SALE READY" autocomplete="off" />
+      </label>
+      <button id="finalizeBtn" class="full">Finalize Safe-Scope Sale-Ready Acceptance</button>
+      <pre id="finalOutput">Waiting…</pre>
+    </section>
+  </main>
+
+  <script src="/naxora-common-session.js"></script>
+  <script src="/naxora-vani-acceptance.js"></script>
+</body>
+</html>
