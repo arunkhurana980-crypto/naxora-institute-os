@@ -79,44 +79,35 @@ function jwtSecret() {
   }
   return value;
 }
-// PART 136.2 SECRET TRANSPORT FIX START
-function normalizeBootstrapSecret(value = "") {
-  let output = String(value ?? "").normalize("NFKC").replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
-  if (output.length >= 2 && ((output.startsWith('"') && output.endsWith('"')) || (output.startsWith("'") && output.endsWith("'")))) {
-    output = output.slice(1, -1).trim();
-  }
-  return output;
-}
 function bootstrapSecret() {
-  return normalizeBootstrapSecret(process.env.NAXORA_OWNER_BOOTSTRAP_SECRET ?? "");
-}
-function suppliedBootstrapSecret(req) {
-  const headerRaw = req.headers["x-naxora-bootstrap-secret"];
-  const bodyRaw = req.body?.bootstrapSecret ?? req.body?._bootstrapSecret ?? "";
-  const hasHeader = String(headerRaw ?? "").length > 0;
-  const hasBody = String(bodyRaw ?? "").length > 0;
-  const raw = hasHeader ? headerRaw : bodyRaw;
-  const value = normalizeBootstrapSecret(raw);
-  if (req.body && typeof req.body === "object") {
-    delete req.body.bootstrapSecret;
-    delete req.body._bootstrapSecret;
-  }
-  return { value, receivedVia: hasHeader ? "header" : hasBody ? "secure_body" : "none" };
-}
-function bootstrapSecretDiagnostic(expected, supplied) {
-  return { receivedVia: supplied.receivedVia, suppliedLength: supplied.value.length, expectedLength: expected.length, normalizationApplied: true, bodyFallbackSupported: true, secretReturned: false };
+  return String(process.env.NAXORA_OWNER_BOOTSTRAP_SECRET ?? "").trim();
 }
 function requireBootstrapSecret(req) {
   const expected = bootstrapSecret();
-  if (!expected) throw Object.assign(new Error("NAXORA_OWNER_BOOTSTRAP_SECRET Render Environment me privately configure karein."), { code: "BOOTSTRAP_SECRET_NOT_CONFIGURED", httpStatus: 503 });
-  if (expected.length < 24) throw Object.assign(new Error("NAXORA_OWNER_BOOTSTRAP_SECRET kam se kam 24 characters ka hona chahiye."), { code: "BOOTSTRAP_SECRET_TOO_SHORT", httpStatus: 503 });
-  const supplied = suppliedBootstrapSecret(req);
-  if (!supplied.value || !safeEqual(supplied.value, expected)) {
-    throw Object.assign(new Error("Private bootstrap verification failed. Part 136.2 ne header aur secure body dono check kiye."), { code: "BOOTSTRAP_VERIFICATION_FAILED", httpStatus: 403, diagnostic: bootstrapSecretDiagnostic(expected, supplied) });
+  if (!expected) {
+    throw Object.assign(new Error(
+      "NAXORA_OWNER_BOOTSTRAP_SECRET Render Environment me privately configure karein."
+    ), {
+      code: "BOOTSTRAP_SECRET_NOT_CONFIGURED",
+      httpStatus: 503,
+    });
   }
-  return { matched: true, receivedVia: supplied.receivedVia, suppliedLength: supplied.value.length, expectedLength: expected.length };
+  if (expected.length < 24) {
+    throw Object.assign(new Error(
+      "NAXORA_OWNER_BOOTSTRAP_SECRET kam se kam 24 characters ka hona chahiye."
+    ), {
+      code: "BOOTSTRAP_SECRET_TOO_SHORT",
+      httpStatus: 503,
+    });
+  }
+  const supplied = String(req.headers["x-naxora-bootstrap-secret"] ?? "").trim();
+  if (!supplied || !safeEqual(supplied, expected)) {
+    throw Object.assign(new Error("Private bootstrap verification failed."), {
+      code: "BOOTSTRAP_VERIFICATION_FAILED",
+      httpStatus: 403,
+    });
+  }
 }
-// PART 136.2 SECRET TRANSPORT FIX END
 function secureTransport(req) {
   const forwarded = String(req.headers["x-forwarded-proto"] ?? "")
     .split(",")[0].trim().toLowerCase();
@@ -420,10 +411,6 @@ export function registerPart1361FirstOwnerBootstrap({ app } = {}) {
         loginRouteRedirectFixed: true,
         databaseConnected: state.databaseConnected,
         bootstrapSecretConfigured: Boolean(state.secretConfigured),
-        secretTransportFixActive: true,
-        secretHeaderSupported: true,
-        secretSecureBodyFallbackSupported: true,
-        secretNormalizationApplied: true,
         bootstrapAvailable: state.bootstrapAvailable,
         bootstrapReasonCode: state.reasonCode,
         firstOwnerExists: state.ownerExists,
@@ -442,7 +429,6 @@ export function registerPart1361FirstOwnerBootstrap({ app } = {}) {
         part: PART_NUMBER,
         code: error.code || "BOOTSTRAP_STATUS_FAILED",
         message: error.message,
-        diagnostic: error.diagnostic || null,
       });
     }
   });
@@ -469,22 +455,6 @@ export function registerPart1361FirstOwnerBootstrap({ app } = {}) {
       additionalInstituteProvisioningIncluded: false,
     });
   });
-
-  // PART 136.2 VERIFY SECRET ROUTE START
-  app.post("/api/part1361/bootstrap/verify-secret", async (req, res) => {
-    try {
-      requireSecureTransport(req);
-      checkRate(req);
-      const verification = requireBootstrapSecret(req);
-      await ensureAvailable(models);
-      res.set("Cache-Control", "no-store");
-      res.json({ success: true, part: "136.2", matched: true, receivedVia: verification.receivedVia, suppliedLength: verification.suppliedLength, expectedLength: verification.expectedLength, secretReturned: false });
-    } catch (error) {
-      res.set("Cache-Control", "no-store");
-      res.status(error.httpStatus || 500).json({ success: false, part: "136.2", code: error.code || "BOOTSTRAP_SECRET_VERIFY_FAILED", message: error.message, diagnostic: error.diagnostic || null });
-    }
-  });
-  // PART 136.2 VERIFY SECRET ROUTE END
 
   app.post("/api/part1361/bootstrap/preview", async (req, res) => {
     try {
@@ -570,7 +540,6 @@ export function registerPart1361FirstOwnerBootstrap({ app } = {}) {
         part: PART_NUMBER,
         code: error.code || "BOOTSTRAP_PREVIEW_FAILED",
         message: error.message,
-        diagnostic: error.diagnostic || null,
       });
     }
   });
@@ -758,7 +727,6 @@ export function registerPart1361FirstOwnerBootstrap({ app } = {}) {
         part: PART_NUMBER,
         code: error.code || "BOOTSTRAP_CONFIRM_FAILED",
         message: error.message,
-        diagnostic: error.diagnostic || null,
       });
     }
   });
