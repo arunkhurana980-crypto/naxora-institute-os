@@ -1588,8 +1588,8 @@ export function registerPart127FinalAcceptance({ app } = {}) {
       allFeatureVaniAutomationComplete: false,
       productionCertificationComplete: false,
       finalDemoBetaClosure: true,
-      nextPart: null,
-      projectRoadmapClosedAtPart127: true,
+      nextPart: 128,
+      projectRoadmapClosedAtPart127: false,
     });
   });
 
@@ -2183,8 +2183,8 @@ export function registerPart127FinalAcceptance({ app } = {}) {
         "Freeze the Demo/Beta release manifest",
       ],
       closure: {
-        roadmapClosedAtPart127: true,
-        nextPart: null,
+        roadmapClosedAtPart127: false,
+        nextPart: 128,
         releaseClassification: RELEASE_CLASSIFICATION,
         allFeatureVaniAutomationComplete: false,
       },

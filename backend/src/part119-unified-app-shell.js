@@ -428,6 +428,9 @@ const MODULES = Object.freeze([
     order: 317,
   },
   // PART 127 FINAL ACCEPTANCE MODULE END
+  // PART 128 VANI MASTER DATA MODULE START
+  { key: "master-data-vani", label: "VANI Master Data", description: "Branch, course, class, Teacher, Student, Parent and Staff master-data actions.", category: "AI & VANI", route: "/master-data-vani", icon: "spark", roles: OWNER_ONLY_ROLES, alwaysAvailable: true, order: 318 },
+  // PART 128 VANI MASTER DATA MODULE END
 ]);
 
 const COMMAND_ALIASES = Object.freeze({
@@ -502,6 +505,18 @@ const COMMAND_ALIASES = Object.freeze({
   "project freeze": "final-acceptance",
   "part 127": "final-acceptance",
   // PART 127 FINAL ACCEPTANCE ALIASES END
+  // PART 128 VANI MASTER DATA ALIASES START
+  "master data": "master-data-vani",
+  "vani master data": "master-data-vani",
+  "create student": "master-data-vani",
+  "create teacher": "master-data-vani",
+  "create branch": "master-data-vani",
+  "create course": "master-data-vani",
+  "create batch": "master-data-vani",
+  "parent link": "master-data-vani",
+  "staff scope": "master-data-vani",
+  "part 128": "master-data-vani",
+  // PART 128 VANI MASTER DATA ALIASES END
 });
 
 function cleanText(value = "", max = 255) {

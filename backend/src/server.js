@@ -30533,6 +30533,10 @@ registerPart126NativeE2E({ app });
 const { registerPart127FinalAcceptance } = await import("./part127-final-acceptance-freeze.js");
 registerPart127FinalAcceptance({ app });
 
+// ================= PART 128 — VANI MASTER DATA ACTIONS =================
+const { registerPart128VaniMasterDataActions } = await import("./part128-vani-master-data-actions.js");
+registerPart128VaniMasterDataActions({ app });
+
 // ================= PART 112 — RAZORPAY TEST MODE FOUNDATION =================
 const { registerPart112RazorpayFoundation } = await import("./part112-razorpay-foundation.js");
 registerPart112RazorpayFoundation({ app });
