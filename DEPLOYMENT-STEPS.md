@@ -3,7 +3,7 @@
 ```powershell
 git status
 git add .
-git commit -m "Add simple Owner signup and login"
+git commit -m "Fix Owner app route and unified session launch"
 git push
 ```
 
@@ -16,7 +16,7 @@ Manual Deploy
 
 Test:
 
+- `/api/part1365/status`
 - `/owner-login`
-- `/create-institute`
-- `/common-login`
-- `/api/part1364/status`
+- `/app`
+- `/app/`

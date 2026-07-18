@@ -53,6 +53,48 @@ import { basicRateLimit, sanitizeBody, securityHeaders } from "./middleware/secu
 
 const app = express();
 
+// PART 136.5 OWNER APP EARLY ROUTE START
+const part1365FrontendDir = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../frontend"
+);
+
+app.get(["/app", "/app/"], (req, res) => {
+  res.set({
+    "Cache-Control": "no-store, max-age=0",
+    "Pragma": "no-cache",
+    "Expires": "0",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "same-origin",
+    "X-Frame-Options": "SAMEORIGIN"
+  });
+  return res.sendFile(path.join(part1365FrontendDir, "naxora-unified-app.html"));
+});
+
+app.get("/app/index.html", (req, res) => {
+  return res.redirect(302, "/app");
+});
+
+app.get("/api/part1365/status", (req, res) => {
+  res.set("Cache-Control", "no-store");
+  return res.json({
+    success: true,
+    part: "136.5",
+    status: "owner_app_route_and_session_fix_active",
+    ownerLoginUrl: "/owner-login",
+    ownerSignupUrl: "/create-institute",
+    ownerLoginNeedsInstituteId: false,
+    appUrl: "/app",
+    appTrailingSlashSupported: true,
+    appServesUnifiedShellEarly: true,
+    oldPublicLoginAtAppBlocked: true,
+    ownerSessionBridgeActive: true,
+    part119NavigationUsed: true,
+    part136VaniModulesRemainAvailable: true
+  });
+});
+// PART 136.5 OWNER APP EARLY ROUTE END
+
 // PART 136.1 COMMON LOGIN ROUTE FIX START
 app.get("/login", (req, res, next) => {
   if (String(req.query?.legacy || "") === "1") return next();

@@ -1,33 +1,20 @@
 # Troubleshooting
 
-## `BOOTSTRAP_SECRET_NOT_CONFIGURED`
+## `/app` still shows the old login page
 
-Add `NAXORA_OWNER_BOOTSTRAP_SECRET` in Render Environment and redeploy.
+- Confirm latest Render deployment is Live.
+- Open `/api/part1365/status`.
+- Use a private browser window.
+- Press `Ctrl + F5`.
+- Confirm status says `oldPublicLoginAtAppBlocked: true`.
 
-## `BOOTSTRAP_SECRET_TOO_SHORT`
+## Unified shell opens but says not connected
 
-Use at least 24 characters.
+- Log out of old Student/public sessions.
+- Sign in again through `/owner-login`.
+- Do not enter Institute ID on the Owner login screen.
+- The Part 136.5 bridge copies the Owner token and Institute ID into the Part 119 session keys.
 
-## `BOOTSTRAP_VERIFICATION_FAILED`
+## Invalid Owner credentials
 
-The browser value does not match the Render Environment value.
-
-## `OWNER_ALREADY_EXISTS`
-
-Bootstrap has already been completed. Use `/common-login`.
-
-## `BOOTSTRAP_ALREADY_LOCKED`
-
-The one-time bootstrap lock already exists. Do not try to create another first Owner.
-
-## `PART120_IDENTITY_MODEL_UNAVAILABLE`
-
-Part 120 is not registered before Part 136.1.
-
-## `/login` still opens old page
-
-Clear browser cache and confirm the new Render deployment is Live. Test `/login` in a private window.
-
-## Owner created but `/vani-acceptance` says Student
-
-Log out/remove the old Student session, then login through `/common-login` with the new Owner Institute ID and Owner login ID.
+Create the Owner through `/create-institute`, or use the same Owner Login ID and password used during account creation.

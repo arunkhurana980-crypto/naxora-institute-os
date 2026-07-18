@@ -1,16 +1,7 @@
 # Honest Boundary
 
-Part 136.1 fixes the first Owner bootstrap deadlock and the wrong `/login` route.
+Part 136.5 fixes route priority and Owner session handoff.
 
-It does not automatically make Part 136 acceptance pass.
+It does not by itself prove every Part 136 VANI runtime acceptance gate.
 
-After Owner creation, Part 136 still requires:
-
-- Baseline and security probes.
-- Eight role tests.
-- Outside-scope denial tests.
-- Four completed workflows.
-- Desktop and mobile VANI-button coverage.
-- Owner final confirmation.
-
-Only then may the app receive `VANI_SAFE_SCOPE_SALE_READY`.
+After the Owner shell works, continue the final acceptance tests at `/vani-acceptance`.
