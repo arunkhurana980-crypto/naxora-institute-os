@@ -106,11 +106,17 @@ function suppliedBootstrapSecret(req) {
 function bootstrapSecretDiagnostic(expected, supplied) {
   return { receivedVia: supplied.receivedVia, suppliedLength: supplied.value.length, expectedLength: expected.length, normalizationApplied: true, bodyFallbackSupported: true, secretReturned: false };
 }
-// PART 136.3 SIGNED BOOTSTRAP TICKET START
-function suppliedBootstrapTicket(req){const h=req.headers["x-naxora-bootstrap-ticket"],b=req.body?.bootstrapTicket??"",t=String(h||b||"").trim();if(req.body&&typeof req.body==="object")delete req.body.bootstrapTicket;return t}
-function verifyBootstrapTicket(t,secret){const p=String(t||"").trim().split(".");if(p.length!==2)throw Object.assign(new Error("Signed bootstrap ticket invalid hai."),{code:"BOOTSTRAP_TICKET_INVALID",httpStatus:403});const sig=crypto.createHmac("sha256",secret).update(p[0]).digest("base64url");if(!safeEqual(p[1],sig))throw Object.assign(new Error("Signed bootstrap ticket verification failed."),{code:"BOOTSTRAP_TICKET_SIGNATURE_INVALID",httpStatus:403});let x;try{x=JSON.parse(Buffer.from(p[0],"base64url").toString("utf8"))}catch{throw Object.assign(new Error("Signed bootstrap ticket payload invalid hai."),{code:"BOOTSTRAP_TICKET_PAYLOAD_INVALID",httpStatus:403})}const n=Math.floor(Date.now()/1000),iat=Number(x?.iat||0),exp=Number(x?.exp||0);if(x?.scope!=="first_owner_bootstrap")throw Object.assign(new Error("Signed bootstrap ticket scope invalid hai."),{code:"BOOTSTRAP_TICKET_SCOPE_INVALID",httpStatus:403});if(!Number.isFinite(iat)||!Number.isFinite(exp)||iat>n+60||exp<=n||exp-iat>900)throw Object.assign(new Error("Signed bootstrap link expire ho gaya. Naya link banayein."),{code:"BOOTSTRAP_TICKET_EXPIRED",httpStatus:403});if(!/^[a-f0-9]{32}$/i.test(String(x?.nonce||"")))throw Object.assign(new Error("Signed bootstrap ticket nonce invalid hai."),{code:"BOOTSTRAP_TICKET_NONCE_INVALID",httpStatus:403});return{matched:true,receivedVia:"signed_ticket",suppliedLength:String(t).length,expectedLength:secret.length}}
-// PART 136.3 SIGNED BOOTSTRAP TICKET END
-function requireBootstrapSecret(req){const expected=bootstrapSecret();if(!expected)throw Object.assign(new Error("NAXORA_OWNER_BOOTSTRAP_SECRET Render Environment me privately configure karein."),{code:"BOOTSTRAP_SECRET_NOT_CONFIGURED",httpStatus:503});if(expected.length<24)throw Object.assign(new Error("NAXORA_OWNER_BOOTSTRAP_SECRET kam se kam 24 characters ka hona chahiye."),{code:"BOOTSTRAP_SECRET_TOO_SHORT",httpStatus:503});const ticket=suppliedBootstrapTicket(req);if(ticket)return verifyBootstrapTicket(ticket,expected);const supplied=typeof suppliedBootstrapSecret==="function"?suppliedBootstrapSecret(req):{value:String(req.headers["x-naxora-bootstrap-secret"]||"").trim(),receivedVia:"header"};if(!supplied.value||!safeEqual(supplied.value,expected))throw Object.assign(new Error("Private bootstrap verification failed. Signed bootstrap link use karein."),{code:"BOOTSTRAP_VERIFICATION_FAILED",httpStatus:403,diagnostic:typeof bootstrapSecretDiagnostic==="function"?bootstrapSecretDiagnostic(expected,supplied):null});return{matched:true,receivedVia:supplied.receivedVia||"header",suppliedLength:supplied.value.length,expectedLength:expected.length}}
+function requireBootstrapSecret(req) {
+  const expected = bootstrapSecret();
+  if (!expected) throw Object.assign(new Error("NAXORA_OWNER_BOOTSTRAP_SECRET Render Environment me privately configure karein."), { code: "BOOTSTRAP_SECRET_NOT_CONFIGURED", httpStatus: 503 });
+  if (expected.length < 24) throw Object.assign(new Error("NAXORA_OWNER_BOOTSTRAP_SECRET kam se kam 24 characters ka hona chahiye."), { code: "BOOTSTRAP_SECRET_TOO_SHORT", httpStatus: 503 });
+  const supplied = suppliedBootstrapSecret(req);
+  if (!supplied.value || !safeEqual(supplied.value, expected)) {
+    throw Object.assign(new Error("Private bootstrap verification failed. Part 136.2 ne header aur secure body dono check kiye."), { code: "BOOTSTRAP_VERIFICATION_FAILED", httpStatus: 403, diagnostic: bootstrapSecretDiagnostic(expected, supplied) });
+  }
+  return { matched: true, receivedVia: supplied.receivedVia, suppliedLength: supplied.value.length, expectedLength: expected.length };
+}
+// PART 136.2 SECRET TRANSPORT FIX END
 function secureTransport(req) {
   const forwarded = String(req.headers["x-forwarded-proto"] ?? "")
     .split(",")[0].trim().toLowerCase();
@@ -418,8 +424,6 @@ export function registerPart1361FirstOwnerBootstrap({ app } = {}) {
         secretHeaderSupported: true,
         secretSecureBodyFallbackSupported: true,
         secretNormalizationApplied: true,
-        signedBootstrapTicketSupported: true,
-        signedBootstrapTicketLifetimeMinutes: 10,
         bootstrapAvailable: state.bootstrapAvailable,
         bootstrapReasonCode: state.reasonCode,
         firstOwnerExists: state.ownerExists,
