@@ -1,20 +1,17 @@
-# Security and Role Tests — Part 127
+# Part 130 Security and Role Tests
 
-- Import/reset/freeze require Owner JWT.
-- instituteId mismatch returns 403.
-- Exact confirmation is required.
-- Owner Action Secret is required.
-- Demo password must meet Part 120 policy.
-- Password is scrypt-hashed.
-- Password is never returned.
-- Non-demo account identifier collision is rejected.
-- Reset deletes only accounts created by `part127_demo_import:<datasetCode>`.
-- Reset deletes only Part 127 demo models and Part 127-created scopes.
-- Owner account is preserved.
-- Parent-child scope is created server-side.
-- Branch role scopes are created server-side.
-- Arbitrary model names cannot be uploaded.
-- Template counts have strict maximums.
-- Direct money actions remain disabled.
-- Freeze does not claim code immutability.
-- Final status does not claim all-feature VANI.
+- Wrong institute reference is blocked.
+- Teacher cannot operate an unassigned Class.
+- Branch Manager and Staff cannot leave Part 124 branch scope.
+- Parent can read only Owner-linked child progress.
+- Student can read only own progress.
+- Accountant and Counsellor cannot perform academic writes.
+- Exact confirmation is mandatory.
+- Same recent action is duplicate-blocked.
+- Bulk attendance and marks are limited to 100 Students.
+- Student must belong to selected Class.
+- Marks cannot exceed Exam maxMarks.
+- Result cannot publish before Marks exist.
+- Password, OTP and secret text is blocked.
+- Delete, refund and money transfer commands are blocked.
+- Partial execution failure attempts rollback.

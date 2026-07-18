@@ -1,25 +1,32 @@
-# Part 129 Backend API Record
+# Part 130 Backend API Record
 
 ## Public
 
-- `GET /api/part129/status`
-- `GET /api/part129/security-policy`
-- `GET /api/part129/catalog`
-- `GET /api/part129/templates/:datasetType`
-- `GET /api/part129/demo`
+- `GET /api/part130/status`
+- `GET /api/part130/security-policy`
+- `GET /api/part130/catalog`
+- `GET /api/part130/demo`
 
-## Owner-only
+## Authenticated
 
-- `POST /api/part129/vani/command`
-- `POST /api/part129/imports/preview`
-- `POST /api/part129/imports/:importId/confirm`
-- `POST /api/part129/imports/:importId/cancel`
-- `GET /api/part129/imports`
-- `GET /api/part129/imports/:importId`
+- `POST /api/part130/actions/preview`
+- `POST /api/part130/vani/command`
+- `POST /api/part130/actions/:actionId/confirm`
+- `POST /api/part130/actions/:actionId/cancel`
+- `GET /api/part130/actions`
+- `GET /api/part130/records`
+- `GET /api/part130/student-summary`
 
 ## Models
 
-- `Part129BulkImport`
-- `Part129BulkImportAudit`
-
-The imported native data is written into Part 120, Part 124 and Part 128 models.
+- Part130AcademicAction
+- Part130TimetableEntry
+- Part130AttendanceRecord
+- Part130AcademicAssignment
+- Part130AssignmentReview
+- Part130Exam
+- Part130ExamMark
+- Part130ResultPublication
+- Part130ProgressNote
+- Part130ProgressSnapshot
+- Part130AcademicAudit

@@ -1,25 +1,17 @@
-# Files Changed — Part 129
+# Files Changed — Part 130
 
 ## Backend
-
-- `backend/src/part129-vani-bulk-import.js`
-- `backend/.env.part129.example`
+- `backend/src/part130-vani-academic-operations.js`
+- `backend/.env.part130.example`
 
 ## Frontend
+- `frontend/naxora-academic-vani.html`
+- `frontend/naxora-academic-vani.css`
+- `frontend/naxora-academic-vani.js`
+- `frontend/naxora-part130-global-vani-bridge.js`
 
-- `frontend/naxora-bulk-import-vani.html`
-- `frontend/naxora-bulk-import-vani.css`
-- `frontend/naxora-bulk-import-vani.js`
-- `frontend/naxora-part129-global-vani-bridge.js`
-
-## Templates
-
-- Seven CSV templates.
-- One linked JSON package template.
-
-## Installer changes
-
-- Registers Part 129 after Part 128.
+## Installer
+- Registers Part 130 after Part 129.
 - Adds unified-app module and aliases.
-- Loads Part 129 bridge before Part 128 bridge.
-- Updates Part 129 progress and capability text.
+- Loads Part 130 bridge before Part 129.
+- Updates progress and capability label.

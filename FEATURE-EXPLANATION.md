@@ -1,27 +1,26 @@
-# Feature Explanation — Part 126
+# Part 130 Feature Explanation
 
-## Flow
+## 12 academic actions
+
+1. Timetable create.
+2. Timetable update.
+3. Bulk attendance.
+4. Assignment create.
+5. Assignment update.
+6. Assignment review.
+7. Exam create.
+8. Exam update.
+9. Bulk marks record.
+10. Result publish.
+11. Progress note create.
+12. Progress snapshot generate.
+
+## Native references
+
+Part 130 validates Part 128 Class, Teacher and Student records before execution.
+
+## VANI flow
 
 ```text
-Part 125 preview
-→ exact confirmation
-→ execute
-→ Part 126 adapter
-→ institute/role/scope revalidation
-→ idempotent native record
-→ in-app notification
-→ optional private provider
-→ delivery and audit state
+Command → role/scope validation → reference validation → preview → exact confirmation → native MongoDB write → audit
 ```
-
-## Scope checks
-
-- Student: logged-in Student identity only.
-- Parent: Part 124 linked child only.
-- Branch-scoped roles: assigned branch or explicit institute-wide scope.
-- Message recipients: active Part 120 identities matching the requested role.
-- Assignment submission: existing Part 126 assignment required.
-
-## Idempotency
-
-Every adapter uses Part 125 `actionId`. A repeated call returns the saved result and does not create a duplicate native record.

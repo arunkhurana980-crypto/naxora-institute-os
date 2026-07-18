@@ -434,6 +434,9 @@ const MODULES = Object.freeze([
   // PART 129 VANI BULK IMPORT MODULE START
   { key: "bulk-import-vani", label: "VANI Bulk Import", description: "CSV/JSON mapping, duplicate validation, confirmed import and rollback.", category: "AI & VANI", route: "/bulk-import-vani", icon: "manage", roles: OWNER_ONLY_ROLES, alwaysAvailable: true, order: 319 },
   // PART 129 VANI BULK IMPORT MODULE END
+  // PART 130 VANI ACADEMIC OPERATIONS MODULE START
+  { key: "academic-vani", label: "VANI Academic Operations", description: "Timetable, bulk attendance, assignments, exams, marks, results and progress.", category: "AI & VANI", route: "/academic-vani", icon: "notes", roles: ["institute_owner", "branch_manager", "teacher", "student", "parent", "staff"], alwaysAvailable: true, order: 320 },
+  // PART 130 VANI ACADEMIC OPERATIONS MODULE END
 ]);
 
 const COMMAND_ALIASES = Object.freeze({
@@ -530,6 +533,17 @@ const COMMAND_ALIASES = Object.freeze({
   "import teachers": "bulk-import-vani",
   "part 129": "bulk-import-vani",
   // PART 129 VANI BULK IMPORT ALIASES END
+  // PART 130 VANI ACADEMIC OPERATIONS ALIASES START
+  "academic operations": "academic-vani",
+  "academic vani": "academic-vani",
+  timetable: "academic-vani",
+  "bulk attendance": "academic-vani",
+  "exam management": "academic-vani",
+  "marks entry": "academic-vani",
+  "result publish": "academic-vani",
+  "student progress": "academic-vani",
+  "part 130": "academic-vani",
+  // PART 130 VANI ACADEMIC OPERATIONS ALIASES END
 });
 
 function cleanText(value = "", max = 255) {

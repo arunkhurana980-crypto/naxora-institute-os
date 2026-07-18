@@ -1,25 +1,20 @@
-# Deployment Steps — Part 129
+# Deployment Steps — Part 130
 
 ```powershell
-node .\VERIFY-PART128.js
-node --check .\backend\src\server.js
-node .\APPLY-PART129.js
 node .\VERIFY-PART129.js
+node --check .\backend\src\server.js
+node .\APPLY-PART130.js
+node .\VERIFY-PART130.js
 git status
 git add .
-git commit -m "Add Part 129 VANI Bulk CSV and JSON Import"
+git commit -m "Add Part 130 VANI Academic Operations"
 git push
 ```
 
-Render:
-
-```text
-Manual Deploy
-→ Clear build cache & deploy
-```
+Render: **Manual Deploy → Clear build cache & deploy**.
 
 After deploy:
 
-- `/api/part129/status`
-- `/bulk-import-vani`
+- `/api/part130/status`
+- `/academic-vani`
 - `/app`

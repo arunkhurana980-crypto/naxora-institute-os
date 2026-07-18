@@ -1,31 +1,20 @@
-# Part 129 Testing Guide
+# Part 130 Testing Guide
 
-## Test 1 — CSV Branch import
+## Test order
 
-1. Open `/app` as Owner.
-2. Ask VANI: `CSV import kholo`.
-3. Select `branches.csv`.
-4. Choose Branches.
-5. Auto-map columns.
-6. Create preview.
-7. Confirm with exact confirmation and Owner Secret.
+1. Verify Part 129.
+2. Use existing Part 128 Branch, Course, Class, Teacher and Student IDs.
+3. Create timetable entry.
+4. Bulk mark attendance.
+5. Create assignment and review one Student.
+6. Create Exam.
+7. Record marks.
+8. Publish result.
+9. Add Student progress note.
+10. Generate progress snapshot.
+11. Test Student and Parent summary access.
+12. Test wrong role and wrong Class scope.
 
-## Test 2 — Linked package
+## Runtime requirement
 
-1. Select `linked-package.json`.
-2. The UI should automatically switch to Linked JSON Package.
-3. Preview must show seven linked record groups.
-4. Enter one private temporary password for all account rows.
-5. Confirm.
-6. Teacher, Student, Parent and Staff accounts must require password change.
-
-## Negative tests
-
-- Duplicate branchCode with duplicate policy `error`.
-- Duplicate identifier with duplicate policy `skip`.
-- Missing Student branch reference.
-- Invalid Staff role.
-- Wrong exact confirmation.
-- Wrong Owner Secret.
-- More than 500 rows.
-- More than 100 account rows.
+Package syntax and installer tests do not replace real MongoDB, role login and Render tests.
