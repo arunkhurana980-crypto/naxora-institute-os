@@ -1,0 +1,21 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { spawnSync } from "node:child_process";
+const root=path.dirname(fileURLToPath(import.meta.url));
+const serverPath=path.join(root,"backend/src/server.js");
+const htmlPath=path.join(root,"frontend/naxora-common-login.html");
+const marker="// ================= PART 136.4 — SIMPLE OWNER SIGNUP AND LOGIN =================";
+const start="        <!-- PART 136.4 SIMPLE OWNER ACCESS START -->";
+const end="        <!-- PART 136.4 SIMPLE OWNER ACCESS END -->";
+const esc=value=>value.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+const remove=(source,a,b)=>source.replace(new RegExp(`\\s*${esc(a)}[\\s\\S]*?${esc(b)}\\s*`,"g"),"\n");
+let server=fs.readFileSync(serverPath,"utf8").replace(new RegExp(`\\n*${esc(marker)}\\nconst \\{ registerPart1364SimpleOwnerAccess \\} = await import\\("\\.\\/part1364-simple-owner-access\\.js"\\);\\nregisterPart1364SimpleOwnerAccess\\(\\{ app \\}\\);\\n*`,"g"),"\n\n");
+let html=remove(fs.readFileSync(htmlPath,"utf8"),start,end);
+if(!html.includes('/naxora-part1361-common-login-bridge.js'))html=html.replace("</body>",'  <script src="/naxora-part1361-common-login-bridge.js"></script>\n</body>');
+fs.writeFileSync(serverPath,server,"utf8");
+fs.writeFileSync(htmlPath,html,"utf8");
+const result=spawnSync(process.execPath,["--check",serverPath],{encoding:"utf8"});
+if(result.status!==0){console.error(result.stderr||result.stdout);process.exit(1)}
+console.log("Part 136.4 registration and Common Login links removed.");
+console.log("Created Owner and Institute MongoDB records were not deleted.");

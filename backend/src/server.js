@@ -30580,6 +30580,10 @@ registerPart136FinalAllRoleVaniAcceptance({ app });
 const { registerPart1361FirstOwnerBootstrap } = await import("./part1361-first-owner-bootstrap.js");
 registerPart1361FirstOwnerBootstrap({ app });
 
+// ================= PART 136.4 — SIMPLE OWNER SIGNUP AND LOGIN =================
+const { registerPart1364SimpleOwnerAccess } = await import("./part1364-simple-owner-access.js");
+registerPart1364SimpleOwnerAccess({ app });
+
 // ================= PART 112 — RAZORPAY TEST MODE FOUNDATION =================
 const { registerPart112RazorpayFoundation } = await import("./part112-razorpay-foundation.js");
 registerPart112RazorpayFoundation({ app });

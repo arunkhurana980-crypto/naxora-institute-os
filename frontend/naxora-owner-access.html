@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#071426" />
+  <title>Owner Access — NAXORA Institute OS</title>
+  <link rel="stylesheet" href="/naxora-owner-access.css" />
+</head>
+<body>
+  <main class="shell">
+    <section class="brand-panel">
+      <div class="brand-lockup"><span class="brand-mark">N</span><div><strong>NAXORA</strong><small>Institute OS</small></div></div>
+      <div class="brand-copy">
+        <p class="eyebrow">Simple Owner Access</p>
+        <h1>Start and manage your institute.</h1>
+        <p>Owner ko Institute ID, Render secret, signed link ya VS Code ki zarurat nahi. Apne Login ID aur password se direct sign in karein.</p>
+      </div>
+      <div class="feature-list"><span>Automatic Institute ID</span><span>Direct Owner login</span><span>Unified app</span><span>VANI-ready session</span></div>
+    </section>
+
+    <section class="form-panel">
+      <div class="form-card">
+        <div class="tabs" role="tablist">
+          <button id="loginTab" class="tab active" type="button">Owner Sign In</button>
+          <button id="signupTab" class="tab" type="button">Create Institute</button>
+        </div>
+
+        <section id="loginPanel">
+          <p class="eyebrow">Welcome back</p>
+          <h2>Owner Sign In</h2>
+          <p class="subtext">Institute ID nahi—sirf Owner Email, Phone ya Login ID aur password.</p>
+          <form id="ownerLoginForm">
+            <label>Email, Phone or Login ID
+              <input id="loginIdentifier" autocomplete="username" required placeholder="owner@example.com" />
+            </label>
+            <label>Password
+              <div class="password-wrap">
+                <input id="loginPassword" type="password" autocomplete="current-password" required />
+                <button id="toggleLoginPassword" class="text-button" type="button">Show</button>
+              </div>
+            </label>
+            <label class="check-row"><input id="loginRememberMe" type="checkbox" /><span>Remember me on this private device</span></label>
+            <button id="ownerLoginBtn" class="primary full" type="submit">Sign In as Owner</button>
+          </form>
+        </section>
+
+        <section id="signupPanel" hidden>
+          <p class="eyebrow">New institute</p>
+          <h2>Create Institute Account</h2>
+          <p class="subtext">Institute ID automatically generate hogi aur Owner account auto-login hoga.</p>
+          <form id="ownerSignupForm">
+            <label>Institute name
+              <input id="signupInstituteName" autocomplete="organization" required placeholder="Roshan Research Center" />
+            </label>
+            <label>Owner full name
+              <input id="signupOwnerName" autocomplete="name" required placeholder="Roshan Kumar" />
+            </label>
+            <label>Owner Email, Phone or Login ID
+              <input id="signupIdentifier" autocomplete="username" required placeholder="owner@example.com" />
+            </label>
+            <label>New password
+              <div class="password-wrap">
+                <input id="signupPassword" type="password" autocomplete="new-password" required />
+                <button id="toggleSignupPassword" class="text-button" type="button">Show</button>
+              </div>
+            </label>
+            <label>Confirm password
+              <input id="signupPasswordConfirmation" type="password" autocomplete="new-password" required />
+            </label>
+            <p class="hint">Minimum 10 characters, at least one letter and one number.</p>
+            <label class="check-row"><input id="termsAccepted" type="checkbox" required /><span>Main account creation aur privacy acknowledgement accept karta/karti hoon.</span></label>
+            <button id="ownerSignupBtn" class="primary full" type="submit">Create Institute & Owner</button>
+          </form>
+        </section>
+
+        <div id="ownerMessage" class="message-box" hidden></div>
+
+        <section id="signupSuccess" class="success-card" hidden>
+          <p class="eyebrow">Account ready</p>
+          <h3>Your Institute ID</h3>
+          <div id="createdInstituteId" class="institute-id"></div>
+          <p>Owner login me ID ki zarurat nahi. Staff aur institute records ke liye ise privately save karein.</p>
+          <div class="action-row">
+            <button id="copyInstituteId" type="button" class="secondary">Copy Institute ID</button>
+            <button id="openOwnerApp" type="button" class="primary">Open NAXORA App</button>
+          </div>
+        </section>
+
+        <div class="help-row">
+          <a href="/common-login">Teacher, Student, Parent or Staff login</a>
+          <a href="/api/part1364/status" target="_blank" rel="noreferrer">System status</a>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="/naxora-owner-access.js"></script>
+</body>
+</html>

@@ -3,8 +3,20 @@
 ```powershell
 git status
 git add .
-git commit -m "Fix Owner Bootstrap secret transport"
+git commit -m "Add simple Owner signup and login"
 git push
 ```
 
-Render: Clear build cache & deploy. Then Ctrl+F5 `/owner-bootstrap`.
+Render:
+
+```text
+Manual Deploy
+→ Clear build cache & deploy
+```
+
+Test:
+
+- `/owner-login`
+- `/create-institute`
+- `/common-login`
+- `/api/part1364/status`
