@@ -1,20 +1,31 @@
-# Part 130 Testing Guide
+# Part 131 Testing Guide
 
-## Test order
+## Prerequisites
 
-1. Verify Part 129.
-2. Use existing Part 128 Branch, Course, Class, Teacher and Student IDs.
-3. Create timetable entry.
-4. Bulk mark attendance.
-5. Create assignment and review one Student.
-6. Create Exam.
-7. Record marks.
-8. Publish result.
-9. Add Student progress note.
-10. Generate progress snapshot.
-11. Test Student and Parent summary access.
-12. Test wrong role and wrong Class scope.
+Create at least one Part 128 Branch and Student, plus an Owner or scoped Accountant login.
 
-## Runtime requirement
+## Test flow
 
-Package syntax and installer tests do not replace real MongoDB, role login and Render tests.
+1. Create Fee Structure.
+2. Assign it to Student.
+3. Create Invoice.
+4. Generate Due List.
+5. Create in-app reminder.
+6. Record partial manual offline Receipt.
+7. Confirm Invoice becomes `partially_paid`.
+8. Record remaining amount.
+9. Confirm Invoice becomes `paid`.
+10. Generate Student Statement.
+11. Generate Finance Summary.
+12. Request a Receipt correction.
+
+## Negative tests
+
+- Receipt larger than outstanding.
+- Wrong Student ID.
+- Wrong Branch scope.
+- Student trying to create Invoice.
+- Parent viewing another Student.
+- Card/UPI/refund command.
+- Wrong exact confirmation.
+- Missing manual receipt acknowledgement.

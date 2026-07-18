@@ -1,33 +1,39 @@
-# Part 130 VANI Commands
+# Part 131 VANI Command Examples
 
 ```text
-timetable create classId=CLASS_ID subject=Maths dayOfWeek=monday startTime=08:00 endTime=09:00 room=A1
+fee structure create title="JEE Monthly Fee" billingCycle=monthly amount=3500 branchId=BRANCH_ID dueDay=10
 ```
 
 ```text
-bulk attendance mark classId=CLASS_ID date=2026-07-20 attendanceEntries=STUDENT1:present|STUDENT2:absent
+student fee assign studentId=STUDENT_ID structureId=STRUCTURE_ID startDate=2026-08-01 discountAmount=500
 ```
 
 ```text
-assignment create classId=CLASS_ID title="Algebra Practice" instructions="Solve questions 1 to 20" dueDate=2026-07-25 maxMarks=20 status=published
+invoice create studentId=STUDENT_ID amount=3000 dueDate=2026-08-10 description="August tuition fee"
 ```
 
 ```text
-assignment review assignmentId=ASSIGNMENT_ID studentId=STUDENT_ID score=18 feedback="Good work"
+receipt record invoiceId=INVOICE_ID amount=1500 paymentMethod=cash reference=OFFLINE-RCT-101 note="Counter receipt"
 ```
 
 ```text
-exam create classId=CLASS_ID title="Unit Test 1" examDate=2026-07-30 maxMarks=100 passingMarks=35 status=scheduled
+receipt correction request receiptId=RECEIPT_ID reason="Wrong reference entered"
 ```
 
 ```text
-marks bulk record examId=EXAM_ID markEntries=STUDENT1:88|STUDENT2:74
+due list generate branchId=BRANCH_ID asOfDate=2026-08-15 minimumDue=1
 ```
 
 ```text
-result publish examId=EXAM_ID message="Unit Test results published"
+fee reminder create invoiceId=INVOICE_ID message="Please review the pending fee in your private NAXORA account."
 ```
 
 ```text
-progress note create studentId=STUDENT_ID title="Algebra Improvement" note="Weekly practice recommended" visibility=student_parent
+student fee statement generate studentId=STUDENT_ID
 ```
+
+```text
+finance summary generate branchId=BRANCH_ID fromDate=2026-08-01 toDate=2026-08-31
+```
+
+Never put password, OTP, UPI PIN, card number, banking secret or Razorpay secret in a VANI command.

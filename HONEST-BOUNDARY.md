@@ -1,13 +1,23 @@
-# Part 130 Honest Boundary
+# Part 131 Honest Boundary
 
-Included: timetable, bulk attendance, assignments, exams, marks, result publishing and progress.
+Included:
+- Fee Structures.
+- Student Fee assignments.
+- Invoices.
+- Manual offline Receipts.
+- Due lists.
+- In-app reminders.
+- Statements and finance summaries.
 
-Not included yet:
-- Fees and finance — Part 131.
+Not included:
+- Card/UPI collection.
+- Refunds.
+- Bank settlement.
+- Live payment verification.
 - Admissions CRM — Part 132.
-- Communication expansion — Part 133.
-- Reports and exports — Part 134.
-- Conversational follow-up engine — Part 135.
+- External communication delivery — Part 133.
+- Reports/exports expansion — Part 134.
+- Conversational workflow engine — Part 135.
 - Final acceptance — Part 136.
 
-Part 130 does not make VANI fully complete.
+Part 131 does not make VANI fully complete.

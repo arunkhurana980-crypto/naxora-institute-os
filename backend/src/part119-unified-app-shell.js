@@ -437,6 +437,9 @@ const MODULES = Object.freeze([
   // PART 130 VANI ACADEMIC OPERATIONS MODULE START
   { key: "academic-vani", label: "VANI Academic Operations", description: "Timetable, bulk attendance, assignments, exams, marks, results and progress.", category: "AI & VANI", route: "/academic-vani", icon: "notes", roles: ["institute_owner", "branch_manager", "teacher", "student", "parent", "staff"], alwaysAvailable: true, order: 320 },
   // PART 130 VANI ACADEMIC OPERATIONS MODULE END
+  // PART 131 VANI FEES FINANCE MODULE START
+  { key: "finance-vani", label: "VANI Fees & Finance", description: "Fee structures, Student fees, invoices, manual receipts, dues, reminders and finance summaries.", category: "AI & VANI", route: "/finance-vani", icon: "wallet", roles: ["institute_owner", "branch_manager", "accountant", "student", "parent"], alwaysAvailable: true, order: 321 },
+  // PART 131 VANI FEES FINANCE MODULE END
 ]);
 
 const COMMAND_ALIASES = Object.freeze({
@@ -544,6 +547,17 @@ const COMMAND_ALIASES = Object.freeze({
   "student progress": "academic-vani",
   "part 130": "academic-vani",
   // PART 130 VANI ACADEMIC OPERATIONS ALIASES END
+  // PART 131 VANI FEES FINANCE ALIASES START
+  "finance operations": "finance-vani",
+  "finance vani": "finance-vani",
+  "fee structure": "finance-vani",
+  invoice: "finance-vani",
+  receipts: "finance-vani",
+  "due list": "finance-vani",
+  "fee statement": "finance-vani",
+  "finance summary": "finance-vani",
+  "part 131": "finance-vani",
+  // PART 131 VANI FEES FINANCE ALIASES END
 });
 
 function cleanText(value = "", max = 255) {

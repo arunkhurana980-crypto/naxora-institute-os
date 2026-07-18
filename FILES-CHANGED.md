@@ -1,17 +1,17 @@
-# Files Changed — Part 130
+# Files Changed — Part 131
 
 ## Backend
-- `backend/src/part130-vani-academic-operations.js`
-- `backend/.env.part130.example`
+- `backend/src/part131-vani-fees-finance-operations.js`
+- `backend/.env.part131.example`
 
 ## Frontend
-- `frontend/naxora-academic-vani.html`
-- `frontend/naxora-academic-vani.css`
-- `frontend/naxora-academic-vani.js`
-- `frontend/naxora-part130-global-vani-bridge.js`
+- `frontend/naxora-finance-vani.html`
+- `frontend/naxora-finance-vani.css`
+- `frontend/naxora-finance-vani.js`
+- `frontend/naxora-part131-global-vani-bridge.js`
 
 ## Installer
-- Registers Part 130 after Part 129.
-- Adds unified-app module and aliases.
-- Loads Part 130 bridge before Part 129.
-- Updates progress and capability label.
+- Registers Part 131 after Part 130.
+- Adds Finance VANI module and aliases.
+- Loads Part 131 bridge before Part 130.
+- Updates unified-app progress and boundary.

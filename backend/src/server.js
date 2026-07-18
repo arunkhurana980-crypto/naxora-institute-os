@@ -30545,6 +30545,10 @@ registerPart129VaniBulkImport({ app });
 const { registerPart130VaniAcademicOperations } = await import("./part130-vani-academic-operations.js");
 registerPart130VaniAcademicOperations({ app });
 
+// ================= PART 131 — VANI FEES FINANCE OPERATIONS =================
+const { registerPart131VaniFeesFinanceOperations } = await import("./part131-vani-fees-finance-operations.js");
+registerPart131VaniFeesFinanceOperations({ app });
+
 // ================= PART 112 — RAZORPAY TEST MODE FOUNDATION =================
 const { registerPart112RazorpayFoundation } = await import("./part112-razorpay-foundation.js");
 registerPart112RazorpayFoundation({ app });

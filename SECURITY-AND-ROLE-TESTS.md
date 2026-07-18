@@ -1,17 +1,31 @@
-# Part 130 Security and Role Tests
+# Part 131 Security and Role Tests
 
-- Wrong institute reference is blocked.
-- Teacher cannot operate an unassigned Class.
-- Branch Manager and Staff cannot leave Part 124 branch scope.
-- Parent can read only Owner-linked child progress.
-- Student can read only own progress.
-- Accountant and Counsellor cannot perform academic writes.
-- Exact confirmation is mandatory.
-- Same recent action is duplicate-blocked.
-- Bulk attendance and marks are limited to 100 Students.
-- Student must belong to selected Class.
-- Marks cannot exceed Exam maxMarks.
-- Result cannot publish before Marks exist.
-- Password, OTP and secret text is blocked.
-- Delete, refund and money transfer commands are blocked.
-- Partial execution failure attempts rollback.
+## Owner
+- Institute-wide finance operations.
+- Institute-wide reports.
+
+## Accountant
+- Requires active Part 124 scope.
+- Institute-wide only when Owner assigned `instituteWide=true`.
+- Otherwise restricted to assigned Branch IDs.
+
+## Branch Manager
+- Restricted to assigned Branch IDs.
+
+## Student
+- Can generate only their own fee statement.
+- Cannot create or change financial records.
+
+## Parent
+- Can generate only an Owner-linked child fee statement.
+- Cannot create or change financial records.
+
+## Safety
+- Cross-institute references blocked.
+- Duplicate actions blocked.
+- Receipt amount cannot exceed Invoice outstanding.
+- Invoice amount cannot become lower than recorded receipts.
+- Paid Invoice reminder blocked.
+- Manual receipt acknowledgement required.
+- Receipt remains unverified.
+- No refund, settlement, card or UPI execution.

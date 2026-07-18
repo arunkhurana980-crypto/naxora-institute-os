@@ -1,8 +1,10 @@
-# Rollback Steps — Part 130
+# Part 131 Rollback
 
 ```powershell
-node .\ROLLBACK-PART130.js
+node .\ROLLBACK-PART131.js
 node --check .\backend\src\server.js
 ```
 
-Code rollback does not delete Part 130 MongoDB records. Review and back up academic data before rollback.
+Rollback removes server registration, unified-app module and aliases, Part 131 Global VANI bridge, and Part 131 progress text.
+
+Rollback does not delete MongoDB finance records.
