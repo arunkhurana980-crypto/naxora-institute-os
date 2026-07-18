@@ -1,16 +1,19 @@
-# Part 136 Rollback
+# Rollback
 
 ```powershell
-node .\ROLLBACK-PART136.js
+node .\ROLLBACK-PART1361.js
 node --check .\backend\src\server.js
 ```
 
 Rollback removes:
 
-- Part 136 route registration.
-- Final Acceptance module.
-- Part 136 aliases.
-- Every-feature VANI coverage bridge.
-- Unified-app Part 136 progress label.
+- Early `/login` redirect.
+- Part 136.1 route/API registration.
+- Common Login bootstrap-link bridge.
 
-Rollback does not delete MongoDB acceptance records or certificates.
+Rollback does not delete:
+
+- Created Owner identity.
+- Generated Institute ID.
+- Bootstrap lock.
+- Bootstrap audit records.

@@ -1,26 +1,31 @@
-# Deployment Steps — Part 136
+# Deployment Steps
 
 ```powershell
-node .\VERIFY-PART135.js
-node --check .\backend\src\server.js
-node .\APPLY-PART136.js
 node .\VERIFY-PART136.js
+node --check .\backend\src\server.js
+node .\APPLY-PART1361.js
+node .\VERIFY-PART1361.js
 git status
 git add .
-git commit -m "Add Part 136 Final All Role VANI Acceptance"
+git commit -m "Add Part 136.1 First Owner Bootstrap Hotfix"
 git push
 ```
 
 Render:
 
 ```text
-Manual Deploy
+Environment
+→ Add NAXORA_OWNER_BOOTSTRAP_SECRET privately
+→ Save Changes
+→ Manual Deploy
 → Clear build cache & deploy
 ```
 
-After deployment:
+Test:
 
-- `/api/part136/status`
-- `/api/part136/acceptance-matrix`
-- `/vani-acceptance`
+- `/login`
+- `/common-login`
+- `/owner-bootstrap`
+- `/api/part1361/status`
 - `/app`
+- `/vani-acceptance`

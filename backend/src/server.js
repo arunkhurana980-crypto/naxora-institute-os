@@ -52,6 +52,13 @@ import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 import { basicRateLimit, sanitizeBody, securityHeaders } from "./middleware/securityMiddleware.js";
 
 const app = express();
+
+// PART 136.1 COMMON LOGIN ROUTE FIX START
+app.get("/login", (req, res, next) => {
+  if (String(req.query?.legacy || "") === "1") return next();
+  return res.redirect(302, "/common-login");
+});
+// PART 136.1 COMMON LOGIN ROUTE FIX END
 app.disable("x-powered-by");
 
 const __filename = fileURLToPath(import.meta.url);
@@ -30568,6 +30575,10 @@ registerPart135VaniConversationalWorkflowEngine({ app });
 // ================= PART 136 — FINAL ALL ROLE VANI ACCEPTANCE =================
 const { registerPart136FinalAllRoleVaniAcceptance } = await import("./part136-final-all-role-vani-acceptance.js");
 registerPart136FinalAllRoleVaniAcceptance({ app });
+
+// ================= PART 136.1 — FIRST OWNER BOOTSTRAP HOTFIX =================
+const { registerPart1361FirstOwnerBootstrap } = await import("./part1361-first-owner-bootstrap.js");
+registerPart1361FirstOwnerBootstrap({ app });
 
 // ================= PART 112 — RAZORPAY TEST MODE FOUNDATION =================
 const { registerPart112RazorpayFoundation } = await import("./part112-razorpay-foundation.js");

@@ -1,5 +1,16 @@
 # Honest Boundary
 
-Part 135 completes the conversational workflow-engine layer. It does not certify the complete product as “fully worked”. That label requires Part 136 all-role E2E acceptance, permission/isolation tests, duplicate/retry tests, Render/mobile tests and recorded evidence.
+Part 136.1 fixes the first Owner bootstrap deadlock and the wrong `/login` route.
 
-Safe exclusions remain: password/OTP/Owner-secret handling, direct charge/refund/transfer, destructive bulk commands and unconfirmed autonomous execution.
+It does not automatically make Part 136 acceptance pass.
+
+After Owner creation, Part 136 still requires:
+
+- Baseline and security probes.
+- Eight role tests.
+- Outside-scope denial tests.
+- Four completed workflows.
+- Desktop and mobile VANI-button coverage.
+- Owner final confirmation.
+
+Only then may the app receive `VANI_SAFE_SCOPE_SALE_READY`.

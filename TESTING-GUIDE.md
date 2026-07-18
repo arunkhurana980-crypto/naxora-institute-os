@@ -1,28 +1,30 @@
 # Testing Guide
 
-## Package verification
+## Package test
 
 ```powershell
-node .\VERIFY-PART136.js
+node .\VERIFY-PART1361.js
 ```
 
-## Runtime acceptance
+## Runtime test
 
-1. Deploy Part 136.
-2. Owner creates a run.
-3. Owner runs Baseline.
-4. Owner runs Security Probes.
-5. Each of eight roles logs in and completes its role self-test.
-6. Complete the four required Part 135 workflows.
-7. Verify their conversation IDs.
-8. Record desktop coverage.
-9. Record mobile coverage.
-10. Check readiness reaches 100%.
-11. Owner finalizes with exact confirmation.
-12. Read certificate endpoint.
-
-## Failure rule
-
-Never finalize by editing MongoDB manually.
-
-Fix the real failure, redeploy, and rerun the affected test.
+1. Open `/login`.
+2. Confirm it redirects to `/common-login`.
+3. Open `/api/part1361/status`.
+4. Confirm:
+   - `bootstrapSecretConfigured: true`
+   - `bootstrapAvailable: true`
+5. Open `/owner-bootstrap`.
+6. Generate preview.
+7. Confirm wrong exact confirmation is rejected.
+8. Confirm weak password is rejected.
+9. Create the first Owner.
+10. Confirm generated Institute ID appears.
+11. Open `/api/part1361/status` again.
+12. Confirm:
+   - `firstOwnerExists: true`
+   - `bootstrapAvailable: false`
+13. Login through `/common-login`.
+14. Open `/app`.
+15. Open `/vani-acceptance`.
+16. Confirm current role is `institute_owner` and no Institute ID error appears.

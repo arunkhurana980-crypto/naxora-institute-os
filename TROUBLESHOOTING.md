@@ -1,41 +1,33 @@
 # Troubleshooting
 
-## Baseline Part status failed
+## `BOOTSTRAP_SECRET_NOT_CONFIGURED`
 
-Open the failed Part status URL and inspect Render logs.
+Add `NAXORA_OWNER_BOOTSTRAP_SECRET` in Render Environment and redeploy.
 
-## Catalog count is not 12
+## `BOOTSTRAP_SECRET_TOO_SHORT`
 
-The earlier Part version is incomplete or its catalog route is not active.
+Use at least 24 characters.
 
-## Native catalog count is not 60
+## `BOOTSTRAP_VERIFICATION_FAILED`
 
-One of Parts 130–134 is missing from Part 135 runtime catalog.
+The browser value does not match the Render Environment value.
 
-## Role positive test failed
+## `OWNER_ALREADY_EXISTS`
 
-Check the logged-in role, fixture ID and Part 124 scope.
+Bootstrap has already been completed. Use `/common-login`.
 
-## Outside-scope test succeeded
+## `BOOTSTRAP_ALREADY_LOCKED`
 
-Critical acceptance failure. Do not finalize. Fix role/scope enforcement.
+The one-time bootstrap lock already exists. Do not try to create another first Owner.
 
-## Counsellor test says action unknown
+## `PART120_IDENTITY_MODEL_UNAVAILABLE`
 
-Confirm Part 132 catalog contains `crm.lead.note_add`.
+Part 120 is not registered before Part 136.1.
 
-## Workflow evidence failed
+## `/login` still opens old page
 
-The supplied Part 135 conversation must match the workflow key and be fully completed.
+Clear browser cache and confirm the new Render deployment is Live. Test `/login` in a private window.
 
-## Coverage below 100%
+## Owner created but `/vani-acceptance` says Student
 
-Reload `/app`, wait for all modules, and verify the coverage bridge loaded before recording.
-
-## Mobile gate pending
-
-Record a second snapshot at viewport width 600px or lower.
-
-## Finalization blocked
-
-Read `gateSummary`, fix pending/failed gates, and rerun. Do not edit the database manually.
+Log out/remove the old Student session, then login through `/common-login` with the new Owner Institute ID and Owner login ID.

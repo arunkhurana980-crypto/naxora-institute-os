@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#071426" />
+  <title>Create First Owner — NAXORA</title>
+  <link rel="stylesheet" href="/naxora-owner-bootstrap.css" />
+</head>
+<body>
+  <main class="shell">
+    <section class="brand">
+      <div class="mark">N</div>
+      <p class="eyebrow">NAXORA • Part 136.1</p>
+      <h1>Create the first Institute Owner.</h1>
+      <p class="lead">
+        Institute ID automatically generate hogi. Is page ko sirf deployment ke first Owner setup ke liye use karein.
+      </p>
+      <div class="boundary">
+        Bootstrap secret aur password browser se server ko jayenge, Mongo preview me save nahi honge,
+        API me return nahi honge aur chat/screenshots me share nahi karne hain.
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="heading">
+        <div>
+          <p class="eyebrow">Secure one-time bootstrap</p>
+          <h2 id="statusHeading">Checking availability…</h2>
+        </div>
+        <a href="/common-login">Common Login</a>
+      </div>
+
+      <div id="statusBox" class="status">Loading…</div>
+
+      <form id="bootstrapForm">
+        <label>Institute name
+          <input id="instituteName" autocomplete="organization" required placeholder="NAXORA Demo Institute" />
+        </label>
+
+        <label>Owner full name
+          <input id="ownerDisplayName" autocomplete="name" required placeholder="Institute Owner" />
+        </label>
+
+        <label>Owner Email, Phone or Login ID
+          <input id="identifier" autocomplete="username" required placeholder="owner@example.com" />
+        </label>
+
+        <label>Private bootstrap secret
+          <div class="password-wrap">
+            <input id="bootstrapSecret" type="password" autocomplete="off" required />
+            <button id="toggleSecret" type="button" class="secondary small">Show</button>
+          </div>
+        </label>
+
+        <button id="previewBtn" type="submit">Generate Institute ID Preview</button>
+      </form>
+
+      <section id="confirmPanel" class="confirm-panel" hidden>
+        <h3>Review and confirm</h3>
+        <div id="previewDetails" class="preview-details"></div>
+
+        <label>Exact confirmation
+          <input id="confirmationText" autocomplete="off" />
+        </label>
+
+        <label>New Owner password
+          <div class="password-wrap">
+            <input id="password" type="password" autocomplete="new-password" />
+            <button id="togglePassword" type="button" class="secondary small">Show</button>
+          </div>
+        </label>
+        <p class="hint">Minimum 10 characters, at least one letter and one number.</p>
+
+        <button id="confirmBtn" type="button">Create First Owner</button>
+      </section>
+
+      <div id="messageBox" class="message" hidden></div>
+
+      <section id="successPanel" class="success-panel" hidden>
+        <p class="eyebrow">Owner account ready</p>
+        <h3>Your Institute ID</h3>
+        <div id="finalInstituteId" class="institute-id"></div>
+        <p>Is ID ko privately save karo. Common Login me isi ID ka use hoga.</p>
+        <div class="actions">
+          <button id="copyIdBtn" type="button" class="secondary">Copy Institute ID</button>
+          <a class="button-link" href="/app">Open NAXORA App</a>
+        </div>
+      </section>
+    </section>
+  </main>
+  <script src="/naxora-owner-bootstrap.js"></script>
+</body>
+</html>
