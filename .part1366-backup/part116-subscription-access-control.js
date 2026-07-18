@@ -240,49 +240,17 @@ async function evidenceFor(instituteId, models, persist = true) {
     };
   });
 
-  // PART 136.6 LIVE ACCESS EVIDENCE START
-  const LiveSubscription = mongoose.models.Part1366LiveSubscription || null;
-  const liveSubscriptions = LiveSubscription
-    ? await LiveSubscription.find({ instituteId }).sort({ updatedAt: -1 }).lean()
-    : [];
-  const activeLiveSubscriptions = liveSubscriptions.filter(
-    (item) => String(item.status || "").toLowerCase() === "active"
-  );
-  const authenticatedLivePlanCodes = [
-    ...new Set(
-      liveSubscriptions
-        .filter((item) => String(item.status || "").toLowerCase() === "authenticated")
-        .map((item) => cleanText(item.planCode || "UNKNOWN", 50).toUpperCase())
-    ),
-  ];
-  // PART 136.6 LIVE ACCESS EVIDENCE END
-
   const active = rows.filter((x) => x.matched && x.active);
-  const activePlanCodes = [
-      ...new Set([
-        ...active.map((x) => x.code),
-        ...activeLiveSubscriptions.map(
-          (item) => cleanText(item.planCode || "UNKNOWN", 50).toUpperCase()
-        ),
-      ]),
-    ];
+  const activePlanCodes = [...new Set(active.map((x) => x.code))];
   const basePlanCode = highestBase(activePlanCodes);
   const v3Active = activePlanCodes.includes("V3_AI");
-  const pendingAuthenticatedPlanCodes = [
-      ...new Set([
-        ...rows.filter((x) => x.matched && x.authenticated).map((x) => x.code),
-        ...authenticatedLivePlanCodes,
-      ]),
-    ];
+  const pendingAuthenticatedPlanCodes = [...new Set(rows.filter((x) => x.matched && x.authenticated).map((x) => x.code))];
   const entitlements = [...new Set([...baseEntitlements(basePlanCode), ...(v3Active ? v3Entitlements() : [])])].sort();
   const warnings = [];
-  if (!active.length && !activeLiveSubscriptions.length) warnings.push("NO_ACTIVE_SUBSCRIPTION");
+  if (!active.length) warnings.push("NO_ACTIVE_SUBSCRIPTION");
   if (pendingAuthenticatedPlanCodes.length) warnings.push("AUTHENTICATED_WAITING_FOR_ACTIVE");
   if (rows.some((x) => !x.matched)) warnings.push("UNMATCHED_SUBSCRIPTION_EVIDENCE");
-  const commercialLiveMode = activeLiveSubscriptions.length > 0;
-    const testMode =
-      !commercialLiveMode &&
-      String(process.env.RAZORPAY_MODE || "test").toLowerCase() !== "live";
+  const testMode = String(process.env.RAZORPAY_MODE || "test").toLowerCase() !== "live";
   if (testMode) warnings.push("TEST_MODE_ONLY");
 
   if (persist) {
@@ -290,18 +258,10 @@ async function evidenceFor(instituteId, models, persist = true) {
       { instituteId },
       { $set: {
         basePlanCode, v3Active,
-        activeSubscriptionIds: [
-            ...active.map((x) => String(x.sync.razorpaySubscriptionId || "")),
-            ...activeLiveSubscriptions.map(
-              (item) => String(item.razorpaySubscriptionId || "")
-            ),
-          ],
+        activeSubscriptionIds: active.map((x) => String(x.sync.razorpaySubscriptionId || "")),
         activePlanCodes, pendingAuthenticatedPlanCodes, entitlements,
-        source: commercialLiveMode
-            ? "part1366_live_verified_webhook"
-            : "part115_verified_sync",
-          calculatedAt: new Date(),
-        warningCodes: warnings, commercialLiveMode
+        source: "part115_verified_sync", calculatedAt: new Date(),
+        warningCodes: warnings, commercialLiveMode: !testMode
       }, $setOnInsert: { instituteId } },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
@@ -312,15 +272,9 @@ async function evidenceFor(instituteId, models, persist = true) {
 
   return {
     instituteId, basePlanCode, v3Active, activePlanCodes, pendingAuthenticatedPlanCodes,
-    entitlements,
-      warnings,
-      source: commercialLiveMode
-        ? "part1366_live_verified_webhook"
-        : "part115_verified_sync",
-      testModeOnly: !commercialLiveMode && testMode,
-    commercialLiveAccessEnabled: commercialLiveMode,
-    activeSubscriptions: [
-        ...active.map((x) => ({
+    entitlements, warnings, source: "part115_verified_sync", testModeOnly: testMode,
+    commercialLiveAccessEnabled: !testMode,
+    activeSubscriptions: active.map((x) => ({
       localSubscriptionId: String(x.checkout._id),
       razorpaySubscriptionId: x.sync.razorpaySubscriptionId,
       planCode: x.code,
@@ -331,22 +285,8 @@ async function evidenceFor(instituteId, models, persist = true) {
       currentStart: x.sync.currentStart,
       currentEnd: x.sync.currentEnd,
       accessUnlockApplied: true
-        })),
-        ...activeLiveSubscriptions.map((item) => ({
-          localSubscriptionId: String(item._id),
-          razorpaySubscriptionId: item.razorpaySubscriptionId,
-          planCode: item.planCode,
-          planName: item.planCode,
-          status: item.status,
-          lastEventType: item.lastWebhookEventType,
-          lastProcessedAt: item.lastWebhookAt,
-          currentStart: item.currentStart,
-          currentEnd: item.currentEnd,
-          accessUnlockApplied: true,
-          commercialLiveMode: true,
-        })),
-      ]
-    };
+    }))
+  };
 }
 
 function decisionFor(featureKey, role, evidence) {

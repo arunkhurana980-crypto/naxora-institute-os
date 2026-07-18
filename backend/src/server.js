@@ -30664,6 +30664,10 @@ registerPart117VaniSubscriptionManager({ app });
 const { registerPart118LiveReadiness } = await import("./part118-razorpay-live-readiness.js");
 registerPart118LiveReadiness({ app });
 
+// ================= PART 136.6 — LIVE SUBSCRIPTION REVENUE BRIDGE =================
+const { registerPart1366LiveSubscriptionRevenue } = await import("./part1366-live-subscription-revenue.js");
+registerPart1366LiveSubscriptionRevenue({ app });
+
 
 
 // ================= PART 119 — UNIFIED SINGLE APP SHELL =================

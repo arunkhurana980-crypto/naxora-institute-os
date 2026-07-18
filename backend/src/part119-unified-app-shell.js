@@ -455,6 +455,20 @@ const MODULES = Object.freeze([
   // PART 136 FINAL VANI ACCEPTANCE MODULE START
   { key: "vani-acceptance", label: "VANI Final Acceptance", description: "All-role runtime evidence, scope-denial proof, completed workflows, feature-button coverage and safe-scope sale-ready gate.", category: "AI & VANI", route: "/vani-acceptance", icon: "verified", roles: ["institute_owner", "branch_manager", "teacher", "student", "parent", "accountant", "counsellor", "staff"], alwaysAvailable: true, order: 326 },
   // PART 136 FINAL VANI ACCEPTANCE MODULE END
+  // PART 136.6 LIVE SUBSCRIPTION MODULE START
+  {
+    key: "live-subscriptions",
+    label: "Live Subscriptions",
+    description: "Razorpay Live recurring checkout, verified webhooks, paid access and settlement-ready billing.",
+    category: "Billing",
+    route: "/live-subscriptions",
+    icon: "checkout",
+    roles: OWNER_ONLY_ROLES,
+    alwaysAvailable: true,
+    billingControl: true,
+    order: 560,
+  },
+  // PART 136.6 LIVE SUBSCRIPTION MODULE END
 ]);
 
 const COMMAND_ALIASES = Object.freeze({
@@ -501,6 +515,12 @@ const COMMAND_ALIASES = Object.freeze({
   subscription: "subscription-access",
   "subscription manager": "subscription-manager",
   "live readiness": "live-readiness",
+  // PART 136.6 LIVE SUBSCRIPTION ALIASES START
+  "live subscriptions": "live-subscriptions",
+  "commercial subscription": "live-subscriptions",
+  "paid plan": "live-subscriptions",
+  "razorpay live": "live-subscriptions",
+  // PART 136.6 LIVE SUBSCRIPTION ALIASES END
   "owner ai": "owner-ai",
   "vani 3": "vani-v3",
   "business growth": "business-growth-ai",

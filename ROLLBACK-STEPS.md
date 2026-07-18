@@ -1,8 +1,16 @@
 # Rollback
 
 ```powershell
-node .\ROLLBACK-PART1364.js
+node .\ROLLBACK-PART1366.js
 node --check .\backend\src\server.js
 ```
 
-Rollback does not delete Owner accounts or Institute profiles created through Part 136.4.
+Rollback removes:
+
+- Part 136.6 server registration.
+- Unified Live Subscriptions module.
+- Part 116 Live evidence patch.
+
+Rollback does not cancel Razorpay subscriptions and does not delete MongoDB records.
+
+Commercial subscriptions must be managed by the adult merchant in Razorpay Dashboard.

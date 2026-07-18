@@ -1,9 +1,11 @@
 # Deployment
 
 ```powershell
+node .\APPLY-PART1366.js
+node .\VERIFY-PART1366.js
 git status
 git add .
-git commit -m "Fix Owner app route and unified session launch"
+git commit -m "Add Razorpay Live Subscription Revenue Bridge"
 git push
 ```
 
@@ -14,9 +16,14 @@ Manual Deploy
 → Clear build cache & deploy
 ```
 
-Test:
+Status:
 
-- `/api/part1365/status`
-- `/owner-login`
-- `/app`
-- `/app/`
+```text
+https://naxora-institute-os.onrender.com/api/part1366/status
+```
+
+Live checkout page:
+
+```text
+https://naxora-institute-os.onrender.com/live-subscriptions
+```

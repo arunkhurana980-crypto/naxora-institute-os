@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#071426" />
+  <title>Live Subscriptions — NAXORA Institute OS</title>
+  <link rel="stylesheet" href="/naxora-live-subscriptions.css" />
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">NAXORA • Part 136.6</p>
+        <h1>Activate your NAXORA subscription.</h1>
+        <p>
+          Razorpay Live Checkout recurring authorisation handle karega.
+          Card, CVV, UPI PIN aur bank credentials NAXORA server par nahi aate.
+        </p>
+      </div>
+      <div class="hero-actions">
+        <a href="/app">Back to App</a>
+        <button id="refreshBtn" type="button" class="secondary">Refresh</button>
+      </div>
+    </header>
+
+    <section id="statusCard" class="status-card">
+      Loading Live billing readiness…
+    </section>
+
+    <section class="billing-grid">
+      <div class="plans-panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Commercial plans</p>
+            <h2>Choose your plan</h2>
+          </div>
+        </div>
+        <div id="plansGrid" class="plans-grid">
+          <div class="empty">Loading configured Razorpay Live Plans…</div>
+        </div>
+      </div>
+
+      <aside class="checkout-panel">
+        <p class="eyebrow">Billing details</p>
+        <h2>Razorpay Checkout</h2>
+        <div id="selectedPlan" class="selected-plan">
+          Select a configured plan.
+        </div>
+
+        <form id="checkoutForm">
+          <label>Billing name
+            <input id="customerName" autocomplete="name" required />
+          </label>
+          <label>Billing email
+            <input id="customerEmail" type="email" autocomplete="email" required />
+          </label>
+          <label>Billing contact
+            <input id="customerContact" autocomplete="tel" required placeholder="+91…" />
+          </label>
+          <label class="consent">
+            <input id="consentAccepted" type="checkbox" required />
+            <span>
+              Main recurring subscription authorisation aur selected billing cycle accept karta/karti hoon.
+            </span>
+          </label>
+
+          <button id="payBtn" type="submit" disabled>
+            Continue to Razorpay
+          </button>
+        </form>
+
+        <div id="messageBox" class="message" hidden></div>
+      </aside>
+    </section>
+
+    <section class="records">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Subscription status</p>
+          <h2>Current and recent subscriptions</h2>
+        </div>
+      </div>
+      <div id="subscriptionList" class="subscription-list">
+        <div class="empty">No subscription loaded.</div>
+      </div>
+    </section>
+
+    <section class="settlement-note">
+      <strong>Money flow:</strong>
+      Customer payment → Razorpay merchant balance → Razorpay fees/taxes deduction
+      → verified merchant settlement bank account. Settlement schedule Razorpay
+      Dashboard me dikhegi.
+    </section>
+  </main>
+
+  <script src="/naxora-live-subscriptions.js"></script>
+</body>
+</html>
