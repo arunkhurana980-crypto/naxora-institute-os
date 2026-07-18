@@ -1,25 +1,19 @@
-# Deployment Steps — Part 132
+# Deployment Steps — Part 133
 
 ```powershell
-node .\VERIFY-PART131.js
-node --check .\backend\src\server.js
-node .\APPLY-PART132.js
 node .\VERIFY-PART132.js
+node --check .\backend\src\server.js
+node .\APPLY-PART133.js
+node .\VERIFY-PART133.js
 git status
 git add .
-git commit -m "Add Part 132 VANI Admissions and CRM Operations"
+git commit -m "Add Part 133 VANI Communication and Notifications"
 git push
 ```
 
-Render:
-
-```text
-Manual Deploy
-→ Clear build cache & deploy
-```
+Render: **Manual Deploy → Clear build cache & deploy**.
 
 After deployment:
-
-- `/api/part132/status`
-- `/crm-vani`
+- `/api/part133/status`
+- `/communication-vani`
 - `/app`

@@ -1,35 +1,27 @@
-# Part 132 VANI Command Examples
+# Part 133 VANI Command Examples
 
 ```text
-lead create branchId=BRANCH_ID studentName="Riya Demo" guardianName="Demo Parent" phone=9876543210 source=walk_in consentToContact=true
+notice create title="Holiday Notice" body="Institute will remain closed tomorrow." targetType=branch_role branchId=BRANCH_ID targetRole=student channels=in_app
 ```
 
 ```text
-lead assign counsellor leadId=LEAD_ID counsellorIdentityId=COUNSELLOR_ID
+notice publish noticeId=NOTICE_ID
 ```
 
 ```text
-lead stage update leadId=LEAD_ID stage=qualified nextFollowUpAt=2026-08-05T10:00:00+05:30
+message send subject="Assignment update" body="Please check assignment." targetType=class_role classId=CLASS_ID targetRole=student channels=in_app
 ```
 
 ```text
-followup create leadId=LEAD_ID scheduledAt=2026-08-05T10:00:00+05:30 purpose="Course counselling call"
+notification schedule subject="Class reminder" body="Class starts at 8 AM." targetType=class_role classId=CLASS_ID targetRole=student channels=in_app scheduledAt=2026-08-10T07:00:00+05:30
 ```
 
 ```text
-followup complete followUpId=FOLLOWUP_ID outcome="Demo class booked"
+communication preference update externalConsent=true blockedChannels=sms
 ```
 
 ```text
-lead convert admission leadId=LEAD_ID admissionNumber=ADM-2026-101 admissionDate=2026-08-10 courseId=COURSE_ID
+communication delivery summary generate branchId=BRANCH_ID fromDate=2026-08-01 toDate=2026-08-31
 ```
 
-```text
-document checklist update admissionId=ADMISSION_ID itemName="Previous marksheet" itemStatus=received
-```
-
-```text
-crm pipeline summary generate branchId=BRANCH_ID fromDate=2026-08-01 toDate=2026-08-31
-```
-
-Aadhaar, PAN, passport number, password, OTP, banking or payment data command me mat likho.
+Never include passwords, OTPs, CVV, UPI PIN, Aadhaar, PAN, bank details or API secrets.

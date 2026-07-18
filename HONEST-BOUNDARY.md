@@ -1,20 +1,11 @@
-# Part 132 Honest Boundary
+# Part 133 Honest Boundary
 
-Included:
-- Leads and Enquiries.
-- Counsellor assignment.
-- Follow-ups.
-- Admission conversion records.
-- Admission document checklist status.
-- CRM pipeline summary.
+Included: native in-app Inbox, Notices, role-safe Messages, scheduled Notifications while the service is active, provider-ready email/SMS/WhatsApp webhooks, consent, opt-out and delivery tracking.
 
-Not included:
-- External WhatsApp/SMS/email delivery — Part 133.
-- Advanced exports — Part 134.
-- Conversational follow-up engine — Part 135.
-- Final acceptance — Part 136.
-- Automatic Student account creation.
-- Payment collection.
-- Document-file or identity-number storage.
+Not guaranteed:
+- Scheduling while the hosting service is asleep.
+- Final external delivery merely because a provider accepted a request.
+- Provider-specific delivery receipts without provider integration.
+- Attachment upload.
 
-Part 132 does not make VANI fully complete.
+Pending: Part 134 Reports/Exports, Part 135 Conversational Engine and Part 136 Final Acceptance.

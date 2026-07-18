@@ -1,10 +1,8 @@
-# Part 132 Rollback
+# Part 133 Rollback
 
 ```powershell
-node .\ROLLBACK-PART132.js
+node .\ROLLBACK-PART133.js
 node --check .\backend\src\server.js
 ```
 
-Rollback removes code registration, module, aliases, bridge and progress text.
-
-Rollback does not delete Part 132 MongoDB CRM data.
+Rollback removes code registration, module, aliases, bridge and progress text. It does not delete MongoDB communication records or pending schedule records.

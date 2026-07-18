@@ -1,17 +1,13 @@
-# Files Changed — Part 132
+# Files Changed — Part 133
 
-## Backend
-- `backend/src/part132-vani-admissions-crm-operations.js`
-- `backend/.env.part132.example`
+Backend:
+- `backend/src/part133-vani-communication-notifications.js`
+- `backend/.env.part133.example`
 
-## Frontend
-- `frontend/naxora-crm-vani.html`
-- `frontend/naxora-crm-vani.css`
-- `frontend/naxora-crm-vani.js`
-- `frontend/naxora-part132-global-vani-bridge.js`
+Frontend:
+- `frontend/naxora-communication-vani.html`
+- `frontend/naxora-communication-vani.css`
+- `frontend/naxora-communication-vani.js`
+- `frontend/naxora-part133-global-vani-bridge.js`
 
-## Installer
-- Registers Part 132 after Part 131.
-- Adds CRM module and aliases.
-- Loads Part 132 bridge before Part 131.
-- Updates unified-app progress and boundary.
+Installer registers Part 133 after Part 132, adds module/aliases, loads the bridge before Part 132 and updates progress text.

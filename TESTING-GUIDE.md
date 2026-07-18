@@ -1,30 +1,12 @@
-# Part 132 Testing Guide
+# Part 133 Testing Guide
 
-## Prerequisites
-- Part 128 Branch and Course.
-- Part 120 Counsellor account.
-- Part 124 Counsellor Branch scope.
-- Owner or Branch Manager login.
-
-## Positive flow
-1. Create Lead.
-2. Assign Counsellor.
-3. Counsellor logs in and updates assigned Lead stage.
-4. Create Follow-up.
-5. Reschedule Follow-up.
-6. Complete Follow-up.
-7. Add internal Lead note.
-8. Convert Lead to Admission.
-9. Update Admission status.
-10. Update document checklist.
-11. Generate CRM summary.
-
-## Negative flow
-- Counsellor opens unassigned Lead.
-- Branch Manager uses another Branch.
-- Staff tries to convert Admission.
-- Duplicate phone/email in same Branch.
-- Invalid Course/Class.
-- Aadhaar/PAN in command.
-- WhatsApp/SMS/email send command.
-- Wrong exact confirmation.
+1. Create Notice draft.
+2. Update and publish it to a Branch/Class.
+3. Login as recipient and open `/api/part133/inbox`.
+4. Mark an item read and archive it.
+5. Schedule an in-app Notification and test reschedule/cancel.
+6. Enable external consent for a test account.
+7. Configure a safe HTTPS provider webhook.
+8. Verify `provider_accepted`, `failed` and skipped states.
+9. Test wrong Branch, wrong Teacher Class, unassigned Counsellor Lead and Do-Not-Contact.
+10. Confirm secrets/OTP in message content are blocked.

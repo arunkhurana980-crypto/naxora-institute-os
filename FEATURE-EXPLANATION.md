@@ -1,30 +1,20 @@
-# Part 132 Feature Explanation
+# Part 133 Feature Explanation
 
-## 12 CRM actions
+## 12 VANI actions
 
-1. Lead create.
-2. Lead update.
-3. Counsellor assign.
-4. Lead stage update.
-5. Lead note add.
-6. Follow-up create.
-7. Follow-up reschedule.
-8. Follow-up complete.
-9. Lead-to-Admission convert.
-10. Admission update.
-11. Document checklist update.
-12. Pipeline summary generate.
+1. Template create
+2. Template update
+3. Notice draft create
+4. Notice draft update
+5. Notice publish
+6. Role-safe message send
+7. Notification schedule
+8. Notification reschedule
+9. Notification cancel
+10. Failed delivery retry
+11. My communication preference update
+12. Delivery summary generate
 
-## Secure flow
+Delivery states include `delivered_in_app`, `provider_accepted`, `failed`, `skipped_no_address`, `skipped_no_consent`, `skipped_opt_out`, `skipped_provider_unconfigured`, and `skipped_channel_unavailable`.
 
-```text
-Command
-→ role and institute validation
-→ Part 124 Branch scope
-→ assigned-Counsellor Lead isolation
-→ Part 128 Branch/Course/Class validation
-→ preview
-→ exact confirmation
-→ native MongoDB write
-→ audit
-```
+`provider_accepted` is not guaranteed final delivery.

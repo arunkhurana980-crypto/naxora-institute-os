@@ -443,6 +443,9 @@ const MODULES = Object.freeze([
   // PART 132 VANI ADMISSIONS CRM MODULE START
   { key: "crm-vani", label: "VANI Admissions & CRM", description: "Enquiries, Leads, Counsellor assignment, Follow-ups, Admissions and document checklist.", category: "AI & VANI", route: "/crm-vani", icon: "growth", roles: ["institute_owner", "branch_manager", "counsellor", "staff"], alwaysAvailable: true, order: 322 },
   // PART 132 VANI ADMISSIONS CRM MODULE END
+  // PART 133 VANI COMMUNICATION MODULE START
+  { key: "communication-vani", label: "VANI Communication", description: "Templates, Notices, role-safe Messages, schedules, consent, Inbox and delivery tracking.", category: "AI & VANI", route: "/communication-vani", icon: "message", roles: ["institute_owner", "branch_manager", "teacher", "student", "parent", "accountant", "counsellor", "staff"], alwaysAvailable: true, order: 323 },
+  // PART 133 VANI COMMUNICATION MODULE END
 ]);
 
 const COMMAND_ALIASES = Object.freeze({
@@ -573,6 +576,18 @@ const COMMAND_ALIASES = Object.freeze({
   "crm pipeline": "crm-vani",
   "part 132": "crm-vani",
   // PART 132 VANI ADMISSIONS CRM ALIASES END
+  // PART 133 VANI COMMUNICATION ALIASES START
+  "communication vani": "communication-vani",
+  communication: "communication-vani",
+  notifications: "communication-vani",
+  notices: "communication-vani",
+  announcements: "communication-vani",
+  "message templates": "communication-vani",
+  "scheduled notifications": "communication-vani",
+  inbox: "communication-vani",
+  "delivery tracking": "communication-vani",
+  "part 133": "communication-vani",
+  // PART 133 VANI COMMUNICATION ALIASES END
 });
 
 function cleanText(value = "", max = 255) {
