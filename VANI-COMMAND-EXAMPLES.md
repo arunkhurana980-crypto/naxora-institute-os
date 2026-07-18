@@ -1,27 +1,39 @@
-# Part 133 VANI Command Examples
+# Part 134 VANI Commands
 
 ```text
-notice create title="Holiday Notice" body="Institute will remain closed tomorrow." targetType=branch_role branchId=BRANCH_ID targetRole=student channels=in_app
+executive overview report generate branchId=BRANCH_ID fromDate=2026-08-01 toDate=2026-08-31
 ```
 
 ```text
-notice publish noticeId=NOTICE_ID
+attendance report generate classId=CLASS_ID fromDate=2026-08-01 toDate=2026-08-31
 ```
 
 ```text
-message send subject="Assignment update" body="Please check assignment." targetType=class_role classId=CLASS_ID targetRole=student channels=in_app
+academic report generate studentId=STUDENT_ID
 ```
 
 ```text
-notification schedule subject="Class reminder" body="Class starts at 8 AM." targetType=class_role classId=CLASS_ID targetRole=student channels=in_app scheduledAt=2026-08-10T07:00:00+05:30
+finance report generate branchId=BRANCH_ID
 ```
 
 ```text
-communication preference update externalConsent=true blockedChannels=sms
+crm report generate branchId=BRANCH_ID
 ```
 
 ```text
-communication delivery summary generate branchId=BRANCH_ID fromDate=2026-08-01 toDate=2026-08-31
+communication delivery report generate branchId=BRANCH_ID
 ```
 
-Never include passwords, OTPs, CVV, UPI PIN, Aadhaar, PAN, bank details or API secrets.
+```text
+student 360 report generate studentId=STUDENT_ID
+```
+
+```text
+report export csv reportId=REPORT_ID
+report export json reportId=REPORT_ID
+report export html reportId=REPORT_ID
+```
+
+```text
+report export revoke exportId=EXPORT_ID reason="No longer required"
+```

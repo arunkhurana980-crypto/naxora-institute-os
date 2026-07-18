@@ -1,13 +1,17 @@
-# Files Changed — Part 133
+# Files Changed
 
-Backend:
-- `backend/src/part133-vani-communication-notifications.js`
-- `backend/.env.part133.example`
+## Backend
+- `backend/src/part134-vani-reports-exports.js`
+- `backend/.env.part134.example`
 
-Frontend:
-- `frontend/naxora-communication-vani.html`
-- `frontend/naxora-communication-vani.css`
-- `frontend/naxora-communication-vani.js`
-- `frontend/naxora-part133-global-vani-bridge.js`
+## Frontend
+- `frontend/naxora-reports-vani.html`
+- `frontend/naxora-reports-vani.css`
+- `frontend/naxora-reports-vani.js`
+- `frontend/naxora-part134-global-vani-bridge.js`
 
-Installer registers Part 133 after Part 132, adds module/aliases, loads the bridge before Part 132 and updates progress text.
+## Integration
+- registers after Part 133
+- module and aliases in Part 119 shell
+- Part 134 bridge before Part 133 bridge
+- unified progress updated

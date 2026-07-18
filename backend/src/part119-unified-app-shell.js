@@ -446,6 +446,9 @@ const MODULES = Object.freeze([
   // PART 133 VANI COMMUNICATION MODULE START
   { key: "communication-vani", label: "VANI Communication", description: "Templates, Notices, role-safe Messages, schedules, consent, Inbox and delivery tracking.", category: "AI & VANI", route: "/communication-vani", icon: "message", roles: ["institute_owner", "branch_manager", "teacher", "student", "parent", "accountant", "counsellor", "staff"], alwaysAvailable: true, order: 323 },
   // PART 133 VANI COMMUNICATION MODULE END
+  // PART 134 VANI REPORTS EXPORTS MODULE START
+  { key: "reports-vani", label: "VANI Reports & Exports", description: "Executive, Branch, Attendance, Academic, Finance, CRM, Communication and Student 360 reports with CSV, JSON and print-ready HTML exports.", category: "AI & VANI", route: "/reports-vani", icon: "chart", roles: ["institute_owner", "branch_manager", "teacher", "student", "parent", "accountant", "counsellor", "staff"], alwaysAvailable: true, order: 324 },
+  // PART 134 VANI REPORTS EXPORTS MODULE END
 ]);
 
 const COMMAND_ALIASES = Object.freeze({
@@ -588,6 +591,20 @@ const COMMAND_ALIASES = Object.freeze({
   "delivery tracking": "communication-vani",
   "part 133": "communication-vani",
   // PART 133 VANI COMMUNICATION ALIASES END
+  // PART 134 VANI REPORTS EXPORTS ALIASES START
+  "reports vani": "reports-vani",
+  reports: "reports-vani",
+  exports: "reports-vani",
+  "executive overview": "reports-vani",
+  "branch overview": "reports-vani",
+  "attendance report": "reports-vani",
+  "academic report": "reports-vani",
+  "finance report": "reports-vani",
+  "crm report": "reports-vani",
+  "communication report": "reports-vani",
+  "student 360": "reports-vani",
+  "part 134": "reports-vani",
+  // PART 134 VANI REPORTS EXPORTS ALIASES END
 });
 
 function cleanText(value = "", max = 255) {

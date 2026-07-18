@@ -1,20 +1,28 @@
-# Part 133 Feature Explanation
+# Part 134 Feature Explanation
 
-## 12 VANI actions
+## 12 actions
+1. Executive Overview generate
+2. Branch Overview generate
+3. Attendance Report generate
+4. Academic Report generate
+5. Finance Report generate
+6. CRM Report generate
+7. Communication Report generate
+8. Student 360 Report generate
+9. CSV export
+10. JSON export
+11. Print-ready HTML export
+12. Export revoke
 
-1. Template create
-2. Template update
-3. Notice draft create
-4. Notice draft update
-5. Notice publish
-6. Role-safe message send
-7. Notification schedule
-8. Notification reschedule
-9. Notification cancel
-10. Failed delivery retry
-11. My communication preference update
-12. Delivery summary generate
-
-Delivery states include `delivered_in_app`, `provider_accepted`, `failed`, `skipped_no_address`, `skipped_no_consent`, `skipped_opt_out`, `skipped_provider_unconfigured`, and `skipped_channel_unavailable`.
-
-`provider_accepted` is not guaranteed final delivery.
+## Secure flow
+```text
+VANI command
+→ institute and role
+→ Branch/Class/Student/child scope
+→ preview
+→ exact confirmation
+→ report snapshot
+→ export
+→ one-time ticket
+→ audit
+```

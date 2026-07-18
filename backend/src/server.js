@@ -30557,6 +30557,10 @@ registerPart132VaniAdmissionsCrmOperations({ app });
 const { registerPart133VaniCommunicationNotifications } = await import("./part133-vani-communication-notifications.js");
 registerPart133VaniCommunicationNotifications({ app });
 
+// ================= PART 134 — VANI REPORTS EXPORTS =================
+const { registerPart134VaniReportsExports } = await import("./part134-vani-reports-exports.js");
+registerPart134VaniReportsExports({ app });
+
 // ================= PART 112 — RAZORPAY TEST MODE FOUNDATION =================
 const { registerPart112RazorpayFoundation } = await import("./part112-razorpay-foundation.js");
 registerPart112RazorpayFoundation({ app });

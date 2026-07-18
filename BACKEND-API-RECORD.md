@@ -1,24 +1,25 @@
-# Part 133 Backend API Record
+# Part 134 APIs
 
-Public:
-- `GET /api/part133/status`
-- `GET /api/part133/security-policy`
-- `GET /api/part133/catalog`
-- `GET /api/part133/demo`
+## Public
+- `GET /api/part134/status`
+- `GET /api/part134/security-policy`
+- `GET /api/part134/catalog`
+- `GET /api/part134/demo`
+- `GET /api/part134/download/:ticket`
 
-Authenticated:
-- `POST /api/part133/actions/preview`
-- `POST /api/part133/vani/command`
-- `POST /api/part133/actions/:actionId/confirm`
-- `POST /api/part133/actions/:actionId/cancel`
-- `GET /api/part133/actions`
-- `GET /api/part133/records`
-- `GET /api/part133/inbox`
-- `POST /api/part133/inbox/:deliveryId/read`
-- `POST /api/part133/inbox/:deliveryId/archive`
+## Authenticated
+- `POST /api/part134/actions/preview`
+- `POST /api/part134/vani/command`
+- `POST /api/part134/actions/:actionId/confirm`
+- `POST /api/part134/actions/:actionId/cancel`
+- `GET /api/part134/actions`
+- `GET /api/part134/reports`
+- `GET /api/part134/reports/:reportId`
+- `GET /api/part134/exports`
+- `POST /api/part134/exports/:exportId/ticket`
 
-Models:
-- `Part133CommunicationAction`
-- `Part133CommunicationRecord`
-- `Part133Delivery`
-- `Part133CommunicationPreference`
+## Models
+- Part134ReportAction
+- Part134ReportSnapshot
+- Part134Export
+- Part134ReportAudit

@@ -1,12 +1,23 @@
-# Part 133 Testing Guide
+# Part 134 Testing
 
-1. Create Notice draft.
-2. Update and publish it to a Branch/Class.
-3. Login as recipient and open `/api/part133/inbox`.
-4. Mark an item read and archive it.
-5. Schedule an in-app Notification and test reschedule/cancel.
-6. Enable external consent for a test account.
-7. Configure a safe HTTPS provider webhook.
-8. Verify `provider_accepted`, `failed` and skipped states.
-9. Test wrong Branch, wrong Teacher Class, unassigned Counsellor Lead and Do-Not-Contact.
-10. Confirm secrets/OTP in message content are blocked.
+## Positive
+1. Owner Executive report
+2. Branch Manager assigned Branch report
+3. Teacher assigned Class attendance
+4. Student own Student 360
+5. Parent linked-child Student 360
+6. Accountant finance report
+7. Counsellor CRM report
+8. CSV/JSON/HTML export
+9. one-time ticket download
+10. second use of same ticket must fail
+11. revoke export
+12. revoked export ticket must fail
+
+## Negative
+- wrong institute
+- wrong Branch/Class/Student
+- date range above 366 days
+- PDF/XLSX command
+- export above 2 MB
+- non-owner exporting another user's report

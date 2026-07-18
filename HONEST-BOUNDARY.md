@@ -1,11 +1,18 @@
-# Part 133 Honest Boundary
+# Honest Boundary
 
-Included: native in-app Inbox, Notices, role-safe Messages, scheduled Notifications while the service is active, provider-ready email/SMS/WhatsApp webhooks, consent, opt-out and delivery tracking.
+Included:
+- role-safe native report snapshots
+- CSV, JSON and print-ready HTML
+- expiring exports
+- one-time downloads
+- export history and revocation
 
-Not guaranteed:
-- Scheduling while the hosting service is asleep.
-- Final external delivery merely because a provider accepted a request.
-- Provider-specific delivery receipts without provider integration.
-- Attachment upload.
+Not included:
+- PDF rendering
+- XLSX workbook
+- scheduled recurring reports
+- unlimited database dump
+- Part 135 conversational workflow engine
+- Part 136 final acceptance
 
-Pending: Part 134 Reports/Exports, Part 135 Conversational Engine and Part 136 Final Acceptance.
+Part 134 does not make VANI fully complete.
