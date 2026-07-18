@@ -1,33 +1,30 @@
-# Part 131 Feature Explanation
+# Part 132 Feature Explanation
 
-## 12 finance actions
+## 12 CRM actions
 
-1. Fee Structure create.
-2. Fee Structure update.
-3. Student Fee assign.
-4. Student Fee update.
-5. Invoice create.
-6. Invoice update.
-7. Manual offline Receipt record.
-8. Receipt correction request.
-9. Due list generate.
-10. In-app fee reminder create.
-11. Student statement generate.
-12. Finance summary generate.
+1. Lead create.
+2. Lead update.
+3. Counsellor assign.
+4. Lead stage update.
+5. Lead note add.
+6. Follow-up create.
+7. Follow-up reschedule.
+8. Follow-up complete.
+9. Lead-to-Admission convert.
+10. Admission update.
+11. Document checklist update.
+12. Pipeline summary generate.
 
 ## Secure flow
 
 ```text
 Command
-→ action allowlist
 → role and institute validation
 → Part 124 Branch scope
-→ Part 128 Student/Branch references
+→ assigned-Counsellor Lead isolation
+→ Part 128 Branch/Course/Class validation
 → preview
 → exact confirmation
-→ extra receipt acknowledgement where required
-→ native MongoDB record
+→ native MongoDB write
 → audit
 ```
-
-No live money movement occurs.

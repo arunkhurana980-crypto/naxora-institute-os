@@ -1,31 +1,30 @@
-# Part 131 Testing Guide
+# Part 132 Testing Guide
 
 ## Prerequisites
+- Part 128 Branch and Course.
+- Part 120 Counsellor account.
+- Part 124 Counsellor Branch scope.
+- Owner or Branch Manager login.
 
-Create at least one Part 128 Branch and Student, plus an Owner or scoped Accountant login.
+## Positive flow
+1. Create Lead.
+2. Assign Counsellor.
+3. Counsellor logs in and updates assigned Lead stage.
+4. Create Follow-up.
+5. Reschedule Follow-up.
+6. Complete Follow-up.
+7. Add internal Lead note.
+8. Convert Lead to Admission.
+9. Update Admission status.
+10. Update document checklist.
+11. Generate CRM summary.
 
-## Test flow
-
-1. Create Fee Structure.
-2. Assign it to Student.
-3. Create Invoice.
-4. Generate Due List.
-5. Create in-app reminder.
-6. Record partial manual offline Receipt.
-7. Confirm Invoice becomes `partially_paid`.
-8. Record remaining amount.
-9. Confirm Invoice becomes `paid`.
-10. Generate Student Statement.
-11. Generate Finance Summary.
-12. Request a Receipt correction.
-
-## Negative tests
-
-- Receipt larger than outstanding.
-- Wrong Student ID.
-- Wrong Branch scope.
-- Student trying to create Invoice.
-- Parent viewing another Student.
-- Card/UPI/refund command.
+## Negative flow
+- Counsellor opens unassigned Lead.
+- Branch Manager uses another Branch.
+- Staff tries to convert Admission.
+- Duplicate phone/email in same Branch.
+- Invalid Course/Class.
+- Aadhaar/PAN in command.
+- WhatsApp/SMS/email send command.
 - Wrong exact confirmation.
-- Missing manual receipt acknowledgement.

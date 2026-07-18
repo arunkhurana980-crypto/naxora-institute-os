@@ -1,23 +1,20 @@
-# Part 131 Honest Boundary
+# Part 132 Honest Boundary
 
 Included:
-- Fee Structures.
-- Student Fee assignments.
-- Invoices.
-- Manual offline Receipts.
-- Due lists.
-- In-app reminders.
-- Statements and finance summaries.
+- Leads and Enquiries.
+- Counsellor assignment.
+- Follow-ups.
+- Admission conversion records.
+- Admission document checklist status.
+- CRM pipeline summary.
 
 Not included:
-- Card/UPI collection.
-- Refunds.
-- Bank settlement.
-- Live payment verification.
-- Admissions CRM — Part 132.
-- External communication delivery — Part 133.
-- Reports/exports expansion — Part 134.
-- Conversational workflow engine — Part 135.
+- External WhatsApp/SMS/email delivery — Part 133.
+- Advanced exports — Part 134.
+- Conversational follow-up engine — Part 135.
 - Final acceptance — Part 136.
+- Automatic Student account creation.
+- Payment collection.
+- Document-file or identity-number storage.
 
-Part 131 does not make VANI fully complete.
+Part 132 does not make VANI fully complete.

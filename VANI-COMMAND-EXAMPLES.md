@@ -1,39 +1,35 @@
-# Part 131 VANI Command Examples
+# Part 132 VANI Command Examples
 
 ```text
-fee structure create title="JEE Monthly Fee" billingCycle=monthly amount=3500 branchId=BRANCH_ID dueDay=10
+lead create branchId=BRANCH_ID studentName="Riya Demo" guardianName="Demo Parent" phone=9876543210 source=walk_in consentToContact=true
 ```
 
 ```text
-student fee assign studentId=STUDENT_ID structureId=STRUCTURE_ID startDate=2026-08-01 discountAmount=500
+lead assign counsellor leadId=LEAD_ID counsellorIdentityId=COUNSELLOR_ID
 ```
 
 ```text
-invoice create studentId=STUDENT_ID amount=3000 dueDate=2026-08-10 description="August tuition fee"
+lead stage update leadId=LEAD_ID stage=qualified nextFollowUpAt=2026-08-05T10:00:00+05:30
 ```
 
 ```text
-receipt record invoiceId=INVOICE_ID amount=1500 paymentMethod=cash reference=OFFLINE-RCT-101 note="Counter receipt"
+followup create leadId=LEAD_ID scheduledAt=2026-08-05T10:00:00+05:30 purpose="Course counselling call"
 ```
 
 ```text
-receipt correction request receiptId=RECEIPT_ID reason="Wrong reference entered"
+followup complete followUpId=FOLLOWUP_ID outcome="Demo class booked"
 ```
 
 ```text
-due list generate branchId=BRANCH_ID asOfDate=2026-08-15 minimumDue=1
+lead convert admission leadId=LEAD_ID admissionNumber=ADM-2026-101 admissionDate=2026-08-10 courseId=COURSE_ID
 ```
 
 ```text
-fee reminder create invoiceId=INVOICE_ID message="Please review the pending fee in your private NAXORA account."
+document checklist update admissionId=ADMISSION_ID itemName="Previous marksheet" itemStatus=received
 ```
 
 ```text
-student fee statement generate studentId=STUDENT_ID
+crm pipeline summary generate branchId=BRANCH_ID fromDate=2026-08-01 toDate=2026-08-31
 ```
 
-```text
-finance summary generate branchId=BRANCH_ID fromDate=2026-08-01 toDate=2026-08-31
-```
-
-Never put password, OTP, UPI PIN, card number, banking secret or Razorpay secret in a VANI command.
+Aadhaar, PAN, passport number, password, OTP, banking or payment data command me mat likho.

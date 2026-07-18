@@ -1,25 +1,25 @@
-# Part 131 Troubleshooting
+# Part 132 Troubleshooting
 
 ## `PART128_MODELS_MISSING`
-Part 128 must be registered before Part 131.
+Part 128 must be registered.
 
 ## `ROLE_SCOPE_REQUIRED`
-Owner must assign Accountant or Branch Manager scope through Part 124.
+Owner must assign Branch scope in Part 124.
 
-## `FEE_STRUCTURE_NOT_FOUND`
-Create or use an institute-scoped Part 131 Fee Structure.
+## `COUNSELLOR_LEAD_ASSIGNMENT_REQUIRED`
+The Lead must be assigned to the logged-in Counsellor.
 
-## `STUDENT_NOT_FOUND`
-Use a valid Part 128 Student ID.
+## `COUNSELLOR_BRANCH_SCOPE_MISMATCH`
+The selected Counsellor is not assigned to the Lead Branch.
 
-## `RECEIPT_EXCEEDS_OUTSTANDING`
-Receipt amount must not exceed current Invoice outstanding.
+## `LEAD_CONTACT_REQUIRED`
+Provide a valid phone or email.
 
-## `MANUAL_RECEIPT_ACKNOWLEDGEMENT_REQUIRED`
-Copy the exact acknowledgement shown by the preview.
+## `EXTERNAL_COMMUNICATION_NOT_READY`
+External delivery is Part 133, not Part 132.
 
-## `LIVE_MONEY_COMMAND_BLOCKED`
-Part 131 does not execute charge, transfer, settlement or refund.
+## `SENSITIVE_COMMAND_BLOCKED`
+Remove Aadhaar, PAN, passport number, password, OTP or banking data.
 
-## `DUPLICATE_FINANCE_ACTION`
-The same confirmed action was executed recently.
+## `DUPLICATE_CRM_ACTION`
+The same action was recently executed.

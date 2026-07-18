@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#071426" />
+  <title>VANI Admissions & CRM — NAXORA</title>
+  <link rel="stylesheet" href="/naxora-crm-vani.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">NAXORA • Part 132</p>
+        <h1>VANI Admissions & CRM</h1>
+        <p>Enquiries, Leads, Counsellor assignment, Follow-ups, Admission conversion, document checklist aur pipeline summary—role-safe Branch scope ke saath.</p>
+      </div>
+      <aside>
+        <strong id="engineStatus">Loading…</strong>
+        <span id="roleStatus">Role checking…</span>
+        <small>External WhatsApp/SMS/email delivery Part 133 se pehle enabled nahi hai.</small>
+      </aside>
+    </header>
+
+    <section class="boundary">
+      <strong>Part 132 boundary:</strong>
+      Admission conversion CRM record banata hai. Ye automatically Student login, fee assignment,
+      payment collection ya document-file upload nahi karta. Aadhaar, PAN, passport number,
+      password, OTP aur banking data blocked hain.
+    </section>
+
+    <section id="metrics" class="metrics"></section>
+
+    <section class="grid two">
+      <article class="panel">
+        <div class="heading">
+          <div>
+            <p class="eyebrow">Global VANI Command</p>
+            <h2>CRM command type karo</h2>
+          </div>
+          <button id="loadBridgeBtn" class="secondary">Load App Command</button>
+        </div>
+        <textarea id="commandInput" rows="5" placeholder='lead create branchId=BRANCH_ID studentName="Riya Demo" guardianName="Demo Parent" phone=9876543210 source=walk_in consentToContact=true'></textarea>
+        <button id="commandPreviewBtn" class="full">Interpret & Create Preview</button>
+        <pre id="commandOutput">Waiting…</pre>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">Structured Action</p>
+        <h2>Action aur payload review karo</h2>
+        <label>Action
+          <select id="actionSelect"></select>
+        </label>
+        <label>Payload JSON
+          <textarea id="payloadInput" rows="12" spellcheck="false">{}</textarea>
+        </label>
+        <div class="button-row">
+          <button id="loadExampleBtn" class="secondary">Load Example</button>
+          <button id="structuredPreviewBtn">Create Preview</button>
+        </div>
+        <pre id="previewOutput">Waiting…</pre>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="eyebrow">Exact Confirmation</p>
+        <h2>Preview confirm aur execute karo</h2>
+        <label>Action ID
+          <input id="actionId" readonly />
+        </label>
+        <label>Exact confirmation
+          <input id="confirmationText" autocomplete="off" />
+        </label>
+        <div class="button-row">
+          <button id="cancelBtn" class="secondary">Cancel Preview</button>
+          <button id="confirmBtn">Confirm & Execute</button>
+        </div>
+        <pre id="executeOutput">Waiting…</pre>
+      </article>
+
+      <article class="panel">
+        <div class="heading">
+          <div>
+            <p class="eyebrow">CRM Records</p>
+            <h2>Role-scoped native records</h2>
+          </div>
+          <button id="refreshRecordsBtn" class="secondary">Refresh</button>
+        </div>
+        <div id="recordTabs" class="tabs"></div>
+        <div id="recordList" class="records">Loading…</div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="heading">
+        <div>
+          <p class="eyebrow">Action History</p>
+          <h2>Preview, execution and rollback state</h2>
+        </div>
+        <button id="refreshHistoryBtn" class="secondary">Refresh</button>
+      </div>
+      <div id="historyList" class="history">Loading…</div>
+    </section>
+  </main>
+
+  <script src="/naxora-common-session.js"></script>
+  <script src="/naxora-crm-vani.js"></script>
+</body>
+</html>

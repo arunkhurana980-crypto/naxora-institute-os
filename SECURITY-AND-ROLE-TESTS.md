@@ -1,31 +1,24 @@
-# Part 131 Security and Role Tests
+# Part 132 Security and Role Tests
 
 ## Owner
-- Institute-wide finance operations.
-- Institute-wide reports.
-
-## Accountant
-- Requires active Part 124 scope.
-- Institute-wide only when Owner assigned `instituteWide=true`.
-- Otherwise restricted to assigned Branch IDs.
+Institute-wide CRM access.
 
 ## Branch Manager
-- Restricted to assigned Branch IDs.
+Only assigned Branches.
 
-## Student
-- Can generate only their own fee statement.
-- Cannot create or change financial records.
+## Counsellor
+Only assigned Branches and Leads assigned to their identity.
 
-## Parent
-- Can generate only an Owner-linked child fee statement.
-- Cannot create or change financial records.
+## Staff
+New Enquiry/Lead intake only. Existing pipeline modification is denied.
 
-## Safety
-- Cross-institute references blocked.
-- Duplicate actions blocked.
-- Receipt amount cannot exceed Invoice outstanding.
-- Invoice amount cannot become lower than recorded receipts.
-- Paid Invoice reminder blocked.
-- Manual receipt acknowledgement required.
-- Receipt remains unverified.
-- No refund, settlement, card or UPI execution.
+## Privacy and safety
+- Cross-institute records blocked.
+- Phone/email duplicates blocked inside active Branch Leads.
+- Consent and Do-Not-Contact flags stored.
+- Aadhaar/PAN/passport numbers blocked.
+- Password/OTP/banking data blocked.
+- External communication blocked until Part 133.
+- Admission conversion does not collect payment.
+- Admission conversion does not create a new Student account.
+- Document checklist stores status only, not files or ID numbers.

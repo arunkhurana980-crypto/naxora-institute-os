@@ -440,6 +440,9 @@ const MODULES = Object.freeze([
   // PART 131 VANI FEES FINANCE MODULE START
   { key: "finance-vani", label: "VANI Fees & Finance", description: "Fee structures, Student fees, invoices, manual receipts, dues, reminders and finance summaries.", category: "AI & VANI", route: "/finance-vani", icon: "wallet", roles: ["institute_owner", "branch_manager", "accountant", "student", "parent"], alwaysAvailable: true, order: 321 },
   // PART 131 VANI FEES FINANCE MODULE END
+  // PART 132 VANI ADMISSIONS CRM MODULE START
+  { key: "crm-vani", label: "VANI Admissions & CRM", description: "Enquiries, Leads, Counsellor assignment, Follow-ups, Admissions and document checklist.", category: "AI & VANI", route: "/crm-vani", icon: "growth", roles: ["institute_owner", "branch_manager", "counsellor", "staff"], alwaysAvailable: true, order: 322 },
+  // PART 132 VANI ADMISSIONS CRM MODULE END
 ]);
 
 const COMMAND_ALIASES = Object.freeze({
@@ -558,6 +561,18 @@ const COMMAND_ALIASES = Object.freeze({
   "finance summary": "finance-vani",
   "part 131": "finance-vani",
   // PART 131 VANI FEES FINANCE ALIASES END
+  // PART 132 VANI ADMISSIONS CRM ALIASES START
+  "admissions crm": "crm-vani",
+  "crm vani": "crm-vani",
+  leads: "crm-vani",
+  enquiries: "crm-vani",
+  inquiries: "crm-vani",
+  "lead follow up": "crm-vani",
+  "admission conversion": "crm-vani",
+  "document checklist": "crm-vani",
+  "crm pipeline": "crm-vani",
+  "part 132": "crm-vani",
+  // PART 132 VANI ADMISSIONS CRM ALIASES END
 });
 
 function cleanText(value = "", max = 255) {

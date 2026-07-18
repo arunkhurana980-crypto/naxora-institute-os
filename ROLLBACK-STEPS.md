@@ -1,10 +1,10 @@
-# Part 131 Rollback
+# Part 132 Rollback
 
 ```powershell
-node .\ROLLBACK-PART131.js
+node .\ROLLBACK-PART132.js
 node --check .\backend\src\server.js
 ```
 
-Rollback removes server registration, unified-app module and aliases, Part 131 Global VANI bridge, and Part 131 progress text.
+Rollback removes code registration, module, aliases, bridge and progress text.
 
-Rollback does not delete MongoDB finance records.
+Rollback does not delete Part 132 MongoDB CRM data.

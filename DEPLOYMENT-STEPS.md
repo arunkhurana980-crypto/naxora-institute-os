@@ -1,13 +1,13 @@
-# Deployment Steps — Part 131
+# Deployment Steps — Part 132
 
 ```powershell
-node .\VERIFY-PART130.js
-node --check .\backend\src\server.js
-node .\APPLY-PART131.js
 node .\VERIFY-PART131.js
+node --check .\backend\src\server.js
+node .\APPLY-PART132.js
+node .\VERIFY-PART132.js
 git status
 git add .
-git commit -m "Add Part 131 VANI Fees and Finance Operations"
+git commit -m "Add Part 132 VANI Admissions and CRM Operations"
 git push
 ```
 
@@ -20,6 +20,6 @@ Manual Deploy
 
 After deployment:
 
-- `/api/part131/status`
-- `/finance-vani`
+- `/api/part132/status`
+- `/crm-vani`
 - `/app`
