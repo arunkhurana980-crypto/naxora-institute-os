@@ -1,28 +1,16 @@
-# Part 134 Feature Explanation
+# Feature Explanation
 
-## 12 actions
-1. Executive Overview generate
-2. Branch Overview generate
-3. Attendance Report generate
-4. Academic Report generate
-5. Finance Report generate
-6. CRM Report generate
-7. Communication Report generate
-8. Student 360 Report generate
-9. CSV export
-10. JSON export
-11. Print-ready HTML export
-12. Export revoke
+Part 135 is a deterministic, allowlisted conversational workflow engine.
 
-## Secure flow
 ```text
-VANI command
-→ institute and role
-→ Branch/Class/Student/child scope
-→ preview
+User intent
+→ missing-field questions
+→ dependency-aware plan
+→ original Part preview
 → exact confirmation
-→ report snapshot
-→ export
-→ one-time ticket
-→ audit
+→ native execution
+→ result IDs passed to later steps
+→ success, pause, retry or honest failure
 ```
+
+It orchestrates native actions from Parts 130, 131, 132, 133 and 134. Original role, Branch, Class, child and Lead scopes remain enforced.

@@ -1,17 +1,7 @@
 # Files Changed
 
-## Backend
-- `backend/src/part134-vani-reports-exports.js`
-- `backend/.env.part134.example`
+Backend: Part 135 engine and `.env.part135.example`.
 
-## Frontend
-- `frontend/naxora-reports-vani.html`
-- `frontend/naxora-reports-vani.css`
-- `frontend/naxora-reports-vani.js`
-- `frontend/naxora-part134-global-vani-bridge.js`
+Frontend: Workflow page, CSS, JavaScript and global bridge.
 
-## Integration
-- registers after Part 133
-- module and aliases in Part 119 shell
-- Part 134 bridge before Part 133 bridge
-- unified progress updated
+Installer: registers after Part 134, adds shell module/aliases, loads bridge before Part 134 and updates unified-app progress.

@@ -1,8 +1,8 @@
 # Rollback
 
 ```powershell
-node .\ROLLBACK-PART134.js
+node .\ROLLBACK-PART135.js
 node --check .\backend\src\server.js
 ```
 
-Rollback removes code integration. MongoDB report/export records are not deleted.
+Rollback removes integration code but does not undo completed Parts 130–134 actions, delete conversations, or automatically cancel native previews.

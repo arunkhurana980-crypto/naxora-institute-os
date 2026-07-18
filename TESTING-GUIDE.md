@@ -1,23 +1,11 @@
-# Part 134 Testing
+# Testing Guide
 
-## Positive
-1. Owner Executive report
-2. Branch Manager assigned Branch report
-3. Teacher assigned Class attendance
-4. Student own Student 360
-5. Parent linked-child Student 360
-6. Accountant finance report
-7. Counsellor CRM report
-8. CSV/JSON/HTML export
-9. one-time ticket download
-10. second use of same ticket must fail
-11. revoke export
-12. revoked export ticket must fail
-
-## Negative
-- wrong institute
-- wrong Branch/Class/Student
-- date range above 366 days
-- PDF/XLSX command
-- export above 2 MB
-- non-owner exporting another user's report
+1. Start `assignment workflow` without fields.
+2. Answer each VANI question.
+3. Preview Step 1 and use exact confirmation.
+4. Verify Assignment in Part 130.
+5. Preview and confirm notification in Part 133.
+6. Test invalid Class ID, correction and `retry`.
+7. Test `pause`, blocked preview, then `resume`.
+8. Complete one step, then `cancel`; completed native action must remain.
+9. Open `/api/part135/native-catalog`; target is 60 active actions.

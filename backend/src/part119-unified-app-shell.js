@@ -449,6 +449,9 @@ const MODULES = Object.freeze([
   // PART 134 VANI REPORTS EXPORTS MODULE START
   { key: "reports-vani", label: "VANI Reports & Exports", description: "Executive, Branch, Attendance, Academic, Finance, CRM, Communication and Student 360 reports with CSV, JSON and print-ready HTML exports.", category: "AI & VANI", route: "/reports-vani", icon: "chart", roles: ["institute_owner", "branch_manager", "teacher", "student", "parent", "accountant", "counsellor", "staff"], alwaysAvailable: true, order: 324 },
   // PART 134 VANI REPORTS EXPORTS MODULE END
+  // PART 135 VANI WORKFLOW ENGINE MODULE START
+  { key: "workflow-vani", label: "VANI Workflow Engine", description: "Multi-turn clarification, dependency-aware native workflows, per-step preview and exact confirmation.", category: "AI & VANI", route: "/workflow-vani", icon: "automation", roles: ["institute_owner", "branch_manager", "teacher", "student", "parent", "accountant", "counsellor", "staff"], alwaysAvailable: true, order: 325 },
+  // PART 135 VANI WORKFLOW ENGINE MODULE END
 ]);
 
 const COMMAND_ALIASES = Object.freeze({
@@ -605,6 +608,19 @@ const COMMAND_ALIASES = Object.freeze({
   "student 360": "reports-vani",
   "part 134": "reports-vani",
   // PART 134 VANI REPORTS EXPORTS ALIASES END
+  // PART 135 VANI WORKFLOW ENGINE ALIASES START
+  "workflow vani": "workflow-vani",
+  "vani workflow": "workflow-vani",
+  "conversational vani": "workflow-vani",
+  "multi step workflow": "workflow-vani",
+  "exam workflow": "workflow-vani",
+  "assignment workflow": "workflow-vani",
+  "admission workflow": "workflow-vani",
+  "fee workflow": "workflow-vani",
+  "monthly report pack": "workflow-vani",
+  onboarding: "workflow-vani",
+  "part 135": "workflow-vani",
+  // PART 135 VANI WORKFLOW ENGINE ALIASES END
 });
 
 function cleanText(value = "", max = 255) {

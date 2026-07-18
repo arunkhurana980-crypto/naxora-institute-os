@@ -1,18 +1,5 @@
 # Honest Boundary
 
-Included:
-- role-safe native report snapshots
-- CSV, JSON and print-ready HTML
-- expiring exports
-- one-time downloads
-- export history and revocation
+Part 135 completes the conversational workflow-engine layer. It does not certify the complete product as “fully worked”. That label requires Part 136 all-role E2E acceptance, permission/isolation tests, duplicate/retry tests, Render/mobile tests and recorded evidence.
 
-Not included:
-- PDF rendering
-- XLSX workbook
-- scheduled recurring reports
-- unlimited database dump
-- Part 135 conversational workflow engine
-- Part 136 final acceptance
-
-Part 134 does not make VANI fully complete.
+Safe exclusions remain: password/OTP/Owner-secret handling, direct charge/refund/transfer, destructive bulk commands and unconfirmed autonomous execution.
