@@ -1,0 +1,42 @@
+# Render Environment Steps
+
+Keep Parts 112–117 Test variables unchanged.
+
+Add privately:
+
+```text
+RAZORPAY_LIVE_KEY_ID
+RAZORPAY_LIVE_KEY_SECRET
+RAZORPAY_LIVE_WEBHOOK_SECRET
+
+NAXORA_ADULT_MERCHANT_APPROVED=true
+NAXORA_SETTLEMENT_BANK_CONFIRMED=true
+
+NAXORA_PUBLIC_BASE_URL=https://naxora-institute-os.onrender.com
+NAXORA_SUBSCRIPTION_BRAND_NAME=NAXORA Institute OS
+```
+
+Add the Razorpay Live Plan IDs you created:
+
+```text
+NAXORA_LIVE_PLAN_STARTER_MONTHLY_ID
+NAXORA_LIVE_PLAN_STARTER_YEARLY_ID
+NAXORA_LIVE_PLAN_PROFESSIONAL_MONTHLY_ID
+NAXORA_LIVE_PLAN_PROFESSIONAL_YEARLY_ID
+NAXORA_LIVE_PLAN_BUSINESS_MONTHLY_ID
+NAXORA_LIVE_PLAN_BUSINESS_YEARLY_ID
+```
+
+Initially keep:
+
+```text
+NAXORA_RAZORPAY_LIVE_LAUNCHED=false
+```
+
+After status, plans and webhook configuration are verified:
+
+```text
+NAXORA_RAZORPAY_LIVE_LAUNCHED=true
+```
+
+Then deploy again.

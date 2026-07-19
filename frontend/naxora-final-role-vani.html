@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#071426" />
+  <title>Final Role Dashboard & VANI — NAXORA</title>
+  <link rel="stylesheet" href="/naxora-final-role-vani.css?v=13610" />
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">NAXORA • Final Runtime 136.10</p>
+        <h1 id="pageTitle">Role Dashboard & VANI</h1>
+        <p id="pageSubtitle">
+          Real MongoDB metrics, role-safe actions, preview and exact confirmation.
+        </p>
+      </div>
+      <div class="hero-actions">
+        <span id="roleBadge" class="badge">Loading role…</span>
+        <a href="/app">Unified App</a>
+        <button id="refreshBtn" type="button" class="secondary">Refresh</button>
+      </div>
+    </header>
+
+    <section id="scopeBanner" class="scope-banner">Loading role scope…</section>
+
+    <section>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Live dashboard</p>
+          <h2>Real institute metrics</h2>
+        </div>
+      </div>
+      <div id="metricsGrid" class="metrics-grid"></div>
+    </section>
+
+    <section class="workspace-grid">
+      <div class="panel">
+        <p class="eyebrow">VANI command</p>
+        <h2>Tell VANI what to do</h2>
+        <label>Command
+          <textarea id="commandInput" rows="4" placeholder='attendance mark studentId=... classId=... date=2026-07-19 status=present'></textarea>
+        </label>
+        <button id="interpretBtn" type="button">Interpret command</button>
+        <div id="interpretResult" class="message" hidden></div>
+
+        <hr />
+
+        <label>Action
+          <select id="actionSelect"></select>
+        </label>
+        <div id="fieldsContainer" class="fields-container"></div>
+        <button id="previewBtn" type="button">Create Preview</button>
+      </div>
+
+      <div class="panel">
+        <p class="eyebrow">Secure execution</p>
+        <h2>Review and confirm</h2>
+        <div id="previewCard" class="preview-card">
+          Preview create hone ke baad exact confirmation yahan aayegi.
+        </div>
+        <label>Exact confirmation
+          <input id="confirmationInput" autocomplete="off" />
+        </label>
+        <button id="confirmBtn" type="button" disabled>Execute Action</button>
+        <div id="actionMessage" class="message" hidden></div>
+      </div>
+    </section>
+
+    <section class="panel recent-panel">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">MongoDB records</p>
+          <h2>Recent role-safe activity</h2>
+        </div>
+      </div>
+      <div id="recentList" class="recent-list"></div>
+    </section>
+
+    <section id="acceptancePanel" class="panel acceptance-panel" hidden>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Owner final gate</p>
+          <h2>136.10 Runtime Acceptance</h2>
+        </div>
+        <button id="runAcceptanceBtn" type="button">Run Final Gate</button>
+      </div>
+      <div id="acceptanceResult" class="acceptance-result">
+        Acceptance evidence load ho rahi hai…
+      </div>
+    </section>
+
+    <section class="safety-note">
+      VANI passwords, OTP, API secrets, CVV, UPI PIN, direct refunds,
+      money transfers aur permanent destructive deletion execute nahi karti.
+    </section>
+  </main>
+
+  <script src="/naxora-final-role-vani.js?v=13610"></script>
+</body>
+</html>

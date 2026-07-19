@@ -53,6 +53,25 @@ import { basicRateLimit, sanitizeBody, securityHeaders } from "./middleware/secu
 
 const app = express();
 
+// PART 136.10 FINAL ROLE DASHBOARD EARLY ROUTES START
+app.get(
+  ["/owner-workspace", "/teacher-workspace", "/student-workspace", "/parent-workspace"],
+  (req, res) => {
+    res.set({
+      "Cache-Control": "no-store, max-age=0",
+      "Pragma": "no-cache",
+      "Expires": "0"
+    });
+    return res.sendFile(
+      path.resolve(
+        path.dirname(fileURLToPath(import.meta.url)),
+        "../../frontend/naxora-final-role-vani.html"
+      )
+    );
+  }
+);
+// PART 136.10 FINAL ROLE DASHBOARD EARLY ROUTES END
+
 // PART 136.5 OWNER APP EARLY ROUTE START
 const part1365FrontendDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -30668,10 +30687,12 @@ registerPart118LiveReadiness({ app });
 const { registerPart1366LiveSubscriptionRevenue } = await import("./part1366-live-subscription-revenue.js");
 registerPart1366LiveSubscriptionRevenue({ app });
 
-
-
 // ================= PART 119 — UNIFIED SINGLE APP SHELL =================
 const { registerPart119UnifiedAppShell } = await import("./part119-unified-app-shell.js");
+// ================= PART 136.10 — FINAL ROLE DASHBOARDS AND VANI =================
+const { registerPart13610FinalRuntime } = await import("./part13610-final-role-vani-runtime.js");
+registerPart13610FinalRuntime({ app });
+
 registerPart119UnifiedAppShell({ app });
 
 app.use(notFound);
