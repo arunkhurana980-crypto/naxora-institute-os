@@ -1,5 +1,5 @@
 {
-  "name": "NAXORA Final 136.11 One ZIP Fixed",
+  "name": "NAXORA Final 136.12 One ZIP Role VANI Cache UX Fixed",
   "classification": "PACKAGE_VERIFIED_RUNTIME_AND_COMMERCIAL_ACCEPTANCE_REQUIRED",
   "included_parts": [
     "128",
@@ -15,7 +15,8 @@
     "136.5",
     "136.6",
     "136.10",
-    "136.11"
+    "136.11",
+    "136.12"
   ],
   "supported_roles": [
     "institute_owner",
@@ -40,6 +41,10 @@
     "iframe_direct_fallback",
     "same_origin_microphone_policy",
     "command_placeholder_guidance",
-    "runtime_commercial_acceptance_separation"
+    "runtime_commercial_acceptance_separation",
+    "final_role_vani_asset_cache_bust",
+    "final_role_vani_no_store_delivery",
+    "optional_command_guidance",
+    "stale_command_error_cleanup"
   ]
 }

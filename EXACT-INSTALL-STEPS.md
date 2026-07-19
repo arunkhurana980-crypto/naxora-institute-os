@@ -1,14 +1,9 @@
-# Exact Installation — Final 136.11
+# Exact Installation — Final 136.12
 
-Extract this ZIP and copy everything inside into:
-
-```text
-C:\Users\bhaij\OneDrive\Documents\naxora-institute-os-part51-final-secure-clean-url-redirect-fixed
-```
-
+Extract the ZIP and copy everything inside into the existing NAXORA project.
 Choose `Replace files in the destination`.
 
-Run one command:
+Run:
 
 ```powershell
 node .\APPLY-NAXORA-FINAL.js
@@ -19,8 +14,15 @@ Then:
 ```powershell
 git status
 git add .
-git commit -m "Fix final embedded modules VANI and acceptance"
+git commit -m "Fix Final Role VANI cache and command UX"
 git push
 ```
 
-Render: `Manual Deploy → Clear build cache & deploy`.
+Render:
+
+```text
+Manual Deploy
+→ Clear build cache & deploy
+```
+
+After deployment open `/app` in a new Incognito window.
