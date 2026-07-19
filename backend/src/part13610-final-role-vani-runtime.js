@@ -228,9 +228,9 @@ const ACTIONS = Object.freeze({
 
 const COMMAND_PATTERNS = Object.freeze([
   ["attendance.correction_request", /(attendance|hazri).*(correct|correction|galat|request)/i],
-  ["attendance.mark", /(attendance|hazri).*(mark|lagao|present|absent|late)/i],
-  ["assignment.submit", /(assignment|homework).*(submit|jama)/i],
-  ["assignment.create", /(assignment|homework).*(create|banao|do|set)/i],
+  ["attendance.mark", /((attendance|hazri).*(mark|lagao|present|absent|late)|(mark|lagao).*(attendance|hazri))/i],
+  ["assignment.submit", /((assignment|homework).*(submit|jama)|(submit|jama).*(assignment|homework))/i],
+  ["assignment.create", /((assignment|homework).*(create|banao|do|set)|(create|banao).*(assignment|homework))/i],
   ["result.update", /(result|marks|score).*(update|add|record|dalo)/i],
   ["teacher.progress_note", /(progress|student).*(note|feedback|remark)/i],
   ["fees.assistance_request", /(fee|fees).*(help|assistance|request|problem|madad)/i],
@@ -238,14 +238,14 @@ const COMMAND_PATTERNS = Object.freeze([
   ["student.support_request", /(support|help).*(student|study|class|teacher)/i],
   ["lead.follow_up", /(lead|admission|enquiry).*(follow.?up|call|message)/i],
   ["lead.create", /(lead|enquiry|admission).*(create|add|banao)/i],
-  ["message.send", /(message|msg).*(send|bhejo)/i],
-  ["notice.create", /(notice|announcement).*(create|send|banao)/i],
-  ["student.create", /(student).*(create|add|banao)/i],
-  ["teacher.create", /(teacher).*(create|add|banao)/i],
-  ["parent.create", /(parent|guardian).*(create|add|banao)/i],
-  ["branch.create", /(branch).*(create|add|banao)/i],
-  ["class.create", /(class|batch).*(create|add|banao)/i],
-  ["course.create", /(course).*(create|add|banao)/i],
+  ["message.send", /((message|msg).*(send|bhejo)|(send|bhejo).*(message|msg))/i],
+  ["notice.create", /((notice|announcement).*(create|send|banao)|(create|send|banao).*(notice|announcement))/i],
+  ["student.create", /((student).*(create|add|banao)|(create|add|banao).*(student))/i],
+  ["teacher.create", /((teacher).*(create|add|banao)|(create|add|banao).*(teacher))/i],
+  ["parent.create", /((parent|guardian).*(create|add|banao)|(create|add|banao).*(parent|guardian))/i],
+  ["branch.create", /((branch).*(create|add|banao)|(create|add|banao).*(branch))/i],
+  ["class.create", /((class|batch).*(create|add|banao)|(create|add|banao).*(class|batch))/i],
+  ["course.create", /((course).*(create|add|banao)|(create|add|banao).*(course))/i],
   ["report.snapshot", /(report|summary|dashboard).*(generate|banao|show|snapshot)/i],
 ]);
 
@@ -1695,17 +1695,23 @@ async function acceptanceFor(models, context, runProviderCheck = false) {
       };
   const subscription = subscriptionReadiness();
 
-  const finalAccepted =
+  const runtimeAccepted =
     structural.passed &&
-    evidence.passed &&
+    evidence.passed;
+  const commercialAccepted =
     pricing.passed &&
     subscription.passed;
+  const finalAccepted =
+    runtimeAccepted &&
+    commercialAccepted;
 
   const classification = finalAccepted
     ? "FINAL_ACCEPTED_SAFE_SCOPE"
-    : structural.passed
-      ? "RUNTIME_ACCEPTANCE_PENDING"
-      : "PACKAGE_INTEGRATION_FAILED";
+    : runtimeAccepted
+      ? "COMMERCIAL_ACCEPTANCE_PENDING"
+      : structural.passed
+        ? "ROLE_RUNTIME_EVIDENCE_PENDING"
+        : "PACKAGE_INTEGRATION_FAILED";
 
   if (runProviderCheck) {
     await models.Acceptance.findOneAndUpdate(
@@ -1728,6 +1734,8 @@ async function acceptanceFor(models, context, runProviderCheck = false) {
 
   return {
     classification,
+    runtimeAccepted,
+    commercialAccepted,
     finalAccepted,
     structural,
     evidence,
@@ -1792,6 +1800,8 @@ export function registerPart13610FinalRuntime({ app } = {}) {
       previewAndExactConfirmation: true,
       MongoPersistence: true,
       roleScopeFailClosed: true,
+      shellEmbeddingExpectedPolicy: "SAMEORIGIN",
+      contextualVaniButtonExpectedCount: 1,
       pricing: PRICING.map(item => ({
         code: item.code,
         period: item.period,

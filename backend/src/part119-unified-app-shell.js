@@ -494,6 +494,31 @@ const MODULES = Object.freeze([
 // PART 135 VANI WORKFLOW ENGINE MODULE START
   { key: "workflow-vani", label: "VANI Workflow Engine", description: "Multi-turn clarification, dependency-aware native workflows, per-step preview and exact confirmation.", category: "AI & VANI", route: "/workflow-vani", icon: "automation", roles: ["institute_owner", "branch_manager", "teacher", "student", "parent", "accountant", "counsellor", "staff"], alwaysAvailable: true, order: 325 },
   // PART 135 VANI WORKFLOW ENGINE MODULE END
+// PART 136.10 FINAL ROLE RUNTIME MODULE START
+  {
+    key: "final-role-runtime",
+    label: "Final Role Dashboard & VANI",
+    description: "Real Owner, Teacher, Student and Parent dashboards with role-safe preview-confirm actions and final commercial acceptance.",
+    category: "AI & VANI",
+    route: "/final-role-runtime",
+    icon: "verified",
+    roles: ["institute_owner", "teacher", "student", "parent"],
+    alwaysAvailable: true,
+    order: 327,
+  },
+  // PART 136.10 FINAL ROLE RUNTIME MODULE END
+// PART 129 VANI BULK IMPORT MODULE START
+  { key: "bulk-import-vani", label: "VANI Bulk Import", description: "CSV/JSON mapping, duplicate validation, confirmed import and rollback.", category: "AI & VANI", route: "/bulk-import-vani", icon: "manage", roles: OWNER_ONLY_ROLES, alwaysAvailable: true, order: 319 },
+  // PART 129 VANI BULK IMPORT MODULE END
+// PART 131 VANI FEES FINANCE MODULE START
+  { key: "finance-vani", label: "VANI Fees & Finance", description: "Fee structures, Student fees, invoices, manual receipts, dues, reminders and finance summaries.", category: "AI & VANI", route: "/finance-vani", icon: "wallet", roles: ["institute_owner", "branch_manager", "accountant", "student", "parent"], alwaysAvailable: true, order: 321 },
+  // PART 131 VANI FEES FINANCE MODULE END
+// PART 133 VANI COMMUNICATION MODULE START
+  { key: "communication-vani", label: "VANI Communication", description: "Templates, Notices, role-safe Messages, schedules, consent, Inbox and delivery tracking.", category: "AI & VANI", route: "/communication-vani", icon: "message", roles: ["institute_owner", "branch_manager", "teacher", "student", "parent", "accountant", "counsellor", "staff"], alwaysAvailable: true, order: 323 },
+  // PART 133 VANI COMMUNICATION MODULE END
+// PART 135 VANI WORKFLOW ENGINE MODULE START
+  { key: "workflow-vani", label: "VANI Workflow Engine", description: "Multi-turn clarification, dependency-aware native workflows, per-step preview and exact confirmation.", category: "AI & VANI", route: "/workflow-vani", icon: "automation", roles: ["institute_owner", "branch_manager", "teacher", "student", "parent", "accountant", "counsellor", "staff"], alwaysAvailable: true, order: 325 },
+  // PART 135 VANI WORKFLOW ENGINE MODULE END
 // PART 136.6 LIVE SUBSCRIPTION MODULE START
   {
     key: "live-subscriptions",
@@ -697,6 +722,52 @@ const COMMAND_ALIASES = Object.freeze({
   "all role test": "vani-acceptance",
   "part 136": "vani-acceptance",
   // PART 136 FINAL VANI ACCEPTANCE ALIASES END
+// PART 129 VANI BULK IMPORT ALIASES START
+  "bulk import": "bulk-import-vani",
+  "csv import": "bulk-import-vani",
+  "json import": "bulk-import-vani",
+  "excel import": "bulk-import-vani",
+  "upload data": "bulk-import-vani",
+  "import students": "bulk-import-vani",
+  "import teachers": "bulk-import-vani",
+  "part 129": "bulk-import-vani",
+  // PART 129 VANI BULK IMPORT ALIASES END
+// PART 131 VANI FEES FINANCE ALIASES START
+  "finance operations": "finance-vani",
+  "finance vani": "finance-vani",
+  "fee structure": "finance-vani",
+  invoice: "finance-vani",
+  receipts: "finance-vani",
+  "due list": "finance-vani",
+  "fee statement": "finance-vani",
+  "finance summary": "finance-vani",
+  "part 131": "finance-vani",
+  // PART 131 VANI FEES FINANCE ALIASES END
+// PART 133 VANI COMMUNICATION ALIASES START
+  "communication vani": "communication-vani",
+  communication: "communication-vani",
+  notifications: "communication-vani",
+  notices: "communication-vani",
+  announcements: "communication-vani",
+  "message templates": "communication-vani",
+  "scheduled notifications": "communication-vani",
+  inbox: "communication-vani",
+  "delivery tracking": "communication-vani",
+  "part 133": "communication-vani",
+  // PART 133 VANI COMMUNICATION ALIASES END
+// PART 135 VANI WORKFLOW ENGINE ALIASES START
+  "workflow vani": "workflow-vani",
+  "vani workflow": "workflow-vani",
+  "conversational vani": "workflow-vani",
+  "multi step workflow": "workflow-vani",
+  "exam workflow": "workflow-vani",
+  "assignment workflow": "workflow-vani",
+  "admission workflow": "workflow-vani",
+  "fee workflow": "workflow-vani",
+  "monthly report pack": "workflow-vani",
+  onboarding: "workflow-vani",
+  "part 135": "workflow-vani",
+  // PART 135 VANI WORKFLOW ENGINE ALIASES END
 // PART 129 VANI BULK IMPORT ALIASES START
   "bulk import": "bulk-import-vani",
   "csv import": "bulk-import-vani",

@@ -1,6 +1,6 @@
 {
-  "name": "NAXORA Final 136.10 One ZIP",
-  "classification": "PACKAGE_VERIFIED_RUNTIME_ACCEPTANCE_REQUIRED",
+  "name": "NAXORA Final 136.11 One ZIP Fixed",
+  "classification": "PACKAGE_VERIFIED_RUNTIME_AND_COMMERCIAL_ACCEPTANCE_REQUIRED",
   "included_parts": [
     "128",
     "129",
@@ -14,7 +14,8 @@
     "136.4",
     "136.5",
     "136.6",
-    "136.10"
+    "136.10",
+    "136.11"
   ],
   "supported_roles": [
     "institute_owner",
@@ -32,5 +33,13 @@
   },
   "business_yearly": null,
   "runtime_final_claim": "only_after_FINAL_ACCEPTED_SAFE_SCOPE",
-  "files": 286
+  "files": 286,
+  "fixes": [
+    "same_origin_iframe_embedding",
+    "single_contextual_vani_button",
+    "iframe_direct_fallback",
+    "same_origin_microphone_policy",
+    "command_placeholder_guidance",
+    "runtime_commercial_acceptance_separation"
+  ]
 }

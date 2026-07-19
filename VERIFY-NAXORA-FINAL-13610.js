@@ -8,7 +8,7 @@ const required = [
   "APPLY-PART128.js","APPLY-PART129.js","APPLY-PART130.js","APPLY-PART131.js",
   "APPLY-PART132.js","APPLY-PART133.js","APPLY-PART134.js","APPLY-PART135.js",
   "APPLY-PART136.js","APPLY-NAXORA-FINAL-OWNER-VANI.js","APPLY-PART1366.js",
-  "APPLY-PART13610.js","VERIFY-PART13610.js",
+  "APPLY-PART13610.js","VERIFY-PART13610.js","APPLY-PART13611.js","VERIFY-PART13611.js",
   "backend/src/part128-vani-master-data-actions.js",
   "backend/src/part129-vani-bulk-import.js",
   "backend/src/part130-vani-academic-operations.js",

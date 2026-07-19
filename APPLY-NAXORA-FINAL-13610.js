@@ -17,6 +17,7 @@ const scripts = [
   "APPLY-NAXORA-FINAL-OWNER-VANI.js",
   "APPLY-PART1366.js",
   "APPLY-PART13610.js",
+  "APPLY-PART13611.js",
 ];
 
 console.log("\nNAXORA FINAL 136.10 ONE-ZIP INSTALL STARTED");
@@ -51,6 +52,7 @@ for (const script of [
   "VERIFY-NAXORA-FINAL-OWNER-VANI.js",
   "VERIFY-PART1366.js",
   "VERIFY-PART13610.js",
+  "VERIFY-PART13611.js",
   "VERIFY-NAXORA-FINAL-13610.js",
 ]) {
   const file = path.join(root, script);
@@ -76,4 +78,5 @@ console.log("Simple Owner login and Unified App: PASS");
 console.log("Razorpay Live Subscription Bridge: PASS");
 console.log("Four-role dashboards and VANI runtime: PASS");
 console.log("Pricing validation and fail-closed acceptance: PASS");
+console.log("Embedded modules and single contextual VANI: PASS");
 console.log("======================================================\n");
